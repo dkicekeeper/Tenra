@@ -104,6 +104,13 @@
 "home.today.untilIncome" = "Күніне, кіріс түскенге дейін (%@)";
 "home.today.untilMonthEnd" = "Күніне, ай соңына дейін";
 "home.today.setAside" = "Төлемдерге %@ бөліп қойылды";
+"allowance.detail.how" = "Қалай есептеледі";
+"allowance.detail.footer" = "Күнделікті шоттардағы қалдық, сол күнге дейінгі жазылымдар, несие төлемдері мен жоспарланған шығыстар шегеріліп, қалған күндерге бөлінеді. Тэн да осылай есептейді.";
+"allowance.detail.balance" = "Қазір шоттарда";
+"allowance.detail.setAside" = "Төлемдерге бөлінген";
+"allowance.detail.free" = "Жұмсауға болады";
+"allowance.detail.days" = "Қалған күндер";
+"allowance.detail.payments" = "Бөлінген төлемдер";
 "home.iCloudAsk.title" = "Көшірмелерді iCloud-та сақтаңыз";
 "home.iCloudAsk.message" = "Апталық сақтық көшірме қазір тек осы iPhone-да. iCloud Drive-та ол жаңа телефонға ауысқанда немесе қайта орнатқанда да сақталады.";
 "home.iCloudAsk.action" = "Қосу";
@@ -1707,7 +1714,6 @@
 // MARK: - Settings Pro Section
 
 "settings.pro.cta.title" = "Tenra Pro алу";
-"settings.pro.cta.subtitle" = "Шексіз шоттар, үзінді көшірмелерді импорттау, депозиттер мен несиелер";
 "settings.pro.status.active" = "Белсенді";
 "settings.pro.plan.monthly" = "Айлық";
 "settings.pro.plan.annual" = "Жылдық";
@@ -1719,18 +1725,9 @@
 "settings.pro.manage" = "Жазылымды басқару";
 "settings.pro.restore" = "Сатып алуларды қалпына келтіру";
 "settings.pro.redeemCode" = "Промокодты енгізу";
-"settings.pro.restore.restored" = "Қалпына келтірілді";
 "settings.pro.restore.none" = "Сатып алулар табылмады";
 "settings.pro.restore.failed" = "Қалпына келтіру мүмкін болмады";
 "pro.page.subtitle" = "Tenra-ның барлық мүмкіндіктері шектеусіз";
-"pro.page.features" = "Pro-ға не кіреді";
-"pro.feature.assistant" = "Тэн, ЖИ ассистенті, шектеусіз";
-"pro.feature.accounts" = "Шектеусіз шоттар";
-"pro.feature.voice" = "Дауыспен енгізу";
-"pro.feature.import" = "PDF және CSV үзінді көшірмелерін импорттау";
-"pro.feature.deposits" = "Пайыз есептелетін депозиттер";
-"pro.feature.loans" = "Төлем кестесі бар несиелер";
-"pro.feature.debts" = "Жеке қарыздар";
 
 /* MARK: - App Intents / Siri */
 "intent.log.title" = "Операцияны жазу";
@@ -2213,6 +2210,8 @@
 "assistant.topic.goal.faster" = "«%@» үшін қалай тезірек жинаймын?";
 "assistant.topic.debt.status" = "Қарыз бойынша қанша қалды: %@?";
 "assistant.topic.debt.plan" = "Қарызды уақытында қалай қайтарамын: %@?";
+"assistant.topic.allowance.enough" = "Келесі табысқа дейін ақша жете ме?";
+"assistant.topic.allowance.save" = "Күніне көбірек қалуы үшін неден үнемдеуге болады?";
 
 /* Ten's lines around the conversation (AssistantChatter, DesignKit 4.10). */
 "assistant.chatter.morning" = "Қайырлы таң!";

@@ -104,6 +104,13 @@
 "home.today.untilIncome" = "На день до надходження %@";
 "home.today.untilMonthEnd" = "На день до кінця місяця";
 "home.today.setAside" = "%@ відкладено на платежі";
+"allowance.detail.how" = "Як рахується";
+"allowance.detail.footer" = "Залишок на повсякденних рахунках мінус підписки, платежі за кредитами та заплановані витрати до цієї дати, поділений на дні, що лишилися. Тен рахує так само.";
+"allowance.detail.balance" = "На рахунках зараз";
+"allowance.detail.setAside" = "Відкладено на платежі";
+"allowance.detail.free" = "Можна витратити";
+"allowance.detail.days" = "Залишилось днів";
+"allowance.detail.payments" = "Відкладені платежі";
 "home.iCloudAsk.title" = "Зберігайте копії в iCloud";
 "home.iCloudAsk.message" = "Щотижнева копія зараз лише на цьому iPhone. В iCloud Drive вона переживе новий телефон або перевстановлення.";
 "home.iCloudAsk.action" = "Увімкнути";
@@ -1707,7 +1714,6 @@
 // MARK: - Settings Pro Section
 
 "settings.pro.cta.title" = "Оформити Tenra Pro";
-"settings.pro.cta.subtitle" = "Безлімітні рахунки, імпорт виписок, депозити та кредити";
 "settings.pro.status.active" = "Активна";
 "settings.pro.plan.monthly" = "Місячна";
 "settings.pro.plan.annual" = "Річна";
@@ -1719,18 +1725,9 @@
 "settings.pro.manage" = "Керувати підпискою";
 "settings.pro.restore" = "Відновити покупки";
 "settings.pro.redeemCode" = "Ввести промокод";
-"settings.pro.restore.restored" = "Відновлено";
 "settings.pro.restore.none" = "Покупок не знайдено";
 "settings.pro.restore.failed" = "Не вдалося відновити";
 "pro.page.subtitle" = "Усі можливості Tenra без обмежень";
-"pro.page.features" = "Що входить до Pro";
-"pro.feature.assistant" = "Тен, ШІ-помічник, без ліміту";
-"pro.feature.accounts" = "Необмежена кількість рахунків";
-"pro.feature.voice" = "Голосове введення";
-"pro.feature.import" = "Імпорт виписок PDF і CSV";
-"pro.feature.deposits" = "Депозити з нарахуванням відсотків";
-"pro.feature.loans" = "Кредити з графіком платежів";
-"pro.feature.debts" = "Особисті борги";
 
 /* MARK: - App Intents / Siri */
 "intent.log.title" = "Записати операцію";
@@ -2213,6 +2210,8 @@
 "assistant.topic.goal.faster" = "Як швидше накопичити на «%@»?";
 "assistant.topic.debt.status" = "Скільки залишилось за боргом: %@?";
 "assistant.topic.debt.plan" = "Як повернути борг вчасно: %@?";
+"assistant.topic.allowance.enough" = "Чи вистачить грошей до наступного доходу?";
+"assistant.topic.allowance.save" = "Де заощадити, щоб на день лишалося більше?";
 
 /* Ten's lines around the conversation (AssistantChatter, DesignKit 4.10). */
 "assistant.chatter.morning" = "Доброго ранку!";

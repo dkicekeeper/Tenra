@@ -28,7 +28,8 @@ assistant is that tab's page (`AssistantTab`); elsewhere (Simulator, Mac, no App
 "Voice | Import". iOS 26+.
 
 **Entry points** (`AssistantEntryPoints`): the tab; "Ask Ten" in the "…" menu of an account,
-category, goal and debt, and as a button with Ten's glyph in an insight and History (the
+category, goal and debt, and as a button with Ten's glyph in an insight, History and For today
+on Analytics (the
 assistant opens with questions about that object, nothing is sent until one is chosen); "Go through
 it" on a Home notice; a PDF or CSV opened in Tenra from another app.
 

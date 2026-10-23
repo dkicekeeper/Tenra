@@ -104,6 +104,13 @@
 "home.today.untilIncome" = "A day until your income on %@";
 "home.today.untilMonthEnd" = "A day until the end of the month";
 "home.today.setAside" = "%@ set aside for payments";
+"allowance.detail.how" = "How it's counted";
+"allowance.detail.footer" = "Your everyday accounts now, less the subscriptions, loan payments and planned expenses due before then, split over the days left. Ten counts the same way.";
+"allowance.detail.balance" = "On your accounts now";
+"allowance.detail.setAside" = "Set aside for payments";
+"allowance.detail.free" = "Free to spend";
+"allowance.detail.days" = "Days left";
+"allowance.detail.payments" = "Payments set aside";
 "home.iCloudAsk.title" = "Keep backups in iCloud";
 "home.iCloudAsk.message" = "Your weekly backup is only on this iPhone. In iCloud Drive it survives a new phone or a reinstall.";
 "home.iCloudAsk.action" = "Turn on";
@@ -1707,7 +1714,6 @@
 // MARK: - Settings Pro Section
 
 "settings.pro.cta.title" = "Get Tenra Pro";
-"settings.pro.cta.subtitle" = "Unlimited accounts, statement imports, deposits and loans";
 "settings.pro.status.active" = "Active";
 "settings.pro.plan.monthly" = "Monthly";
 "settings.pro.plan.annual" = "Annual";
@@ -1719,18 +1725,9 @@
 "settings.pro.manage" = "Manage Subscription";
 "settings.pro.restore" = "Restore Purchases";
 "settings.pro.redeemCode" = "Redeem code";
-"settings.pro.restore.restored" = "Restored";
 "settings.pro.restore.none" = "No purchases found";
 "settings.pro.restore.failed" = "Couldn't restore";
 "pro.page.subtitle" = "All of Tenra, with no limits";
-"pro.page.features" = "What's in Pro";
-"pro.feature.assistant" = "Ten, the AI assistant, with no limit";
-"pro.feature.accounts" = "Unlimited accounts";
-"pro.feature.voice" = "Voice input";
-"pro.feature.import" = "PDF and CSV statement import";
-"pro.feature.deposits" = "Deposits with interest";
-"pro.feature.loans" = "Loans with payment schedules";
-"pro.feature.debts" = "Personal debts";
 
 /* MARK: - App Intents / Siri */
 "intent.log.title" = "Log a transaction";
@@ -2213,6 +2210,8 @@
 "assistant.topic.goal.faster" = "How can I save for “%@” faster?";
 "assistant.topic.debt.status" = "How much is left on the debt with %@?";
 "assistant.topic.debt.plan" = "How do I pay %@ back on time?";
+"assistant.topic.allowance.enough" = "Will my money last until my next income?";
+"assistant.topic.allowance.save" = "Where can I save to have more for each day?";
 
 /* Ten's lines around the conversation (AssistantChatter, DesignKit 4.10). */
 "assistant.chatter.morning" = "Good morning!";

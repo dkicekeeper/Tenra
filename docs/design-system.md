@@ -271,8 +271,10 @@ infinite-scroll trigger (`LoadMoreFooter`), so a long history renders a bounded 
 
 ### Settings
 
-`List` of `Section(header: SectionHeader(title))` (every section, bold in sentence case since
-DesignKit 8.0.0, which removed `.compact`; with a `footer:` of plain `Text` when it has one) with `UniversalRow(config: .settings)` rows:
+A page of Home's stack (the gear pushes `HomeDestination.settings`; not a sheet), titled inline:
+`SettingsProHero` on top, full width, then a `ScrollView` of glass sections
+(`FormSection(header:)`, bold in sentence case since DesignKit 8.0.0, which removed `.compact`;
+with a `footer:` of plain `Text` when it has one) with `UniversalRow(config: .settings)` rows:
 `accessory: .navigation {}`, `.action {}` (with `role: .destructive` for a destructive one),
 `.toggle($value)` or `.picker`, `.menu` (DesignKit 7.0.0: one row with an accessory instead of
 the twelve rows before). The list insets the rows, so `.settings` has no horizontal padding of
@@ -280,20 +282,20 @@ its own. A form card's rows keep the default `config: .standard`: 16 pt above an
 the `FormSection` card pads them at the sides (DesignKit 8.0.0).
 
 The sections go from the app as a whole to its features, then the data, then what can't be
-undone: Tenra Pro (one row), General (base currency, background, voice language), insight
+undone: the Tenra Pro hero, General (base currency, background, voice language), insight
 alerts, Privacy, Assistant, Siri & Shortcuts (the Wallet automation guide), Wallet (To review,
-merchants, cards, the merchant logos switch), Backups, Export and import, Danger zone, About.
+merchants, cards, the merchant logos switch), Backups, Export and import, Danger zone, restore
+and redeem (free users), About.
 
-- **Tenra Pro** (`SettingsProSection`): one row with the crown, pushing `TenraProView`; a free
-  user's row says "Get Tenra Pro" with what it brings as the hint and the shine sweeping across it
-  once, a subscriber's and a Founding User's say "Tenra Pro" with the status as the value.
-  `TenraProView` is a `ScrollView`: a `HeroSection` (crown, "Tenra Pro", the status `Badge` with
+- **Tenra Pro** (`SettingsProHero`): a `HeroSection` (crown, "Tenra Pro", the status `Badge` with
   `.holographic()`, the plan and renewal date or the pitch) on DesignKit's drifting
-  `AuroraBackground` (behind the scroll view, under the navigation bar, fading into the page below
-  the hero), the buy `DSButton` for a free user, a `FormSection` of what Pro includes (a check on
-  each for a Pro user) and one of the state's actions (restore and redeem a code, or manage the
-  subscription). The paywall and the offer-code sheet hang on the screen, not on the button and
-  the row that open them: buying removes both.
+  `AuroraBackground`, which is the hero's own background (it scrolls with the page, reaches up
+  under the navigation bar and over a pull-down, and fades out by the hero's bottom, so no glass
+  section sits on the drift), and one full-width `DSButton`: "Get Tenra Pro" with the shine
+  sweeping across it once, opening the paywall (RevenueCat's: what Pro includes is listed there,
+  not here), or "Manage Subscription" for a subscriber; none for a Founding User. The paywall
+  hangs on the hero, not on the button: buying removes it. Restore purchases and redeem a code
+  (StoreKit's offer-code sheet) are `SettingsPurchaseSection`, above About, for free users.
 - **Wallet automation guide** (`WalletSetupGuideView`): a paged `TabView`, one step per page, the
   Next `DSButton` in a `safeAreaBar`; each page a picture (`WalletSetupIllustration`: the
   Shortcuts screen as a schema of `AppColors.Background` cards, grey bars for what the step does

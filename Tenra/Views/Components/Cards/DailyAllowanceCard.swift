@@ -2,10 +2,10 @@
 //  DailyAllowanceCard.swift
 //  Tenra
 //
-//  "For today" on Home: how much can go out a day until the next income (or the month's end)
-//  once the subscriptions, loan payments and planned expenses before it are set aside. An
-//  adapter over DesignKit's FinanceCard; the figure comes from DailyAllowanceCalculator, the
-//  same rule as Ten's forecast_balance.
+//  "For today" on Analytics (DailyAllowanceLink): how much can go out a day until the next
+//  income (or the month's end) once the subscriptions, loan payments and planned expenses
+//  before it are set aside. An adapter over DesignKit's FinanceCard; the figure comes from
+//  DailyAllowance, the same rule as Ten's forecast_balance.
 //
 
 import SwiftUI

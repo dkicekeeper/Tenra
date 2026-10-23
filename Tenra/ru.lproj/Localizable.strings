@@ -104,6 +104,13 @@
 "home.today.untilIncome" = "В день до поступления %@";
 "home.today.untilMonthEnd" = "В день до конца месяца";
 "home.today.setAside" = "%@ отложено на платежи";
+"allowance.detail.how" = "Как считается";
+"allowance.detail.footer" = "Остаток на повседневных счетах минус подписки, платежи по кредитам и запланированные расходы до этой даты, поделённый на оставшиеся дни. Тэн считает так же.";
+"allowance.detail.balance" = "На счетах сейчас";
+"allowance.detail.setAside" = "Отложено на платежи";
+"allowance.detail.free" = "Можно потратить";
+"allowance.detail.days" = "Осталось дней";
+"allowance.detail.payments" = "Отложенные платежи";
 "home.iCloudAsk.title" = "Храните копии в iCloud";
 "home.iCloudAsk.message" = "Еженедельная копия сейчас лежит только на этом iPhone. В iCloud Drive она переживёт новый телефон или переустановку.";
 "home.iCloudAsk.action" = "Включить";
@@ -1707,7 +1714,6 @@
 // MARK: - Settings Pro Section
 
 "settings.pro.cta.title" = "Оформить Tenra Pro";
-"settings.pro.cta.subtitle" = "Безлимитные счета, импорт выписок, вклады и кредиты";
 "settings.pro.status.active" = "Активна";
 "settings.pro.plan.monthly" = "Месячная";
 "settings.pro.plan.annual" = "Годовая";
@@ -1719,18 +1725,9 @@
 "settings.pro.manage" = "Управлять подпиской";
 "settings.pro.restore" = "Восстановить покупки";
 "settings.pro.redeemCode" = "Ввести промокод";
-"settings.pro.restore.restored" = "Восстановлено";
 "settings.pro.restore.none" = "Покупки не найдены";
 "settings.pro.restore.failed" = "Не удалось восстановить";
 "pro.page.subtitle" = "Все возможности Tenra без ограничений";
-"pro.page.features" = "Что входит в Pro";
-"pro.feature.assistant" = "Тэн, ИИ-помощник, без лимита";
-"pro.feature.accounts" = "Безлимитные счета";
-"pro.feature.voice" = "Голосовой ввод";
-"pro.feature.import" = "Импорт выписок PDF и CSV";
-"pro.feature.deposits" = "Депозиты с начислением процентов";
-"pro.feature.loans" = "Кредиты с графиком платежей";
-"pro.feature.debts" = "Личные долги";
 
 /* MARK: - App Intents / Siri */
 "intent.log.title" = "Записать операцию";
@@ -2213,6 +2210,8 @@
 "assistant.topic.goal.faster" = "Как быстрее накопить на «%@»?";
 "assistant.topic.debt.status" = "Сколько осталось по долгу: %@?";
 "assistant.topic.debt.plan" = "Как вернуть долг вовремя: %@?";
+"assistant.topic.allowance.enough" = "Хватит ли денег до следующего дохода?";
+"assistant.topic.allowance.save" = "Где сэкономить, чтобы на день оставалось больше?";
 
 /* Ten's lines around the conversation (AssistantChatter, DesignKit 4.10). */
 "assistant.chatter.morning" = "Доброе утро!";

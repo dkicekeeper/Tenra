@@ -514,7 +514,7 @@ final class FinanceToolkit: AgentToolExecuting {
         let amount: Double
     }
 
-    /// What `forecast_balance` returns, typed: Home's "For today" card reads it too
+    /// What `forecast_balance` returns, typed: "For today" (Analytics, the widget) reads it too
     /// (DailyAllowance), so both say the same number.
     struct BalanceForecast {
         let currency: String

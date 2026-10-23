@@ -104,6 +104,13 @@
 "home.today.untilIncome" = "Pro Tag bis zum Eingang am %@";
 "home.today.untilMonthEnd" = "Pro Tag bis Monatsende";
 "home.today.setAside" = "%@ für Zahlungen zurückgelegt";
+"allowance.detail.how" = "So wird gerechnet";
+"allowance.detail.footer" = "Ihre Alltagskonten jetzt, abzüglich Abos, Kreditraten und geplanter Ausgaben bis dahin, verteilt auf die verbleibenden Tage. Ten rechnet genauso.";
+"allowance.detail.balance" = "Jetzt auf Ihren Konten";
+"allowance.detail.setAside" = "Für Zahlungen zurückgelegt";
+"allowance.detail.free" = "Frei verfügbar";
+"allowance.detail.days" = "Verbleibende Tage";
+"allowance.detail.payments" = "Zurückgelegte Zahlungen";
 "home.iCloudAsk.title" = "Backups in iCloud sichern";
 "home.iCloudAsk.message" = "Ihr wöchentliches Backup liegt nur auf diesem iPhone. In iCloud Drive übersteht es ein neues Telefon oder eine Neuinstallation.";
 "home.iCloudAsk.action" = "Einschalten";
@@ -1707,7 +1714,6 @@
 // MARK: - Settings Pro Section
 
 "settings.pro.cta.title" = "Tenra Pro holen";
-"settings.pro.cta.subtitle" = "Unbegrenzte Konten, Auszugsimport, Einlagen und Kredite";
 "settings.pro.status.active" = "Aktiv";
 "settings.pro.plan.monthly" = "Monatlich";
 "settings.pro.plan.annual" = "Jährlich";
@@ -1719,18 +1725,9 @@
 "settings.pro.manage" = "Abo verwalten";
 "settings.pro.restore" = "Käufe wiederherstellen";
 "settings.pro.redeemCode" = "Code einlösen";
-"settings.pro.restore.restored" = "Wiederhergestellt";
 "settings.pro.restore.none" = "Keine Käufe gefunden";
 "settings.pro.restore.failed" = "Fehlgeschlagen";
 "pro.page.subtitle" = "Alle Funktionen von Tenra, ohne Grenzen";
-"pro.page.features" = "Das bietet Pro";
-"pro.feature.assistant" = "Ten, der KI-Assistent, ohne Limit";
-"pro.feature.accounts" = "Unbegrenzt viele Konten";
-"pro.feature.voice" = "Spracheingabe";
-"pro.feature.import" = "Import von PDF- und CSV-Kontoauszügen";
-"pro.feature.deposits" = "Sparkonten mit Zinsen";
-"pro.feature.loans" = "Kredite mit Tilgungsplan";
-"pro.feature.debts" = "Private Schulden";
 
 /* MARK: - App Intents / Siri */
 "intent.log.title" = "Buchung erfassen";
@@ -2213,6 +2210,8 @@
 "assistant.topic.goal.faster" = "Wie spare ich schneller für „%@“?";
 "assistant.topic.debt.status" = "Wie viel ist bei der Schuld mit %@ noch offen?";
 "assistant.topic.debt.plan" = "Wie zahle ich %@ pünktlich zurück?";
+"assistant.topic.allowance.enough" = "Reicht mein Geld bis zur nächsten Einnahme?";
+"assistant.topic.allowance.save" = "Wo kann ich sparen, damit pro Tag mehr bleibt?";
 
 /* Ten's lines around the conversation (AssistantChatter, DesignKit 4.10). */
 "assistant.chatter.morning" = "Guten Morgen!";

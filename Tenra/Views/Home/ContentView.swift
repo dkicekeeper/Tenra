@@ -13,6 +13,8 @@ import ImageIO
 
 enum HomeDestination: Hashable {
     case history
+    /// Settings: a page of Home's stack (the gear), not a sheet.
+    case settings
 }
 
 // MARK: - ContentView (Home Screen)
@@ -31,49 +33,17 @@ struct ContentView: View {
     @Namespace private var accountNamespace
     @State private var showingTimeFilter = false
     @State private var showingAddAccount = false
-    @State private var showingSettings = false
     /// The first launch's hint on the categories (showCategoryHintIfNeeded), DesignKit's
     /// spotlight: the rest of Home dims, the grid stays lit with the message beside it.
     @State private var categoryHint: FeatureTourState.Hint?
     /// A widget's category to open the add form for (AppCoordinator.pendingQuickAdd).
     @State private var quickAddCategory: String?
-    /// "For today" under the history card (DailyAllowance); nil without an everyday account.
-    @State private var allowance: DailyAllowance.Value?
     /// The auto-capture card's ✕: hidden for good.
     @AppStorage(AutoCaptureSetupCard.hiddenKey) private var autoCaptureCardHidden = false
     @State private var showingWalletGuide = false
     /// The iCloud ask answered now: CloudSyncViewModel keeps the answer in UserDefaults, which
     /// a view does not observe.
     @State private var iCloudAskAnswered = false
-
-    // Everything "For today" depends on (CLAUDE.md, red flag 12): the history, the accounts,
-    // the subscriptions and other series before the next income, the income categories that
-    // find that income, the rates, the base currency and the day.
-    private struct AllowanceTrigger: Equatable {
-        let txVersion: Int
-        let accountsVersion: Int
-        let series: [RecurringSeries]
-        let categoriesVersion: Int
-        let ratesVersion: Int
-        let baseCurrency: String
-        let day: Date
-        let isFullyInitialized: Bool
-    }
-    private var allowanceTrigger: AllowanceTrigger {
-        // Both versions are @ObservationIgnored: touch the observable arrays so `body` re-runs.
-        _ = transactionStore.transactions.count
-        _ = transactionStore.accounts.count
-        return AllowanceTrigger(
-            txVersion: transactionStore.mutationVersion,
-            accountsVersion: transactionStore.accountsMutationVersion,
-            series: transactionStore.recurringSeries,
-            categoriesVersion: transactionStore.categoriesMutationVersion,
-            ratesVersion: transactionStore.currencyRatesVersion,
-            baseCurrency: viewModel.appSettings.baseCurrency,
-            day: Calendar.current.startOfDay(for: Date()),
-            isFullyInitialized: coordinator.isFullyInitialized
-        )
-    }
 
     // MARK: - Summary Trigger
     // Equatable snapshot of every input that drives the summary card.
@@ -147,6 +117,8 @@ struct ContentView: View {
                 switch dest {
                 case .history:
                     historyDestination
+                case .settings:
+                    settingsDestination
                 }
             }
             .navigationDestination(for: Account.self) { account in
@@ -164,7 +136,6 @@ struct ContentView: View {
             .toolbar { toolbarContent }
             .sheet(isPresented: $showingTimeFilter) { timeFilterSheet }
             .sheet(isPresented: $showingAddAccount) { addAccountSheet }
-            .sheet(isPresented: $showingSettings) { settingsSheet }
             .sheet(isPresented: $showingWalletGuide) {
                 NavigationStack { WalletSetupGuideView() }
             }
@@ -240,14 +211,6 @@ struct ContentView: View {
                 guard !Task.isCancelled else { return }
                 homeState.cachedSummary = summary
                 homeState.cachedCategoryWeights = categoryWeights
-            }
-            // "For today": Ten's forecast to the next income (DailyAllowance), once the history
-            // is loaded and again whenever an input changes.
-            .task(id: allowanceTrigger) {
-                guard coordinator.isFullyInitialized, !transactionStore.isImporting else { return }
-                let value = await DailyAllowance.value(store: transactionStore)
-                guard !Task.isCancelled else { return }
-                allowance = value
             }
             // Reactive wallpaper
             // Fires when wallpaperImageName changes. Skips re-appear when the image
@@ -353,24 +316,15 @@ struct ContentView: View {
         .screenPadding()
     }
 
-    /// Under the history card, as in the mockups approved on 2026-10-23: "For today", the
-    /// one-time iCloud ask for an older install, and the auto-capture card until an automation
-    /// records its first payment.
+    /// Under the history card: the one-time iCloud ask for an older install, and the
+    /// auto-capture card until an automation records its first payment. "For today" is on
+    /// Analytics (DailyAllowanceLink).
     @ViewBuilder
     private var setupCards: some View {
         let showsICloudAsk = !iCloudAskAnswered && coordinator.cloudSyncViewModel.shouldAskForICloud
         let showsAutoCapture = !autoCaptureCardHidden && !WalletCaptureStore.shared.hasEverCaptured
-        if coordinator.isFullyInitialized, allowance != nil || showsICloudAsk || showsAutoCapture {
+        if coordinator.isFullyInitialized, showsICloudAsk || showsAutoCapture {
             VStack(spacing: AppSpacing.lg) {
-                if let allowance {
-                    DailyAllowanceCard(
-                        amount: allowance.amount,
-                        currency: allowance.currency,
-                        until: allowance.income,
-                        setAside: allowance.setAside,
-                        isLoading: false
-                    )
-                }
                 if showsICloudAsk {
                     ICloudBackupAskCard(
                         onTurnOn: { answerICloudAsk(enable: true) },
@@ -435,6 +389,19 @@ struct ContentView: View {
     }
 
     // MARK: - Destinations
+
+    private var settingsDestination: some View {
+        SettingsView(
+            settingsViewModel: coordinator.settingsViewModel,
+            transactionsViewModel: viewModel,
+            accountsViewModel: accountsViewModel,
+            categoriesViewModel: categoriesViewModel,
+            transactionStore: transactionStore,
+            depositsViewModel: coordinator.depositsViewModel,
+            loansViewModel: coordinator.loansViewModel,
+            cloudSyncViewModel: coordinator.cloudSyncViewModel
+        )
+    }
 
     private var historyDestination: some View {
         HistoryView(
@@ -527,7 +494,7 @@ struct ContentView: View {
     private var settingsButton: some View {
         Button {
             HapticManager.light()
-            showingSettings = true
+            navigationPath.append(HomeDestination.settings)
         } label: {
             Image(systemName: "gearshape")
                 .foregroundStyle(.primary)
@@ -573,21 +540,6 @@ struct ContentView: View {
         )
     }
 
-    private var settingsSheet: some View {
-        NavigationStack {
-            SettingsView(
-                settingsViewModel: coordinator.settingsViewModel,
-                transactionsViewModel: viewModel,
-                accountsViewModel: accountsViewModel,
-                categoriesViewModel: categoriesViewModel,
-                transactionStore: transactionStore,
-                depositsViewModel: coordinator.depositsViewModel,
-                loansViewModel: coordinator.loansViewModel,
-                cloudSyncViewModel: coordinator.cloudSyncViewModel
-            )
-        }
-        .softScrollEdges()
-    }
 
     /// Decodes `fileURL` into a UIImage downsampled to `screenSize × scale` pixels.
     /// Returns nil if the file cannot be read or decoded.

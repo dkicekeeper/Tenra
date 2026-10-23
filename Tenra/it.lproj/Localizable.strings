@@ -104,6 +104,13 @@
 "home.today.untilIncome" = "Al giorno fino all’entrata del %@";
 "home.today.untilMonthEnd" = "Al giorno fino a fine mese";
 "home.today.setAside" = "%@ da parte per i pagamenti";
+"allowance.detail.how" = "Come si calcola";
+"allowance.detail.footer" = "I tuoi conti di tutti i giorni adesso, meno abbonamenti, rate dei prestiti e spese pianificate fino a quella data, diviso per i giorni rimasti. Ten calcola allo stesso modo.";
+"allowance.detail.balance" = "Sui tuoi conti adesso";
+"allowance.detail.setAside" = "Da parte per i pagamenti";
+"allowance.detail.free" = "Disponibile da spendere";
+"allowance.detail.days" = "Giorni rimasti";
+"allowance.detail.payments" = "Pagamenti messi da parte";
 "home.iCloudAsk.title" = "Conserva i backup in iCloud";
 "home.iCloudAsk.message" = "Il backup settimanale è solo su questo iPhone. In iCloud Drive sopravvive a un nuovo telefono o a una reinstallazione.";
 "home.iCloudAsk.action" = "Attiva";
@@ -1707,7 +1714,6 @@
 // MARK: - Settings Pro Section
 
 "settings.pro.cta.title" = "Passa a Tenra Pro";
-"settings.pro.cta.subtitle" = "Conti illimitati, importazione estratti conto, depositi e prestiti";
 "settings.pro.status.active" = "Attivo";
 "settings.pro.plan.monthly" = "Mensile";
 "settings.pro.plan.annual" = "Annuale";
@@ -1719,18 +1725,9 @@
 "settings.pro.manage" = "Gestisci abbonamento";
 "settings.pro.restore" = "Ripristina acquisti";
 "settings.pro.redeemCode" = "Riscatta codice";
-"settings.pro.restore.restored" = "Ripristinato";
 "settings.pro.restore.none" = "Nessun acquisto trovato";
 "settings.pro.restore.failed" = "Ripristino non riuscito";
 "pro.page.subtitle" = "Tutto Tenra, senza limiti";
-"pro.page.features" = "Cosa include Pro";
-"pro.feature.assistant" = "Ten, l’assistente IA, senza limiti";
-"pro.feature.accounts" = "Conti illimitati";
-"pro.feature.voice" = "Inserimento vocale";
-"pro.feature.import" = "Importazione di estratti conto PDF e CSV";
-"pro.feature.deposits" = "Depositi con interessi";
-"pro.feature.loans" = "Prestiti con piano di rimborso";
-"pro.feature.debts" = "Debiti personali";
 
 /* MARK: - App Intents / Siri */
 "intent.log.title" = "Registra un'operazione";
@@ -2213,6 +2210,8 @@
 "assistant.topic.goal.faster" = "Come risparmio più in fretta per «%@»?";
 "assistant.topic.debt.status" = "Quanto resta del debito con %@?";
 "assistant.topic.debt.plan" = "Come restituisco a %@ in tempo?";
+"assistant.topic.allowance.enough" = "I soldi mi bastano fino alla prossima entrata?";
+"assistant.topic.allowance.save" = "Dove posso risparmiare per avere di più ogni giorno?";
 
 /* Ten's lines around the conversation (AssistantChatter, DesignKit 4.10). */
 "assistant.chatter.morning" = "Buongiorno!";

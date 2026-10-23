@@ -157,9 +157,9 @@ final class ScreenshotCaptureTests: XCTestCase {
 
     // MARK: - Auto-capture
 
-    /// 20-21 in Settings → Wallet, a sheet over Home: the Apple Pay payments the Wallet
+    /// 20-21 in Settings → Wallet, a page of Home's stack: the Apple Pay payments the Wallet
     /// automation recorded with a guess (To review), then a merchant's own screen (Merchants →
-    /// Starbucks, ScreenshotDemoSeeder). Starts anywhere, ends on Home with the sheet closed.
+    /// Starbucks, ScreenshotDemoSeeder). Starts anywhere, ends on Home's root.
     private func captureAutoCapture() {
         guard showHome() else {
             debugSnapshot("autocapture-home")
@@ -256,10 +256,8 @@ final class ScreenshotCaptureTests: XCTestCase {
         }
     }
 
-    /// Back inside the Settings sheet until its list shows `row` again: the system back button
-    /// (Home's stack under the sheet is at its root, so the only one is the sheet's), else a swipe
-    /// from the sheet's left edge. Not `goBack()`: Home's navigation bar under the sheet can
-    /// answer its query first.
+    /// Back to the Settings page until it shows `row` again: the system back button, else a
+    /// swipe from the left edge.
     private func backToSettings(showing row: XCUIElement) {
         for _ in 0..<3 {
             if row.exists && row.isHittable { return }
@@ -274,13 +272,13 @@ final class ScreenshotCaptureTests: XCTestCase {
         }
     }
 
-    /// Closes the Settings sheet, from wherever it is: back to its list, then swipes down until
-    /// the list is at its top and the next swipe takes the sheet down.
+    /// Back to Home's root from wherever Settings is (a page of Home's stack): back until the
+    /// gear shows.
     private func closeSettings(showing row: XCUIElement) {
         backToSettings(showing: row)
-        for _ in 0..<8 where row.exists {
-            app.swipeDown()
-            sleep(1)
+        let settingsButton = app.descendants(matching: .any)["home.settingsButton"].firstMatch
+        for _ in 0..<3 where !(settingsButton.exists && settingsButton.isHittable) {
+            goBack()
         }
     }
 

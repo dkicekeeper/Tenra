@@ -11,8 +11,8 @@ import SwiftUI
 import PhotosUI
 import UniformTypeIdentifiers
 
-/// Main Settings screen with modular component-based architecture
-/// Follows Single Responsibility Principle with Props pattern
+/// Settings, a page pushed from Home's gear: the Tenra Pro hero (SettingsProHero), then the
+/// sections, each its own component (Props pattern).
 struct SettingsView: View {
     // MARK: - Dependencies (Observable - no wrappers needed!)
 
@@ -63,34 +63,38 @@ struct SettingsView: View {
 
     private var settingsList: some View {
         ZStack(alignment: .top) {
-            // From the app as a whole to its features, then the data, then what can't be undone.
-            // DesignKit 8.0.0: glass sections on the page, as every screen (a List before).
+            // Tenra Pro first, on its aurora; then from the app as a whole to its features, the
+            // data, what can't be undone and About. DesignKit 8.0.0: glass sections on the page.
             ScrollView {
                 VStack(spacing: AppSpacing.xl) {
-                SettingsProSection()
-                generalSection
-                notificationsSection
-                SettingsPrivacySection()
-                SettingsAssistantSection()
-                SettingsSiriSection()
-                SettingsWalletSection(
-                    transactionsViewModel: transactionsViewModel,
-                    categoriesViewModel: categoriesViewModel,
-                    accountsViewModel: accountsViewModel
-                )
-                cloudSection
-                exportImportSection
-                dangerZoneSection
-                #if DEBUG
-                experimentsSection
-                #endif
-                aboutSection
+                    SettingsProHero()
+                    VStack(spacing: AppSpacing.xl) {
+                        generalSection
+                        notificationsSection
+                        SettingsPrivacySection()
+                        SettingsAssistantSection()
+                        SettingsSiriSection()
+                        SettingsWalletSection(
+                            transactionsViewModel: transactionsViewModel,
+                            categoriesViewModel: categoriesViewModel,
+                            accountsViewModel: accountsViewModel
+                        )
+                        cloudSection
+                        exportImportSection
+                        dangerZoneSection
+                        #if DEBUG
+                        experimentsSection
+                        #endif
+                        SettingsPurchaseSection()
+                        aboutSection
+                    }
+                    .screenPadding()
                 }
-                .screenPadding()
-                .padding(.vertical, AppSpacing.md)
+                .padding(.bottom, AppSpacing.md)
             }
+            // Inline: the hero is the top of the page, its aurora under the bar.
             .navigationTitle(String(localized: "settings.title"))
-            .navigationBarTitleDisplayMode(.large)
+            .navigationBarTitleDisplayMode(.inline)
 
             // Toast messages
             VStack {

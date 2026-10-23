@@ -491,16 +491,19 @@ APIs an extension may not): system fonts, the accent from its own asset catalog,
   `Services/Widgets/WidgetSnapshot.swift`) after the full load (ContentView) and when it goes to
   the background (TenraApp), only when it changed, then `WidgetCenter.reloadAllTimelines()`.
   Contents: the day, the base currency, "hide amounts", For today (`DailyAllowance`, the same
-  number as Home and Ten's forecast), the income it runs to, realized expenses today
+  number as Analytics and Ten's forecast), the income it runs to, realized expenses today
   (`summaryContribution`), the four expense categories used most in the last 30 days. The
   extension decodes it with its own copy of the type (`TenraWidgets/WidgetData.swift`); the keys
   are pinned by `WidgetSnapshotTests`. A snapshot from another day shows 0 spent; the timeline
   redraws after midnight.
 - **For today** (`TodayWidget`): small, medium (with the four categories), Lock Screen
-  rectangular, inline and circular. "Hide amounts" shows dots. Home shows the same figure under
-  the history card (`DailyAllowanceCard`, ContentView's `.task(id: allowanceTrigger)`: the
-  history, accounts, series, categories, rates, base currency and the day). Whole units: the
-  allowance rounds down, what is set aside rounds up (`DailyAllowance.value`).
+  rectangular, inline and circular. "Hide amounts" shows dots. Analytics shows the same figure under
+  the period's stat cards (`DailyAllowanceLink`: `DailyAllowanceCard` recomputed by `.task(id:)`
+  on the history, accounts, series, categories, rates, base currency and the day), a link to how
+  it is reached (`DailyAllowanceDetailView`: the everyday accounts' balance, the payments set
+  aside, what is free, the days, each payment; "Ask Ten" with the `.allowance` topic). Whole
+  units on the card: the allowance rounds down, what is set aside rounds up
+  (`DailyAllowance.value`); the breakdown is exact, so its rows add up.
 - **Log an expense** (`QuickAddControl`, a `ControlWidgetButton` with `OpenURLIntent`): Control
   Center, the Lock Screen and the Action button.
 - **Links**: `tenra://add` opens the assistant (Home where it does not run), `tenra://add?category=

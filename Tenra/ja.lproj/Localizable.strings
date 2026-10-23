@@ -104,6 +104,13 @@
 "home.today.untilIncome" = "%@の入金まで1日あたり";
 "home.today.untilMonthEnd" = "月末まで1日あたり";
 "home.today.setAside" = "支払い用に%@を確保済み";
+"allowance.detail.how" = "計算方法";
+"allowance.detail.footer" = "普段使いの口座の現在の残高から、その日までのサブスク、ローン返済、予定の支出を差し引き、残りの日数で割った金額です。テンも同じ方法で計算します。";
+"allowance.detail.balance" = "現在の口座残高";
+"allowance.detail.setAside" = "支払い用に確保";
+"allowance.detail.free" = "使える金額";
+"allowance.detail.days" = "残り日数";
+"allowance.detail.payments" = "確保した支払い";
 "home.iCloudAsk.title" = "バックアップをiCloudに保存";
 "home.iCloudAsk.message" = "毎週のバックアップは今このiPhoneにしかありません。iCloud Driveに置けば、機種変更や再インストールでも残ります。";
 "home.iCloudAsk.action" = "オンにする";
@@ -1707,7 +1714,6 @@
 // MARK: - Settings Pro Section
 
 "settings.pro.cta.title" = "Tenra Proを入手";
-"settings.pro.cta.subtitle" = "無制限の口座、明細インポート、預金・ローン";
 "settings.pro.status.active" = "有効";
 "settings.pro.plan.monthly" = "月額プラン";
 "settings.pro.plan.annual" = "年額プラン";
@@ -1719,18 +1725,9 @@
 "settings.pro.manage" = "サブスクリプションを管理";
 "settings.pro.restore" = "購入を復元";
 "settings.pro.redeemCode" = "コードを使用";
-"settings.pro.restore.restored" = "復元しました";
 "settings.pro.restore.none" = "購入が見つかりません";
 "settings.pro.restore.failed" = "復元できませんでした";
 "pro.page.subtitle" = "Tenraのすべてを制限なしで";
-"pro.page.features" = "Proに含まれるもの";
-"pro.feature.assistant" = "AIアシスタントのテン、回数無制限";
-"pro.feature.accounts" = "口座の数は無制限";
-"pro.feature.voice" = "音声入力";
-"pro.feature.import" = "PDF・CSV明細の取り込み";
-"pro.feature.deposits" = "利息付きの預金";
-"pro.feature.loans" = "返済スケジュール付きのローン";
-"pro.feature.debts" = "個人間の貸し借り";
 
 /* MARK: - App Intents / Siri */
 "intent.log.title" = "取引を記録";
@@ -2213,6 +2210,8 @@
 "assistant.topic.goal.faster" = "「%@」をもっと早く貯めるには？";
 "assistant.topic.debt.status" = "%@との貸し借りはあといくら残っていますか？";
 "assistant.topic.debt.plan" = "%@に期限内に返すには？";
+"assistant.topic.allowance.enough" = "次の収入までお金は足りる？";
+"assistant.topic.allowance.save" = "1日に使える額を増やすにはどこを節約すればいい？";
 
 /* Ten's lines around the conversation (AssistantChatter, DesignKit 4.10). */
 "assistant.chatter.morning" = "おはようございます！";

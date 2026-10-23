@@ -104,6 +104,13 @@
 "home.today.untilIncome" = "%@ 입금일까지 하루";
 "home.today.untilMonthEnd" = "월말까지 하루";
 "home.today.setAside" = "결제용으로 %@ 확보됨";
+"allowance.detail.how" = "계산 방법";
+"allowance.detail.footer" = "일상 계좌의 현재 잔액에서 그날까지의 구독, 대출 상환, 예정된 지출을 빼고 남은 일수로 나눈 금액입니다. 텐도 같은 방식으로 계산합니다.";
+"allowance.detail.balance" = "현재 계좌 잔액";
+"allowance.detail.setAside" = "결제용으로 확보";
+"allowance.detail.free" = "쓸 수 있는 금액";
+"allowance.detail.days" = "남은 일수";
+"allowance.detail.payments" = "확보한 결제";
 "home.iCloudAsk.title" = "백업을 iCloud에 보관하세요";
 "home.iCloudAsk.message" = "주간 백업이 지금은 이 iPhone에만 있습니다. iCloud Drive에 두면 새 휴대폰이나 재설치 후에도 남습니다.";
 "home.iCloudAsk.action" = "켜기";
@@ -1707,7 +1714,6 @@
 // MARK: - Settings Pro Section
 
 "settings.pro.cta.title" = "Tenra Pro 구독하기";
-"settings.pro.cta.subtitle" = "무제한 계좌, 명세서 가져오기, 예금 및 대출";
 "settings.pro.status.active" = "활성";
 "settings.pro.plan.monthly" = "월간";
 "settings.pro.plan.annual" = "연간";
@@ -1719,18 +1725,9 @@
 "settings.pro.manage" = "구독 관리";
 "settings.pro.restore" = "구매 복원";
 "settings.pro.redeemCode" = "코드 사용";
-"settings.pro.restore.restored" = "복원됨";
 "settings.pro.restore.none" = "구매 내역 없음";
 "settings.pro.restore.failed" = "복원 실패";
 "pro.page.subtitle" = "Tenra의 모든 기능을 제한 없이";
-"pro.page.features" = "Pro에 포함된 기능";
-"pro.feature.assistant" = "AI 어시스턴트 텐, 무제한";
-"pro.feature.accounts" = "무제한 계좌";
-"pro.feature.voice" = "음성 입력";
-"pro.feature.import" = "PDF 및 CSV 명세서 가져오기";
-"pro.feature.deposits" = "이자가 붙는 예금";
-"pro.feature.loans" = "상환 일정이 있는 대출";
-"pro.feature.debts" = "빌린 돈과 빌려준 돈";
 
 /* MARK: - App Intents / Siri */
 "intent.log.title" = "거래 기록";
@@ -2213,6 +2210,8 @@
 "assistant.topic.goal.faster" = "“%@”를 더 빨리 모으려면?";
 "assistant.topic.debt.status" = "%@ 관련해서 얼마나 남았어?";
 "assistant.topic.debt.plan" = "%@에게 기한 안에 갚으려면?";
+"assistant.topic.allowance.enough" = "다음 수입까지 돈이 충분할까?";
+"assistant.topic.allowance.save" = "하루에 더 쓰려면 어디서 아껴야 할까?";
 
 /* Ten's lines around the conversation (AssistantChatter, DesignKit 4.10). */
 "assistant.chatter.morning" = "좋은 아침이에요!";

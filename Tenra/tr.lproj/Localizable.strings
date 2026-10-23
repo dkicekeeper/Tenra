@@ -104,6 +104,13 @@
 "home.today.untilIncome" = "%@ tarihindeki gelire kadar günlük";
 "home.today.untilMonthEnd" = "Ay sonuna kadar günlük";
 "home.today.setAside" = "Ödemeler için %@ ayrıldı";
+"allowance.detail.how" = "Nasıl hesaplanır";
+"allowance.detail.footer" = "Günlük hesaplarındaki para, o tarihe kadarki abonelikler, kredi ödemeleri ve planlanan harcamalar düşülerek kalan günlere bölünür. Ten da aynı şekilde hesaplar.";
+"allowance.detail.balance" = "Şu an hesaplarında";
+"allowance.detail.setAside" = "Ödemeler için ayrılan";
+"allowance.detail.free" = "Harcanabilir";
+"allowance.detail.days" = "Kalan gün";
+"allowance.detail.payments" = "Ayrılan ödemeler";
 "home.iCloudAsk.title" = "Yedekleri iCloud’da saklayın";
 "home.iCloudAsk.message" = "Haftalık yedeğiniz yalnızca bu iPhone’da. iCloud Drive’da yeni bir telefona veya yeniden yüklemeye dayanır.";
 "home.iCloudAsk.action" = "Aç";
@@ -1707,7 +1714,6 @@
 // MARK: - Settings Pro Section
 
 "settings.pro.cta.title" = "Tenra Pro'ya geç";
-"settings.pro.cta.subtitle" = "Sınırsız hesap, ekstre içe aktarma, mevduat ve krediler";
 "settings.pro.status.active" = "Etkin";
 "settings.pro.plan.monthly" = "Aylık";
 "settings.pro.plan.annual" = "Yıllık";
@@ -1719,18 +1725,9 @@
 "settings.pro.manage" = "Aboneliği yönet";
 "settings.pro.restore" = "Satın alımları geri yükle";
 "settings.pro.redeemCode" = "Kod kullan";
-"settings.pro.restore.restored" = "Geri yüklendi";
 "settings.pro.restore.none" = "Satın alım bulunamadı";
 "settings.pro.restore.failed" = "Geri yüklenemedi";
 "pro.page.subtitle" = "Tenra'nın tüm özellikleri, sınırsız";
-"pro.page.features" = "Pro'da neler var";
-"pro.feature.assistant" = "Yapay zekâ asistanı Ten, sınırsız";
-"pro.feature.accounts" = "Sınırsız hesap";
-"pro.feature.voice" = "Sesli giriş";
-"pro.feature.import" = "PDF ve CSV ekstre içe aktarma";
-"pro.feature.deposits" = "Faizli mevduatlar";
-"pro.feature.loans" = "Ödeme planlı krediler";
-"pro.feature.debts" = "Kişisel borçlar";
 
 /* MARK: - App Intents / Siri */
 "intent.log.title" = "İşlem kaydet";
@@ -2213,6 +2210,8 @@
 "assistant.topic.goal.faster" = "“%@” için nasıl daha hızlı biriktiririm?";
 "assistant.topic.debt.status" = "%@ ile olan borçta ne kadar kaldı?";
 "assistant.topic.debt.plan" = "%@ borcunu zamanında nasıl öderim?";
+"assistant.topic.allowance.enough" = "Param bir sonraki gelire kadar yeter mi?";
+"assistant.topic.allowance.save" = "Günlük daha fazla kalması için nerede tasarruf edebilirim?";
 
 /* Ten's lines around the conversation (AssistantChatter, DesignKit 4.10). */
 "assistant.chatter.morning" = "Günaydın!";

@@ -36,7 +36,7 @@ enum AssistantTopic: Equatable, Sendable {
     case history
     case goal(name: String)
     case debt(person: String, owedToMe: Bool)
-    /// "For today" (DailyAllowanceDetailView).
+    /// "For today" (its insight screen, InsightDetailView).
     case allowance
 
     /// Ready-made questions about it, in the app's language.

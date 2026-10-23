@@ -27,7 +27,8 @@ struct InsightFormulaCard: View {
             heroValue: showsHero ? model.heroValueText : nil,
             rows: model.formulaRows.map { calculationRow($0) },
             explanation: String(localized: String.LocalizationValue(model.explainerKey)),
-            recommendation: model.recommendation
+            // "For today" has none: an empty one would draw an empty box.
+            recommendation: model.recommendation.isEmpty ? nil : model.recommendation
         )
     }
 

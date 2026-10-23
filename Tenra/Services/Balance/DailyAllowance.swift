@@ -21,7 +21,7 @@ enum DailyAllowance {
         let income: Date?
         /// Set aside before the horizon: subscriptions, loan payments, planned expenses.
         let setAside: Double
-        /// How it is reached (DailyAllowanceDetailView), exact where `amount` and `setAside` are
+        /// How it is reached (the insight's "How it's calculated"), exact where `amount` and `setAside` are
         /// rounded: today's balance of the everyday accounts, less `outflows`, leaves `free`,
         /// spread over `days`.
         var startBalance: Double = 0
@@ -32,11 +32,15 @@ enum DailyAllowance {
         var missingRates: [String] = []
     }
 
-    /// A payment set aside before the horizon, in the base currency.
+    /// A payment set aside before the horizon, in the base currency, with what it is (for its
+    /// icon: the series' or the loan's logo, else the category's).
     struct Outflow: Equatable {
         let date: Date
         let label: String
         let amount: Double
+        var seriesId: String? = nil
+        var loanAccountId: String? = nil
+        var category: String? = nil
     }
 
     /// An income further away than this is not "your income": the month's end is the horizon.
@@ -93,7 +97,12 @@ enum DailyAllowance {
             free: forecast.free,
             days: forecast.days,
             outflows: forecast.outflows.compactMap { outflow in
-                FastDateParser.date(from: outflow.date).map { Outflow(date: $0, label: outflow.label, amount: outflow.amount) }
+                FastDateParser.date(from: outflow.date).map {
+                    Outflow(
+                        date: $0, label: outflow.label, amount: outflow.amount,
+                        seriesId: outflow.seriesId, loanAccountId: outflow.loanAccountId, category: outflow.category
+                    )
+                }
             },
             missingRates: forecast.missingRates.sorted()
         )

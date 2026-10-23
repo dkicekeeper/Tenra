@@ -48,6 +48,13 @@ with the wealth insight's chart so the two never disagree (pinned by
 `SummaryDetailFocus` reuses existing section titles (`insights.spendingTrend`,
 `insights.incomeGrowth`, `insights.cashFlowTrend`) — no new localization keys.
 
+Under the grid, **For today** (`DailyAllowanceLink`, docs/domains/intents.md §For today): the
+only insight not built by `InsightsService`. Its figure is Ten's forecast, which runs on the main
+actor, so the view builds an `Insight` of type `.dailyAllowance` with
+`.dailyAllowance(DailyAllowanceDetail)` itself and shows it with the feed's `InsightsCardView`
+and `InsightDetailView` (formula card, then `InsightAllowancePaymentsList`), never in the feed,
+the urgent strip or the signals.
+
 ## Money bucket classification (income vs expense)
 
 ⚠️ **Never write a bare `tx.type == .expense` / `== .income` in an Insights aggregation.**

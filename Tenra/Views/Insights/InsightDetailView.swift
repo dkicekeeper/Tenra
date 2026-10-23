@@ -89,7 +89,8 @@ struct InsightDetailView<CategoryDestination: View>: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                AskAssistantToolbarButton(topic: .insight(title: screenTitle))
+                // "For today" offers its own questions (will the money last, where to save).
+                AskAssistantToolbarButton(topic: insight.type == .dailyAllowance ? .allowance : .insight(title: screenTitle))
             }
         }
         .onAppear {
@@ -364,6 +365,21 @@ struct InsightDetailView<CategoryDestination: View>: View {
             // headerSection; the card keeps its formula rows + explainer.
             InsightFormulaCard(model: model, showsHero: false)
                 .screenPadding()
+        case .dailyAllowance(let detail):
+            VStack(alignment: .leading, spacing: AppSpacing.md) {
+                InsightFormulaCard(model: detail.formula, showsHero: false)
+                // Payments in a currency with no rate yet are not set aside: said, not hidden.
+                if !detail.missingRates.isEmpty {
+                    InlineStatusText(
+                        message: String(
+                            format: String(localized: "allowance.detail.missingRates"),
+                            detail.missingRates.joined(separator: ", ")
+                        ),
+                        type: .warning
+                    )
+                }
+            }
+            .screenPadding()
         case nil:
             EmptyView()
         }
@@ -405,6 +421,10 @@ struct InsightDetailView<CategoryDestination: View>: View {
             InsightDormantAccountList(accounts: accounts, currency: currency)
         case .formulaBreakdown:
             EmptyView()
+        case .dailyAllowance(let detail):
+            if !detail.payments.isEmpty {
+                InsightAllowancePaymentsList(items: detail.payments, currency: currency)
+            }
         case nil:
             EmptyView()
         }

@@ -512,6 +512,11 @@ final class FinanceToolkit: AgentToolExecuting {
         let date: String
         let label: String
         let amount: Double
+        /// What it is, for its icon in "For today" (a logo, else the category's): the series,
+        /// the loan account, or the planned expense's category.
+        var seriesId: String? = nil
+        var loanAccountId: String? = nil
+        var category: String? = nil
     }
 
     /// What `forecast_balance` returns, typed: "For today" (Analytics, the widget) reads it too
@@ -637,7 +642,7 @@ final class FinanceToolkit: AgentToolExecuting {
                 : RecurringDateMath.firstOccurrence(after: today, start: first, frequency: series.frequency, calendar: calendar)
             var count = 0
             while let date = next, date < until, count <= Self.forecastMaxDays {
-                outflows.append(Outflow(date: FastDateParser.string(from: date), label: label, amount: amount))
+                outflows.append(Outflow(date: FastDateParser.string(from: date), label: label, amount: amount, seriesId: series.id, category: series.category))
                 next = RecurringDateMath.firstOccurrence(after: date, start: first, frequency: series.frequency, calendar: calendar)
                 count += 1
             }
@@ -660,7 +665,7 @@ final class FinanceToolkit: AgentToolExecuting {
             var remaining = max(1, LoanPaymentService.remainingPayments(loanInfo: info))
             while due < until, remaining > 0 {
                 if amount > 0, let converted = inBase(amount, loan.currency) {
-                    outflows.append(Outflow(date: FastDateParser.string(from: max(due, today)), label: loan.name, amount: converted))
+                    outflows.append(Outflow(date: FastDateParser.string(from: max(due, today)), label: loan.name, amount: converted, loanAccountId: loan.id))
                 }
                 guard let nextMonth = calendar.date(byAdding: .month, value: 1, to: due),
                       let nextDue = Self.paymentDay(info.paymentDay, inMonthOf: nextMonth, calendar: calendar) else { break }
@@ -673,12 +678,12 @@ final class FinanceToolkit: AgentToolExecuting {
         // Planned expenses not tied to a series, off the main actor.
         let snapshot = makeSnapshot()
         let planned = await Task.detached(priority: .userInitiated) {
-            snapshot.transactions.compactMap { transaction -> (date: String, label: String, amount: Double, currency: String, account: String, converted: Double?)? in
+            snapshot.transactions.compactMap { transaction -> (date: String, label: String, amount: Double, currency: String, account: String, converted: Double?, category: String)? in
                 guard transaction.type == .expense, transaction.recurringSeriesId == nil,
                       transaction.date > todayKey, transaction.date < untilKey,
                       let account = transaction.accountId, accountIds.contains(account) else { return nil }
                 let label = transaction.description.isEmpty ? transaction.category : transaction.description
-                return (transaction.date, label, transaction.amount, transaction.currency, account, transaction.convertedAmount)
+                return (transaction.date, label, transaction.amount, transaction.currency, account, transaction.convertedAmount, transaction.category)
             }
         }.value
         // A planned expense can be in a currency no account or series has (dollars on a tenge
@@ -701,7 +706,7 @@ final class FinanceToolkit: AgentToolExecuting {
             } else {
                 missingRates.insert(item.currency)
             }
-            if let amount { outflows.append(Outflow(date: item.date, label: item.label, amount: amount)) }
+            if let amount { outflows.append(Outflow(date: item.date, label: item.label, amount: amount, category: item.category)) }
         }
         outflows.sort { $0.date == $1.date ? $0.label < $1.label : $0.date < $1.date }
 

@@ -105,12 +105,13 @@
 "home.today.untilMonthEnd" = "Күніне, ай соңына дейін";
 "home.today.setAside" = "Төлемдерге %@ бөліп қойылды";
 "allowance.detail.how" = "Қалай есептеледі";
-"allowance.detail.footer" = "Күнделікті шоттардағы қалдық, сол күнге дейінгі жазылымдар, несие төлемдері мен жоспарланған шығыстар шегеріліп, қалған күндерге бөлінеді. Тэн да осылай есептейді.";
+"allowance.detail.footer" = "Карталардағы, қолма-қолдағы және белгіленген депозиттердегі қалдық, сол күнге дейінгі жазылымдар, несие төлемдері мен жоспарланған шығыстар шегеріліп, қалған күндерге бөлінеді. Тэн да осылай есептейді.";
 "allowance.detail.balance" = "Қазір шоттарда";
 "allowance.detail.setAside" = "Төлемдерге бөлінген";
 "allowance.detail.free" = "Жұмсауға болады";
 "allowance.detail.days" = "Қалған күндер";
 "allowance.detail.payments" = "Бөлінген төлемдер";
+"allowance.detail.missingRates" = "%@ валютасындағы төлемдер есептелмеді: әзірге бағам жоқ.";
 "home.iCloudAsk.title" = "Көшірмелерді iCloud-та сақтаңыз";
 "home.iCloudAsk.message" = "Апталық сақтық көшірме қазір тек осы iPhone-да. iCloud Drive-та ол жаңа телефонға ауысқанда немесе қайта орнатқанда да сақталады.";
 "home.iCloudAsk.action" = "Қосу";
@@ -336,6 +337,8 @@
 "deposit.capitalizationTitle" = "Капиталдандыру";
 "deposit.enableCapitalization" = "Капиталдандыруды қосу";
 "deposit.capitalizationHint" = "Капиталдандыру қосулы болса, пайыз ай сайын негізгі сомаға қосылады";
+"deposit.countsForToday" = "«Бүгінге» есебіне қосу";
+"deposit.countsForToday.hint" = "Кез келген уақытта шешуге болатын ақша. «Бүгінге» мен Тэн оны карталармен бірге есептейді.";
 "deposit.new" = "Жаңа депозит";
 "deposit.editTitle" = "Депозитті өзгерту";
 "deposit.interestAccrual.description" = "Пайыздар";

@@ -498,12 +498,27 @@ APIs an extension may not): system fonts, the accent from its own asset catalog,
   redraws after midnight.
 - **For today** (`TodayWidget`): small, medium (with the four categories), Lock Screen
   rectangular, inline and circular. "Hide amounts" shows dots. Analytics shows the same figure under
-  the period's stat cards (`DailyAllowanceLink`: `DailyAllowanceCard` recomputed by `.task(id:)`
-  on the history, accounts, series, categories, rates, base currency and the day), a link to how
-  it is reached (`DailyAllowanceDetailView`: the everyday accounts' balance, the payments set
-  aside, what is free, the days, each payment; "Ask Ten" with the `.allowance` topic). Whole
-  units on the card: the allowance rounds down, what is set aside rounds up
-  (`DailyAllowance.value`); the breakdown is exact, so its rows add up.
+  the period's stat cards as an insight like the others (`DailyAllowanceLink`, recomputed by
+  `.task(id:)` on the history, accounts, series, categories, rates, base currency and the day):
+  an `Insight` of type `.dailyAllowance` built on the main actor (the off-main generator has no
+  forecast), the feed's `InsightsCardView`, and `InsightDetailView` through InsightsView's
+  destination, with `.dailyAllowance(DailyAllowanceDetail)` as its detail: "How it's calculated"
+  (`InsightFormulaCard`: the balance of the accounts that count, the payments set aside, what is
+  free, the days, and the explanation), a warning naming a currency with no rate yet, whose
+  payments are left out, and each payment set aside (`InsightAllowancePaymentsList`: the
+  subscription's or the loan bank's logo, else the category's symbol on its colour, as in
+  History); "Ask Ten" offers the `.allowance` topic. Whole units on the card: the allowance rounds
+  down, what is set aside rounds up (`DailyAllowance.value`); the breakdown is exact, so its rows
+  add up.
+  - **Which money** (`Account.countsForToday`, the same set Ten's `forecast_balance` starts
+    from): regular accounts counted in the balance, and a deposit only when its form's switch
+    "Count in For today" is on (`DepositInfo.countsForToday`, off by default: a deposit is
+    savings unless the person can take money out any time). Never a loan.
+  - **Other currencies**: every amount is set aside in the base currency at today's rate.
+    `FinanceToolkit.forecast` loads the rates of the accounts', the series' and the planned
+    expenses' currencies first (dollars planned on a tenge card included); a planned expense
+    whose own currency still has no rate counts what it takes from its account
+    (`convertedAmount`); what can't be converted at all is listed in `missing_rates`.
 - **Log an expense** (`QuickAddControl`, a `ControlWidgetButton` with `OpenURLIntent`): Control
   Center, the Lock Screen and the Action button.
 - **Links**: `tenra://add` opens the assistant (Home where it does not run), `tenra://add?category=

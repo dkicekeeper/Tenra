@@ -229,6 +229,48 @@ struct ScreenshotDemoDataset {
             buildSubscriptions()
             buildApplePay()
             buildPlans()
+            buildSavingsTransfer()
+        }
+
+        /// "For today" in the locale's money (Analytics frame): what a day comes to.
+        static let allowanceTargetEUR = 38.0
+
+        /// What is left after the salary goes to the deposit, as a saver keeps it: one transfer
+        /// from the card after the last salary, sized from the card's and the cash's balance
+        /// (BalanceCalculationEngine, the app's own rule) so they hold about
+        /// `allowanceTargetEUR` a day until the month's end, on any capture date. Without it
+        /// three months of surplus sat on the card. Never below a small rest on the card.
+        mutating func buildSavingsTransfer() {
+            let engine = BalanceCalculationEngine()
+            func balance(_ id: String) -> Double {
+                guard let account = accounts.first(where: { $0.id == id }) else { return 0 }
+                return engine.calculateBalance(account: AccountBalance.from(account), transactions: transactions)
+            }
+            let today = calendar.startOfDay(for: Date())
+            guard let monthEnd = calendar.dateInterval(of: .month, for: today)?.end,
+                  let daysLeft = calendar.dateComponents([.day], from: today, to: monthEnd).day else { return }
+            let card = balance(cardId)
+            let everyday = card + balance(cashId)
+            let target = local(Self.allowanceTargetEUR) * Double(max(daysLeft, 1))
+            let amount = min(everyday - target, card - local(50))
+            guard amount > 0 else { return }
+            // The day after the salary (the 5th), or the salary's own day when that is today.
+            guard let daysAgo = (0...31).first(where: { [5, 6].contains(dayOfMonth(daysAgo: $0)) }) else { return }
+            let rounded = ScreenshotDemoCurrency.niceRound(amount, decimals: 0)
+            transactions.append(Transaction(
+                id: "demo-tx-\(transactions.count)",
+                date: dateString(daysAgo: daysAgo),
+                description: lexicon.deposit,
+                amount: rounded,
+                currency: currency,
+                type: .internalTransfer,
+                category: TransactionType.transferCategoryName,
+                accountId: cardId,
+                targetAccountId: depositId,
+                targetCurrency: currency,
+                targetAmount: rounded,
+                createdAt: createdAt(daysAgo: daysAgo, hour: 11)
+            ))
         }
 
         /// Apple Pay payments the Wallet automation recorded (frames 20-21): coffee at Starbucks
@@ -399,7 +441,10 @@ struct ScreenshotDemoDataset {
                     iconSource: .sfSymbol("dollarsign.circle.fill"),
                     createdDate: date(daysAgo: 300),
                     initialBalance: ScreenshotDemoCurrency.amount(800, in: savingsCurrency),
-                    order: 2
+                    order: 2,
+                    // Savings, not money to spend: out of the total balance, so "For today"
+                    // (DailyAllowance, everyday accounts only) counts the card and the cash.
+                    includeInBalance: false
                 ),
                 Account(
                     id: depositId, name: lexicon.deposit, currency: currency,
@@ -440,7 +485,8 @@ struct ScreenshotDemoDataset {
                         decimals: ScreenshotDemoCurrency.profile(for: currency).decimals
                     ))
                 case 8:
-                    addTransfer(daysAgo: daysAgo, eurBase: 150, targetId: cashId,
+                    // About what the cash coffee takes in a month, so the wallet does not pile up.
+                    addTransfer(daysAgo: daysAgo, eurBase: 60, targetId: cashId,
                                 targetCurrency: currency, description: lexicon.cash)
                 case 20:
                     addTransfer(daysAgo: daysAgo, eurBase: 220, targetId: savingsId,
@@ -453,9 +499,6 @@ struct ScreenshotDemoDataset {
                     break
                 }
 
-                if daysAgo == 55 {
-                    addDepositTopUp(daysAgo: daysAgo, eurBase: 500)
-                }
 
                 if daysAgo % 3 == 0 {
                     addExpense(daysAgo: daysAgo, eurBase: 18 + rng.next(upTo: 40),
@@ -634,23 +677,6 @@ struct ScreenshotDemoDataset {
                 targetCurrency: targetCurrency,
                 targetAmount: targetAmount,
                 createdAt: createdAt(daysAgo: daysAgo, hour: 11)
-            ))
-        }
-
-        mutating func addDepositTopUp(daysAgo: Int, eurBase: Double) {
-            transactions.append(Transaction(
-                id: "demo-tx-\(transactions.count)",
-                date: dateString(daysAgo: daysAgo),
-                description: lexicon.deposit,
-                amount: local(eurBase),
-                currency: currency,
-                type: .depositTopUp,
-                category: TransactionType.transferCategoryName,
-                accountId: cardId,
-                targetAccountId: depositId,
-                targetCurrency: currency,
-                targetAmount: local(eurBase),
-                createdAt: createdAt(daysAgo: daysAgo, hour: 15)
             ))
         }
 

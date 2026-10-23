@@ -279,12 +279,16 @@ struct DepositInfo: Codable, Equatable, Hashable {
     /// the setting existed decode as `.legacy` (actual / 365), so their history keeps
     /// its numbers; new deposits get `.defaultForNewDeposits` (30 / 360).
     var dayCount: DepositDayCount
+    /// Money the person can take out any time (a deposit with free withdrawal): "For today"
+    /// and Ten's forecast count it with the cards and the cash (`Account.countsForToday`).
+    /// Off by default and for payloads saved before the setting existed.
+    var countsForToday: Bool
 
     enum CodingKeys: String, CodingKey {
         case bankName, capitalizationEnabled
         case interestRateAnnual, interestRateHistory, interestPostingDay
         case lastInterestCalculationDate, lastInterestPostingMonth, interestAccruedForCurrentPeriod
-        case initialPrincipal, startDate, conversionTimestamp, dayCount
+        case initialPrincipal, startDate, conversionTimestamp, dayCount, countsForToday
         // Legacy keys retained for read-only migration of pre-unification payloads.
         case principalBalance
         case interestAccruedNotCapitalized
@@ -308,6 +312,7 @@ struct DepositInfo: Codable, Equatable, Hashable {
         startDate = (try container.decodeIfPresent(String.self, forKey: .startDate)) ?? lastInterestCalculationDate
         conversionTimestamp = try container.decodeIfPresent(TimeInterval.self, forKey: .conversionTimestamp)
         dayCount = (try? container.decodeIfPresent(DepositDayCount.self, forKey: .dayCount)) ?? .legacy
+        countsForToday = (try? container.decodeIfPresent(Bool.self, forKey: .countsForToday)) ?? false
     }
 
     init(
@@ -322,7 +327,8 @@ struct DepositInfo: Codable, Equatable, Hashable {
         interestAccruedForCurrentPeriod: Decimal = 0,
         startDate: String? = nil,
         conversionTimestamp: TimeInterval? = nil,
-        dayCount: DepositDayCount = .legacy
+        dayCount: DepositDayCount = .legacy,
+        countsForToday: Bool = false
     ) {
         self.bankName = bankName
         self.capitalizationEnabled = capitalizationEnabled
@@ -350,6 +356,7 @@ struct DepositInfo: Codable, Equatable, Hashable {
         self.startDate = startDate ?? lastInterestCalculationDate ?? today
         self.conversionTimestamp = conversionTimestamp
         self.dayCount = dayCount
+        self.countsForToday = countsForToday
     }
 
     nonisolated func encode(to encoder: Encoder) throws {
@@ -366,6 +373,7 @@ struct DepositInfo: Codable, Equatable, Hashable {
         try container.encode(startDate, forKey: .startDate)
         try container.encodeIfPresent(conversionTimestamp, forKey: .conversionTimestamp)
         try container.encode(dayCount, forKey: .dayCount)
+        try container.encode(countsForToday, forKey: .countsForToday)
     }
 }
 
@@ -692,6 +700,14 @@ struct Account: Identifiable, Codable, Equatable, Hashable {
     // Computed property для проверки, является ли счет кредитом/рассрочкой
     nonisolated var isLoan: Bool {
         loanInfo != nil
+    }
+
+    /// Money to spend from: "For today" (DailyAllowance) and Ten's `forecast_balance` start from
+    /// these accounts. A regular account counted in the balance, and a deposit the person marked
+    /// as available any time (`DepositInfo.countsForToday`); never a loan.
+    nonisolated var countsForToday: Bool {
+        guard !isLoan, includeInBalance else { return false }
+        return depositInfo?.countsForToday ?? true
     }
 
     /// Кредит/рассрочка полностью погашен. `false` для не-кредитных счетов.

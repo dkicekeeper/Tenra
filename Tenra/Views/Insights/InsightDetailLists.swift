@@ -94,6 +94,30 @@ struct InsightRecurringBreakdownList: View {
     }
 }
 
+// MARK: - For today's payments
+
+/// The payments "For today" sets aside, by date: a subscription's or a bank's logo, else the
+/// category's symbol on its colour, as in History.
+struct InsightAllowancePaymentsList: View {
+    let items: [AllowancePaymentItem]
+    let currency: String
+
+    var body: some View {
+        InsightDetailListCard(title: String(localized: "allowance.detail.payments")) {
+            ForEach(items) { item in
+                AmountRow(
+                    item.label,
+                    subtitle: DateFormatters.displayDateOmittingCurrentYear(item.date),
+                    subtitleLineLimit: 1,
+                    leading: item.tint.map { AmountRow.Leading.tinted(item.icon, $0) } ?? .icon(item.icon),
+                    value: .amount(item.amount),
+                    currency: currency
+                )
+            }
+        }
+    }
+}
+
 // MARK: - Period breakdown
 
 /// Period-by-period breakdown. `metric` selects which value each row surfaces

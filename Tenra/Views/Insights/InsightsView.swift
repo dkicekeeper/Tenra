@@ -181,7 +181,7 @@ struct InsightsView: View {
         VStack(alignment: .leading, spacing: AppSpacing.lg) {
             summaryStatsGrid
             // How much can go out a day until the next income; a link to how it is reached.
-            DailyAllowanceLink()
+            DailyAllowanceLink(namespace: insightNamespace)
             // Health score card moved into the «Важное сейчас» section (2026-07 UX pass).
         }
         .screenPadding()

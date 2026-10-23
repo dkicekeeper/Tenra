@@ -105,12 +105,13 @@
 "home.today.untilMonthEnd" = "В день до конца месяца";
 "home.today.setAside" = "%@ отложено на платежи";
 "allowance.detail.how" = "Как считается";
-"allowance.detail.footer" = "Остаток на повседневных счетах минус подписки, платежи по кредитам и запланированные расходы до этой даты, поделённый на оставшиеся дни. Тэн считает так же.";
+"allowance.detail.footer" = "Остаток на картах, наличных и отмеченных депозитах минус подписки, платежи по кредитам и запланированные расходы до этой даты, поделённый на оставшиеся дни. Тэн считает так же.";
 "allowance.detail.balance" = "На счетах сейчас";
 "allowance.detail.setAside" = "Отложено на платежи";
 "allowance.detail.free" = "Можно потратить";
 "allowance.detail.days" = "Осталось дней";
 "allowance.detail.payments" = "Отложенные платежи";
+"allowance.detail.missingRates" = "Платежи в %@ не учтены: пока нет курса.";
 "home.iCloudAsk.title" = "Храните копии в iCloud";
 "home.iCloudAsk.message" = "Еженедельная копия сейчас лежит только на этом iPhone. В iCloud Drive она переживёт новый телефон или переустановку.";
 "home.iCloudAsk.action" = "Включить";
@@ -336,6 +337,8 @@
 "deposit.capitalizationTitle" = "Капитализация";
 "deposit.enableCapitalization" = "Включить капитализацию";
 "deposit.capitalizationHint" = "При включенной капитализации проценты добавляются к основной сумме каждый месяц";
+"deposit.countsForToday" = "Учитывать в «На сегодня»";
+"deposit.countsForToday.hint" = "Деньги, которые можно снять в любой момент. «На сегодня» и Тэн посчитают их вместе с картами.";
 "deposit.new" = "Новый депозит";
 "deposit.editTitle" = "Редактировать депозит";
 "deposit.interestAccrual.description" = "Проценты";

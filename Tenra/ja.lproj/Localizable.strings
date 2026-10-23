@@ -105,12 +105,13 @@
 "home.today.untilMonthEnd" = "月末まで1日あたり";
 "home.today.setAside" = "支払い用に%@を確保済み";
 "allowance.detail.how" = "計算方法";
-"allowance.detail.footer" = "普段使いの口座の現在の残高から、その日までのサブスク、ローン返済、予定の支出を差し引き、残りの日数で割った金額です。テンも同じ方法で計算します。";
+"allowance.detail.footer" = "カード、現金、対象にした預金の残高から、その日までのサブスク、ローン返済、予定の支出を差し引き、残りの日数で割った金額です。テンも同じ方法で計算します。";
 "allowance.detail.balance" = "現在の口座残高";
 "allowance.detail.setAside" = "支払い用に確保";
 "allowance.detail.free" = "使える金額";
 "allowance.detail.days" = "残り日数";
 "allowance.detail.payments" = "確保した支払い";
+"allowance.detail.missingRates" = "%@ の支払いは含まれていません。為替レートがまだありません。";
 "home.iCloudAsk.title" = "バックアップをiCloudに保存";
 "home.iCloudAsk.message" = "毎週のバックアップは今このiPhoneにしかありません。iCloud Driveに置けば、機種変更や再インストールでも残ります。";
 "home.iCloudAsk.action" = "オンにする";
@@ -336,6 +337,8 @@
 "deposit.capitalizationTitle" = "利息の元本組入れ";
 "deposit.enableCapitalization" = "元本組入れを有効にする";
 "deposit.capitalizationHint" = "元本組入れを有効にすると、利息が毎月元本に加算されます";
+"deposit.countsForToday" = "「今日の予算」に含める";
+"deposit.countsForToday.hint" = "いつでも引き出せるお金です。「今日の予算」とテンがカードと合わせて計算します。";
 "deposit.new" = "新しい預金";
 "deposit.editTitle" = "預金を編集";
 "deposit.interestAccrual.description" = "利息";

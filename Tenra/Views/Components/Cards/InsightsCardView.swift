@@ -59,7 +59,7 @@ struct InsightsCardView<BottomChart: View>: View {
             return !items.isEmpty
         case .periodTrend(let points):
             return !points.isEmpty
-        case .recurringList, .accountComparison, .wealthBreakdown, .formulaBreakdown, nil:
+        case .recurringList, .accountComparison, .wealthBreakdown, .formulaBreakdown, .dailyAllowance, nil:
             return false
         }
     }
@@ -208,6 +208,8 @@ struct InsightsCardView<BottomChart: View>: View {
             EmptyView()
         case .formulaBreakdown:
             // No mini chart for formula breakdown — the hero metric is already in the card header
+            EmptyView()
+        case .dailyAllowance:
             EmptyView()
         case nil:
             EmptyView()

@@ -105,12 +105,13 @@
 "home.today.untilMonthEnd" = "Al día hasta fin de mes";
 "home.today.setAside" = "%@ apartado para pagos";
 "allowance.detail.how" = "Cómo se calcula";
-"allowance.detail.footer" = "Tus cuentas del día a día ahora, menos las suscripciones, cuotas de préstamos y gastos planificados hasta esa fecha, repartido entre los días que quedan. Ten calcula igual.";
+"allowance.detail.footer" = "Tus tarjetas, efectivo y depósitos marcados, menos las suscripciones, cuotas de préstamos y gastos planificados hasta esa fecha, repartido entre los días que quedan. Ten calcula igual.";
 "allowance.detail.balance" = "En tus cuentas ahora";
 "allowance.detail.setAside" = "Apartado para pagos";
 "allowance.detail.free" = "Libre para gastar";
 "allowance.detail.days" = "Días restantes";
 "allowance.detail.payments" = "Pagos apartados";
+"allowance.detail.missingRates" = "Los pagos en %@ no se cuentan: aún no hay tipo de cambio.";
 "home.iCloudAsk.title" = "Guarda las copias en iCloud";
 "home.iCloudAsk.message" = "Tu copia semanal solo está en este iPhone. En iCloud Drive sobrevive a un teléfono nuevo o a una reinstalación.";
 "home.iCloudAsk.action" = "Activar";
@@ -336,6 +337,8 @@
 "deposit.capitalizationTitle" = "Capitalización";
 "deposit.enableCapitalization" = "Activar capitalización";
 "deposit.capitalizationHint" = "Con la capitalización activada, los intereses se suman al capital cada mes";
+"deposit.countsForToday" = "Contar en «Para hoy»";
+"deposit.countsForToday.hint" = "Dinero que puedes retirar cuando quieras. «Para hoy» y Ten lo suman a tus tarjetas.";
 "deposit.new" = "Nuevo depósito";
 "deposit.editTitle" = "Editar depósito";
 "deposit.interestAccrual.description" = "Intereses";

@@ -141,6 +141,7 @@ enum InsightType: String, Hashable {
     case largeTransaction          // big non-recurring expense vs 90d average (audit 2026-07)
     case topMerchant               // where the current bucket's money went, by merchant
     case averageCheckGrowth        // a merchant's average check, 90 days against the 90 before
+    case dailyAllowance            // "For today": a day's money until the next income (DailyAllowance)
 }
 
 // MARK: - Insight Metric
@@ -199,7 +200,7 @@ extension InsightType {
         case .topSpendingCategory, .topMerchant, .incomeGrowth, .incomeSourceBreakdown,
              .netCashFlow, .bestMonth, .projectedBalance, .accountActivity,
              .totalWealth, .wealthGrowth, .savingsRate, .emergencyFund,
-             .subcategoryBreakdown:
+             .subcategoryBreakdown, .dailyAllowance:
             return false
         }
     }
@@ -315,6 +316,34 @@ enum InsightDetailData: Hashable {
     case accountComparison([AccountInsightItem])
     case wealthBreakdown([AccountInsightItem])   // Per-account balances
     case formulaBreakdown(InsightFormulaModel)   // Header + hero + formula rows + recommendation
+    case dailyAllowance(DailyAllowanceDetail)   // "For today": the formula, then each payment set aside
+}
+
+// MARK: - For today
+
+/// "For today"'s detail, built on the main actor by DailyAllowanceLink (the off-main insights
+/// generator has no forecast): how the figure is reached, each payment set aside, and the
+/// currencies whose payments could not be converted.
+struct DailyAllowanceDetail: Hashable {
+    let formula: InsightFormulaModel
+    let payments: [AllowancePaymentItem]
+    let missingRates: [String]
+}
+
+/// A payment "For today" sets aside, in the base currency.
+struct AllowancePaymentItem: Identifiable, Hashable {
+    let id: String
+    let label: String
+    let date: Date
+    let amount: Double
+    /// A logo (a subscription's, a bank's) drawn as it is when `tint` is nil; else a symbol on
+    /// the tint, the category's colour, as in History.
+    let icon: IconSource?
+    let tint: Color?
+
+    // Color is not Hashable; hash and compare by id only.
+    static func == (lhs: AllowancePaymentItem, rhs: AllowancePaymentItem) -> Bool { lhs.id == rhs.id }
+    func hash(into hasher: inout Hasher) { hasher.combine(id) }
 }
 
 // MARK: - Paged Category Breakdown

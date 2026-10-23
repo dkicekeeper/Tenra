@@ -26,6 +26,8 @@ struct DepositEditView: View {
     @State private var interestPostingDay: Int = 1
     @State private var capitalizationEnabled: Bool = true
     @State private var dayCount: DepositDayCount = .defaultForNewDeposits
+    /// A deposit to take money from any time: "For today" counts it (DepositInfo.countsForToday).
+    @State private var countsForToday: Bool = false
 
     /// True when converting a regular account → deposit (account exists but has no depositInfo)
     private var isConverting: Bool {
@@ -82,6 +84,17 @@ struct DepositEditView: View {
                             accessory: .toggle($capitalizationEnabled)
                         )
                     }
+
+                    // Money to withdraw any time: "For today" and Ten's forecast count it with
+                    // the cards and the cash (Account.countsForToday).
+                    FormSection {
+                        UniversalRow(
+                            String(localized: "deposit.countsForToday"),
+                            icon: "sun.max",
+                            hint: String(localized: "deposit.countsForToday.hint"),
+                            accessory: .toggle($countsForToday)
+                        )
+                    }
                 }
                 .screenPadding()
                 .padding(.top, AppSpacing.md)
@@ -110,6 +123,7 @@ struct DepositEditView: View {
                 interestPostingDay = depositInfo.interestPostingDay
                 capitalizationEnabled = depositInfo.capitalizationEnabled
                 dayCount = depositInfo.dayCount
+                countsForToday = depositInfo.countsForToday
             } else if let account = account {
                 // Converting regular account → deposit: pre-fill from account
                 name = account.name
@@ -171,7 +185,8 @@ extension DepositEditView {
             conversionTimestamp: existingInfo?.conversionTimestamp,
             // New and converted deposits start on 30/360 (the picker's default); an
             // edit keeps whatever the deposit had unless the user changes it.
-            dayCount: dayCount
+            dayCount: dayCount,
+            countsForToday: countsForToday
         )
 
         let balance = NSDecimalNumber(decimal: principalBalance).doubleValue

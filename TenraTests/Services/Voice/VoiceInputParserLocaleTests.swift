@@ -161,6 +161,23 @@ struct VoiceInputParserLocaleTests {
         #expect(result.categoryName == "외식")
     }
 
+    // MARK: - Kazakh
+
+    /// The Kazakh screenshot demo's voice phrase (`ScreenshotDemoLexicon`, kk), which frame 14
+    /// shows drafted on the phone. The parser has no Kazakh keywords yet: the phrase names
+    /// "такси", known from Russian, whose target resolves to the Kazakh preset "Көлік".
+    @Test func kazakhDemoPhraseIsDraftedOnThePhone() {
+        let (parser, cat, acc, tx) = Self.makeParser(categories: ["Азық-түлік", "Кафе мен мейрамханалар", "Көлік", "Басқа"])
+        _ = (cat, acc, tx)
+        let phrase = "Таксиге 2500 теңге жұмсадым"
+        let ops = parser.parseMulti(phrase)
+        #expect(ops.count == 1)
+        #expect(ops.first?.amount == Decimal(2500))
+        #expect(ops.first?.type == .expense)
+        #expect(ops.first?.categoryName == "Көлік")
+        #expect(AgentFastPath.isRecord(phrase, operations: ops, clauses: VoiceInputSegmenter.segment(phrase).count))
+    }
+
     // MARK: - Amounts
 
     @Test func groupedAndDecimalAmounts() {

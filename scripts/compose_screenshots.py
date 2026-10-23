@@ -76,6 +76,8 @@ FRAMES = {
     "21-merchant": ("merchant", "a"),
 }
 
+# Inter has the Kazakh letters too (ә ғ қ ң ө ұ ү һ і and their capitals; Inter 4.0 and 4.1
+# checked with fontTools), so kk needs no fallback.
 FONTS = {
     "SemiBold": ("Inter-SemiBold.otf", None),
     "Medium": ("Inter-Medium.otf", None),

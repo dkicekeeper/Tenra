@@ -2,10 +2,10 @@
 #
 # capture_screenshots.sh — automated App Store raw-screenshot capture.
 #
-# Runs TenraUITests/ScreenshotCaptureTests once per storefront locale with the
-# ScreenshotDemo seeded dataset (see Tenra/Services/Utilities/ScreenshotDemo/),
-# then exports the PNG attachments from each .xcresult bundle into
-# screenshots/raw/<asc-locale>/.
+# Runs TenraUITests/ScreenshotCaptureTests once per storefront locale (and kk, the
+# Kazakh set en-GB shows) with the ScreenshotDemo seeded dataset (see
+# Tenra/Services/Utilities/ScreenshotDemo/), then exports the PNG attachments from
+# each .xcresult bundle into screenshots/raw/<asc-locale>/.
 #
 # Usage:
 #   ./scripts/capture_screenshots.sh            # all locales
@@ -32,6 +32,8 @@ FRAMES="${FRAMES:-all}"
 case "$FRAMES" in cpp) EXPECTED=4 ;; ten) EXPECTED=6 ;; autocapture) EXPECTED=2 ;; *) EXPECTED=21 ;; esac
 
 # asc-locale | AppleLanguages | AppleLocale | demo currency
+# kk is no App Store locale (App Store Connect has no Kazakh): its frames are the ones en-GB
+# shows (`screenshotsFrom` in appstore/metadata.json, decision D9).
 LOCALES=(
   "de-DE|de|de_DE|EUR"
   "es-ES|es|es_ES|EUR"
@@ -46,6 +48,7 @@ LOCALES=(
   "ko|ko|ko_KR|KRW"
   "en-US|en|en_US|USD"
   "ru|ru|ru_RU|KZT"
+  "kk|kk|kk_KZ|KZT"
 )
 
 # Resolve the device by name AND runtime. Since Xcode 27 a bare `name=` destination

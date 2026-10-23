@@ -879,6 +879,20 @@ struct ScreenshotDemoLexicon {
                          tenReply: "Вот куда ушли деньги в этом месяце, по категориям.",
                          goalTrip: "Отпуск", goalPhone: "Новый телефон", goalBike: "Велосипед",
                          debtFriend: "Асхат", debtFamily: "Мама")
+        case "kk":
+            // The Kazakh set en-GB shows on the App Store (decision D9). The voice phrase names
+            // "такси", a word the voice parser knows from Russian, so frame 14 drafts it to
+            // Transport on the phone (AgentFastPath); Kazakh keywords are not in the parser yet.
+            return .init(card: "Карта", cash: "Қолма-қол", savings: "Жинақ USD", deposit: "Депозит",
+                         loan: "Несие", bank: "Банк", salary: "Жалақы", rent: "Пәтерақы",
+                         utilities: "Коммуналдық төлем", pharmacy: "Дәріхана", cinema: "Кино",
+                         lunch: "Түскі ас", coffee: "Кофе", supermarket: "Magnum",
+                         taxi: "Такси", delivery: "Жеткізу", gym: "Фитнес",
+                         savingsTransfer: "Жинақ",
+                         voiceDemoPhrase: "Таксиге 2500 теңге жұмсадым",
+                         tenReply: "Осы айда ақшаңыз санаттар бойынша осылай жұмсалды.",
+                         goalTrip: "Демалыс", goalPhone: "Жаңа телефон", goalBike: "Велосипед",
+                         debtFriend: "Асхат", debtFamily: "Анам")
         default:
             return .init(card: "Card", cash: "Cash", savings: "Savings USD", deposit: "Deposit",
                          loan: "Loan", bank: "Bank", salary: "Salary", rent: "Rent",

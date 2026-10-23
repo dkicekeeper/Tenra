@@ -320,6 +320,14 @@ nonisolated struct ScreenshotDemoTenLines: Sendable {
                          loanQuestion: "Что если внести %@ по кредиту досрочно?",
                          loanReply: "Если внести эту сумму сейчас, кредит закроется раньше, а переплата станет меньше.",
                          interestSaved: "Экономия на процентах", monthsSooner: "Срок сократится, мес.")
+        case "kk":
+            return .init(perMonth: "Айына", total: "Барлығы",
+                         subscriptionsReply: "Міне, барлық жазылымдарыңыз және олардың айына қанша тұратыны.",
+                         currenciesQuestion: "Барлық валютада қанша ақшам бар?",
+                         currenciesReply: "Барлық шоттарыңыз бір валютада, бүгінгі бағам бойынша.",
+                         loanQuestion: "Несие бойынша %@ мерзімінен бұрын төлесем ше?",
+                         loanReply: "Бұл соманы қазір төлесеңіз, несие ертерек жабылады, ал артық төлем азаяды.",
+                         interestSaved: "Үнемделген пайыз", monthsSooner: "Мерзім қысқарады, ай")
         default:
             return .init(perMonth: "Per month", total: "Total",
                          subscriptionsReply: "Here are all your subscriptions and what they cost each month.",

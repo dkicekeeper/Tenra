@@ -1,5 +1,5 @@
 {
-  "comment": "Store texts per locale for `asc.py push-metadata` (docs/asc.md): name and subtitle (30 characters, app info, only while a version is in preparation), promotionalText (170, any time), keywords (100, the whole field) or keywordsAdd / keywordsRemove (words changed in the field as it is), description. copyFrom fills what a new localization needs (description, support and marketing URLs, What's New, privacy policy URL) from another locale and takes its screenshots. No em dashes. Status: draft of 2026-10-22 for 1.7, waiting for the founder's approval (docs/plan-ads-readiness.md A6).",
+  "comment": "Store texts per locale for `asc.py push-metadata` (docs/asc.md): name and subtitle (30 characters, app info, only while a version is in preparation), promotionalText (170, any time), keywords (100, the whole field) or keywordsAdd / keywordsRemove (words changed in the field as it is), description. copyFrom fills what a new localization needs (description, support and marketing URLs, What's New, privacy policy URL) from another locale and takes its screenshots and iOS 27 art, unless screenshotsFrom names the folder of screenshots/final and screenshots/art to take them from (asc.py screenshot_source). en-GB: texts from ru, frames and art from kk, the Kazakh set composed only for it (App Store Connect has no Kazakh; decision D9, docs/plan-ads-readiness.md A6 item 0). No em dashes. Status: draft of 2026-10-22 for 1.7, waiting for the founder's approval (docs/plan-ads-readiness.md A6).",
   "version": "1.7",
   "locales": {
     "en-US": {
@@ -121,6 +121,7 @@
     },
     "en-GB": {
       "copyFrom": "ru",
+      "screenshotsFrom": "kk",
       "name": "Tenra: Учёт расходов и бюджет",
       "subtitle": "Траты записываются сами",
       "keywords": "финансы,деньги,доходы,кошелек,трекер,выписка,подписки,долги,копилка,кредит,ии,помощник,қаржы,шығын",

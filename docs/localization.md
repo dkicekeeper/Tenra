@@ -14,7 +14,10 @@ is in [archive/localization-2026-07/](archive/localization-2026-07/).
   competitors have it and it is a system language in iOS 27). Each `Tenra/<locale>.lproj/` holds `Localizable.strings`, `Localizable.stringsdict`
   (plurals), `InfoPlist.strings` (permission prompts) and `AppShortcuts.strings` (Siri phrases).
 - **On the App Store: 13 storefront locales**: de-DE, en-US, es-ES, es-MX, fr-CA, fr-FR, it, ja,
-  ko, pt-BR, ru, tr, uk. The app's es and fr cover both of their storefronts.
+  ko, pt-BR, ru, tr, uk. The app's es and fr cover both of their storefronts. With 1.7, en-GB
+  too, for search in Kazakhstan (decision D9, [plan-ads-readiness.md](plan-ads-readiness.md) A6):
+  the Russian texts and the Kazakh screenshots, since App Store Connect has no Kazakh; the kk
+  screenshot set exists only for it ([asc.md](asc.md) «Скриншоты»).
 - **Features per language.** Voice input (`VoiceInputParser`, `VoiceInputSegmenter`) and CSV type
   values (`CSVColumnMapping`) understand the nine languages written with spaces (not kk yet:
   its keywords would collide with Russian ones in the flat maps, see Adding a language). ja and ko get the
@@ -68,5 +71,6 @@ fallback. A new `NS…UsageDescription` key goes into all 11 files.
    crashes at runtime. Grep for duplicates and leave the collision out.
 4. CSV: type values in `CSVColumnMapping` (`расход/доход/перевод` → expense/income/transfer).
 5. App Store: metadata in App Store Connect, screenshots with `scripts/capture_screenshots.sh`
-   (demo data, `-ScreenshotDemo`, never on the personal device) and the captions in
+   (demo data, `-ScreenshotDemo`, never on the personal device; the demo's words per language in
+   `ScreenshotDemoLexicon` and `ScreenshotDemoTenLines`) and the captions in
    `scripts/screenshot_captions.json`, prices per storefront, the RevenueCat paywall texts.

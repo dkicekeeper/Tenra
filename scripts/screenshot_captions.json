@@ -1,5 +1,5 @@
 {
-  "comment": "App Store screenshot captions per locale. This file is the source of truth (first drafted in the per-language plans, docs/archive/localization-2026-07/<lang>.md §4; tr puts the multicurrency frame first; 1.7 opens with auto-capture, then home, insights and Ten, and tr keeps multicurrency right after auto-capture). Frame keys map to raw capture files: home=01-home, finances=02-finances, insights=03-insights, score=04-health-score, topcat=05-top-category, history=06-history, voice=07-voice (Ten's voice sheet), fx=08-multicurrency, ten=13-ten-answer, draft=14-ten-draft, goal=15-goal, debts=16-debts, autocapture=20-autocapture (To review: Apple Pay payments that recorded themselves), merchant=21-merchant (a merchant's screen). At most 10 frames per locale go to the store. `header` is the phrase of the store's header art (scripts/compose_store_art.py). Custom product page frames: subscriptions=09-subscriptions, subscription=10-subscription-detail, deposit=11-deposit, loans=12-loans, and Ten's answers tensubs=17-ten-subscriptions, tenfx=18-ten-currencies, tenloan=19-ten-loan; the pages and their frame order are in appstore/product-pages.json.",
+  "comment": "App Store screenshot captions per locale. This file is the source of truth (first drafted in the per-language plans, docs/archive/localization-2026-07/<lang>.md §4; tr puts the multicurrency frame first; 1.7 opens with auto-capture, then home, insights and Ten, and tr keeps multicurrency right after auto-capture). Frame keys map to raw capture files: home=01-home, finances=02-finances, insights=03-insights, score=04-health-score, topcat=05-top-category, history=06-history, voice=07-voice (Ten's voice sheet), fx=08-multicurrency, ten=13-ten-answer, draft=14-ten-draft, goal=15-goal, debts=16-debts, autocapture=20-autocapture (To review: Apple Pay payments that recorded themselves), merchant=21-merchant (a merchant's screen). At most 10 frames per locale go to the store. `header` is the phrase of the store's header art (scripts/compose_store_art.py). Custom product page frames: subscriptions=09-subscriptions, subscription=10-subscription-detail, deposit=11-deposit, loans=12-loans, and Ten's answers tensubs=17-ten-subscriptions, tenfx=18-ten-currencies, tenloan=19-ten-loan; the pages and their frame order are in appstore/product-pages.json. kk (Kazakh) is no App Store language: its frames are composed only for en-GB, which shows them through `screenshotsFrom` in appstore/metadata.json (decision D9, docs/plan-ads-readiness.md A6 item 0).",
   "defaultOrder": ["autocapture", "home", "insights", "ten", "draft", "merchant", "finances", "goal", "debts", "fx"],
   "locales": {
     "de-DE": {
@@ -339,6 +339,32 @@
         "tenloan":  { "title": "Что если погасить досрочно?", "subtitle": "Тэн покажет, сколько сэкономите на процентах" },
         "autocapture": { "title": "Расходы записываются сами", "subtitle": "Платите телефоном, и Tenra запишет оплату с категорией" },
         "merchant": { "title": "Сколько уходит в каждом магазине", "subtitle": "Визиты, средний чек и траты по месяцам" }
+      }
+    },
+    "kk": {
+      "header": "Ақшаңыз қайда кетіп жатқанын Тэннен сұраңыз",
+      "frames": {
+        "home":     { "title": "Әр санатқа бюджет", "subtitle": "Айлық лимит, шығыс және қалдық бірден басты бетте" },
+        "finances": { "title": "Барлық қаржыңыз бір жерде", "subtitle": "Шоттар, депозиттер, жазылымдар мен несиелер, банкті байланыстырмай" },
+        "insights": { "title": "Ақшаның қайда кететіні көрінеді", "subtitle": "Айлық баланс, шығыстар мен таза ағын бір қарағанда" },
+        "score":    { "title": "Қаржыңыз қаншалықты сау", "subtitle": "Жинақ, бюджеттер мен резервтік қор бір түсінікті баллда" },
+        "topcat":   { "title": "Ең үлкен шығыстарды біліңіз", "subtitle": "Шығыс санаттары, айлар бойынша көрнекі бөлінісімен" },
+        "history":  { "title": "Әр операция бақылауда", "subtitle": "Шығыстар, кірістер мен депозит пайыздары бір тізімде" },
+        "voice":    { "title": "Шығыстарды дауыспен қосыңыз", "subtitle": "Соманы және санатты айтыңыз, операция жазылады" },
+        "fx":       { "title": "KZT, USD, EUR: бір нақты қорытынды", "subtitle": "Әртүрлі валютадағы шоттар, бағам әрқашан бүгінгі" },
+        "ten":      { "title": "Ақша туралы Тэннен сұраңыз", "subtitle": "Жауаптар карточкаларда: сомалар, санаттар, бюджеттер" },
+        "draft":    { "title": "Айтыңыз, Тэн жазып алады", "subtitle": "«Сақтау» түймесін басқанша ештеңе сақталмайды" },
+        "goal":     { "title": "Маңызды мақсатқа жинаңыз", "subtitle": "Ай сайын қанша жинау керектігі көрінеді" },
+        "debts":    { "title": "Кім кімге қарыз және қай күнге дейін", "subtitle": "Берген және алған қарыздар, қайтарымдарымен" },
+        "subscriptions": { "title": "Барлық жазылымдар күнтізбеде", "subtitle": "Қашан және қанша шегеріледі, сервис логотиптерімен" },
+        "subscription": { "title": "Әр жазылым бақылауда", "subtitle": "Келесі шегеру, барлық уақыттағы сома және тарих" },
+        "deposit":  { "title": "Депозиттен табысыңызды біліңіз", "subtitle": "Мөлшерлеме, капиталдандыру және келесі есептеу" },
+        "loans":    { "title": "Несиелер бақылауда", "subtitle": "Айлық төлемнің жасалғаны және қанша қалғаны көрінеді" },
+        "tensubs":  { "title": "Жазылымдар туралы сұраңыз", "subtitle": "Тэн олардың айлық сомасын шығарып, тізіммен көрсетеді" },
+        "tenfx":    { "title": "Барлық валютадағы ақша", "subtitle": "Тэн шоттарды бүгінгі бағаммен бір сомаға қосады" },
+        "tenloan":  { "title": "Мерзімінен бұрын өтесеңіз ше?", "subtitle": "Тэн пайыздан қанша үнемдейтініңізді көрсетеді" },
+        "autocapture": { "title": "Шығыстар өздігінен жазылады", "subtitle": "Телефонмен төлеңіз, Tenra төлемді санатымен жазып алады" },
+        "merchant": { "title": "Әр дүкенде қанша жұмсайсыз", "subtitle": "Келулер, орташа чек және ай бойынша шығыстар" }
       }
     }
   }

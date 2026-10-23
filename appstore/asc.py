@@ -35,6 +35,8 @@
     python3 appstore/asc.py push-version-screenshots --version 1.6 [--locale ru,en-US]
                                                     the version's own 6.9" screenshots, the frames
                                                     of `defaultOrder` in screenshot_captions.json
+                                                    (en-GB takes kk's: `screenshotsFrom` in
+                                                    metadata.json)
     python3 appstore/asc.py store-pages [--version 1.6]
                                                     what each storefront page shows: the version's
                                                     screenshots per locale against screenshots/final,
@@ -616,15 +618,19 @@ def editable_cpp_version(page_id: str) -> dict:
 
 def push_custom_pages(app: str, submit: bool) -> None:
     """Create or update every custom product page in appstore/product-pages.json: promotional text,
-    screenshots and keywords per locale. With submit, sends the edited versions for review."""
+    screenshots and keywords per locale. With submit, sends the edited versions for review.
+    A locale that shows another one's frames (en-GB: kk's, `screenshot_source`) is added after
+    the page exists, and one App Store Connect refuses (a language the app does not have yet) is
+    reported, not fatal."""
     config = page_config()
-    files = {(page["name"], locale): frame_files(config, page["frames"], locale)
+    files = {(page["name"], locale): frame_files(config, page["frames"], screenshot_source(locale))
              for page in config["customPages"] for locale in page["locales"]}
     existing, _ = get_all(f"/v1/apps/{app}/appCustomProductPages", {"limit": 50})
     by_name = {page["attributes"]["name"]: page for page in existing}
     rows, ready = [], []
     for page in config["customPages"]:
         record = by_name.get(page["name"])
+        own = [locale for locale in page["locales"] if screenshot_source(locale) == locale]
         if not record:
             record = send("POST", "/v1/appCustomProductPages", {
                 "data": {
@@ -639,11 +645,11 @@ def push_custom_pages(app: str, submit: bool) -> None:
                     {"type": "appCustomProductPageVersions", "id": "${version}", "relationships": {
                         "appCustomProductPageLocalizations": {"data": [
                             {"type": "appCustomProductPageLocalizations", "id": "${" + locale + "}"}
-                            for locale in page["locales"]]},
+                            for locale in own]},
                     }},
                     *[{"type": "appCustomProductPageLocalizations", "id": "${" + locale + "}",
-                       "attributes": {"locale": locale, "promotionalText": meta["promotionalText"]}}
-                      for locale, meta in page["locales"].items()],
+                       "attributes": {"locale": locale, "promotionalText": page["locales"][locale]["promotionalText"]}}
+                      for locale in own],
                 ],
             })["data"]
         version = editable_cpp_version(record["id"])
@@ -658,12 +664,18 @@ def push_custom_pages(app: str, submit: bool) -> None:
                     "attributes": {"promotionalText": meta["promotionalText"]},
                 }})
             else:
-                localization = send("POST", "/v1/appCustomProductPageLocalizations", {"data": {
-                    "type": "appCustomProductPageLocalizations",
-                    "attributes": {"locale": locale, "promotionalText": meta["promotionalText"]},
-                    "relationships": {"appCustomProductPageVersion": {
-                        "data": {"type": "appCustomProductPageVersions", "id": version["id"]}}},
-                }})["data"]
+                try:
+                    localization = send("POST", "/v1/appCustomProductPageLocalizations", {"data": {
+                        "type": "appCustomProductPageLocalizations",
+                        "attributes": {"locale": locale, "promotionalText": meta["promotionalText"]},
+                        "relationships": {"appCustomProductPageVersion": {
+                            "data": {"type": "appCustomProductPageVersions", "id": version["id"]}}},
+                    }})["data"]
+                except ApiError as error:
+                    if locale in own or error.code not in (409, 422):
+                        raise
+                    rows.append([page["name"], locale, f"not added: {error}", ""])
+                    continue
             shots = put_screenshots(screenshot_set("appCustomProductPageLocalization", localization["id"]),
                                     files[(page["name"], locale)])
             words = link_keywords(app, localization["id"], locale, meta.get("keywords", []))
@@ -680,7 +692,9 @@ def push_experiment(app: str, submit: bool, start: bool, stop: bool = False) -> 
     end it (every visitor then sees the default page)."""
     config = page_config()
     test = config["experiment"]
-    locales = sorted(path.name for path in (ROOT / "screenshots" / "final").iterdir() if path.is_dir())
+    # Every composed locale but kk, which App Store Connect does not have (`screenshots_only`).
+    locales = sorted(path.name for path in (ROOT / "screenshots" / "final").iterdir()
+                     if path.is_dir() and path.name not in screenshots_only())
     files = {(treatment["name"], locale): frame_files(config, treatment["frames"], locale)
              for treatment in test["treatments"] for locale in locales}
     existing, _ = get_all(f"/v1/apps/{app}/appStoreVersionExperimentsV2", {"limit": 20})
@@ -794,7 +808,9 @@ CAPTIONS = ROOT / "scripts" / "screenshot_captions.json"
 
 def push_version_screenshots(app: str, version: str, locales: list[str] | None) -> None:
     """The version's own 6.9" screenshots: per locale, the frames of `defaultOrder` (or the
-    locale's own order) from screenshots/final/<locale>/. Only a version in preparation."""
+    locale's own order) from screenshots/final/<locale>/, or from the folder `screenshot_source`
+    names (en-GB: kk/). Only a version in preparation. Goes through the version's
+    localizations, so kk, which App Store Connect does not have, is reached only through en-GB."""
     captions = json.loads(CAPTIONS.read_text(encoding="utf-8"))
     config = page_config()
     found, _ = get_all(f"/v1/apps/{app}/appStoreVersions",
@@ -887,11 +903,23 @@ def metadata_config() -> dict:
 
 
 def screenshot_source(locale: str) -> str:
-    """The folder of screenshots/final a locale takes: its own, or its copyFrom's in metadata.json
-    when it has none (en-GB shows the Russian frames)."""
+    """The folder of screenshots/final (and screenshots/art) a locale takes: its own; when it has
+    none, its `screenshotsFrom` in metadata.json, else its `copyFrom`. en-GB has the Russian texts
+    (copyFrom ru) and the Kazakh frames and art (screenshotsFrom kk), decision D9."""
     if (ROOT / "screenshots" / "final" / locale).is_dir() or not METADATA.exists():
         return locale
-    return metadata_config()["locales"].get(locale, {}).get("copyFrom", locale)
+    fields = metadata_config()["locales"].get(locale, {})
+    return fields.get("screenshotsFrom") or fields.get("copyFrom", locale)
+
+
+def screenshots_only() -> set[str]:
+    """Folders of screenshots/final that are no App Store locale: a language App Store Connect
+    lacks (kk), composed only for the locale that shows it through `screenshotsFrom` (en-GB).
+    Nothing pushes them as a localization of their own."""
+    if not METADATA.exists():
+        return set()
+    locales = metadata_config()["locales"]
+    return {fields["screenshotsFrom"] for fields in locales.values() if fields.get("screenshotsFrom")} - set(locales)
 
 
 def edited_keywords(current: str, fields: dict) -> tuple[str, list[str]]:
@@ -1011,15 +1039,15 @@ def push_metadata(app: str, apply: bool) -> None:
 def store_pages(app: str, version: str | None) -> None:
     """What the store shows, read only: per localization of the version (the latest one on the
     App Store by default), each screenshot set and how many of its screenshots are files in
-    screenshots/final/<locale>/ now; the product page tests with their state; the languages of
-    each custom page's versions."""
+    screenshots/final/<locale>/ now (en-GB: kk/, `screenshot_source`); the product page tests
+    with their state; the languages of each custom page's versions."""
     record = store_version(app, version)
     name = record["attributes"].get("versionString")
     localizations, _ = get_all(f"/v1/appStoreVersions/{record['id']}/appStoreVersionLocalizations", {"limit": 50})
     rows = []
     for item in sorted(localizations, key=lambda i: i["attributes"]["locale"]):
         locale = item["attributes"]["locale"]
-        folder = ROOT / "screenshots" / "final" / locale
+        folder = ROOT / "screenshots" / "final" / screenshot_source(locale)
         ours = {hashlib.md5(path.read_bytes()).hexdigest() for path in folder.glob("*.png")} if folder.is_dir() else set()
         sets, _ = get_all(f"/v1/appStoreVersionLocalizations/{item['id']}/appScreenshotSets", {"limit": 50})
         if not sets:
@@ -1029,7 +1057,7 @@ def store_pages(app: str, version: str | None) -> None:
             current = sum(1 for shot in shots if shot["attributes"].get("sourceFileChecksum") in ours)
             rows.append([locale, screenshot_set_record["attributes"].get("screenshotDisplayType"), len(shots),
                          f"{current}/{len(shots)}" if ours else "no folder"])
-    table(f"Screenshots of {name} (current = a file in screenshots/final/<locale>/)",
+    table(f"Screenshots of {name} (current = a file in screenshots/final/<locale>/, en-GB: kk/)",
           ["Locale", "Set", "Shots", "Current"], rows)
 
     tests, _ = get_all(f"/v1/apps/{app}/appStoreVersionExperimentsV2", {"limit": 20})
@@ -1140,7 +1168,8 @@ def push_creatives(app: str, version: str | None, locales: list[str] | None, pag
     used: set[str] = set()
 
     def art(locale: str, stem: str) -> Path | None:
-        # A locale without its own art takes its copyFrom's (en-GB: ru), like its screenshots.
+        # A locale without its own art takes the art of the locale its screenshots come from
+        # (en-GB: kk's, `screenshot_source`).
         for folder in dict.fromkeys([locale, screenshot_source(locale)]):
             path = ART / folder / f"{stem}.png"
             if path.exists():

@@ -1,5 +1,5 @@
 {
-  "comment": "Custom product pages and the product page optimization test, pushed by `asc.py push-custom-pages` and `asc.py push-experiment` (docs/asc.md). Frames name files in screenshots/final/<locale>/ (captions: scripts/screenshot_captions.json). Keywords must be words from the locale's App Store keyword field (`asc.py keywords --locale ru`); each keyword belongs to one page. Promotional text: 170 characters at most, no em dashes. A page whose frames are not composed yet for every locale stops push-custom-pages for all pages (Missing screenshots).",
+  "comment": "Custom product pages and the product page optimization test, pushed by `asc.py push-custom-pages` and `asc.py push-experiment` (docs/asc.md). Frames name files in screenshots/final/<locale>/ (captions: scripts/screenshot_captions.json). Keywords must be words from the locale's App Store keyword field (`asc.py keywords --locale ru`); each keyword belongs to one page. Promotional text: 170 characters at most, no em dashes. A page whose frames are not composed yet for every locale stops push-custom-pages for all pages (Missing screenshots). en-GB has the ru texts and keywords from its own field, and shows the Kazakh frames (screenshots/final/kk/, `screenshotsFrom` in appstore/metadata.json, decision D9); it is added to a page after the page exists, and App Store Connect refusing it (before 1.7 brings en-GB to the app) is reported, not fatal.",
   "frames": {
     "home": "01-home",
     "finances": "02-finances",
@@ -80,6 +80,10 @@
         "ko": {
           "promotionalText": "서비스 로고와 함께 구독을 캘린더로 보고, 결제 전에 알림을 받아요. 매달 얼마가 나가는지 한눈에. 은행 연동 없이, 데이터는 기기에만.",
           "keywords": ["고정비"]
+        },
+        "en-GB": {
+          "promotionalText": "Календарь подписок с логотипами сервисов и напоминанием до списания. Видно, сколько уходит в месяц. Без привязки банка, данные на вашем устройстве.",
+          "keywords": ["подписки"]
         }
       }
     },
@@ -138,6 +142,10 @@
         },
         "ko": {
           "promotionalText": "\"점심 12,000원 썼어\"라고 말하면 카테고리와 계좌까지 기록돼요. 은행 연동 없이, 데이터는 내 기기에만 저장돼요.",
+          "keywords": []
+        },
+        "en-GB": {
+          "promotionalText": "Скажите «потратил 5000 на продукты», и операция записана с категорией и счётом. Без привязки банка, данные только на вашем устройстве.",
           "keywords": []
         }
       }
@@ -198,6 +206,10 @@
         "ko": {
           "promotionalText": "원화, 달러, 유로 등 여러 통화 계좌를 현재 환율로 합산해요. 통화 간 이체는 그날의 환율을 유지해요. 은행 연동이 필요 없어요.",
           "keywords": ["환율", "외화"]
+        },
+        "en-GB": {
+          "promotionalText": "Счета в тенге, долларах, евро и рублях в одном итоге по текущему курсу. Переводы между валютами с курсом на дату операции. Без привязки банка.",
+          "keywords": []
         }
       }
     },
@@ -257,6 +269,10 @@
         "ko": {
           "promotionalText": "예금 이자는 복리까지 자동으로 계산돼요. 대출은 이번 달 상환 여부와 남은 금액을 바로 확인해요. 은행 연동이 필요 없어요.",
           "keywords": ["대출", "적금", "예적금"]
+        },
+        "en-GB": {
+          "promotionalText": "Проценты по депозитам с капитализацией считаются сами. По кредитам видно, внесён ли платёж за месяц и сколько осталось. Без привязки банка.",
+          "keywords": ["кредит", "долги"]
         }
       }
     },
@@ -316,6 +332,10 @@
         },
         "ko": {
           "promotionalText": "Apple Pay로 결제하면 가맹점, 로고, 카테고리와 함께 지출이 저절로 기록돼요. 가맹점마다 방문 횟수와 평균 결제 금액을 보여 줘요. 은행 연동이 필요 없어요.",
+          "keywords": []
+        },
+        "en-GB": {
+          "promotionalText": "Оплатите через Apple Pay, и расход запишется сам: с продавцом, логотипом и категорией. У каждого продавца своя страница с визитами и средним чеком. Без привязки банка.",
           "keywords": []
         }
       }

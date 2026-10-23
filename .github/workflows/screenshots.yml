@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
     inputs:
       locales:
-        description: "ASC locales, space-separated (as in capture_screenshots.sh)"
+        description: "ASC locales, space-separated (as in capture_screenshots.sh; kk is the Kazakh set en-GB shows)"
         required: false
         default: "ru en-US fr-FR"
       frames:

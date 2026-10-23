@@ -160,6 +160,10 @@ final class PremiumManager {
             return
         }
         guard !isConfigured else { return }
+        guard !Self.isAutomatedRun else {
+            log.notice("RevenueCat skipped: test or screenshot run. isFounder=\(self.isFounder, privacy: .public)")
+            return
+        }
 
         Purchases.logLevel = .warn
         Purchases.configure(withAPIKey: PremiumConfig.revenueCatAPIKey)
@@ -171,6 +175,26 @@ final class PremiumManager {
 
         observeCustomerInfo()
         log.info("RevenueCat configured. isFounder=\(self.isFounder, privacy: .public)")
+    }
+
+    #if DEBUG
+    /// UI tests pass it so the app they drive stays off RevenueCat.
+    static let noRevenueCatLaunchArgument = "-NoRevenueCat"
+    #endif
+
+    /// Test and screenshot runs never configure RevenueCat: every fresh Simulator install
+    /// became a new anonymous customer, so CI runs swamped the New Customers and Active Users
+    /// charts (docs/promotion-plan.md §6). Release builds always configure.
+    private static var isAutomatedRun: Bool {
+        #if DEBUG
+        let process = ProcessInfo.processInfo
+        return NSClassFromString("XCTestCase") != nil  // unit-test host
+            || process.environment["XCTestConfigurationFilePath"] != nil
+            || process.arguments.contains(noRevenueCatLaunchArgument)
+            || ScreenshotDemoMode.isActive
+        #else
+        return false
+        #endif
     }
 
     /// Stream entitlement changes so the UI reacts to purchases, restores, expiries,

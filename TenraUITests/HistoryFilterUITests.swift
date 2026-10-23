@@ -24,7 +24,7 @@ final class HistoryFilterUITests: XCTestCase {
         if ProcessInfo.processInfo.environment["NO_DEMO"] != "1" {
             app.launchArguments += ["-ScreenshotDemo"]
         }
-        app.launchArguments += ["-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launchArguments += ["-NoRevenueCat", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         app.launch()
 
         let historyLink = app.descendants(matching: .any)["home.historyLink"].firstMatch

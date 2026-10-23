@@ -36,6 +36,11 @@ with the commit of every fix, are in
   `LoanDetailView` delete paths call `recalculateAccountBalances()` where
   `recalculateBalances(for:)` with the touched accounts would do.
 
+- **Product audit of 2026-10-22** ([archive/product-audit-2026-10-22.md](archive/product-audit-2026-10-22.md)):
+  its items are in [plan-ads-readiness.md](plan-ads-readiness.md) (the Pro page, activation,
+  iCloud backups by default, auto-capture counters for 1.7; widgets and templates, Kazakh,
+  money for today for 1.8).
+
 Found by the design-system audit of 2026-10-15 (everything since 1.5):
 - **Logic in `Views/Assistant`:** `AppStreak`, `AssistantChatter` and `AssistantDaydreams`
   hold rules and data, no views: they belong in `Services/Agent/`, as does the catalogue half
@@ -50,10 +55,6 @@ Found by the release audit of 2026-10-15 (details and file references:
 - **Ten's privacy edges:** a forgotten fact stays in kept threads; FastPath messages typed before
   consent go out with the next cloud question; the Settings toggle skips the consent sheet; the
   cloud mode shows in the RU/BY storefronts (451 on every question).
-- **Ten's error paths:** attestation and RevenueCat failures read as permanent, no Retry, a new
-  key per question; a size 400 offers a Retry that resends the same request.
-- **Notices:** amounts ignore "hide amounts"; a notice outlives its deleted debt, goal or
-  subscription.
 - **Assistant performance:** full-resolution photo decode on the main thread; each streamed piece
   re-parses the reply and re-renders the chat; allowance Keychain calls on the main thread;
   FastPath runs the voice parser on questions; `forecast_balance` series O(days × occurrences).
@@ -62,11 +63,11 @@ Found by the release audit of 2026-10-15 (details and file references:
   repayment above what is left and a due date before the loan.
 - **Races:** fetch-or-insert without a uniqueness constraint (threads, goals, debts, facts); a
   load overwriting an `add`; FastPath vs `reset()`; a chat deleted during its save comes back.
-- **Copy:** German Ten strings (`assistant.*`) say "du", the app "Sie"; mic and speech
-  permission texts don't mention Ten.
-- **Server before traffic:** Durable Objects counters, a Rate Limiting binding, separate free and
-  Pro caps, a RevenueCat timeout, no count for a failed upstream call, abort on disconnect, a
-  `protocol` range and an app build header.
+- **Copy:** mic and speech permission texts don't mention Ten.
+- **Server before traffic** (sizing in [plan-ads-readiness.md](plan-ads-readiness.md) A5, the
+  rest C5): Durable Objects counters, a Rate Limiting binding, separate free and Pro caps, a
+  RevenueCat timeout, no count for a failed upstream call, abort on disconnect, a `protocol`
+  range and an app build header.
 
 Found by the docs audit of 2026-10-12, not verified on device yet:
 - **Duplicate Siri submissions:** repeating a phrase can log the same transaction twice; the
@@ -87,9 +88,6 @@ Found by the docs audit of 2026-10-12, not verified on device yet:
 
 ## Ideas, not planned yet
 
-- **Quick-add templates, widgets, Control Center, Lock Screen.** Templates first (in-app, cheap,
-  the content a widget shows). There is no widget target or App Group today: share a small
-  snapshot file through an App Group rather than moving the CoreData store.
 - **Statement import:** a one-tap "align the balance to the statement" after the closing-balance
   check (today it only shows the difference).
 - **Subscriptions as expected payments**, merged with the real charges when they arrive.
@@ -116,7 +114,8 @@ Found by the docs audit of 2026-10-12, not verified on device yet:
   account's currency doesn't reconvert its transactions; transfers saved without a target
   amount before the edit fix stay as saved.
 - **No family / shared budget**: it needs sync, and CloudKit sync was removed on 2026-04-22
-  after data loss. Drop `семейный` from the ru keyword field in the next ASO pass.
+  after data loss. Drop `семейный` from the ru keyword field in the next ASO pass. Up for review
+  (product audit 2026-10-22, decision D6): both Qalta apps in KZ now offer a shared or family book.
 - **No Create ML category model**: history, brand and keyword tiers are cheaper and explainable.
 - **iPad deferred**: it matters for featuring, not for traffic
   ([promotion-plan.md](promotion-plan.md)).

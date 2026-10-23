@@ -180,6 +180,8 @@ struct InsightsView: View {
     private var insightsSummaryHeaderSection: some View {
         VStack(alignment: .leading, spacing: AppSpacing.lg) {
             summaryStatsGrid
+            // How much can go out a day until the next income; a link to how it is reached.
+            DailyAllowanceLink()
             // Health score card moved into the «Важное сейчас» section (2026-07 UX pass).
         }
         .screenPadding()
@@ -536,6 +538,8 @@ struct InsightsView: View {
             .navigationTitle(String(localized: "insights.title"))
             .navigationBarTitleDisplayMode(.large)
     }
+    // DailyAllowanceLink reads the coordinator.
+    .environment(coordinator)
 }
 
 #Preview("Insights — Empty State") {
@@ -547,4 +551,5 @@ struct InsightsView: View {
             .navigationTitle(String(localized: "insights.title"))
             .navigationBarTitleDisplayMode(.large)
     }
+    .environment(coordinator)
 }

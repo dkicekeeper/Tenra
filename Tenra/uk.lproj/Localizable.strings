@@ -97,6 +97,23 @@
 "settings.background" = "Тло";
 "settings.merchantLogos" = "Логотипи магазинів";
 "home.hint.categories" = "Натисніть на категорію, щоб додати витрату";
+"home.autoCapture.title" = "Нехай Tenra записує сама";
+"home.autoCapture.message" = "Налаштуйте автоматизацію Wallet один раз, і оплати Apple Pay з’являтимуться тут самі.";
+"home.autoCapture.action" = "Налаштувати";
+"home.today.title" = "На сьогодні";
+"home.today.untilIncome" = "На день до надходження %@";
+"home.today.untilMonthEnd" = "На день до кінця місяця";
+"home.today.setAside" = "%@ відкладено на платежі";
+"allowance.detail.how" = "Як рахується";
+"allowance.detail.footer" = "Залишок на повсякденних рахунках мінус підписки, платежі за кредитами та заплановані витрати до цієї дати, поділений на дні, що лишилися. Тен рахує так само.";
+"allowance.detail.balance" = "На рахунках зараз";
+"allowance.detail.setAside" = "Відкладено на платежі";
+"allowance.detail.free" = "Можна витратити";
+"allowance.detail.days" = "Залишилось днів";
+"allowance.detail.payments" = "Відкладені платежі";
+"home.iCloudAsk.title" = "Зберігайте копії в iCloud";
+"home.iCloudAsk.message" = "Щотижнева копія зараз лише на цьому iPhone. В iCloud Drive вона переживе новий телефон або перевстановлення.";
+"home.iCloudAsk.action" = "Увімкнути";
 "settings.voiceLanguage" = "Мова голосу";
 "settings.voiceLanguage.app" = "Як у застосунку";
 "settings.background.none" = "Без тла";
@@ -1270,6 +1287,14 @@
 "diagnostics.report.cpuExceptions" = "Навантаження на CPU: %lld";
 "diagnostics.report.slowLaunches" = "Повільні запуски: %lld";
 "diagnostics.share" = "Поділитися діагностикою";
+"diagnostics.capture.header" = "Автозапис";
+"diagnostics.capture.footer" = "Оплати, які автоматизації Wallet і сповіщень банку записали на цьому iPhone за останні 90 днів. Ніщо не залишає пристрій.";
+"diagnostics.capture.applePay" = "Оплати Apple Pay";
+"diagnostics.capture.notifications" = "Сповіщення банків";
+"diagnostics.capture.counts" = "%lld за 7 днів, %lld за 30";
+"diagnostics.capture.pending" = "Чекають курсу";
+"diagnostics.capture.last" = "Останній запис";
+"diagnostics.capture.never" = "Не було";
 
 // MARK: - Voice (extras)
 "voice.openSettings" = "Відкрити налаштування";
@@ -1550,17 +1575,18 @@
 
 "onboarding.welcome.page1.title" = "Усі ваші фінанси в одному місці";
 "onboarding.welcome.page1.subtitle" = "Рахунки, депозити, кредити, підписки й категорії витрат разом із зрозумілою аналітикою.";
-"onboarding.welcome.page2.title" = "Додавайте операції голосом";
-"onboarding.welcome.page2.subtitle" = "Скажіть «Кава 800 тенге», і Tenra розпізнає суму, валюту й категорію. Або імпортуйте виписки з PDF/CSV.";
+"onboarding.welcome.page2.title" = "Записує сама";
+"onboarding.welcome.page2.subtitle" = "Оплати Apple Pay, сповіщення й виписки банку стають операціями без ручного введення. Без входу в банк.";
 "onboarding.welcome.page3.title" = "Ваші дані залишаються вашими";
 "onboarding.welcome.page3.subtitle" = "Усе зберігається на пристрої. Резервна копія в iCloud за бажанням. Без облікових записів, без реєстрації.";
+"onboarding.welcome.ten.title" = "Запитайте Тена про гроші";
+"onboarding.welcome.ten.subtitle" = "Куди йдуть гроші, чи вистачить до зарплати, як швидше закрити кредит: Тен відповість на ваших цифрах.";
 
 "onboarding.cta.next" = "Далі";
 "pager.previous" = "Назад";
 "pager.next" = "Вперед";
 "onboarding.cta.start" = "Почати";
 "onboarding.cta.done" = "Готово";
-"onboarding.cta.doneWithCount" = "Готово • обрано %d";
 "onboarding.cta.skip" = "Пропустити";
 "onboarding.stepIndicator.label" = "Крок %d з %d";
 
@@ -1688,7 +1714,6 @@
 // MARK: - Settings Pro Section
 
 "settings.pro.cta.title" = "Оформити Tenra Pro";
-"settings.pro.cta.subtitle" = "Безлімітні рахунки, імпорт виписок, депозити та кредити";
 "settings.pro.status.active" = "Активна";
 "settings.pro.plan.monthly" = "Місячна";
 "settings.pro.plan.annual" = "Річна";
@@ -1700,17 +1725,9 @@
 "settings.pro.manage" = "Керувати підпискою";
 "settings.pro.restore" = "Відновити покупки";
 "settings.pro.redeemCode" = "Ввести промокод";
-"settings.pro.restore.restored" = "Відновлено";
 "settings.pro.restore.none" = "Покупок не знайдено";
 "settings.pro.restore.failed" = "Не вдалося відновити";
 "pro.page.subtitle" = "Усі можливості Tenra без обмежень";
-"pro.page.features" = "Що входить до Pro";
-"pro.feature.accounts" = "Необмежена кількість рахунків";
-"pro.feature.voice" = "Голосове введення";
-"pro.feature.import" = "Імпорт виписок PDF і CSV";
-"pro.feature.deposits" = "Депозити з нарахуванням відсотків";
-"pro.feature.loans" = "Кредити з графіком платежів";
-"pro.feature.debts" = "Особисті борги";
 
 /* MARK: - App Intents / Siri */
 "intent.log.title" = "Записати операцію";
@@ -1759,7 +1776,7 @@
 "intent.bankNotification.parameter.app" = "Програма";
 "intent.bankNotification.parameter.date" = "Дата";
 "intent.bankNotification.notOperation" = "У сповіщенні немає витрати чи доходу, нічого не записано.";
-"intent.bankNotification.ownTransfer" = "Переказ між власними рахунками не записується.";
+"intent.bankNotification.ownTransfer" = "Переказ між власними рахунками: Tenra запише його, коли надійде сповіщення другого банку.";
 "intent.bankNotification.cash" = "Зняття готівки не записується: записуйте, на що витрачаєте готівку.";
 "walletSetup.title" = "Налаштувати автоматизацію Wallet";
 "walletSetup.intro" = "Після цього кожна оплата Apple Pay на терміналі записується сама: із продавцем, сумою, валютою і карткою. Онлайн-оплати Wallet не передає, вони прийдуть із випискою.";
@@ -1887,6 +1904,18 @@
 /* Income presets and add-income-category action */
 "onboarding.preset.salary" = "Зарплата";
 "onboarding.preset.otherIncome" = "Інші доходи";
+"onboarding.autoCapture.title" = "Нехай Tenra записує сама";
+"onboarding.autoCapture.subtitle" = "Без входу в банк. Кожне займе кілька хвилин, зараз або пізніше.";
+"onboarding.autoCapture.applePay.title" = "Оплати Apple Pay";
+"onboarding.autoCapture.applePay.hint" = "Кожна оплата телефоном або годинником запишеться сама";
+"onboarding.autoCapture.notifications.title" = "Сповіщення банку";
+"onboarding.autoCapture.notifications.hint" = "Перекази, оплати за QR та онлайн зі сповіщень будь-якого банку";
+"onboarding.autoCapture.statement.title" = "Виписка з банку";
+"onboarding.autoCapture.statement.hint" = "Завантажте PDF за минулий місяць, і Тен рознесе операції";
+"onboarding.autoCapture.afterStart" = "Після старту";
+"onboarding.restore" = "Відновити з копії";
+"onboarding.cta.nextWithCount" = "Далі • обрано %d";
+"onboarding.restore.hint" = "Торкніться копії, щоб повернути дані на цей iPhone.";
 "transactionForm.addIncomeCategory" = "Додати категорію доходу";
 
 /* Statement import duplicate markers */
@@ -2043,6 +2072,7 @@
 "assistant.forecast.balance" = "Залишок по днях";
 "assistant.forecast.obligations" = "Спишеться до %@";
 "assistant.error.generic" = "Щось пішло не так. Спробуйте ще раз.";
+"assistant.error.tooLong" = "Цей чат став задовгим для асистента. Почніть новий і запитайте знову.";
 
 /* AI assistant: the chat screen */
 "tab.assistant" = "Асистент";
@@ -2175,10 +2205,13 @@
 "assistant.notice.ask.debt" = "Розбери борг: %@";
 "assistant.notice.goal.behind" = "Щоб встигнути до %2$@, відкладайте %1$@ на місяць";
 "assistant.notice.ask.goal" = "Як наздогнати ціль «%@»?";
+"assistant.notice.setup" = "Ви вносите витрати вручну. Налаштуйте автоматизацію Wallet один раз, і оплати Apple Pay записуватимуться самі.";
 "assistant.topic.goal.onTrack" = "Чи встигаю до цілі «%@»?";
 "assistant.topic.goal.faster" = "Як швидше накопичити на «%@»?";
 "assistant.topic.debt.status" = "Скільки залишилось за боргом: %@?";
 "assistant.topic.debt.plan" = "Як повернути борг вчасно: %@?";
+"assistant.topic.allowance.enough" = "Чи вистачить грошей до наступного доходу?";
+"assistant.topic.allowance.save" = "Де заощадити, щоб на день лишалося більше?";
 
 /* Ten's lines around the conversation (AssistantChatter, DesignKit 4.10). */
 "assistant.chatter.morning" = "Доброго ранку!";
@@ -2237,3 +2270,23 @@
 "status.archived" = "Архівована";
 "status.pending" = "Очікує";
 "textInput.characterCount" = "%1$lld з %2$lld символів";
+
+"bankSetup.title" = "Налаштувати сповіщення банку";
+"bankSetup.page.intro" = "Операції зі сповіщень банку";
+"bankSetup.page.trigger" = "Виберіть застосунки банків";
+"bankSetup.page.action" = "Додайте дію Tenra";
+"bankSetup.page.quiet" = "Без запитань";
+"bankSetup.page.check" = "Перевірити сповіщення";
+"bankSetup.intro" = "В iOS 27 Швидкі команди вміють запускати дію, коли надходить сповіщення. Tenra знаходить у сповіщенні банку суму, валюту, картку та продавця й записує витрату чи дохід без запитань. Текст не залишає iPhone.";
+"bankSetup.step.trigger" = "Відкрийте **Швидкі команди** › **Автоматизація** › **+** і виберіть тригер сповіщення від застосунку. Позначте всі застосунки своїх банків. Фільтри не додавайте: коди, рекламу й залишки Tenra пропускає сама.";
+"bankSetup.step.action" = "Створіть порожню автоматизацію, знайдіть **%@** і додайте її.";
+"bankSetup.step.fields" = "Заповніть поля зі змінної **Сповіщення**: **%1$@** ← назва, **%2$@** ← підзаголовок, **%3$@** ← текст, **%4$@** ← застосунок, **%5$@** ← дата.";
+"bankSetup.step.quiet" = "Якщо Швидкі команди запропонують, виберіть запуск одразу й вимкніть сповіщення про запуск. Готово: наступне сповіщення про оплату стане операцією в Tenra.";
+"bankSetup.note.filters" = "Кожен доданий фільтр треба заповнити або видалити, інакше автоматизація не ввімкнеться.";
+"bankSetup.check.text" = "Вставте текст сповіщення свого банку й подивіться, що Tenra з нього запише. Нічого не зберігається.";
+"bankSetup.check.placeholder" = "Текст сповіщення";
+"bankSetup.check.result" = "Tenra запише";
+"bankSetup.check.kind" = "Тип";
+"bankSetup.check.counterparty" = "Продавець або відправник";
+"bankSetup.check.card" = "Картка";
+"bankSetup.check.none" = "Це не операція: з такого тексту Tenra нічого не запише.";

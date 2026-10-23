@@ -97,6 +97,23 @@
 "settings.background" = "Arrière-plan";
 "settings.merchantLogos" = "Logos des commerçants";
 "home.hint.categories" = "Touchez une catégorie pour ajouter une dépense";
+"home.autoCapture.title" = "Laissez Tenra enregistrer";
+"home.autoCapture.message" = "Configurez l’automatisation Wallet une fois, et les paiements Apple Pay apparaîtront ici d’eux-mêmes.";
+"home.autoCapture.action" = "Configurer";
+"home.today.title" = "Pour aujourd’hui";
+"home.today.untilIncome" = "Par jour jusqu’au revenu du %@";
+"home.today.untilMonthEnd" = "Par jour jusqu’à la fin du mois";
+"home.today.setAside" = "%@ mis de côté pour les paiements";
+"allowance.detail.how" = "Comment c’est calculé";
+"allowance.detail.footer" = "Vos comptes du quotidien aujourd’hui, moins les abonnements, échéances de prêt et dépenses prévues d’ici là, répartis sur les jours restants. Ten calcule de la même façon.";
+"allowance.detail.balance" = "Sur vos comptes maintenant";
+"allowance.detail.setAside" = "Mis de côté pour les paiements";
+"allowance.detail.free" = "Disponible à dépenser";
+"allowance.detail.days" = "Jours restants";
+"allowance.detail.payments" = "Paiements mis de côté";
+"home.iCloudAsk.title" = "Gardez les sauvegardes dans iCloud";
+"home.iCloudAsk.message" = "Votre sauvegarde hebdomadaire n’est que sur cet iPhone. Dans iCloud Drive, elle survit à un nouveau téléphone ou à une réinstallation.";
+"home.iCloudAsk.action" = "Activer";
 "settings.voiceLanguage" = "Langue de la voix";
 "settings.voiceLanguage.app" = "Comme dans l’app";
 "settings.background.none" = "Aucun arrière-plan";
@@ -1270,6 +1287,14 @@
 "diagnostics.report.cpuExceptions" = "Pics de CPU : %lld";
 "diagnostics.report.slowLaunches" = "Lancements lents : %lld";
 "diagnostics.share" = "Partager le diagnostic";
+"diagnostics.capture.header" = "Saisie automatique";
+"diagnostics.capture.footer" = "Paiements enregistrés sur cet iPhone par les automatisations Wallet et notifications bancaires ces 90 derniers jours. Rien ne quitte l’appareil.";
+"diagnostics.capture.applePay" = "Paiements Apple Pay";
+"diagnostics.capture.notifications" = "Notifications bancaires";
+"diagnostics.capture.counts" = "%lld en 7 jours, %lld en 30";
+"diagnostics.capture.pending" = "En attente d’un taux";
+"diagnostics.capture.last" = "Dernier enregistrement";
+"diagnostics.capture.never" = "Jamais";
 
 // MARK: - Voice (extras)
 "voice.openSettings" = "Ouvrir les Réglages";
@@ -1550,17 +1575,18 @@
 
 "onboarding.welcome.page1.title" = "Toutes vos finances au même endroit";
 "onboarding.welcome.page1.subtitle" = "Comptes, comptes épargne, crédits, abonnements et catégories de dépenses, le tout avec une analyse claire.";
-"onboarding.welcome.page2.title" = "Ajoutez des opérations à la voix";
-"onboarding.welcome.page2.subtitle" = "Dites \"Café 800 tenge\" et Tenra reconnaît le montant, la devise et la catégorie. Ou importez vos relevés PDF/CSV.";
+"onboarding.welcome.page2.title" = "S’enregistre tout seul";
+"onboarding.welcome.page2.subtitle" = "Les paiements Apple Pay, les notifications et les relevés de votre banque deviennent des opérations sans saisie. Sans connexion à la banque.";
 "onboarding.welcome.page3.title" = "Vos données restent les vôtres";
 "onboarding.welcome.page3.subtitle" = "Tout est stocké sur votre appareil. La sauvegarde iCloud est facultative. Pas de compte, pas d'inscription.";
+"onboarding.welcome.ten.title" = "Posez vos questions d’argent à Ten";
+"onboarding.welcome.ten.subtitle" = "Où part l’argent, s’il tiendra jusqu’à la paie, comment rembourser un prêt plus vite : Ten répond avec vos propres chiffres.";
 
 "onboarding.cta.next" = "Suivant";
 "pager.previous" = "Précédent";
 "pager.next" = "Suivant";
 "onboarding.cta.start" = "Commencer";
 "onboarding.cta.done" = "Terminé";
-"onboarding.cta.doneWithCount" = "Terminé • %d sélectionnées";
 "onboarding.cta.skip" = "Ignorer";
 "onboarding.stepIndicator.label" = "Étape %d sur %d";
 
@@ -1688,7 +1714,6 @@
 // MARK: - Settings Pro Section
 
 "settings.pro.cta.title" = "Passer à Tenra Pro";
-"settings.pro.cta.subtitle" = "Comptes illimités, import de relevés, dépôts et crédits";
 "settings.pro.status.active" = "Actif";
 "settings.pro.plan.monthly" = "Mensuel";
 "settings.pro.plan.annual" = "Annuel";
@@ -1700,17 +1725,9 @@
 "settings.pro.manage" = "Gérer l'abonnement";
 "settings.pro.restore" = "Restaurer les achats";
 "settings.pro.redeemCode" = "Utiliser un code";
-"settings.pro.restore.restored" = "Restauré";
 "settings.pro.restore.none" = "Aucun achat trouvé";
 "settings.pro.restore.failed" = "Échec de la restauration";
 "pro.page.subtitle" = "Tout Tenra, sans limites";
-"pro.page.features" = "Ce qu'inclut Pro";
-"pro.feature.accounts" = "Comptes illimités";
-"pro.feature.voice" = "Saisie vocale";
-"pro.feature.import" = "Import de relevés PDF et CSV";
-"pro.feature.deposits" = "Comptes épargne avec intérêts";
-"pro.feature.loans" = "Prêts avec échéancier";
-"pro.feature.debts" = "Dettes personnelles";
 
 /* MARK: - App Intents / Siri */
 "intent.log.title" = "Enregistrer une opération";
@@ -1759,7 +1776,7 @@
 "intent.bankNotification.parameter.app" = "App";
 "intent.bankNotification.parameter.date" = "Date";
 "intent.bankNotification.notOperation" = "Aucune dépense ni aucun revenu dans cette notification, rien n'a été enregistré.";
-"intent.bankNotification.ownTransfer" = "Un virement entre vos propres comptes n'est pas enregistré.";
+"intent.bankNotification.ownTransfer" = "Un virement entre vos propres comptes : Tenra l’enregistre dès que la notification de l’autre banque arrive.";
 "intent.bankNotification.cash" = "Un retrait d'espèces n'est pas enregistré : enregistrez ce que vous payez en espèces.";
 "walletSetup.title" = "Configurer l'automatisation Wallet";
 "walletSetup.intro" = "Ensuite, chaque paiement Apple Pay sur un terminal est enregistré tout seul, avec le commerçant, le montant, la devise et la carte. Wallet ne transmet pas les paiements en ligne : ils arrivent avec le relevé.";
@@ -1887,6 +1904,18 @@
 /* Income presets and add-income-category action */
 "onboarding.preset.salary" = "Salaire";
 "onboarding.preset.otherIncome" = "Autres revenus";
+"onboarding.autoCapture.title" = "Laissez Tenra enregistrer";
+"onboarding.autoCapture.subtitle" = "Sans connexion à la banque. Chacun prend quelques minutes, maintenant ou plus tard.";
+"onboarding.autoCapture.applePay.title" = "Paiements Apple Pay";
+"onboarding.autoCapture.applePay.hint" = "Chaque paiement avec l’iPhone ou la Watch au terminal est enregistré";
+"onboarding.autoCapture.notifications.title" = "Notifications bancaires";
+"onboarding.autoCapture.notifications.hint" = "Virements, paiements QR et en ligne depuis les notifications de toute banque";
+"onboarding.autoCapture.statement.title" = "Un relevé bancaire";
+"onboarding.autoCapture.statement.hint" = "Chargez le PDF du mois dernier, et Ten le range en opérations";
+"onboarding.autoCapture.afterStart" = "Après le début";
+"onboarding.restore" = "Restaurer une sauvegarde";
+"onboarding.cta.nextWithCount" = "Suivant • %d sélectionnées";
+"onboarding.restore.hint" = "Touchez une sauvegarde pour retrouver vos données sur cet iPhone.";
 "transactionForm.addIncomeCategory" = "Ajouter une catégorie de revenus";
 
 /* Statement import duplicate markers */
@@ -2043,6 +2072,7 @@
 "assistant.forecast.balance" = "Solde par jour";
 "assistant.forecast.obligations" = "Prélèvements jusqu’au %@";
 "assistant.error.generic" = "Un problème est survenu. Réessayez.";
+"assistant.error.tooLong" = "Cette conversation est devenue trop longue pour l’assistant. Commencez-en une nouvelle et reposez la question.";
 
 /* AI assistant: the chat screen */
 "tab.assistant" = "Assistant";
@@ -2175,10 +2205,13 @@
 "assistant.notice.ask.debt" = "Analyse la dette avec %@";
 "assistant.notice.goal.behind" = "Mettez de côté %1$@ par mois pour y arriver d’ici le %2$@";
 "assistant.notice.ask.goal" = "Comment rattraper mon retard sur « %@ » ?";
+"assistant.notice.setup" = "Vous saisissez vos dépenses à la main. Configurez une fois l’automatisation Wallet, et les paiements Apple Pay se noteront tout seuls.";
 "assistant.topic.goal.onTrack" = "Suis-je dans les temps pour « %@ » ?";
 "assistant.topic.goal.faster" = "Comment épargner plus vite pour « %@ » ?";
 "assistant.topic.debt.status" = "Combien reste-t-il sur la dette avec %@ ?";
 "assistant.topic.debt.plan" = "Comment rembourser %@ à temps ?";
+"assistant.topic.allowance.enough" = "Mon argent tiendra-t-il jusqu’au prochain revenu ?";
+"assistant.topic.allowance.save" = "Où économiser pour avoir plus chaque jour ?";
 
 /* Ten's lines around the conversation (AssistantChatter, DesignKit 4.10). */
 "assistant.chatter.morning" = "Bonjour !";
@@ -2237,3 +2270,23 @@
 "status.archived" = "Archivé";
 "status.pending" = "En attente";
 "textInput.characterCount" = "%1$lld sur %2$lld caractères";
+
+"bankSetup.title" = "Configurer les notifications bancaires";
+"bankSetup.page.intro" = "Des opérations depuis les notifications de votre banque";
+"bankSetup.page.trigger" = "Choisissez vos apps bancaires";
+"bankSetup.page.action" = "Ajoutez l’action de Tenra";
+"bankSetup.page.quiet" = "Sans rien demander";
+"bankSetup.page.check" = "Vérifier une notification";
+"bankSetup.intro" = "Sous iOS 27, Raccourcis peut lancer une action à l’arrivée d’une notification. Tenra lit le montant, la devise, la carte et le commerçant dans la notification de votre banque et enregistre la dépense ou le revenu sans rien demander. Le texte ne quitte jamais votre iPhone.";
+"bankSetup.step.trigger" = "Ouvrez **Raccourcis** › **Automatisation** › **+** et choisissez le déclencheur d’une notification d’une app. Cochez toutes vos apps bancaires. N’ajoutez aucun filtre : Tenra ignore elle-même les codes, les promotions et les soldes.";
+"bankSetup.step.action" = "Créez une automatisation vierge, cherchez **%@** et ajoutez-la.";
+"bankSetup.step.fields" = "Remplissez ses champs avec la variable **Notification**, chacun avec sa propriété : **%1$@** avec le titre, **%2$@** avec le sous-titre, **%3$@** avec le texte, **%4$@** avec l’app et **%5$@** avec la date.";
+"bankSetup.step.quiet" = "Si Raccourcis le propose, choisissez l’exécution immédiate et désactivez la notification d’exécution. C’est fait : la prochaine notification de paiement devient une opération dans Tenra.";
+"bankSetup.note.filters" = "Un filtre ajouté doit être rempli ou supprimé, sinon l’automatisation ne s’active pas.";
+"bankSetup.check.text" = "Collez le texte d’une notification de votre banque pour voir ce que Tenra en enregistrerait. Rien n’est conservé.";
+"bankSetup.check.placeholder" = "Texte de la notification";
+"bankSetup.check.result" = "Tenra enregistrerait";
+"bankSetup.check.kind" = "Type";
+"bankSetup.check.counterparty" = "Commerçant ou expéditeur";
+"bankSetup.check.card" = "Carte";
+"bankSetup.check.none" = "Ce n’est pas une opération : Tenra n’enregistre rien de ce texte.";

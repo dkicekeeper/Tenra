@@ -31,7 +31,8 @@ struct OnboardingAccountStep: View {
             },
             onSkip: {
                 Task { await vm.skip() }
-            }
+            },
+            stepSymbols: OnboardingViewModel.stepSymbols
         ) {
             ScrollView {
                 EditableHeroSection(

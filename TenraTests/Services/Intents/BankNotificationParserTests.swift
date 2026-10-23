@@ -77,6 +77,14 @@ struct BankNotificationParserTests {
         let operation = try #require(parse("Пополнение: 200 000 ₸", "С Kaspi Депозита D-007\nДоступно: 250 000 ₸"))
         #expect(operation.kind == .ownTransfer)
         #expect(operation.amount == 200_000)
+        #expect(operation.isIncoming)
+    }
+
+    @Test("A transfer to the user's own account in another bank is the sending side")
+    func toOwnAccount() throws {
+        let operation = try #require(parse("Перевод: 15 000 ₸", "Между своими счетами\nДоступно: 40 000 ₸"))
+        #expect(operation.kind == .ownTransfer)
+        #expect(!operation.isIncoming)
     }
 
     @Test("A balance on the same line ends the shop's name")

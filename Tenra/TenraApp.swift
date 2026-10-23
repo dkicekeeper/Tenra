@@ -75,10 +75,11 @@ struct TenraApp: App {
             .task {
                 await bootstrap()
             }
-            // "Open in Tenra" for a statement or a CSV: the assistant takes it.
+            // "Open in Tenra" for a statement or a CSV: the assistant takes it. A widget's or
+            // Control Center's tenra://add opens the add form or the assistant.
             .onOpenURL { url in
                 if let coordinator {
-                    coordinator.openAttachment(url)
+                    coordinator.open(url)
                 } else {
                     openedBeforeLaunch = url
                 }
@@ -126,6 +127,10 @@ struct TenraApp: App {
                 if phase == .background {
                     // Ask iOS for a background insights recompute while we're away.
                     BackgroundInsightsRefresher.shared.scheduleNextRefresh()
+                    // What the widgets show: today's figures as the app leaves them.
+                    if let coordinator {
+                        Task { await WidgetSnapshotBuilder.refresh(coordinator: coordinator) }
+                    }
                 }
             }
         }
@@ -174,7 +179,7 @@ struct TenraApp: App {
         coordinator = c
         if let url = openedBeforeLaunch {
             openedBeforeLaunch = nil
-            c.openAttachment(url)
+            c.open(url)
         }
         // After the first frame; runs its probes off the main actor.
         DiagnosticsCenter.shared.scheduleLaunchHealthCheck()

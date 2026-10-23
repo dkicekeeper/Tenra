@@ -11,7 +11,7 @@
 | Создать версию в App Store, вставить What's New из `docs/release-notes.md` (заметки версии, которая готовится) во все локали, выбрать сборку после обработки (на ревью не отправляет) | GitHub Actions, `.github/workflows/asc.yml` | Actions → App Store Connect → `prepare-version`, поля `version` и `build`; или Claude через GitHub API |
 | Специальные страницы продукта и тест страницы (скриншоты, промо-текст, ключевые слова) из `appstore/product-pages.json` | GitHub Actions, `.github/workflows/asc.yml` | `push-custom-pages`, `push-experiment` (поле `args`: `--submit`, `--start`) |
 | Выдать или забрать Tenra Pro (`pro`) одному покупателю, посмотреть, что о нём знает RevenueCat | GitHub Actions, `.github/workflows/revenuecat.yml`, секрет `REVENUECAT_SECRET_KEY` | Actions → RevenueCat: `grant` / `revoke` / `status`, `app_user_id`, `days`; id в логе скрыт |
-| Исходные скриншоты стора на симуляторе без Mac | GitHub Actions, `.github/workflows/screenshots.yml` (macOS) | Actions → Screenshots: языки, `frames` = `all`, `cpp` или `ten`; `art` рисует Тэна для шапки |
+| Исходные скриншоты стора на симуляторе без Mac | GitHub Actions, `.github/workflows/screenshots.yml` (macOS) | Actions → Screenshots: языки, `frames` = `all`, `cpp`, `ten` или `autocapture`; `art` рисует Тэна для шапки |
 | Продажи и выручка по дням, плюс всё из строки выше | облачная сессия Claude, `appstore/asc.py` | Claude запускает сам, если ключ есть в переменных окружения |
 
 Репозиторий Tenra публичный, поэтому логи Actions видны всем. Продажи и выручку `asc.py` в Actions
@@ -60,6 +60,26 @@ github.com/dkicekeeper/Tenra → **Settings** → **Secrets and variables** → 
 App Store Connect → Tenra → **TestFlight** → **Internal Testing** → группа с тобой, включить
 **Automatic Distribution**: новые сборки придут в приложение TestFlight сами.
 
+### 5. App Group для виджетов (основатель, один раз)
+
+Приложение и расширение виджетов (`dakacom.Tenra.TenraWidgets`) делят данные через App Group
+`group.dakacom.Tenra` (`WidgetSnapshotStore`, [domains/intents.md](domains/intents.md) §8).
+Автоматическая подпись из облака с ключом API создаёт App ID и профили, но группу не
+регистрирует и к App ID не привязывает: без этого архив падает с «Authentication failed: Make
+sure a bearer token was provided…» и «No profiles for 'dakacom.Tenra' were found» на обеих целях.
+В [developer.apple.com](https://developer.apple.com/account/resources/identifiers/list) →
+Certificates, Identifiers & Profiles → Identifiers:
+
+1. **«+» → App Groups** → Description `Tenra`, Identifier `group.dakacom.Tenra` → Register.
+2. **`dakacom.Tenra`** → Capabilities → отметить **App Groups** → Configure → выбрать
+   `group.dakacom.Tenra` → Continue → Save (старые профили станут недействительными, это норма:
+   сборка создаст новые).
+3. **«+» → App IDs → App** → Description `Tenra Widgets`, Bundle ID Explicit
+   `dakacom.Tenra.TenraWidgets` → отметить **App Groups** → Register; затем открыть его,
+   App Groups → Configure → `group.dakacom.Tenra` → Save.
+
+После этого Claude запускает TestFlight снова; профили для обеих целей сборка сделает сама.
+
 ## Каждая сборка
 
 Claude запускает TestFlight через GitHub API (или ты: Actions → TestFlight → Run workflow, ветка
@@ -94,6 +114,16 @@ python3 appstore/asc.py prepare-version --version 1.5 --build 6 [--wait 30]
                                                 # создать версию (выпуск после одобрения), What's New
                                                 # из docs/release-notes.md, выбрать сборку; без отправки
 python3 appstore/asc.py keywords --locale ru,en-US   # слова из поля Keywords: к ним привязываются спец. страницы
+python3 appstore/asc.py metadata [--version 1.7]
+                                                # по локалям: название, подзаголовок, Promotional Text,
+                                                # длины описания и ключей, основной язык; сами ключи
+                                                # только вне Actions (лог публичный)
+python3 appstore/asc.py push-metadata [--apply]  # тексты из appstore/metadata.json: название и подзаголовок
+                                                # (пока версия готовится), Promotional Text, ключи целиком
+                                                # или keywordsAdd/keywordsRemove к тому, что есть, описание;
+                                                # недостающую локаль создаёт по copyFrom (описание, ссылки,
+                                                # What's New; кадры и картинки берёт по screenshotsFrom,
+                                                # если он есть). Без --apply только показывает изменения
 python3 appstore/asc.py custom-pages            # специальные страницы и состояние их версий
 python3 appstore/asc.py push-custom-pages [--submit]
                                                 # создать/обновить страницы из appstore/product-pages.json
@@ -110,11 +140,13 @@ Vendor number для отчётов о продажах — 94171379 (`ASC_VENDO
 
 ## Скриншоты, специальные страницы и тест страницы
 
-1. **Снять экраны:** Actions → Screenshots (`frames`: `all` снимает 01-19, `cpp` только 02 и
-   09-12 для специальных страниц, `ten` только кадры Тэна 07, 13, 14, 17-19). Workflow держит один запуск и одну
-   очередь: новый запуск, пока один ждёт, отменяет ждущий. Шаг Тэна, который ничего не нашёл,
+1. **Снять экраны:** Actions → Screenshots (`frames`: `all` снимает 01-21, `cpp` только 02 и
+   09-12 для специальных страниц, `ten` только кадры Тэна 07, 13, 14, 17-19, `autocapture` только
+   кадры автозаписи 20-21). Workflow держит один запуск и одну
+   очередь: новый запуск, пока один ждёт, отменяет ждущий. Шаг Тэна или автозаписи, который ничего не нашёл,
    кладёт рядом `90-debug-<шаг>` (экран) и `90-debug-<шаг>-tree` (дерево доступности, текст). Артефакт `raw-screenshots` кладётся в `screenshots/raw/<локаль>/`.
-   Все 13 локалей помещаются в один запуск (около 80 минут). Перед сборкой просмотреть кадры:
+   Все 13 локалей помещаются в один запуск (около 80 минут); четырнадцатый набор, `kk`, снимается
+   так же (`locales: kk`, о нём ниже). Перед сборкой просмотреть кадры:
    у первой локали запуска логотипы подписок могут не успеть загрузиться (квадраты с буквами
    вместо Netflix и YouTube), сумма или строка истории может попасть в кадр посреди анимации.
    Такие локали переснять отдельным запуском, первой поставив другую. Бывает и хуже: первая
@@ -128,22 +160,50 @@ Vendor number для отчётов о продажах — 94171379 (`ASC_VENDO
    ответы Тэна про подписки, деньги во всех валютах и досрочный платёж по кредиту. В демо у Тэна
    четыре готовых вопроса (этот месяц, подписки, валюты, кредит), тест нажимает их по порядку,
    и на каждый `ScreenshotDemoTransport` вызывает свой инструмент; слова ответов и вопросы без
-   своего пресета лежат в `ScreenshotDemoTenLines`.
+   своего пресета лежат в `ScreenshotDemoTenLines`. Кадры 20-21, автозапись: «На проверку»
+   (Настройки → Wallet: оплаты Apple Pay, которые записались сами, с логотипами мерчантов и
+   категорией, выбранной Tenra) и экран мерчанта (Настройки → Wallet → Продавцы → Starbucks).
+   Сид кладёт эти оплаты в `WalletCaptureStore` так же, как `LogWalletPaymentIntent`, с памятью
+   мерчанта и карты и логотипами в `MerchantLogoStore` (`ScreenshotDemoSeeder.buildApplePay`) и
+   сбрасывает всё это на каждом запуске; тест снимает их последними, после Тэна. Строки Истории
+   оплату из Wallet никак не отмечают, поэтому кадр автозаписи снят с «На проверку», а не с Истории.
+
+   **kk (казахский)** не язык App Store Connect: казахского там нет. Его кадры снимаются и
+   собираются только для en-GB (решение D9: тексты en-GB русские, кадры и картинки iOS 27
+   казахские). Съёмка: `kk|kk|kk_KZ|KZT` в `capture_screenshots.sh`, демо-данные и слова Тэна на
+   казахском (`case "kk"` в `ScreenshotDemoLexicon` и `ScreenshotDemoTenLines`), категории из
+   `kk.lproj`, марки (Starbucks, Netflix, Magnum) как есть. Голосовая фраза демо «Таксиге 2500
+   теңге жұмсадым» называет «такси»: казахских ключей в голосовом парсере пока нет, а это слово он
+   знает из русского, поэтому черновик 14 собирается на телефоне в «Көлік» (тест
+   `kazakhDemoPhraseIsDraftedOnThePhone`).
 2. **Собрать кадры:** `python3 scripts/compose_screenshots.py [локали] [--frames 13-ten-answer …]`
    кладёт 1320×2868 в `screenshots/final/<локаль>/`. Фон и iPhone берутся из шести шаблонов
    `screenshots/templates/background-a…f.png` (сняты с макетов Figma, файл Tenra, страница
    «Screenshots L10n»), экран вставляется в дисплей модели с Dynamic Island поверх, подпись из
    `scripts/screenshot_captions.json`: заголовок Inter SemiBold 98, подзаголовок Inter Medium 58
-   (ja и ko: Noto Sans JP/KR), не больше двух строк каждый, строки выровнены по длине; `\n` в
-   подписи ставит перенос руками. Какой кадр на каком фоне: `FRAMES` в скрипте (в порядке
+   (ja и ko: Noto Sans JP/KR; казахские ә ғ қ ң ө ұ ү һ і есть в самом Inter), не больше двух
+   строк каждый, строки выровнены по длине; `\n` в подписи ставит перенос руками. Какой кадр на
+   каком фоне: `FRAMES` в скрипте (в порядке
    магазина один фон не стоит два раза подряд). Нужны Pillow и numpy; шрифты скрипт берёт из
    системы или скачивает в `~/.cache/tenra-fonts`. Новый дизайн фона или модели: экспортировать
    шаблон из Figma без подписи, экран залить чёрным, положить в `screenshots/templates/`.
 3. **Отправить:** скриншоты версии: `push-version-screenshots` с `version` (кадры из
-   `defaultOrder` в `scripts/screenshot_captions.json`, у tr свой `order`, не больше 10);
-   специальные страницы: `push-custom-pages --submit`; тест страницы: `push-experiment --submit`,
+   `defaultOrder` в `scripts/screenshot_captions.json`, у tr свой `order`, не больше 10; с 1.7
+   первым идёт кадр автозаписи 20);
+   специальные страницы: `push-custom-pages --submit` (пятая, «Автозапись», с кадрами 20, 21, 09 и
+   01; пока 20-21 не собраны во всех локалях, команда останавливается на «Missing screenshots» для
+   всех страниц, как и `push-version-screenshots`); тест страницы: `push-experiment --submit`,
    потом после одобрения `push-experiment --start`. Повторный запуск не перезаливает
    неизменённые скриншоты.
+   en-GB берёт кадры из `screenshots/final/kk/`: `screenshotsFrom: kk` в `appstore/metadata.json`
+   важнее `copyFrom: ru` (тот даёт тексты), папку выбирает `screenshot_source` в `asc.py`.
+   `push-version-screenshots` и `push-creatives` идут по локализациям версии и доходят до kk
+   только через en-GB, `push-experiment` папку kk пропускает (`screenshots_only`). Пока kk не
+   собран, `push-version-screenshots` останавливается на en-GB («Missing screenshots»: остальные
+   локали отправить через `--locale`). На специальных страницах en-GB с текстами ru, ключами из
+   своего поля и кадрами kk: `push-custom-pages` добавляет его, когда страница уже есть, а отказ
+   App Store Connect (en-GB появится в приложении с 1.7) пишет строкой в таблицу и идёт дальше;
+   без кадров kk команда тоже останавливается на «Missing screenshots».
 4. **Шапка и кадр для поиска (iOS 27):** `python3 scripts/compose_store_art.py [локали]
    [--preview <папка>]` собирает в `screenshots/art/<локаль>/` шапку `header.png` (3840×1646:
    Тэн и фраза `header` из `scripts/screenshot_captions.json`) и кадр поиска `search.png`
@@ -153,6 +213,8 @@ Vendor number для отчётов о продажах — 94171379 (`ASC_VENDO
    через `ParticleCreature.image`). Всё важное держать в безопасных зонах Apple (`SAFE` в
    скрипте): на iPhone видна только середина шапки, а поиск показывает кадр шириной около
    365 pt, `--preview` кладёт копию в 384 px, по ней проверять, что заголовок читается.
+   en-GB берёт картинки из `screenshots/art/kk/` (тот же `screenshotsFrom`); у kk фраза шапки
+   длиннее и ложится в три строки.
    Отправка: `push-creatives` (по умолчанию на вышедшую версию, новая версия не нужна),
    `--pages` ставит их и на специальные страницы (после `push-custom-pages` без `--submit`),
    `--submit` отправляет новые картинки и версии страниц на проверку. Вышедшая версия берёт только
@@ -170,6 +232,16 @@ Vendor number для отчётов о продажах — 94171379 (`ASC_VENDO
 одно слово принадлежит одной странице. Тест страницы идёт на версии, которая сейчас в магазине,
 один за раз, до 90 дней; иконку в нём не проверить, пока альтернативных иконок нет в сборке.
 
+## Макеты экранов
+
+Как выглядит экран до того, как он попадёт в сборку, без Mac: Actions → **Mockups**
+(`mockups.yml`). Он же запускается сам при пуше в ветку `claude/**`, если пуш меняет
+`TenraTests/Mockups/` или сам workflow. Набор `ScreenMockupTests` рисует экраны в окне
+симулятора (`drawHierarchy`: стекло, панели и прокрутка выходят как на телефоне) на каждом языке
+из входа `languages` (по умолчанию `ru en`), в светлой и тёмной теме, и кладёт PNG в артефакт
+`mockups` (`<язык>/<экран>-light.png`). В обычном CI набор пропускается: он включается
+переменной `MOCKUP_DIR`. Макет экрана живёт в наборе, пока его вид на утверждении, потом удаляется.
+
 ## Если что-то пошло не так
 
 - **«Add the ASC_KEY_ID, ASC_ISSUER_ID and ASC_KEY_P8 repository secrets»** — нет секретов
@@ -178,3 +250,5 @@ Vendor number для отчётов о продажах — 94171379 (`ASC_VENDO
 - **«HTTP 403»** — у ключа нет нужной роли (продажам нужна Sales, Finance или Admin).
 - **Ошибка подписи / «Cloud signing permission error»** при сборке — у ключа в секретах роль ниже
   Admin.
+- **«Authentication failed: Make sure a bearer token was provided…»** и «No profiles for …» на
+  архиве: у App ID нет App Group, которую просят entitlements (шаг 5).

@@ -1,6 +1,6 @@
 {
-  "comment": "App Store screenshot captions per locale. This file is the source of truth (first drafted in the per-language plans, docs/archive/localization-2026-07/<lang>.md §4; tr puts the multicurrency frame first). Frame keys map to raw capture files: home=01-home, finances=02-finances, insights=03-insights, score=04-health-score, topcat=05-top-category, history=06-history, voice=07-voice (Ten's voice sheet), fx=08-multicurrency, ten=13-ten-answer, draft=14-ten-draft, goal=15-goal, debts=16-debts. At most 10 frames per locale go to the store. `header` is the phrase of the store's header art (scripts/compose_store_art.py). Custom product page frames: subscriptions=09-subscriptions, subscription=10-subscription-detail, deposit=11-deposit, loans=12-loans, and Ten's answers tensubs=17-ten-subscriptions, tenfx=18-ten-currencies, tenloan=19-ten-loan; the pages and their frame order are in appstore/product-pages.json.",
-  "defaultOrder": ["ten", "draft", "home", "finances", "goal", "debts", "score", "topcat", "history", "fx"],
+  "comment": "App Store screenshot captions per locale. This file is the source of truth (first drafted in the per-language plans, docs/archive/localization-2026-07/<lang>.md §4; tr puts the multicurrency frame first; 1.7 opens with auto-capture, then home, insights and Ten, and tr keeps multicurrency right after auto-capture). Frame keys map to raw capture files: home=01-home, finances=02-finances, insights=03-insights, score=04-health-score, topcat=05-top-category, history=06-history, voice=07-voice (Ten's voice sheet), fx=08-multicurrency, ten=13-ten-answer, draft=14-ten-draft, goal=15-goal, debts=16-debts, autocapture=20-autocapture (To review: Apple Pay payments that recorded themselves), merchant=21-merchant (a merchant's screen). At most 10 frames per locale go to the store. `header` is the phrase of the store's header art (scripts/compose_store_art.py). Custom product page frames: subscriptions=09-subscriptions, subscription=10-subscription-detail, deposit=11-deposit, loans=12-loans, and Ten's answers tensubs=17-ten-subscriptions, tenfx=18-ten-currencies, tenloan=19-ten-loan; the pages and their frame order are in appstore/product-pages.json. kk (Kazakh) is no App Store language: its frames are composed only for en-GB, which shows them through `screenshotsFrom` in appstore/metadata.json (decision D9, docs/plan-ads-readiness.md A6 item 0).",
+  "defaultOrder": ["autocapture", "home", "insights", "ten", "draft", "merchant", "finances", "goal", "debts", "fx"],
   "locales": {
     "de-DE": {
       "header": "Fragen Sie Ten, wohin Ihr Geld fließt",
@@ -23,7 +23,9 @@
         "loans":    { "title": "Kredite im Griff", "subtitle": "Ob die Rate bezahlt ist und wie viel noch offen ist" },
         "tensubs":  { "title": "Fragen Sie nach Ihren Abos", "subtitle": "Ten rechnet die Monatssumme aus und listet jedes Abo" },
         "tenfx":    { "title": "Geld in allen Währungen", "subtitle": "Ten rechnet Ihre Konten zum heutigen Kurs zusammen" },
-        "tenloan":  { "title": "Was bringt eine Sondertilgung?", "subtitle": "Ten zeigt, wie viel Zinsen Sie sparen" }
+        "tenloan":  { "title": "Was bringt eine Sondertilgung?", "subtitle": "Ten zeigt, wie viel Zinsen Sie sparen" },
+        "autocapture": { "title": "Ausgaben erfassen sich selbst", "subtitle": "Zahlen Sie mit dem Handy, Tenra bucht es samt Kategorie" },
+        "merchant": { "title": "Was Sie in jedem Geschäft ausgeben", "subtitle": "Besuche, durchschnittlicher Bon und Ausgaben pro Monat" }
       }
     },
     "es-ES": {
@@ -47,7 +49,9 @@
         "loans":    { "title": "Tus préstamos bajo control", "subtitle": "Si la cuota del mes está pagada y cuánto queda" },
         "tensubs":  { "title": "Pregunta por tus suscripciones", "subtitle": "Ten suma el total al mes y te las muestra una a una" },
         "tenfx":    { "title": "Tu dinero en todas las monedas", "subtitle": "Ten suma tus cuentas al tipo de cambio de hoy" },
-        "tenloan":  { "title": "¿Y si amortizas antes?", "subtitle": "Ten te dice cuánto ahorras en intereses" }
+        "tenloan":  { "title": "¿Y si amortizas antes?", "subtitle": "Ten te dice cuánto ahorras en intereses" },
+        "autocapture": { "title": "Gastos que se anotan solos", "subtitle": "Paga con el móvil y Tenra lo anota con su categoría" },
+        "merchant": { "title": "Lo que gastas en cada tienda", "subtitle": "Visitas, ticket medio y gasto por meses" }
       }
     },
     "es-MX": {
@@ -71,7 +75,9 @@
         "loans":    { "title": "Tus préstamos bajo control", "subtitle": "Si el pago del mes está hecho y cuánto falta" },
         "tensubs":  { "title": "Pregunta por tus suscripciones", "subtitle": "Ten suma el total al mes y te las muestra una a una" },
         "tenfx":    { "title": "Tu dinero en todas las monedas", "subtitle": "Ten suma tus cuentas al tipo de cambio de hoy" },
-        "tenloan":  { "title": "¿Y si adelantas pagos?", "subtitle": "Ten te dice cuánto ahorras en intereses" }
+        "tenloan":  { "title": "¿Y si adelantas pagos?", "subtitle": "Ten te dice cuánto ahorras en intereses" },
+        "autocapture": { "title": "Gastos que se anotan solos", "subtitle": "Paga con el celular y Tenra lo anota con su categoría" },
+        "merchant": { "title": "Lo que gastas en cada tienda", "subtitle": "Visitas, ticket promedio y gasto por mes" }
       }
     },
     "fr-FR": {
@@ -95,7 +101,9 @@
         "loans":    { "title": "Vos crédits sous contrôle", "subtitle": "Mensualité du mois payée ou non, et reste à payer" },
         "tensubs":  { "title": "Interrogez Ten sur vos abonnements", "subtitle": "Le total par mois et la liste de chacun" },
         "tenfx":    { "title": "Votre argent, toutes devises", "subtitle": "Ten additionne vos comptes au taux du jour" },
-        "tenloan":  { "title": "Et si vous remboursiez en avance ?", "subtitle": "Ten montre les intérêts que vous économisez" }
+        "tenloan":  { "title": "Et si vous remboursiez en avance ?", "subtitle": "Ten montre les intérêts que vous économisez" },
+        "autocapture": { "title": "Vos dépenses se notent seules", "subtitle": "Payez avec votre téléphone, Tenra l'enregistre avec sa catégorie" },
+        "merchant": { "title": "Ce que vous coûte chaque commerce", "subtitle": "Visites, panier moyen et dépenses par mois" }
       }
     },
     "fr-CA": {
@@ -119,12 +127,14 @@
         "loans":    { "title": "Vos crédits sous contrôle", "subtitle": "Mensualité du mois payée ou non, et reste à payer" },
         "tensubs":  { "title": "Interrogez Ten sur vos abonnements", "subtitle": "Le total par mois et la liste de chacun" },
         "tenfx":    { "title": "Votre argent, toutes devises", "subtitle": "Ten additionne vos comptes au taux du jour" },
-        "tenloan":  { "title": "Et si vous remboursiez en avance ?", "subtitle": "Ten montre les intérêts que vous économisez" }
+        "tenloan":  { "title": "Et si vous remboursiez en avance ?", "subtitle": "Ten montre les intérêts que vous économisez" },
+        "autocapture": { "title": "Vos dépenses se notent seules", "subtitle": "Payez avec votre téléphone, Tenra l'enregistre avec sa catégorie" },
+        "merchant": { "title": "Ce que vous coûte chaque commerce", "subtitle": "Visites, panier moyen et dépenses par mois" }
       }
     },
     "tr": {
       "header": "Paranın nereye gittiğini Ten'e sor",
-      "order": ["fx", "ten", "draft", "home", "finances", "goal", "debts", "score", "topcat", "history"],
+      "order": ["autocapture", "fx", "home", "insights", "ten", "draft", "merchant", "finances", "goal", "debts"],
       "frames": {
         "fx":       { "title": "TL, dolar, euro: tek gerçek bakiye", "subtitle": "Tüm hesapların gerçek kurlarla tek dürüst toplamda" },
         "ten":     { "title": "Paranı Ten'e sor", "subtitle": "Cevaplar kartlarda: toplamlar, kategoriler, bütçeler" },
@@ -144,7 +154,9 @@
         "loans":    { "title": "Krediler kontrol altında", "subtitle": "Bu ayın taksiti ödendi mi, ne kadar kaldı" },
         "tensubs":  { "title": "Aboneliklerini Ten'e sor", "subtitle": "Aylık toplamı hesaplar, hepsini tek tek listeler" },
         "tenfx":    { "title": "Tüm para birimlerinde paran", "subtitle": "Ten hesaplarını bugünkü kurla toplar" },
-        "tenloan":  { "title": "Krediyi erken kapatsan?", "subtitle": "Ten ne kadar faiz tasarruf edeceğini gösterir" }
+        "tenloan":  { "title": "Krediyi erken kapatsan?", "subtitle": "Ten ne kadar faiz tasarruf edeceğini gösterir" },
+        "autocapture": { "title": "Harcamalar kendini kaydeder", "subtitle": "Telefonunla öde, Tenra harcamayı kategorisiyle kaydetsin" },
+        "merchant": { "title": "Her işyerinde ne kadar harcıyorsun", "subtitle": "Ziyaretler, ortalama fiş ve aylık harcama" }
       }
     },
     "pt-BR": {
@@ -168,7 +180,9 @@
         "loans":    { "title": "Empréstimos sob controle", "subtitle": "Veja se a parcela do mês foi paga e quanto falta" },
         "tensubs":  { "title": "Pergunte sobre suas assinaturas", "subtitle": "O Ten soma o total do mês e mostra cada uma" },
         "tenfx":    { "title": "Seu dinheiro em todas as moedas", "subtitle": "O Ten soma suas contas pela cotação de hoje" },
-        "tenloan":  { "title": "E se adiantar o empréstimo?", "subtitle": "O Ten mostra quanto você economiza em juros" }
+        "tenloan":  { "title": "E se adiantar o empréstimo?", "subtitle": "O Ten mostra quanto você economiza em juros" },
+        "autocapture": { "title": "Gastos que se registram sozinhos", "subtitle": "Pague com o celular e o Tenra registra com a categoria" },
+        "merchant": { "title": "Quanto você gasta em cada loja", "subtitle": "Visitas, tíquete médio e gastos mês a mês" }
       }
     },
     "it": {
@@ -192,7 +206,9 @@
         "loans":    { "title": "Prestiti sotto controllo", "subtitle": "Se la rata del mese è pagata e quanto resta" },
         "tensubs":  { "title": "Chiedi dei tuoi abbonamenti", "subtitle": "Ten calcola il totale al mese e li elenca tutti" },
         "tenfx":    { "title": "I tuoi soldi in ogni valuta", "subtitle": "Ten somma i tuoi conti al cambio di oggi" },
-        "tenloan":  { "title": "E se estingui prima il prestito?", "subtitle": "Ten ti mostra quanti interessi risparmi" }
+        "tenloan":  { "title": "E se estingui prima il prestito?", "subtitle": "Ten ti mostra quanti interessi risparmi" },
+        "autocapture": { "title": "Spese che si registrano da sole", "subtitle": "Paga con il telefono e Tenra registra la spesa con la categoria" },
+        "merchant": { "title": "Quanto spendi in ogni negozio", "subtitle": "Visite, scontrino medio e spesa mese per mese" }
       }
     },
     "uk": {
@@ -216,7 +232,9 @@
         "loans":    { "title": "Кредити під контролем", "subtitle": "Видно, чи внесено платіж за місяць і скільки лишилося" },
         "tensubs":  { "title": "Запитайте про підписки", "subtitle": "Тен порахує суму за місяць і покаже кожну" },
         "tenfx":    { "title": "Гроші в усіх валютах", "subtitle": "Тен складе рахунки в одну суму за сьогоднішнім курсом" },
-        "tenloan":  { "title": "А якщо погасити достроково?", "subtitle": "Тен покаже, скільки зекономите на відсотках" }
+        "tenloan":  { "title": "А якщо погасити достроково?", "subtitle": "Тен покаже, скільки зекономите на відсотках" },
+        "autocapture": { "title": "Витрати записуються самі", "subtitle": "Платіть телефоном, і Tenra запише оплату з категорією" },
+        "merchant": { "title": "Скільки йде в кожному магазині", "subtitle": "Візити, середній чек і витрати по місяцях" }
       }
     },
     "ja": {
@@ -240,7 +258,9 @@
         "loans":    { "title": "ローンをしっかり管理", "subtitle": "今月の返済状況と残高がひと目でわかる" },
         "tensubs":  { "title": "サブスクの合計もテンに", "subtitle": "月額の合計と一覧をひとつの回答で" },
         "tenfx":    { "title": "すべての通貨を、ひとつの合計に", "subtitle": "テンが今日のレートで口座を合算" },
-        "tenloan":  { "title": "繰り上げ返済したら？", "subtitle": "節約できる利息をテンが計算" }
+        "tenloan":  { "title": "繰り上げ返済したら？", "subtitle": "節約できる利息をテンが計算" },
+        "autocapture": { "title": "支出が自動で\n記録されます", "subtitle": "スマホで払うだけで、\nカテゴリ付きで記録されます" },
+        "merchant": { "title": "お店ごとの支出が\nひと目でわかります", "subtitle": "来店回数、平均単価、\n月ごとの支出をグラフで" }
       }
     },
     "ko": {
@@ -264,7 +284,9 @@
         "loans":    { "title": "대출을 한눈에", "subtitle": "이번 달 상환 여부와 남은 금액" },
         "tensubs":  { "title": "구독료도 텐에게 물어보세요", "subtitle": "월 합계와 구독 목록을 한 번에 보여줘요" },
         "tenfx":    { "title": "모든 통화를 하나의 합계로", "subtitle": "텐이 오늘 환율로 계좌를 합산해요" },
-        "tenloan":  { "title": "대출을 미리 갚으면?", "subtitle": "아낄 수 있는 이자를 텐이 계산해요" }
+        "tenloan":  { "title": "대출을 미리 갚으면?", "subtitle": "아낄 수 있는 이자를 텐이 계산해요" },
+        "autocapture": { "title": "지출이\n저절로 기록돼요", "subtitle": "휴대폰으로 결제하면\nTenra가 카테고리까지 기록해요" },
+        "merchant": { "title": "가맹점별 지출을\n한눈에 봐요", "subtitle": "방문 횟수, 평균 결제 금액,\n월별 지출까지 보여 줘요" }
       }
     },
     "en-US": {
@@ -288,7 +310,9 @@
         "loans":    { "title": "Loans under control", "subtitle": "See if this month's payment is made and what's left" },
         "tensubs":  { "title": "Ask about subscriptions", "subtitle": "Ten adds them up per month and lists each one" },
         "tenfx":    { "title": "Money in every currency", "subtitle": "Ten adds up your accounts at today's rate" },
-        "tenloan":  { "title": "What if you pay off early?", "subtitle": "Ten shows how much interest you save" }
+        "tenloan":  { "title": "What if you pay off early?", "subtitle": "Ten shows how much interest you save" },
+        "autocapture": { "title": "Expenses that log themselves", "subtitle": "Pay with your phone, and Tenra records it with its category" },
+        "merchant": { "title": "What each place costs you", "subtitle": "Visits, average check and spending by month" }
       }
     },
     "ru": {
@@ -312,7 +336,35 @@
         "loans":    { "title": "Кредиты под контролем", "subtitle": "Видно, внесён ли платёж за месяц и сколько осталось" },
         "tensubs":  { "title": "Спросите про подписки", "subtitle": "Тэн сложит их в итог за месяц и покажет списком" },
         "tenfx":    { "title": "Деньги во всех валютах", "subtitle": "Тэн сложит счета в одну сумму по курсу на сегодня" },
-        "tenloan":  { "title": "Что если погасить досрочно?", "subtitle": "Тэн покажет, сколько сэкономите на процентах" }
+        "tenloan":  { "title": "Что если погасить досрочно?", "subtitle": "Тэн покажет, сколько сэкономите на процентах" },
+        "autocapture": { "title": "Расходы записываются сами", "subtitle": "Платите телефоном, и Tenra запишет оплату с категорией" },
+        "merchant": { "title": "Сколько уходит в каждом магазине", "subtitle": "Визиты, средний чек и траты по месяцам" }
+      }
+    },
+    "kk": {
+      "header": "Ақшаңыз қайда кетіп жатқанын Тэннен сұраңыз",
+      "frames": {
+        "home":     { "title": "Әр санатқа бюджет", "subtitle": "Айлық лимит, шығыс және қалдық бірден басты бетте" },
+        "finances": { "title": "Барлық қаржыңыз бір жерде", "subtitle": "Шоттар, депозиттер, жазылымдар мен несиелер, банкті байланыстырмай" },
+        "insights": { "title": "Ақшаның қайда кететіні көрінеді", "subtitle": "Айлық баланс, шығыстар мен таза ағын бір қарағанда" },
+        "score":    { "title": "Қаржыңыз қаншалықты сау", "subtitle": "Жинақ, бюджеттер мен резервтік қор бір түсінікті баллда" },
+        "topcat":   { "title": "Ең үлкен шығыстарды біліңіз", "subtitle": "Шығыс санаттары, айлар бойынша көрнекі бөлінісімен" },
+        "history":  { "title": "Әр операция бақылауда", "subtitle": "Шығыстар, кірістер мен депозит пайыздары бір тізімде" },
+        "voice":    { "title": "Шығыстарды дауыспен қосыңыз", "subtitle": "Соманы және санатты айтыңыз, операция жазылады" },
+        "fx":       { "title": "KZT, USD, EUR: бір нақты қорытынды", "subtitle": "Әртүрлі валютадағы шоттар, бағам әрқашан бүгінгі" },
+        "ten":      { "title": "Ақша туралы Тэннен сұраңыз", "subtitle": "Жауаптар карточкаларда: сомалар, санаттар, бюджеттер" },
+        "draft":    { "title": "Айтыңыз, Тэн жазып алады", "subtitle": "«Сақтау» түймесін басқанша ештеңе сақталмайды" },
+        "goal":     { "title": "Маңызды мақсатқа жинаңыз", "subtitle": "Ай сайын қанша жинау керектігі көрінеді" },
+        "debts":    { "title": "Кім кімге қарыз және қай күнге дейін", "subtitle": "Берген және алған қарыздар, қайтарымдарымен" },
+        "subscriptions": { "title": "Барлық жазылымдар күнтізбеде", "subtitle": "Қашан және қанша шегеріледі, сервис логотиптерімен" },
+        "subscription": { "title": "Әр жазылым бақылауда", "subtitle": "Келесі шегеру, барлық уақыттағы сома және тарих" },
+        "deposit":  { "title": "Депозиттен табысыңызды біліңіз", "subtitle": "Мөлшерлеме, капиталдандыру және келесі есептеу" },
+        "loans":    { "title": "Несиелер бақылауда", "subtitle": "Айлық төлемнің жасалғаны және қанша қалғаны көрінеді" },
+        "tensubs":  { "title": "Жазылымдар туралы сұраңыз", "subtitle": "Тэн олардың айлық сомасын шығарып, тізіммен көрсетеді" },
+        "tenfx":    { "title": "Барлық валютадағы ақша", "subtitle": "Тэн шоттарды бүгінгі бағаммен бір сомаға қосады" },
+        "tenloan":  { "title": "Мерзімінен бұрын өтесеңіз ше?", "subtitle": "Тэн пайыздан қанша үнемдейтініңізді көрсетеді" },
+        "autocapture": { "title": "Шығыстар өздігінен жазылады", "subtitle": "Телефонмен төлеңіз, Tenra төлемді санатымен жазып алады" },
+        "merchant": { "title": "Әр дүкенде қанша жұмсайсыз", "subtitle": "Келулер, орташа чек және ай бойынша шығыстар" }
       }
     }
   }

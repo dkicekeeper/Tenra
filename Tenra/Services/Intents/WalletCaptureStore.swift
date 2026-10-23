@@ -75,6 +75,23 @@ final class WalletCaptureStore {
         /// Subscription occurrences a payment was taken for (`[transaction id: when]`). nil in
         /// snapshots saved before it was kept.
         var matchedOccurrences: [String: Date]?
+        /// When the first payment was ever recorded. nil in snapshots saved before it was kept.
+        var firstCaptureAt: Date?
+        /// Sides of transfers between own accounts waiting for their other side. nil in
+        /// snapshots saved before it was kept.
+        var transferSides: [OwnTransferMatcher.Side]?
+    }
+
+    /// How much the automations record, for Diagnostics and the Home setup card. Local only.
+    struct Activity: Equatable {
+        var applePayLast7Days = 0
+        var applePayLast30Days = 0
+        var notificationsLast7Days = 0
+        var notificationsLast30Days = 0
+        var toReview = 0
+        var pending = 0
+        var lastCaptureAt: Date?
+        var firstCaptureAt: Date?
     }
 
     static let shared = WalletCaptureStore()
@@ -97,6 +114,12 @@ final class WalletCaptureStore {
     /// Occurrences of a recurring series already taken for an Apple Pay payment, so one
     /// charge of the series stands for one payment only. `[transaction id: when]`.
     private var matchedOccurrences: [String: Date]
+    /// When an automation first recorded a payment; outlives the captures' 90 days, so
+    /// "has auto-capture ever worked" stays answered.
+    private(set) var firstCaptureAt: Date?
+    /// One side of a transfer between own accounts per bank notification, until
+    /// OwnTransferRecorder pairs it with the other bank's side (or it is two days old).
+    private(set) var transferSides: [OwnTransferMatcher.Side]
     /// Set by a tap on a "check a payment" notification (WalletReviewNotifier): MainTabView
     /// presents the To review list. Not persisted.
     var isReviewRequested = false
@@ -107,6 +130,24 @@ final class WalletCaptureStore {
         self.captures = snapshot.captures
         self.pending = snapshot.pending
         self.matchedOccurrences = snapshot.matchedOccurrences ?? [:]
+        // Snapshots from before the field: the oldest kept capture is the best answer.
+        self.firstCaptureAt = snapshot.firstCaptureAt ?? snapshot.captures.values.map(\.payment.date).min()
+        self.transferSides = snapshot.transferSides ?? []
+    }
+
+    // MARK: - Transfers between own accounts
+
+    func enqueueTransferSide(_ side: OwnTransferMatcher.Side) {
+        guard !transferSides.contains(where: { $0.id == side.id }) else { return }
+        transferSides.append(side)
+        persist()
+    }
+
+    /// What OwnTransferRecorder left waiting.
+    func setTransferSides(_ sides: [OwnTransferMatcher.Side]) {
+        guard sides != transferSides else { return }
+        transferSides = sides
+        persist()
     }
 
     // MARK: - Captures
@@ -147,7 +188,34 @@ final class WalletCaptureStore {
         guard !transactionId.isEmpty else { return }
         captures = captures.filter { now.timeIntervalSince($0.value.payment.date) <= Self.retention }
         captures[transactionId] = Capture(id: transactionId, payment: payment, guesses: guesses, isReviewed: false)
+        if firstCaptureAt == nil { firstCaptureAt = now }
         persist()
+    }
+
+    /// Whether the Wallet or a bank notification automation ever recorded a payment.
+    var hasEverCaptured: Bool { firstCaptureAt != nil }
+
+    /// Counts of the kept captures (90 days) by source and window.
+    func activity(now: Date = Date()) -> Activity {
+        var activity = Activity(
+            toReview: captures.values.filter(\.needsReview).count,
+            pending: pending.count,
+            lastCaptureAt: captures.values.map(\.payment.date).max(),
+            firstCaptureAt: firstCaptureAt
+        )
+        for capture in captures.values {
+            let age = now.timeIntervalSince(capture.payment.date)
+            guard age <= 30 * 86_400 else { continue }
+            let isWeek = age <= 7 * 86_400
+            if capture.payment.bankApp == nil {
+                activity.applePayLast30Days += 1
+                if isWeek { activity.applePayLast7Days += 1 }
+            } else {
+                activity.notificationsLast30Days += 1
+                if isWeek { activity.notificationsLast7Days += 1 }
+            }
+        }
+        return activity
     }
 
     /// The user looked at the transaction: in the edit screen, or "Correct" in the list.
@@ -226,6 +294,8 @@ final class WalletCaptureStore {
         captures = [:]
         pending = []
         matchedOccurrences = [:]
+        firstCaptureAt = nil
+        transferSides = []
         defaults.removeObject(forKey: Self.storageKey)
     }
 
@@ -234,13 +304,19 @@ final class WalletCaptureStore {
     private static func load(from defaults: UserDefaults) -> Snapshot {
         guard let data = defaults.data(forKey: storageKey),
               let decoded = try? JSONDecoder().decode(Snapshot.self, from: data) else {
-            return Snapshot(captures: [:], pending: [], matchedOccurrences: [:])
+            return Snapshot(captures: [:], pending: [], matchedOccurrences: [:], firstCaptureAt: nil, transferSides: [])
         }
         return decoded
     }
 
     private func persist() {
-        let snapshot = Snapshot(captures: captures, pending: pending, matchedOccurrences: matchedOccurrences)
+        let snapshot = Snapshot(
+            captures: captures,
+            pending: pending,
+            matchedOccurrences: matchedOccurrences,
+            firstCaptureAt: firstCaptureAt,
+            transferSides: transferSides
+        )
         guard let data = try? JSONEncoder().encode(snapshot) else { return }
         defaults.set(data, forKey: Self.storageKey)
     }

@@ -15,6 +15,8 @@ enum OnboardingStep: Hashable {
     case currency
     case account
     case categories
+    /// What fills Tenra without typing: the Wallet automation, bank notifications, a statement.
+    case autoCapture
 }
 
 /// Draft for the first account being created during onboarding.
@@ -49,6 +51,32 @@ final class OnboardingViewModel {
 
     /// True while the final commit pipeline is running (disables the Done button).
     var isFinishing: Bool = false
+
+    /// What onboarding opens once it is done, chosen on the auto-capture step.
+    enum FollowUp: Hashable {
+        /// Ten (or the import tab) with a statement to pick.
+        case statement
+    }
+
+    /// Step 4: the follow-up picked, if any. One at a time: a second tap clears it.
+    var afterFinish: FollowUp?
+
+    /// iCloud Drive holds a backup of Tenra: the welcome screen offers to restore it.
+    var hasCloudBackup = false
+
+    /// The backups iCloud Drive holds, newest first, for the restore sheet.
+    var cloudBackups: [BackupMetadata] = [] {
+        didSet { hasCloudBackup = !cloudBackups.isEmpty }
+    }
+
+    /// The list of iCloud backups to restore from, over the welcome screen.
+    var showingRestore = false
+
+    /// The step indicator's symbols: Tenra's three data steps and the auto-capture step.
+    static let stepSymbols = OnboardingStepIndicator.tenraSymbols + ["wave.3.right"]
+
+    /// Whether the auto-capture step offers bank notifications: iOS 27's notification trigger.
+    static var offersBankNotifications: Bool { BankNotificationGuideView.isAvailable }
 
     // MARK: - Init
 
@@ -103,6 +131,38 @@ final class OnboardingViewModel {
         logger.info("onboarding_step_completed step=account")
     }
 
+    func advanceToAutoCaptureStep() {
+        // The categories stay drafts too: `finish()` on the next step saves everything.
+        path.append(.autoCapture)
+        logger.info("onboarding_step_completed step=categories selectedCount=\(self.selectedPresetCount, privacy: .public)")
+    }
+
+    /// The backups' view model, for the restore sheet; nil in tests.
+    var cloudSyncViewModel: CloudSyncViewModel? { coordinator?.cloudSyncViewModel }
+
+    /// Looks for backups in iCloud Drive while the welcome screen shows (a new phone, a
+    /// reinstall). Nothing without an iCloud account or a backup.
+    func checkForCloudBackups() async {
+        guard let coordinator else { return }
+        cloudBackups = await coordinator.cloudSyncViewModel.iCloudBackupsForRestore()
+    }
+
+    /// Restores `backup` and ends onboarding on the restored data. On failure the sheet stays
+    /// with the error, and onboarding goes on as before.
+    func restore(_ backup: BackupMetadata) async {
+        guard let coordinator, !isFinishing else { return }
+        isFinishing = true
+        defer { isFinishing = false }
+        guard await coordinator.cloudSyncViewModel.restoreFromOnboarding(backup) else { return }
+        showingRestore = false
+        coordinator.completeOnboarding()
+        logger.info("onboarding_restored_backup")
+    }
+
+    func toggleAfterFinish(_ followUp: FollowUp) {
+        afterFinish = afterFinish == followUp ? nil : followUp
+    }
+
     // MARK: - Skip
 
     /// User tapped the trailing «✕» button. Applies the currently selected
@@ -116,7 +176,14 @@ final class OnboardingViewModel {
 
         await coordinator.settingsViewModel.updateBaseCurrency(draftCurrency)
         coordinator.completeOnboarding()
+        adoptICloudBackups(coordinator)
         logger.info("onboarding_skipped")
+    }
+
+    /// A new install keeps its backups in iCloud Drive (CloudSyncViewModel.adoptICloudForNewInstall),
+    /// off the path to Home.
+    private func adoptICloudBackups(_ coordinator: AppCoordinator) {
+        Task { await coordinator.cloudSyncViewModel.adoptICloudForNewInstall() }
     }
 
     // MARK: - Final commit
@@ -176,7 +243,10 @@ final class OnboardingViewModel {
             await coordinator.balanceCoordinator.setInitialBalance(account.initialBalance ?? 0, for: account.id)
         }
 
+        // Asked for before Home appears, so the tab bar finds it on its first pass.
+        if afterFinish == .statement { coordinator.pickStatement() }
         coordinator.completeOnboarding()
+        adoptICloudBackups(coordinator)
         logger.info("onboarding_finished selectedCount=\(self.selectedPresetCount, privacy: .public)")
     }
 }

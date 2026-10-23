@@ -1,9 +1,9 @@
 # App Intents & Siri
 
 Domain reference for `Tenra/Intents/**` (thin App Intents adapters) and `Services/Intents/**`
-(the logic they call). The intents live in the main app target and run in the app's own
-process: no extension, no App Group. Future work (quick-add templates, widgets, Control
-Center, savings goals) is tracked in [backlog.md](../backlog.md).
+(the logic they call), and the widget extension (§8). The intents live in the main app target
+and run in the app's own process. The only extension is `TenraWidgets`, which reads one JSON
+file the app writes into the App Group; the CoreData store stays the app's.
 
 How a parsed operation becomes a transaction draft (category, account, currency) is shared
 with the in-app voice flow and documented once, in
@@ -263,6 +263,12 @@ Code is nested: reachable only through a Set Variable step), Merchant, Card or P
 merchant category. It is known to time out, to send an empty merchant with amount 0, and to fire
 for declined payments. Plan in flight: [plan-auto-capture.md](../plan-auto-capture.md).
 
+Where the setup is offered: onboarding's last step (`OnboardingAutoCaptureStep`, the Wallet
+guide and on iOS 27 the bank notification guide in sheets), Home's card under the history
+(`AutoCaptureSetupCard`, until `WalletCaptureStore.hasEverCaptured` or its ✕, key
+`home.autoCaptureCard.hidden`), and once Ten's message after the first entries for someone who
+hid the card ([assistant.md](assistant.md) §6). Settings → Siri & Shortcuts keeps the guides.
+
 ### 6.1 `LogWalletPaymentIntent` (silent)
 
 `WalletPaymentRecorder.record`:
@@ -304,7 +310,8 @@ for declined payments. Plan in flight: [plan-auto-capture.md](../plan-auto-captu
    (`convert(on:)`), before the next payment and when the app comes to the front (`MainTabView`).
 7. `TransactionDraftService.commit`; a guessed account does not reach `VoiceLearningStore`.
 8. `WalletCaptureStore.record`: the transaction id with the payment and its guesses. A capture
-   with a guess not yet looked at is "To review". Captures live 90 days.
+   with a guess not yet looked at is "To review". Captures live 90 days. `firstCaptureAt` outlives them
+   (`hasEverCaptured`), and `activity(now:)` counts the kept captures by source for Diagnostics.
 
 Learning: `WalletPaymentRecorder.confirm` remembers a captured transaction's category and
 subcategories for the merchant and its account for the card, and marks the capture reviewed. On
@@ -444,9 +451,65 @@ notification, learning on confirm. The "card" is the app plus the card's digits
 an income category from the sender's history (the merchant memory holds expense categories), no
 subscription matching.
 
-Not recorded, with a dialog saying so: a transfer between own accounts (each bank's notification
-shows one side; recording it as an expense or an income would count the money twice) and a cash
-withdrawal (the spending is logged later).
+Not recorded, with a dialog saying so: a cash withdrawal (the spending is logged later).
+
+### 7.3 Transfers between own accounts
+
+Each bank's notification shows one side ("−15 000" in one app, "+15 000 between own accounts" in
+the other); recording either as an expense or an income would count the money twice. The parser
+marks the direction (`BankNotification.isIncoming`: the sign, else the operation word), the intent
+queues the side (`WalletCaptureStore.transferSides`, with the card key) and `OwnTransferRecorder`
+pairs sides right away in the intent and again when the app comes to the front (MainTabView):
+`OwnTransferMatcher.match` takes the same currency, the receiving amount equal to the sent one or
+up to 1 % less (a fee), within 15 minutes, two different cards, the closest in time. A pair whose
+cards both have an account (`CardAccountMemory`) in the sides' currencies becomes one
+`TransactionStore.transfer`; otherwise it waits. A side alone for 48 hours is dropped. Pinned by
+`OwnTransferMatcherTests`.
+
+### 7.4 Setup guide and "Check a notification"
+
+`BankNotificationGuideView` (Settings → Siri & Shortcuts and the onboarding's auto-capture step,
+iOS 27 only: `BankNotificationGuideView.isAvailable`): the intro, the trigger (the bank apps, no
+filters), Tenra's action and its five fields from the **Notification** variable, running without a
+question, and a last page where a pasted notification shows what the parser finds (type, amount,
+merchant or sender, card), nothing saved.
 
 A bank notification's merchants are kept out of `WalletCaptureStore.merchants`, the list looked up
 online for logos ([logos.md](logos.md)): they name people too (a transfer).
+
+---
+
+## 8. Widgets and Control Center (`TenraWidgets`)
+
+A widget extension target (`TenraWidgetsExtension`, bundle id `dakacom.Tenra.TenraWidgets`,
+folder `TenraWidgets/`, synchronized like the app's) embedded in the app. App Group
+`group.dakacom.Tenra` in both entitlements. No DesignKit in the extension (its package uses
+APIs an extension may not): system fonts, the accent from its own asset catalog, its own
+`Localizable.strings` in 12 locales.
+
+- **Data**: the app writes `widget-snapshot.json` into the App Group (`WidgetSnapshotStore`,
+  `Services/Widgets/WidgetSnapshot.swift`) after the full load (ContentView) and when it goes to
+  the background (TenraApp), only when it changed, then `WidgetCenter.reloadAllTimelines()`.
+  Contents: the day, the base currency, "hide amounts", For today (`DailyAllowance`, the same
+  number as Analytics and Ten's forecast), the income it runs to, realized expenses today
+  (`summaryContribution`), the four expense categories used most in the last 30 days. The
+  extension decodes it with its own copy of the type (`TenraWidgets/WidgetData.swift`); the keys
+  are pinned by `WidgetSnapshotTests`. A snapshot from another day shows 0 spent; the timeline
+  redraws after midnight.
+- **For today** (`TodayWidget`): small, medium (with the four categories), Lock Screen
+  rectangular, inline and circular. "Hide amounts" shows dots. Analytics shows the same figure under
+  the period's stat cards (`DailyAllowanceLink`: `DailyAllowanceCard` recomputed by `.task(id:)`
+  on the history, accounts, series, categories, rates, base currency and the day), a link to how
+  it is reached (`DailyAllowanceDetailView`: the everyday accounts' balance, the payments set
+  aside, what is free, the days, each payment; "Ask Ten" with the `.allowance` topic). Whole
+  units on the card: the allowance rounds down, what is set aside rounds up
+  (`DailyAllowance.value`); the breakdown is exact, so its rows add up.
+- **Log an expense** (`QuickAddControl`, a `ControlWidgetButton` with `OpenURLIntent`): Control
+  Center, the Lock Screen and the Action button.
+- **Links**: `tenra://add` opens the assistant (Home where it does not run), `tenra://add?category=
+  <name>` Home's add form for that expense category (`AppCoordinator.handleDeepLink` →
+  `pendingQuickAdd`; MainTabView and ContentView take it). The scheme is in Info.plist
+  `CFBundleURLTypes`; any other URL is a file handed over (`openAttachment`).
+- **Signing**: the cloud archive registers the extension's id and the App Group through
+  `-allowProvisioningUpdates` with the ASC key ([asc.md](../asc.md)).
+

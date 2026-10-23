@@ -9,15 +9,21 @@ is in [archive/localization-2026-07/](archive/localization-2026-07/).
 
 ## Locales
 
-- **In the app: 11.** en (development language and fallback), ru, de, es, fr, tr, pt-BR, it, uk,
-  ja, ko. Each `Tenra/<locale>.lproj/` holds `Localizable.strings`, `Localizable.stringsdict`
+- **In the app: 12.** en (development language and fallback), ru, de, es, fr, tr, pt-BR, it, uk,
+  ja, ko, kk (Kazakh, Cyrillic, since 1.7; the owner's decision of 2026-10-22: both local
+  competitors have it and it is a system language in iOS 27). Each `Tenra/<locale>.lproj/` holds `Localizable.strings`, `Localizable.stringsdict`
   (plurals), `InfoPlist.strings` (permission prompts) and `AppShortcuts.strings` (Siri phrases).
 - **On the App Store: 13 storefront locales**: de-DE, en-US, es-ES, es-MX, fr-CA, fr-FR, it, ja,
-  ko, pt-BR, ru, tr, uk. The app's es and fr cover both of their storefronts.
-- **Features per language.** Voice input (`VoiceInputParser`, `VoiceInputSegmenter`) and CSV type
-  values (`CSVColumnMapping`) understand the nine languages written with spaces. ja and ko get the
-  UI, dates and currencies in voice input; parsing amounts and categories from ja/ko speech is
-  deferred (it needs word segmentation; notes in the archive). Statement and receipt import is
+  ko, pt-BR, ru, tr, uk. The app's es and fr cover both of their storefronts. With 1.7, en-GB
+  too, for search in Kazakhstan (decision D9, [plan-ads-readiness.md](plan-ads-readiness.md) A6):
+  the Russian texts and the Kazakh screenshots, since App Store Connect has no Kazakh; the kk
+  screenshot set exists only for it ([asc.md](asc.md) «Скриншоты»).
+- **Features per language.** Voice input (`VoiceInputParser`, `VoiceInputSegmenter`) reads
+  categories, dates, currencies and amounts in all 12 languages, and the expense and income words
+  in the ten written with spaces (ja and ko default to an expense); kk matches by substring so its
+  suffixes count ("азық-түлікке"), and a word a Russian key already has ("такси", "кафе") is
+  left to it ([domains/voice.md](domains/voice.md) §Parsing). CSV type values (`CSVColumnMapping`)
+  cover the nine languages written with spaces, not kk. Statement and receipt import is
   language-independent (Vision documents, [domains/import.md](domains/import.md)).
 
 ## Changing or adding a string
@@ -34,9 +40,12 @@ is in [archive/localization-2026-07/](archive/localization-2026-07/).
 - **No em dashes** in any user-facing text: comma, colon, period, or two sentences.
 - **Quotes:** escape straight quotes (`\"`) or use the language's own (« », „ “, 「 」).
 - **Tone** (set by the existing translations; follow it, don't choose again): de *Sie*, fr *vous*,
-  ru and uk *вы*, es, it, pt-BR and tr informal, ja and ko polite (です/ます, 해요). "Tenra Pro" is
-  never translated.
-- **Plurals** go in `.stringsdict`: ru and uk one/few/many/other; ja and ko other only; the rest
+  ru and uk *вы*, kk *Сіз* (a Latin name takes its suffix after a hyphen: Tenra-да), es, it, pt-BR and tr informal, ja and ko polite (です/ます, 해요). "Tenra Pro" is
+  never translated. Ten's replies follow the same tone (the Style rules in
+  `server/assistant/src/prompt.ts`); strings the person says to Ten (ready questions, "Go through
+  it") stay informal.
+- **Plurals** go in `.stringsdict`: ru and uk one/few/many/other; ja and ko other only; kk one and
+  other with the same text (the noun after a number stays singular); the rest
   one/other (fr and pt-BR use "one" for 0 and 1.x too, check the wording). Any string with a
   count next to a noun ("%lld accounts") is a plural, in every locale (tr: one = other), and the
   key lives only in `.stringsdict`. Format it with
@@ -63,5 +72,6 @@ fallback. A new `NS…UsageDescription` key goes into all 11 files.
    crashes at runtime. Grep for duplicates and leave the collision out.
 4. CSV: type values in `CSVColumnMapping` (`расход/доход/перевод` → expense/income/transfer).
 5. App Store: metadata in App Store Connect, screenshots with `scripts/capture_screenshots.sh`
-   (demo data, `-ScreenshotDemo`, never on the personal device) and the captions in
+   (demo data, `-ScreenshotDemo`, never on the personal device; the demo's words per language in
+   `ScreenshotDemoLexicon` and `ScreenshotDemoTenLines`) and the captions in
    `scripts/screenshot_captions.json`, prices per storefront, the RevenueCat paywall texts.

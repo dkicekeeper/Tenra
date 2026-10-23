@@ -127,6 +127,8 @@ struct AgentProtocolTests {
         #expect(AgentServerError.from(status: 503, body: Data()) == .disabled)
         #expect(AgentServerError.from(status: 401, body: Data(#"{"error":"attest","reason":"missing"}"#.utf8)) == .attestation(reason: "missing"))
         #expect(AgentServerError.from(status: 401, body: Data(#"{"error":"user"}"#.utf8)) == .unauthorized)
+        // A key registration the server refused is App Attest's, not the request's.
+        #expect(AgentServerError.from(status: 400, body: Data(#"{"error":"attestation","reason":"challenge"}"#.utf8)) == .attestation(reason: "challenge"))
     }
 
     @Test func turnRequestCarriesTheProtocolVersion() throws {

@@ -9,8 +9,9 @@
 //  queue, To review, the merchant and card memories). The bank's app plus the card's
 //  last digits is the "card" whose account Tenra remembers.
 //
-//  Not recorded: a transfer between the user's own accounts (one side only reaches
-//  each bank's notification) and a cash withdrawal. Plan:
+//  A transfer between the user's own accounts reaches each bank's notification as one side:
+//  the side waits in WalletCaptureStore until the other bank's arrives, and the pair becomes
+//  one transfer (OwnTransferRecorder). A cash withdrawal is not recorded. Plan:
 //  docs/plan-notification-capture.md.
 //
 
@@ -51,8 +52,20 @@ struct LogBankNotificationIntent: AppIntent {
         ) else {
             return .result(dialog: "intent.bankNotification.notOperation")
         }
+        let bank = (app ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
         switch operation.kind {
         case .ownTransfer:
+            WalletCaptureStore.shared.enqueueTransferSide(OwnTransferMatcher.Side(
+                id: UUID().uuidString,
+                card: BankNotificationParser.cardName(app: bank, digits: operation.cardDigits),
+                amount: operation.amount,
+                currency: operation.currencyCode,
+                isIncoming: operation.isIncoming,
+                date: when
+            ))
+            // The other bank's side may be here already: a pair becomes a transfer at once.
+            let services = try await IntentEnvironment.shared.services()
+            await OwnTransferRecorder.recordPairs(services: services)
             return .result(dialog: "intent.bankNotification.ownTransfer")
         case .cashWithdrawal:
             return .result(dialog: "intent.bankNotification.cash")
@@ -64,7 +77,6 @@ struct LogBankNotificationIntent: AppIntent {
         // Payments that waited for an exchange rate go first, so the history keeps its order.
         await WalletPaymentRecorder.recordPending(services: services)
 
-        let bank = (app ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
         let payment = WalletPayment(
             id: UUID().uuidString,
             amount: operation.amount,

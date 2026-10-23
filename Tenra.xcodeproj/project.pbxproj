@@ -10,6 +10,7 @@
 		D686A8C92FE1CCCF00A8B7D5 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = D686A8C82FE1CCCF00A8B7D5 /* RevenueCat */; };
 		D686A8CB2FE1CCCF00A8B7D5 /* RevenueCatUI in Frameworks */ = {isa = PBXBuildFile; productRef = D686A8CA2FE1CCCF00A8B7D5 /* RevenueCatUI */; };
 		D6DE51A32FF0A00100DE5100 /* DesignKit in Frameworks */ = {isa = PBXBuildFile; productRef = D6DE51A22FF0A00100DE5100 /* DesignKit */; };
+		D7A1E00C2FF0B00100D7A1E0 /* TenraWidgetsExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = D7A1E0012FF0B00100D7A1E0 /* TenraWidgetsExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -27,12 +28,34 @@
 			remoteGlobalIDString = D62A09902F0D7B0D004AF1FA;
 			remoteInfo = Tenra;
 		};
+		D7A1E00E2FF0B00100D7A1E0 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = D62A09892F0D7B0D004AF1FA /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D7A1E0072FF0B00100D7A1E0;
+			remoteInfo = TenraWidgetsExtension;
+		};
 /* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		D7A1E00B2FF0B00100D7A1E0 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				D7A1E00C2FF0B00100D7A1E0 /* TenraWidgetsExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		D62A09912F0D7B0D004AF1FA /* Tenra.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Tenra.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D62A099E2F0D7B0E004AF1FA /* TenraTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TenraTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		D62A09A82F0D7B0E004AF1FA /* TenraUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TenraUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		D7A1E0012FF0B00100D7A1E0 /* TenraWidgetsExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = TenraWidgetsExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -42,6 +65,13 @@
 				Info.plist,
 			);
 			target = D62A09902F0D7B0D004AF1FA /* Tenra */;
+		};
+		D7A1E0032FF0B00100D7A1E0 /* Exceptions for "TenraWidgets" folder in "TenraWidgetsExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = D7A1E0072FF0B00100D7A1E0 /* TenraWidgetsExtension */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
@@ -62,6 +92,14 @@
 		D62A09AB2F0D7B0E004AF1FA /* TenraUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = TenraUITests;
+			sourceTree = "<group>";
+		};
+		D7A1E0022FF0B00100D7A1E0 /* TenraWidgets */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				D7A1E0032FF0B00100D7A1E0 /* Exceptions for "TenraWidgets" folder in "TenraWidgetsExtension" target */,
+			);
+			path = TenraWidgets;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -91,6 +129,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		D7A1E0052FF0B00100D7A1E0 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -100,6 +145,7 @@
 				D62A09932F0D7B0D004AF1FA /* Tenra */,
 				D62A09A12F0D7B0E004AF1FA /* TenraTests */,
 				D62A09AB2F0D7B0E004AF1FA /* TenraUITests */,
+				D7A1E0022FF0B00100D7A1E0 /* TenraWidgets */,
 				D62A09922F0D7B0D004AF1FA /* Products */,
 			);
 			sourceTree = "<group>";
@@ -110,6 +156,7 @@
 				D62A09912F0D7B0D004AF1FA /* Tenra.app */,
 				D62A099E2F0D7B0E004AF1FA /* TenraTests.xctest */,
 				D62A09A82F0D7B0E004AF1FA /* TenraUITests.xctest */,
+				D7A1E0012FF0B00100D7A1E0 /* TenraWidgetsExtension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -124,10 +171,12 @@
 				D62A098D2F0D7B0D004AF1FA /* Sources */,
 				D62A098E2F0D7B0D004AF1FA /* Frameworks */,
 				D62A098F2F0D7B0D004AF1FA /* Resources */,
+				D7A1E00B2FF0B00100D7A1E0 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				D7A1E00D2FF0B00100D7A1E0 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				D62A09932F0D7B0D004AF1FA /* Tenra */,
@@ -188,6 +237,28 @@
 			productReference = D62A09A82F0D7B0E004AF1FA /* TenraUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
+		D7A1E0072FF0B00100D7A1E0 /* TenraWidgetsExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D7A1E0082FF0B00100D7A1E0 /* Build configuration list for PBXNativeTarget "TenraWidgetsExtension" */;
+			buildPhases = (
+				D7A1E0042FF0B00100D7A1E0 /* Sources */,
+				D7A1E0052FF0B00100D7A1E0 /* Frameworks */,
+				D7A1E0062FF0B00100D7A1E0 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				D7A1E0022FF0B00100D7A1E0 /* TenraWidgets */,
+			);
+			name = TenraWidgetsExtension;
+			packageProductDependencies = (
+			);
+			productName = TenraWidgetsExtension;
+			productReference = D7A1E0012FF0B00100D7A1E0 /* TenraWidgetsExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -209,6 +280,9 @@
 						CreatedOnToolsVersion = 26.2;
 						TestTargetID = D62A09902F0D7B0D004AF1FA;
 					};
+					D7A1E0072FF0B00100D7A1E0 = {
+						CreatedOnToolsVersion = 27.0;
+					};
 				};
 			};
 			buildConfigurationList = D62A098C2F0D7B0D004AF1FA /* Build configuration list for PBXProject "Tenra" */;
@@ -227,6 +301,7 @@
 				uk,
 				ja,
 				ko,
+				kk,
 			);
 			mainGroup = D62A09882F0D7B0D004AF1FA;
 			minimizedProjectReferenceProxies = 1;
@@ -242,6 +317,7 @@
 				D62A09902F0D7B0D004AF1FA /* Tenra */,
 				D62A099D2F0D7B0E004AF1FA /* TenraTests */,
 				D62A09A72F0D7B0E004AF1FA /* TenraUITests */,
+				D7A1E0072FF0B00100D7A1E0 /* TenraWidgetsExtension */,
 			);
 		};
 /* End PBXProject section */
@@ -262,6 +338,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		D62A09A62F0D7B0E004AF1FA /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D7A1E0062FF0B00100D7A1E0 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -292,6 +375,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		D7A1E0042FF0B00100D7A1E0 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -304,6 +394,11 @@
 			isa = PBXTargetDependency;
 			target = D62A09902F0D7B0D004AF1FA /* Tenra */;
 			targetProxy = D62A09A92F0D7B0E004AF1FA /* PBXContainerItemProxy */;
+		};
+		D7A1E00D2FF0B00100D7A1E0 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D7A1E0072FF0B00100D7A1E0 /* TenraWidgetsExtension */;
+			targetProxy = D7A1E00E2FF0B00100D7A1E0 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -587,6 +682,66 @@
 			};
 			name = Release;
 		};
+		D7A1E0092FF0B00100D7A1E0 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = TenraWidgets/TenraWidgets.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 32;
+				DEVELOPMENT_TEAM = SY2L2VMQP7;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = TenraWidgets/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Tenra;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.7;
+				PRODUCT_BUNDLE_IDENTIFIER = dakacom.Tenra.TenraWidgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_STRICT_CONCURRENCY = minimal;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		D7A1E00A2FF0B00100D7A1E0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = TenraWidgets/TenraWidgets.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 32;
+				DEVELOPMENT_TEAM = SY2L2VMQP7;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = TenraWidgets/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Tenra;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.7;
+				PRODUCT_BUNDLE_IDENTIFIER = dakacom.Tenra.TenraWidgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_STRICT_CONCURRENCY = minimal;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -622,6 +777,15 @@
 			buildConfigurations = (
 				D62A09B92F0D7B0E004AF1FA /* Debug */,
 				D62A09BA2F0D7B0E004AF1FA /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		D7A1E0082FF0B00100D7A1E0 /* Build configuration list for PBXNativeTarget "TenraWidgetsExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D7A1E0092FF0B00100D7A1E0 /* Debug */,
+				D7A1E00A2FF0B00100D7A1E0 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

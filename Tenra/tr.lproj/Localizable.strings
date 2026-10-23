@@ -97,6 +97,23 @@
 "settings.background" = "Arka Plan";
 "settings.merchantLogos" = "İşyeri logoları";
 "home.hint.categories" = "Harcama eklemek için bir kategoriye dokunun";
+"home.autoCapture.title" = "Bırakın Tenra kaydetsin";
+"home.autoCapture.message" = "Wallet otomasyonunu bir kez kurun, Apple Pay ödemeleri burada kendiliğinden görünsün.";
+"home.autoCapture.action" = "Kur";
+"home.today.title" = "Bugün için";
+"home.today.untilIncome" = "%@ tarihindeki gelire kadar günlük";
+"home.today.untilMonthEnd" = "Ay sonuna kadar günlük";
+"home.today.setAside" = "Ödemeler için %@ ayrıldı";
+"allowance.detail.how" = "Nasıl hesaplanır";
+"allowance.detail.footer" = "Günlük hesaplarındaki para, o tarihe kadarki abonelikler, kredi ödemeleri ve planlanan harcamalar düşülerek kalan günlere bölünür. Ten da aynı şekilde hesaplar.";
+"allowance.detail.balance" = "Şu an hesaplarında";
+"allowance.detail.setAside" = "Ödemeler için ayrılan";
+"allowance.detail.free" = "Harcanabilir";
+"allowance.detail.days" = "Kalan gün";
+"allowance.detail.payments" = "Ayrılan ödemeler";
+"home.iCloudAsk.title" = "Yedekleri iCloud’da saklayın";
+"home.iCloudAsk.message" = "Haftalık yedeğiniz yalnızca bu iPhone’da. iCloud Drive’da yeni bir telefona veya yeniden yüklemeye dayanır.";
+"home.iCloudAsk.action" = "Aç";
 "settings.voiceLanguage" = "Ses Dili";
 "settings.voiceLanguage.app" = "Uygulamadaki gibi";
 "settings.background.none" = "Arka Plan Yok";
@@ -1270,6 +1287,14 @@
 "diagnostics.report.cpuExceptions" = "CPU zirveleri: %lld";
 "diagnostics.report.slowLaunches" = "Yavaş açılışlar: %lld";
 "diagnostics.share" = "Tanılamayı Paylaş";
+"diagnostics.capture.header" = "Otomatik kayıt";
+"diagnostics.capture.footer" = "Wallet ve banka bildirimi otomasyonlarının son 90 günde bu iPhone’a kaydettiği ödemeler. Hiçbir şey cihazdan çıkmaz.";
+"diagnostics.capture.applePay" = "Apple Pay ödemeleri";
+"diagnostics.capture.notifications" = "Banka bildirimleri";
+"diagnostics.capture.counts" = "7 günde %lld, 30 günde %lld";
+"diagnostics.capture.pending" = "Kur bekleyenler";
+"diagnostics.capture.last" = "Son kayıt";
+"diagnostics.capture.never" = "Hiç";
 
 // MARK: - Voice (extras)
 "voice.openSettings" = "Ayarları Aç";
@@ -1550,17 +1575,18 @@
 
 "onboarding.welcome.page1.title" = "Tüm finansların tek yerde";
 "onboarding.welcome.page1.subtitle" = "Hesaplar, mevduatlar, krediler, abonelikler ve harcama kategorileri. Hepsi anlaşılır analizle birlikte.";
-"onboarding.welcome.page2.title" = "İşlemleri sesle ekle";
-"onboarding.welcome.page2.subtitle" = "\"Kahveye 90 lira\" de. Tenra tutarı, para birimini ve kategoriyi anlar. Ya da PDF/CSV ekstrelerini içe aktar.";
+"onboarding.welcome.page2.title" = "Kendi kendine kaydeder";
+"onboarding.welcome.page2.subtitle" = "Apple Pay ödemeleri, bankanızın bildirimleri ve ekstreleri yazmadan işleme dönüşür. Banka girişi yok.";
 "onboarding.welcome.page3.title" = "Verilerin sende kalır";
 "onboarding.welcome.page3.subtitle" = "Her şey cihazında saklanır. iCloud yedeği isteğe bağlıdır. Hesap yok, kayıt yok.";
+"onboarding.welcome.ten.title" = "Paranı Ten'e sor";
+"onboarding.welcome.ten.subtitle" = "Para nereye gidiyor, maaşa kadar yeter mi, krediyi nasıl daha erken kapatırsın: Ten kendi rakamlarınla yanıtlar.";
 
 "onboarding.cta.next" = "İleri";
 "pager.previous" = "Önceki";
 "pager.next" = "Sonraki";
 "onboarding.cta.start" = "Başla";
 "onboarding.cta.done" = "Bitti";
-"onboarding.cta.doneWithCount" = "Bitti • %d seçildi";
 "onboarding.cta.skip" = "Atla";
 "onboarding.stepIndicator.label" = "Adım %d / %d";
 
@@ -1688,7 +1714,6 @@
 // MARK: - Settings Pro Section
 
 "settings.pro.cta.title" = "Tenra Pro'ya geç";
-"settings.pro.cta.subtitle" = "Sınırsız hesap, ekstre içe aktarma, mevduat ve krediler";
 "settings.pro.status.active" = "Etkin";
 "settings.pro.plan.monthly" = "Aylık";
 "settings.pro.plan.annual" = "Yıllık";
@@ -1700,17 +1725,9 @@
 "settings.pro.manage" = "Aboneliği yönet";
 "settings.pro.restore" = "Satın alımları geri yükle";
 "settings.pro.redeemCode" = "Kod kullan";
-"settings.pro.restore.restored" = "Geri yüklendi";
 "settings.pro.restore.none" = "Satın alım bulunamadı";
 "settings.pro.restore.failed" = "Geri yüklenemedi";
 "pro.page.subtitle" = "Tenra'nın tüm özellikleri, sınırsız";
-"pro.page.features" = "Pro'da neler var";
-"pro.feature.accounts" = "Sınırsız hesap";
-"pro.feature.voice" = "Sesli giriş";
-"pro.feature.import" = "PDF ve CSV ekstre içe aktarma";
-"pro.feature.deposits" = "Faizli mevduatlar";
-"pro.feature.loans" = "Ödeme planlı krediler";
-"pro.feature.debts" = "Kişisel borçlar";
 
 /* MARK: - App Intents / Siri */
 "intent.log.title" = "İşlem kaydet";
@@ -1759,7 +1776,7 @@
 "intent.bankNotification.parameter.app" = "Uygulama";
 "intent.bankNotification.parameter.date" = "Tarih";
 "intent.bankNotification.notOperation" = "Bu bildirimde gider veya gelir yok, hiçbir şey kaydedilmedi.";
-"intent.bankNotification.ownTransfer" = "Kendi hesaplarınız arasındaki transfer kaydedilmez.";
+"intent.bankNotification.ownTransfer" = "Kendi hesaplarınız arasında bir havale: Tenra diğer bankanın bildirimi gelince kaydeder.";
 "intent.bankNotification.cash" = "Nakit çekim kaydedilmez: nakitle ne aldığınızı kaydedin.";
 "walletSetup.title" = "Wallet otomasyonunu kur";
 "walletSetup.intro" = "Böylece terminaldeki her Apple Pay ödemesi işyeri, tutar, para birimi ve kartla kendiliğinden kaydedilir. Wallet çevrim içi ödemeleri iletmez: onlar hesap özetiyle gelir.";
@@ -1887,6 +1904,18 @@
 /* Income presets and add-income-category action */
 "onboarding.preset.salary" = "Maaş";
 "onboarding.preset.otherIncome" = "Diğer gelirler";
+"onboarding.autoCapture.title" = "Bırakın Tenra kaydetsin";
+"onboarding.autoCapture.subtitle" = "Banka girişi yok. Her biri birkaç dakika sürer, şimdi ya da sonra.";
+"onboarding.autoCapture.applePay.title" = "Apple Pay ödemeleri";
+"onboarding.autoCapture.applePay.hint" = "Terminalde iPhone veya Watch ile her ödeme kaydedilir";
+"onboarding.autoCapture.notifications.title" = "Banka bildirimleri";
+"onboarding.autoCapture.notifications.hint" = "Her bankanın bildirimlerinden havaleler, QR ve çevrimiçi ödemeler";
+"onboarding.autoCapture.statement.title" = "Banka ekstresi";
+"onboarding.autoCapture.statement.hint" = "Geçen ayın PDF’ini yükleyin, Ten işlemlere ayırsın";
+"onboarding.autoCapture.afterStart" = "Başladıktan sonra";
+"onboarding.restore" = "Yedekten geri yükle";
+"onboarding.cta.nextWithCount" = "İleri • %d seçildi";
+"onboarding.restore.hint" = "Verilerinizi bu iPhone’a geri getirmek için bir yedeğe dokunun.";
 "transactionForm.addIncomeCategory" = "Gelir kategorisi ekle";
 
 /* Statement import duplicate markers */
@@ -2043,6 +2072,7 @@
 "assistant.forecast.balance" = "Günlük bakiye";
 "assistant.forecast.obligations" = "%@ tarihine kadar ödemeler";
 "assistant.error.generic" = "Bir şeyler ters gitti. Tekrar dene.";
+"assistant.error.tooLong" = "Bu sohbet asistan için fazla uzadı. Yeni bir sohbet başlatıp tekrar sorun.";
 
 /* AI assistant: the chat screen */
 "tab.assistant" = "Asistan";
@@ -2175,10 +2205,13 @@
 "assistant.notice.ask.debt" = "%@ ile olan borcu incele";
 "assistant.notice.goal.behind" = "%2$@ tarihine yetişmek için ayda %1$@ ayır";
 "assistant.notice.ask.goal" = "“%@” hedefine nasıl yetişirim?";
+"assistant.notice.setup" = "Harcamaları elle giriyorsun. Wallet otomasyonunu bir kez kur, Apple Pay ödemeleri kendiliğinden kaydedilsin.";
 "assistant.topic.goal.onTrack" = "“%@” hedefinde yolunda mıyım?";
 "assistant.topic.goal.faster" = "“%@” için nasıl daha hızlı biriktiririm?";
 "assistant.topic.debt.status" = "%@ ile olan borçta ne kadar kaldı?";
 "assistant.topic.debt.plan" = "%@ borcunu zamanında nasıl öderim?";
+"assistant.topic.allowance.enough" = "Param bir sonraki gelire kadar yeter mi?";
+"assistant.topic.allowance.save" = "Günlük daha fazla kalması için nerede tasarruf edebilirim?";
 
 /* Ten's lines around the conversation (AssistantChatter, DesignKit 4.10). */
 "assistant.chatter.morning" = "Günaydın!";
@@ -2237,3 +2270,23 @@
 "status.archived" = "Arşivlendi";
 "status.pending" = "Beklemede";
 "textInput.characterCount" = "%1$lld / %2$lld karakter";
+
+"bankSetup.title" = "Banka bildirimlerini kur";
+"bankSetup.page.intro" = "Banka bildirimlerinden işlemler";
+"bankSetup.page.trigger" = "Banka uygulamalarınızı seçin";
+"bankSetup.page.action" = "Tenra eylemini ekleyin";
+"bankSetup.page.quiet" = "Sormadan çalıştır";
+"bankSetup.page.check" = "Bildirimi kontrol et";
+"bankSetup.intro" = "iOS 27’de Kestirmeler bir bildirim geldiğinde eylem çalıştırabilir. Tenra bankanızın bildiriminden tutarı, para birimini, kartı ve satıcıyı okur ve gideri ya da geliri sormadan kaydeder. Metin iPhone’unuzdan hiç çıkmaz.";
+"bankSetup.step.trigger" = "**Kestirmeler** › **Otomasyon** › **+** yolunu açın ve bir uygulamadan bildirim tetikleyicisini seçin. Kullandığınız tüm banka uygulamalarını işaretleyin. Filtre eklemeyin: Tenra kodları, kampanyaları ve bakiyeleri kendisi atlar.";
+"bankSetup.step.action" = "Boş bir otomasyon oluşturun, **%@** eylemini bulun ve ekleyin.";
+"bankSetup.step.fields" = "Alanlarını **Bildirim** değişkeninden, her birini kendi özelliğiyle doldurun: **%1$@** başlıkla, **%2$@** alt başlıkla, **%3$@** metinle, **%4$@** uygulamayla ve **%5$@** tarihle.";
+"bankSetup.step.quiet" = "Kestirmeler önerirse hemen çalıştırmayı seçin ve çalıştırma bildirimini kapatın. Bitti: bir sonraki ödeme bildirimi Tenra’da işlem olur.";
+"bankSetup.note.filters" = "Eklenen her filtre doldurulmalı ya da silinmeli, yoksa otomasyon açılmaz.";
+"bankSetup.check.text" = "Tenra’nın neyi kaydedeceğini görmek için bankanızdan gelen bir bildirimin metnini yapıştırın. Hiçbir şey kaydedilmez.";
+"bankSetup.check.placeholder" = "Bildirim metni";
+"bankSetup.check.result" = "Tenra şunu kaydeder";
+"bankSetup.check.kind" = "Tür";
+"bankSetup.check.counterparty" = "Satıcı veya gönderen";
+"bankSetup.check.card" = "Kart";
+"bankSetup.check.none" = "Bu bir işlem değil: Tenra bu metinden hiçbir şey kaydetmez.";

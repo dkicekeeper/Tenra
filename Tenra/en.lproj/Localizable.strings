@@ -97,6 +97,23 @@
 "settings.background" = "Background";
 "settings.merchantLogos" = "Merchant logos";
 "home.hint.categories" = "Tap a category to add an expense";
+"home.autoCapture.title" = "Let Tenra log it for you";
+"home.autoCapture.message" = "Set up the Wallet automation once, and Apple Pay payments appear here on their own.";
+"home.autoCapture.action" = "Set up";
+"home.today.title" = "For today";
+"home.today.untilIncome" = "A day until your income on %@";
+"home.today.untilMonthEnd" = "A day until the end of the month";
+"home.today.setAside" = "%@ set aside for payments";
+"allowance.detail.how" = "How it's counted";
+"allowance.detail.footer" = "Your everyday accounts now, less the subscriptions, loan payments and planned expenses due before then, split over the days left. Ten counts the same way.";
+"allowance.detail.balance" = "On your accounts now";
+"allowance.detail.setAside" = "Set aside for payments";
+"allowance.detail.free" = "Free to spend";
+"allowance.detail.days" = "Days left";
+"allowance.detail.payments" = "Payments set aside";
+"home.iCloudAsk.title" = "Keep backups in iCloud";
+"home.iCloudAsk.message" = "Your weekly backup is only on this iPhone. In iCloud Drive it survives a new phone or a reinstall.";
+"home.iCloudAsk.action" = "Turn on";
 "settings.voiceLanguage" = "Voice language";
 "settings.voiceLanguage.app" = "As in the app";
 "settings.background.none" = "No Background";
@@ -1270,6 +1287,14 @@
 "diagnostics.report.cpuExceptions" = "CPU spikes: %lld";
 "diagnostics.report.slowLaunches" = "Slow launches: %lld";
 "diagnostics.share" = "Share Diagnostics";
+"diagnostics.capture.header" = "Automatic capture";
+"diagnostics.capture.footer" = "Payments the Wallet and bank notification automations recorded on this iPhone in the last 90 days. Nothing leaves the device.";
+"diagnostics.capture.applePay" = "Apple Pay payments";
+"diagnostics.capture.notifications" = "Bank notifications";
+"diagnostics.capture.counts" = "%lld in 7 days, %lld in 30";
+"diagnostics.capture.pending" = "Waiting for a rate";
+"diagnostics.capture.last" = "Last recorded";
+"diagnostics.capture.never" = "Never";
 
 // MARK: - Voice (extras)
 "voice.openSettings" = "Open Settings";
@@ -1550,17 +1575,18 @@
 
 "onboarding.welcome.page1.title" = "All your finances in one place";
 "onboarding.welcome.page1.subtitle" = "Accounts, deposits, loans, subscriptions and spending categories, together with clear analytics.";
-"onboarding.welcome.page2.title" = "Add transactions by voice";
-"onboarding.welcome.page2.subtitle" = "Say \"Coffee 800 tenge\" and Tenra parses amount, currency, and category. Or import statements from PDF/CSV.";
+"onboarding.welcome.page2.title" = "Logs itself";
+"onboarding.welcome.page2.subtitle" = "Apple Pay payments, your bank’s notifications and statements become entries with no typing. No bank login.";
 "onboarding.welcome.page3.title" = "Your data stays yours";
 "onboarding.welcome.page3.subtitle" = "Everything is stored on-device. iCloud backup is optional. No accounts, no signup.";
+"onboarding.welcome.ten.title" = "Ask Ten about your money";
+"onboarding.welcome.ten.subtitle" = "Where the money goes, whether it lasts until payday, how to pay off a loan sooner: Ten answers with your own numbers.";
 
 "onboarding.cta.next" = "Next";
 "pager.previous" = "Previous";
 "pager.next" = "Next";
 "onboarding.cta.start" = "Get started";
 "onboarding.cta.done" = "Done";
-"onboarding.cta.doneWithCount" = "Done • %d selected";
 "onboarding.cta.skip" = "Skip";
 "onboarding.stepIndicator.label" = "Step %d of %d";
 
@@ -1688,7 +1714,6 @@
 // MARK: - Settings Pro Section
 
 "settings.pro.cta.title" = "Get Tenra Pro";
-"settings.pro.cta.subtitle" = "Unlimited accounts, statement imports, deposits and loans";
 "settings.pro.status.active" = "Active";
 "settings.pro.plan.monthly" = "Monthly";
 "settings.pro.plan.annual" = "Annual";
@@ -1700,17 +1725,9 @@
 "settings.pro.manage" = "Manage Subscription";
 "settings.pro.restore" = "Restore Purchases";
 "settings.pro.redeemCode" = "Redeem code";
-"settings.pro.restore.restored" = "Restored";
 "settings.pro.restore.none" = "No purchases found";
 "settings.pro.restore.failed" = "Couldn't restore";
 "pro.page.subtitle" = "All of Tenra, with no limits";
-"pro.page.features" = "What's in Pro";
-"pro.feature.accounts" = "Unlimited accounts";
-"pro.feature.voice" = "Voice input";
-"pro.feature.import" = "PDF and CSV statement import";
-"pro.feature.deposits" = "Deposits with interest";
-"pro.feature.loans" = "Loans with payment schedules";
-"pro.feature.debts" = "Personal debts";
 
 /* MARK: - App Intents / Siri */
 "intent.log.title" = "Log a transaction";
@@ -1759,7 +1776,7 @@
 "intent.bankNotification.parameter.app" = "App";
 "intent.bankNotification.parameter.date" = "Date";
 "intent.bankNotification.notOperation" = "No expense or income in this notification, nothing recorded.";
-"intent.bankNotification.ownTransfer" = "A transfer between your own accounts is not recorded.";
+"intent.bankNotification.ownTransfer" = "A transfer between your own accounts: Tenra records it once the other bank’s notification arrives.";
 "intent.bankNotification.cash" = "A cash withdrawal is not recorded: log what you spend the cash on.";
 "walletSetup.title" = "Set up the Wallet automation";
 "walletSetup.intro" = "Then every Apple Pay payment at a terminal is saved on its own, with the merchant, amount, currency and card. Wallet does not pass on online payments: they come in with a statement.";
@@ -1887,6 +1904,18 @@
 /* Income presets and add-income-category action */
 "onboarding.preset.salary" = "Salary";
 "onboarding.preset.otherIncome" = "Other income";
+"onboarding.autoCapture.title" = "Let Tenra log it for you";
+"onboarding.autoCapture.subtitle" = "No bank login. Each takes a couple of minutes, now or later.";
+"onboarding.autoCapture.applePay.title" = "Apple Pay payments";
+"onboarding.autoCapture.applePay.hint" = "Every tap of your iPhone or Watch at a terminal is recorded";
+"onboarding.autoCapture.notifications.title" = "Bank notifications";
+"onboarding.autoCapture.notifications.hint" = "Transfers, QR and online payments from any bank’s notifications";
+"onboarding.autoCapture.statement.title" = "A bank statement";
+"onboarding.autoCapture.statement.hint" = "Load last month’s PDF, and Ten sorts it into entries";
+"onboarding.autoCapture.afterStart" = "After start";
+"onboarding.restore" = "Restore from a backup";
+"onboarding.cta.nextWithCount" = "Next • %d selected";
+"onboarding.restore.hint" = "Tap a backup to bring your data back to this iPhone.";
 "transactionForm.addIncomeCategory" = "Add income category";
 
 /* Statement import duplicate markers */
@@ -2043,6 +2072,7 @@
 "assistant.forecast.balance" = "Balance by day";
 "assistant.forecast.obligations" = "Going out until %@";
 "assistant.error.generic" = "Something went wrong. Try again.";
+"assistant.error.tooLong" = "This chat got too long for the assistant. Start a new one and ask again.";
 
 /* AI assistant: the chat screen */
 "tab.assistant" = "Assistant";
@@ -2175,10 +2205,13 @@
 "assistant.notice.ask.debt" = "Go through the debt with %@";
 "assistant.notice.goal.behind" = "Put aside %1$@ a month to make it by %2$@";
 "assistant.notice.ask.goal" = "How do I catch up on “%@”?";
+"assistant.notice.setup" = "You enter expenses by hand. Set up the Wallet automation once, and Apple Pay payments will log themselves.";
 "assistant.topic.goal.onTrack" = "Am I on track for “%@”?";
 "assistant.topic.goal.faster" = "How can I save for “%@” faster?";
 "assistant.topic.debt.status" = "How much is left on the debt with %@?";
 "assistant.topic.debt.plan" = "How do I pay %@ back on time?";
+"assistant.topic.allowance.enough" = "Will my money last until my next income?";
+"assistant.topic.allowance.save" = "Where can I save to have more for each day?";
 
 /* Ten's lines around the conversation (AssistantChatter, DesignKit 4.10). */
 "assistant.chatter.morning" = "Good morning!";
@@ -2237,3 +2270,23 @@
 "status.archived" = "Archived";
 "status.pending" = "Pending";
 "textInput.characterCount" = "%1$lld of %2$lld characters";
+
+"bankSetup.title" = "Set up bank notifications";
+"bankSetup.page.intro" = "Entries from your bank’s notifications";
+"bankSetup.page.trigger" = "Pick your bank apps";
+"bankSetup.page.action" = "Add Tenra’s action";
+"bankSetup.page.quiet" = "Run without asking";
+"bankSetup.page.check" = "Check a notification";
+"bankSetup.intro" = "On iOS 27 Shortcuts can run an action when a notification arrives. Tenra reads the amount, currency, card and merchant from your bank’s notification and records the expense or income without a question. The text never leaves your iPhone.";
+"bankSetup.step.trigger" = "Open **Shortcuts** › **Automation** › **+** and choose the trigger for a notification from an app. Select every bank app you use. Add no filters: Tenra skips codes, promos and balances itself.";
+"bankSetup.step.action" = "Start a new blank automation, find **%@** and add it.";
+"bankSetup.step.fields" = "Fill its fields from the **Notification** variable, each with its property: **%1$@** with the title, **%2$@** with the subtitle, **%3$@** with the text, **%4$@** with the app and **%5$@** with the date.";
+"bankSetup.step.quiet" = "If Shortcuts offers it, choose to run immediately and turn off the notification about the run. Done: the next notification about a payment becomes an entry in Tenra.";
+"bankSetup.note.filters" = "A filter you add has to be filled in or removed, otherwise the automation does not turn on.";
+"bankSetup.check.text" = "Paste the text of one of your bank’s notifications to see what Tenra would record from it. Nothing is saved.";
+"bankSetup.check.placeholder" = "Notification text";
+"bankSetup.check.result" = "Tenra would record";
+"bankSetup.check.kind" = "Type";
+"bankSetup.check.counterparty" = "Merchant or sender";
+"bankSetup.check.card" = "Card";
+"bankSetup.check.none" = "Not an operation: Tenra records nothing from this text.";

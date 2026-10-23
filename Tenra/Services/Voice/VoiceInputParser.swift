@@ -516,7 +516,64 @@ class VoiceInputParser {
             "수리": ("서비스", nil),
             "세탁": ("서비스", nil),
             "월급": ("급여", nil),
-            "급여": ("급여", nil)
+            "급여": ("급여", nil),
+
+            // KK — targets are the Kazakh onboarding preset names. Matched as substrings, which
+            // takes the suffixes ("азық-түлікке", "таксиге"). Words a Russian entry already has
+            // ("кафе", "такси", "кино", "бензин") resolve through it; short stems that sit inside
+            // other words are left out ("нан" is in "финансы", "ет", "ит", "тіс", "той").
+            "азық-түлік": ("Азық-түлік", nil),
+            "азық": ("Азық-түлік", nil),
+            "дүкен": ("Азық-түлік", nil),
+            "базар": ("Азық-түлік", nil),
+            "сүт": ("Азық-түлік", nil),
+            "көкөніс": ("Азық-түлік", nil),
+            "жеміс": ("Азық-түлік", nil),
+            "түскі ас": ("Кафе мен мейрамханалар", nil),
+            "кешкі ас": ("Кафе мен мейрамханалар", nil),
+            "таңғы ас": ("Кафе мен мейрамханалар", nil),
+            "мейрамхана": ("Кафе мен мейрамханалар", nil),
+            "асхана": ("Кафе мен мейрамханалар", nil),
+            "кофехана": ("Кафе мен мейрамханалар", nil),
+            "көлік": ("Көлік", nil),
+            "жанармай": ("Көлік", nil),
+            "тұрақ": ("Көлік", nil),
+            "жол ақы": ("Көлік", nil),
+            "пәтерақы": ("Тұрғын үй", nil),
+            "пәтер": ("Тұрғын үй", nil),
+            "жалдау": ("Тұрғын үй", nil),
+            "коммуналдық": ("Коммуналдық", nil),
+            "жарық": ("Коммуналдық", nil),
+            "ұялы байланыс": ("Коммуналдық", nil),
+            "байланыс": ("Коммуналдық", nil),
+            "дәріхана": ("Денсаулық", nil),
+            "дәрігер": ("Денсаулық", nil),
+            "дәрі": ("Денсаулық", nil),
+            "емхана": ("Денсаулық", nil),
+            "аурухана": ("Денсаулық", nil),
+            "аяқ киім": ("Киім", nil),
+            "киім": ("Киім", nil),
+            "ойын-сауық": ("Ойын-сауық", nil),
+            "ойын": ("Ойын-сауық", nil),
+            "саяхат": ("Саяхат", nil),
+            "демалыс": ("Саяхат", nil),
+            "ұшақ": ("Саяхат", nil),
+            "қонақүй": ("Саяхат", nil),
+            "оқу": ("Білім", nil),
+            "мектеп": ("Білім", nil),
+            "кітап": ("Білім", nil),
+            "сыйлық": ("Сыйлықтар", nil),
+            "туған күн": ("Сыйлықтар", nil),
+            "жазылым": ("Жазылымдар", nil),
+            "мысық": ("Үй жануарлары", nil),
+            "жануар": ("Үй жануарлары", nil),
+            "шаштараз": ("Қызметтер", nil),
+            "жөндеу": ("Қызметтер", nil),
+            "тазалау": ("Қызметтер", nil),
+            "жалақы": ("Жалақы", nil),
+            "сыйақы": ("Жалақы", nil),
+            "кіріс": ("Басқа кірістер", nil),
+            "табыс": ("Басқа кірістер", nil)
         ]
 
     /// Short keywords matched as whole words only: as substrings they fire
@@ -578,23 +635,23 @@ class VoiceInputParser {
     /// they onboarded in, so the target resolves through its group: "groceries"
     /// lands in "Продукты" for someone whose categories are Russian.
     static let categoryGroups: [[String]] = [
-        ["Groceries", "Продукты", "Lebensmittel", "Supermercado", "Courses", "Market", "Mercado", "Spesa", "Продукти", "食費", "장보기"],
-        ["Dining out", "Кафе и рестораны", "Essen gehen", "Restaurantes", "Restaurants", "Dışarıda yemek", "Ristoranti", "Кафе та ресторани", "外食", "외식"],
-        ["Transport", "Транспорт", "Transporte", "Transports", "Ulaşım", "Trasporti", "交通", "교통"],
-        ["Housing", "Жильё", "Wohnen", "Vivienda", "Logement", "Konut", "Moradia", "Casa", "Житло", "住居", "주거"],
-        ["Utilities", "Коммунальные", "Nebenkosten", "Servicios públicos", "Charges", "Faturalar", "Contas de casa", "Utenze", "Комунальні послуги", "光熱費", "공과금"],
-        ["Health", "Здоровье", "Gesundheit", "Salud", "Santé", "Sağlık", "Saúde", "Salute", "Здоров'я", "健康", "건강"],
-        ["Clothing", "Одежда", "Kleidung", "Ropa", "Vêtements", "Giyim", "Roupas", "Abbigliamento", "Одяг", "衣類", "의류"],
-        ["Entertainment", "Развлечения", "Unterhaltung", "Entretenimiento", "Loisirs", "Eğlence", "Lazer", "Svago", "Розваги", "娯楽", "여가"],
-        ["Travel", "Путешествия", "Reisen", "Viajes", "Voyages", "Seyahat", "Viagens", "Viaggi", "Подорожі", "旅行", "여행"],
-        ["Education", "Образование", "Bildung", "Educación", "Éducation", "Eğitim", "Educação", "Istruzione", "Освіта", "教育", "교육"],
-        ["Gifts", "Подарки", "Geschenke", "Regalos", "Cadeaux", "Hediyeler", "Presentes", "Regali", "Подарунки", "ギフト", "선물"],
-        ["Subscriptions", "Подписки", "Abos", "Suscripciones", "Abonnements", "Abonelikler", "Assinaturas", "Abbonamenti", "Підписки", "サブスク", "구독"],
-        ["Pets", "Питомцы", "Haustiere", "Mascotas", "Animaux", "Evcil hayvanlar", "Animali", "Домашні улюбленці", "ペット", "반려동물"],
-        ["Services", "Услуги", "Dienstleistungen", "Servicios", "Hizmetler", "Serviços", "Servizi", "Послуги", "サービス", "서비스"],
-        ["Other", "Прочее", "Sonstiges", "Otros", "Autre", "Diğer", "Outros", "Altro", "Інше", "その他", "기타"],
-        ["Salary", "Зарплата", "Gehalt", "Salario", "Salaire", "Maaş", "Salário", "Stipendio", "給与", "급여"],
-        ["Other income", "Прочие доходы", "Sonstige Einnahmen", "Otros ingresos", "Autres revenus", "Diğer gelirler", "Outras receitas", "Altre entrate", "Інші доходи", "その他の収入", "기타 수입"]
+        ["Groceries", "Продукты", "Lebensmittel", "Supermercado", "Courses", "Market", "Mercado", "Spesa", "Продукти", "食費", "장보기", "Азық-түлік"],
+        ["Dining out", "Кафе и рестораны", "Essen gehen", "Restaurantes", "Restaurants", "Dışarıda yemek", "Ristoranti", "Кафе та ресторани", "外食", "외식", "Кафе мен мейрамханалар"],
+        ["Transport", "Транспорт", "Transporte", "Transports", "Ulaşım", "Trasporti", "交通", "교통", "Көлік"],
+        ["Housing", "Жильё", "Wohnen", "Vivienda", "Logement", "Konut", "Moradia", "Casa", "Житло", "住居", "주거", "Тұрғын үй"],
+        ["Utilities", "Коммунальные", "Nebenkosten", "Servicios públicos", "Charges", "Faturalar", "Contas de casa", "Utenze", "Комунальні послуги", "光熱費", "공과금", "Коммуналдық"],
+        ["Health", "Здоровье", "Gesundheit", "Salud", "Santé", "Sağlık", "Saúde", "Salute", "Здоров'я", "健康", "건강", "Денсаулық"],
+        ["Clothing", "Одежда", "Kleidung", "Ropa", "Vêtements", "Giyim", "Roupas", "Abbigliamento", "Одяг", "衣類", "의류", "Киім"],
+        ["Entertainment", "Развлечения", "Unterhaltung", "Entretenimiento", "Loisirs", "Eğlence", "Lazer", "Svago", "Розваги", "娯楽", "여가", "Ойын-сауық"],
+        ["Travel", "Путешествия", "Reisen", "Viajes", "Voyages", "Seyahat", "Viagens", "Viaggi", "Подорожі", "旅行", "여행", "Саяхат"],
+        ["Education", "Образование", "Bildung", "Educación", "Éducation", "Eğitim", "Educação", "Istruzione", "Освіта", "教育", "교육", "Білім"],
+        ["Gifts", "Подарки", "Geschenke", "Regalos", "Cadeaux", "Hediyeler", "Presentes", "Regali", "Подарунки", "ギフト", "선물", "Сыйлықтар"],
+        ["Subscriptions", "Подписки", "Abos", "Suscripciones", "Abonnements", "Abonelikler", "Assinaturas", "Abbonamenti", "Підписки", "サブスク", "구독", "Жазылымдар"],
+        ["Pets", "Питомцы", "Haustiere", "Mascotas", "Animaux", "Evcil hayvanlar", "Animali", "Домашні улюбленці", "ペット", "반려동물", "Үй жануарлары"],
+        ["Services", "Услуги", "Dienstleistungen", "Servicios", "Hizmetler", "Serviços", "Servizi", "Послуги", "サービス", "서비스", "Қызметтер"],
+        ["Other", "Прочее", "Sonstiges", "Otros", "Autre", "Diğer", "Outros", "Altro", "Інше", "その他", "기타", "Басқа"],
+        ["Salary", "Зарплата", "Gehalt", "Salario", "Salaire", "Maaş", "Salário", "Stipendio", "給与", "급여", "Жалақы"],
+        ["Other income", "Прочие доходы", "Sonstige Einnahmen", "Otros ingresos", "Autres revenus", "Diğer gelirler", "Outras receitas", "Altre entrate", "Інші доходи", "その他の収入", "기타 수입", "Басқа кірістер"]
     ]
 
     private static let categoryGroupByName: [String: [String]] = {
@@ -645,7 +702,7 @@ class VoiceInputParser {
     private static let amountPattern = #"\d{1,3}(?:[\s,.]\d{3})+(?:[.,]\d{1,2})?|\d+(?:[.,]\d{1,2})?"#
 
     /// Currency words and signs that make a neighbouring number an amount.
-    private static let amountCurrencyTokens = #"тенге|тг|₸|доллар|долларов|\$|usd|евро|eur|€|рубл|rub|₽|円|¥|원|₩|₺|₴"#
+    private static let amountCurrencyTokens = #"тенге|теңге|тг|₸|доллар|долларов|\$|usd|евро|еуро|eur|€|рубл|rub|₽|円|¥|원|₩|₺|₴"#
 
     /// Capture group 1 is the number in every pattern. Digit lookarounds
     /// replace `\b`, which finds no boundary between a digit and CJK text
@@ -760,7 +817,38 @@ class VoiceInputParser {
         "тысяча": 1000, "тысячи": 1000, "тысяч": 1000,
         // Colloquial sibling — very common in speech.
         "тыща": 1000, "тыщи": 1000, "тыщ": 1000,
+        // KK. Hundreds multiply ("екі жүз" is 200, parseAmountFromWords). "он" (10) is the
+        // Russian "he", so it counts only in Kazakh (Self.kazakhOnlyNumberWords).
+        "бір": 1, "екі": 2, "үш": 3, "төрт": 4, "бес": 5, "алты": 6, "жеті": 7, "сегіз": 8,
+        "тоғыз": 9, "он": 10, "жиырма": 20, "отыз": 30, "қырық": 40, "елу": 50, "алпыс": 60,
+        "жетпіс": 70, "сексен": 80, "тоқсан": 90, "жүз": 100, "мың": 1000,
     ]
+
+    /// Number words that are ordinary words in another app language: "он" is "he" in Russian.
+    private static let kazakhOnlyNumberWords: Set<String> = ["он"]
+
+    /// The app runs in Kazakh (as FR "hier" in `parseDate`, by the current locale's language).
+    private static var appSpeaksKazakh: Bool {
+        Locale.current.language.languageCode?.identifier == "kk"
+    }
+
+    /// A number with a thousand word after it ("5 тысяч", "2,5 мың", "10 мыңға") as digits, so
+    /// the amount regexes read 5000, not 5. The word keeps no suffix: "мыңға" goes with it.
+    private static let thousandWordRegex = try? NSRegularExpression(
+        pattern: #"(?<![\p{N}.,])(\d+(?:[.,]\d{1,3})?)\s*(?:тысяч\p{L}*|тыщ\p{L}*|тыс(?![\p{L}])\.?|мың\p{L}*)"#
+    )
+
+    static func expandThousandWords(_ text: String) -> String {
+        guard let regex = thousandWordRegex else { return text }
+        var result = text
+        let source = text as NSString
+        for match in regex.matches(in: text, range: NSRange(location: 0, length: source.length)).reversed() {
+            let number = source.substring(with: match.range(at: 1)).replacingOccurrences(of: ",", with: ".")
+            guard let value = Decimal(string: number), let range = Range(match.range, in: result) else { continue }
+            result.replaceSubrange(range, with: NSDecimalNumber(decimal: value * 1000).stringValue)
+        }
+        return result
+    }
     
     // MARK: - Initialization
 
@@ -832,9 +920,10 @@ class VoiceInputParser {
         #endif
 
         // 6. Определяем категорию и подкатегории
-        let (category, subcats) = parseCategory(from: normalizedText)
+        let (category, subcats, categoryIsGuess) = parseCategory(from: normalizedText)
         operation.categoryName = category
         operation.subcategoryNames = subcats
+        operation.categoryIsGuess = categoryIsGuess
 
         #if DEBUG
         if VoiceInputConstants.enableParsingDebugLogs {
@@ -920,7 +1009,7 @@ class VoiceInputParser {
             let explicitType = parseTypeOptional(from: normalized)
             let explicitAccountId = findAccount(from: normalized).accountId
             let explicitCurrency = parseCurrency(from: normalized, accountId: explicitAccountId ?? lastAccountId)
-            let (categoryName, subcategoryNames) = parseCategory(from: normalized)
+            let (categoryName, subcategoryNames, categoryIsGuess) = parseCategory(from: normalized)
 
             // Per-category smart default: prefer the account most-used for
             // this category (or the user's confirmed preference, if any).
@@ -952,6 +1041,7 @@ class VoiceInputParser {
             op.accountId = accountId
             op.categoryName = categoryName
             op.subcategoryNames = subcategoryNames
+            op.categoryIsGuess = categoryIsGuess
 
             operations.append(op)
 
@@ -966,7 +1056,7 @@ class VoiceInputParser {
     // MARK: - Private Methods
     
     private func normalizeText(_ text: String) -> String {
-        var normalized = Self.expandCJKNumerals(text.lowercased())
+        var normalized = Self.expandThousandWords(Self.expandCJKNumerals(text.lowercased()))
             .replacingOccurrences(of: "ё", with: "е")
             .trimmingCharacters(in: .whitespacesAndNewlines)
         
@@ -1069,13 +1159,13 @@ class VoiceInputParser {
         let dayBeforeYesterday = ["позавчера", "vorgestern", "day before yesterday",
                                   "anteayer", "antier", "avant-hier",
                                   "anteontem", "evvelsi gün", "önceki gün",
-                                  "позавчора", "l'altro ieri", "avantieri",
+                                  "позавчора", "l'altro ieri", "avantieri", "алдыңғы күні",
                                   "一昨日", "おととい", "그저께", "그제"]
         var yesterday = ["вчера", "yesterday", "gestern", "ayer", "ontem", "dün",
-                         "вчора", "учора", "ieri",
+                         "вчора", "учора", "ieri", "кеше",
                          "昨日", "きのう", "어제"]
         let todayWords = ["сегодня", "today", "heute", "hoy", "aujourd'hui",
-                          "hoje", "bugün", "сьогодні", "oggi",
+                          "hoje", "bugün", "сьогодні", "oggi", "бүгін",
                           "今日", "きょう", "오늘"]
 
         // FR "hier" is a homograph of DE "hier" ("here"), so it only counts
@@ -1098,7 +1188,7 @@ class VoiceInputParser {
     /// Tokens that map a preceding number to "× 1000" in word-form parsing.
     /// Includes both proper "тысяча/тысячи/тысяч" and colloquial "тыща/тыщи/тыщ".
     private static let thousandTokens: Set<String> = [
-        "тысяча", "тысячи", "тысяч",
+        "тысяча", "тысячи", "тысяч", "мың",
         "тыща", "тыщи", "тыщ",
     ]
 
@@ -1138,6 +1228,9 @@ class VoiceInputParser {
         // UK
         "витратив", "витратила", "купив", "купила", "заплатив", "заплатила",
         "витрата", "витрати", "оплатив", "оплатила",
+        // KK — bare "алдым" is absent for the Turkish reason: "bought" and "received".
+        "жұмсадым", "жұмсадық", "жұмсады", "төледім", "төледік", "төледі",
+        "сатып алдым", "сатып алдық", "шығын", "шығыс",
     ]
 
     /// Verbs that mark a clause as income.
@@ -1172,6 +1265,8 @@ class VoiceInputParser {
         // UK
         "отримав", "отримала", "зарплата", "зарплату",
         "дохід", "надійшло", "заробив", "заробила",
+        // KK
+        "жалақы", "кіріс", "табыс", "сыйақы", "ақша түсті", "түсті",
     ]
 
     // 2. Парсинг типа операции
@@ -1295,6 +1390,8 @@ class VoiceInputParser {
         for word in words {
             let lowercased = word.lowercased()
             
+            // "он" counts as 10 only in Kazakh: in Russian it is "he".
+            if Self.kazakhOnlyNumberWords.contains(lowercased), !Self.appSpeaksKazakh { continue }
             if let number = numberWords[lowercased] {
                 if number == 1000 {
                     if currentNumber > 0 {
@@ -1304,6 +1401,9 @@ class VoiceInputParser {
                         result += 1000
                     }
                     hasThousand = true
+                } else if number == 100, currentNumber > 0, currentNumber < 10 {
+                    // Kazakh hundreds multiply: "екі жүз" is 200, "бес жүз" 500.
+                    currentNumber *= 100
                 } else if number >= 100 {
                     if currentNumber > 0 {
                         result += currentNumber
@@ -1368,10 +1468,10 @@ class VoiceInputParser {
     /// "tl" is intentionally absent: it is a substring of common Turkish words
     /// ("katlı", "atlet"); "lira"/"₺" are unambiguous.
     private static let currencyKeywords: [(keyword: String, code: String)] = [
-        ("тенге", "KZT"), ("тг", "KZT"), ("₸", "KZT"),
+        ("тенге", "KZT"), ("теңге", "KZT"), ("тг", "KZT"), ("₸", "KZT"),
         ("доллар", "dollar"), ("долларов", "dollar"), ("dollar", "dollar"), ("dólar", "dollar"), ("dolar", "dollar"),
         ("usd", "USD"), ("$", "$"),
-        ("евро", "EUR"), ("eur", "EUR"), ("€", "EUR"),
+        ("евро", "EUR"), ("еуро", "EUR"), ("eur", "EUR"), ("€", "EUR"),
         ("рубл", "RUB"), ("rub", "RUB"), ("₽", "RUB"),
         ("lira", "TRY"), ("₺", "TRY"),
         ("reais", "BRL"), ("r$", "BRL"),
@@ -1546,7 +1646,7 @@ class VoiceInputParser {
     }
 
     // 6. Парсинг категории и подкатегорий (сначала подкатегории, потом категории)
-    private func parseCategory(from text: String) -> (category: String?, subcategories: [String]) {
+    private func parseCategory(from text: String) -> (category: String?, subcategories: [String], isGuess: Bool) {
         // Сначала ищем подкатегории, потом категории
         var foundSubcategories: [String] = []
         var foundCategory: String?
@@ -1578,6 +1678,7 @@ class VoiceInputParser {
         
         // Если не нашли, возвращаем "Другое": "category.other" ("Другое") или
         // пресет "Прочее" на любом языке
+        let isGuess = foundCategory == nil
         if foundCategory == nil {
             let otherName = String(localized: "category.other")
             foundCategory = liveCategoryName(otherName)
@@ -1585,7 +1686,7 @@ class VoiceInputParser {
                 ?? otherName
         }
         
-        return (foundCategory, foundSubcategories)
+        return (foundCategory, foundSubcategories, isGuess)
     }
 
     // MARK: - Live Entity Recognition

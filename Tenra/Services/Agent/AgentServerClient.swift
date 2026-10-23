@@ -37,7 +37,9 @@ nonisolated enum AgentServerError: Error, Equatable {
     static func from(status: Int, body: Data) -> AgentServerError {
         let parsed = try? JSONDecoder().decode(Body.self, from: body)
         switch status {
-        case 400: return .invalidRequest(reason: parsed?.reason)
+        // A key registration the server refused (POST /v1/attest) is App Attest's; any other
+        // 400 is the request itself (its size, its fields), which a resend does not fix.
+        case 400: return parsed?.error == "attestation" ? .attestation(reason: parsed?.reason) : .invalidRequest(reason: parsed?.reason)
         case 401: return parsed?.error == "attest" ? .attestation(reason: parsed?.reason) : .unauthorized
         case 429: return parsed?.error == "quota" ? .quotaExceeded(limit: parsed?.limit) : .busy
         case 451: return .regionUnavailable
@@ -116,8 +118,11 @@ nonisolated final class AgentServerClient: AgentTransport {
         request.setValue("text/event-stream", forHTTPHeaderField: "Accept")
         request.setValue(user, forHTTPHeaderField: "x-tenra-user")
         request.httpBody = body
-        if let attestation, let headers = try? await attestation.headers(for: body) {
-            // Without a signature the server refuses the turn (401 attest), Pro or not.
+        if let attestation {
+            // Without a signature the server refuses the turn (401 attest), Pro or not. A failure
+            // here (no network while registering the key, Apple's service down) is thrown as it
+            // is, so the person sees "offline" or "try again", not a permanent refusal.
+            let headers = try await attestation.headers(for: body)
             for (name, value) in headers { request.setValue(value, forHTTPHeaderField: name) }
         }
 

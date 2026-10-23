@@ -2,10 +2,10 @@
 #
 # capture_screenshots.sh — automated App Store raw-screenshot capture.
 #
-# Runs TenraUITests/ScreenshotCaptureTests once per storefront locale with the
-# ScreenshotDemo seeded dataset (see Tenra/Services/Utilities/ScreenshotDemo/),
-# then exports the PNG attachments from each .xcresult bundle into
-# screenshots/raw/<asc-locale>/.
+# Runs TenraUITests/ScreenshotCaptureTests once per storefront locale (and kk, the
+# Kazakh set en-GB shows) with the ScreenshotDemo seeded dataset (see
+# Tenra/Services/Utilities/ScreenshotDemo/), then exports the PNG attachments from
+# each .xcresult bundle into screenshots/raw/<asc-locale>/.
 #
 # Usage:
 #   ./scripts/capture_screenshots.sh            # all locales
@@ -13,6 +13,7 @@
 #   SIM_NAME="iPhone 17 Pro" SIM_OS=26.5 ./scripts/capture_screenshots.sh
 #   FRAMES=cpp ./scripts/capture_screenshots.sh # only 09-12 (custom product pages)
 #   FRAMES=ten ./scripts/capture_screenshots.sh # only Ten's 07, 13, 14, 17-19
+#   FRAMES=autocapture ./scripts/capture_screenshots.sh # only the auto-capture 20-21
 #
 # SIM_OS is required since Xcode 27: a bare name implies the newest OS, and
 # iPhone 17 Pro only exists on 26.5. Store shots stay on the public iOS.
@@ -26,10 +27,13 @@ OUT_ROOT="screenshots/raw"
 RESULTS_ROOT="build/screenshot-results"
 BUNDLE_ID="dakacom.Tenra"
 FRAMES="${FRAMES:-all}"
-# 01-08 and 13-16 (default product page) + 09-12 (custom product pages); "cpp" takes only 09-12.
-case "$FRAMES" in cpp) EXPECTED=4 ;; ten) EXPECTED=6 ;; *) EXPECTED=19 ;; esac
+# 01-21: the default product page's and the custom product pages' frames; "cpp" takes only
+# 09-12, "ten" Ten's six, "autocapture" 20-21.
+case "$FRAMES" in cpp) EXPECTED=4 ;; ten) EXPECTED=6 ;; autocapture) EXPECTED=2 ;; *) EXPECTED=21 ;; esac
 
 # asc-locale | AppleLanguages | AppleLocale | demo currency
+# kk is no App Store locale (App Store Connect has no Kazakh): its frames are the ones en-GB
+# shows (`screenshotsFrom` in appstore/metadata.json, decision D9).
 LOCALES=(
   "de-DE|de|de_DE|EUR"
   "es-ES|es|es_ES|EUR"
@@ -44,6 +48,7 @@ LOCALES=(
   "ko|ko|ko_KR|KRW"
   "en-US|en|en_US|USD"
   "ru|ru|ru_RU|KZT"
+  "kk|kk|kk_KZ|KZT"
 )
 
 # Resolve the device by name AND runtime. Since Xcode 27 a bare `name=` destination
@@ -103,7 +108,7 @@ for entry in "${LOCALES[@]}"; do
 
   # Export attachments (PNG screenshots) from the result bundle.
   dest="$OUT_ROOT/$asc_locale"
-  # A cpp or ten run adds its frames next to the existing ones.
+  # A cpp, ten or autocapture run adds its frames next to the existing ones.
   if [[ "$FRAMES" == "all" ]]; then rm -rf "$dest"; fi
   mkdir -p "$dest"
   export_dir="$(mktemp -d)"
@@ -131,7 +136,7 @@ if os.path.exists(manifest_path):
                     if not os.path.exists(src):
                         continue
                     base = re.sub(r"[^A-Za-z0-9._-]", "_", os.path.splitext(human)[0])
-                    # Only our named marketing captures ("01-home"…"19-ten-loan", and
+                    # Only our named marketing captures ("01-home"…"21-merchant", and
                     # "90-debug-…" when a step finds nothing): skip auto-attachments
                     # (failure recordings, synthesized events).
                     m = re.match(r"^([0-9]{2}-[a-z0-9-]+)", base)
@@ -160,6 +165,8 @@ PY
 
   if [[ "$FRAMES" == "cpp" ]]; then
     shots=$(ls "$dest" 2>/dev/null | grep -cE '^(09|1[0-2])-' | tr -d ' ')
+  elif [[ "$FRAMES" == "autocapture" ]]; then
+    shots=$(ls "$dest" 2>/dev/null | grep -cE '^2[01]-' | tr -d ' ')
   else
     shots=$(ls "$dest" 2>/dev/null | wc -l | tr -d ' ')
   fi

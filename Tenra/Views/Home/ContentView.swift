@@ -13,6 +13,8 @@ import ImageIO
 
 enum HomeDestination: Hashable {
     case history
+    /// Settings: a page of Home's stack (the gear), not a sheet.
+    case settings
 }
 
 // MARK: - ContentView (Home Screen)
@@ -31,9 +33,17 @@ struct ContentView: View {
     @Namespace private var accountNamespace
     @State private var showingTimeFilter = false
     @State private var showingAddAccount = false
-    @State private var showingSettings = false
-    /// The first launch's hint over the categories (showCategoryHintIfNeeded).
-    @State private var showingCategoryHint = false
+    /// The first launch's hint on the categories (showCategoryHintIfNeeded), DesignKit's
+    /// spotlight: the rest of Home dims, the grid stays lit with the message beside it.
+    @State private var categoryHint: FeatureTourState.Hint?
+    /// A widget's category to open the add form for (AppCoordinator.pendingQuickAdd).
+    @State private var quickAddCategory: String?
+    /// The auto-capture card's ✕: hidden for good.
+    @AppStorage(AutoCaptureSetupCard.hiddenKey) private var autoCaptureCardHidden = false
+    @State private var showingWalletGuide = false
+    /// The iCloud ask answered now: CloudSyncViewModel keeps the answer in UserDefaults, which
+    /// a view does not observe.
+    @State private var iCloudAskAnswered = false
 
     // MARK: - Summary Trigger
     // Equatable snapshot of every input that drives the summary card.
@@ -107,6 +117,8 @@ struct ContentView: View {
                 switch dest {
                 case .history:
                     historyDestination
+                case .settings:
+                    settingsDestination
                 }
             }
             .navigationDestination(for: Account.self) { account in
@@ -124,7 +136,9 @@ struct ContentView: View {
             .toolbar { toolbarContent }
             .sheet(isPresented: $showingTimeFilter) { timeFilterSheet }
             .sheet(isPresented: $showingAddAccount) { addAccountSheet }
-            .sheet(isPresented: $showingSettings) { settingsSheet }
+            .sheet(isPresented: $showingWalletGuide) {
+                NavigationStack { WalletSetupGuideView() }
+            }
             .task {
                 // initializeFastPath() ran in TenraApp before the coordinator was
                 // published, so accounts + categories are already in place. Only the
@@ -143,6 +157,18 @@ struct ContentView: View {
                     accountCount: coordinator.transactionStore.accounts.count,
                     categoryCount: coordinator.transactionStore.categories.count
                 )
+                // The widgets get today's figures once the history is loaded.
+                await WidgetSnapshotBuilder.refresh(coordinator: coordinator)
+            }
+            // A widget's category (tenra://add?category=…): back to Home's root, then the
+            // add form for it. Without a category MainTabView opened the assistant, or Home
+            // where it does not run.
+            .onChange(of: coordinator.pendingQuickAdd, initial: true) { _, request in
+                // A request without a category is the assistant's (MainTabView takes it).
+                guard let request, request.category != nil || !AssistantAvailability.isAvailable else { return }
+                _ = coordinator.consumePendingQuickAdd()
+                navigationPath = NavigationPath()
+                quickAddCategory = request.category
             }
             // Reactive summary
             // Fires whenever transactions count, active filter, import state, or
@@ -220,6 +246,12 @@ struct ContentView: View {
     // MARK: - Main Content
     @ViewBuilder
     private var mainContent: some View {
+        scrollContent
+            .spotlight($categoryHint, message: { _ in String(localized: "home.hint.categories") })
+            .onDisappear { categoryHint = nil }
+    }
+
+    private var scrollContent: some View {
         ScrollView {
             VStack(spacing: AppSpacing.lg) {
                 // accountsSection + categoriesSection render unconditionally: the fast
@@ -234,6 +266,7 @@ struct ContentView: View {
                     historyNavigationLink
                         .transition(.opacity)
                 }
+                setupCards
                 categoriesSection
                 errorSection
             }
@@ -283,26 +316,50 @@ struct ContentView: View {
         .screenPadding()
     }
 
+    /// Under the history card: the one-time iCloud ask for an older install, and the
+    /// auto-capture card until an automation records its first payment. "For today" is on
+    /// Analytics (DailyAllowanceLink).
+    @ViewBuilder
+    private var setupCards: some View {
+        let showsICloudAsk = !iCloudAskAnswered && coordinator.cloudSyncViewModel.shouldAskForICloud
+        let showsAutoCapture = !autoCaptureCardHidden && !WalletCaptureStore.shared.hasEverCaptured
+        if coordinator.isFullyInitialized, showsICloudAsk || showsAutoCapture {
+            VStack(spacing: AppSpacing.lg) {
+                if showsICloudAsk {
+                    ICloudBackupAskCard(
+                        onTurnOn: { answerICloudAsk(enable: true) },
+                        onHide: { answerICloudAsk(enable: false) }
+                    )
+                }
+                if showsAutoCapture {
+                    AutoCaptureSetupCard(
+                        onSetUp: { showingWalletGuide = true },
+                        onHide: { withAnimation(AppAnimation.smooth) { autoCaptureCardHidden = true } }
+                    )
+                }
+            }
+            .screenPadding()
+            .transition(.opacity)
+        }
+    }
+
+    private func answerICloudAsk(enable: Bool) {
+        withAnimation(AppAnimation.smooth) { iCloudAskAnswered = true }
+        Task { await coordinator.cloudSyncViewModel.answerICloudAsk(enable: enable) }
+    }
+
     private var categoriesSection: some View {
         TransactionCategoryPickerView(
             transactionsViewModel: viewModel,
             categoriesViewModel: categoriesViewModel,
             accountsViewModel: accountsViewModel,
             transactionStore: coordinator.transactionStore,
-            timeFilterManager: timeFilterManager
+            timeFilterManager: timeFilterManager,
+            externalSelection: $quickAddCategory
         )
         .screenPadding()
-        // The first launch: a hint over the categories, once (DesignKit's Tooltip, over the
-        // grid so nothing moves; touches go through to the tiles).
-        .overlay(alignment: .top) {
-            if showingCategoryHint {
-                Tooltip(String(localized: "home.hint.categories"))
-                    .tooltipAnchor(.top)
-                    .allowsHitTesting(false)
-                    .transition(.opacity)
-            }
-        }
-        .zIndex(showingCategoryHint ? 1 : 0)
+        // The first launch: the grid lit, the rest of Home dimmed, once (`categoryHint`).
+        .spotlightAnchor(FeatureTourState.Hint.homeCategories)
         .task(id: coordinator.isFullyInitialized) { await showCategoryHintIfNeeded() }
     }
 
@@ -319,10 +376,8 @@ struct ContentView: View {
         try? await Task.sleep(for: .seconds(1))
         guard !Task.isCancelled else { return }
         FeatureTourState.markSeen(.homeCategories)
-        withAnimation(AppAnimation.smooth) { showingCategoryHint = true }
-        // Gone after a while, or at once when Home goes away (the task is cancelled).
-        try? await Task.sleep(for: .seconds(6))
-        withAnimation(AppAnimation.smooth) { showingCategoryHint = false }
+        // A tap anywhere lifts it (DesignKit's spotlight); leaving Home lifts it too.
+        categoryHint = .homeCategories
     }
 
     @ViewBuilder
@@ -334,6 +389,19 @@ struct ContentView: View {
     }
 
     // MARK: - Destinations
+
+    private var settingsDestination: some View {
+        SettingsView(
+            settingsViewModel: coordinator.settingsViewModel,
+            transactionsViewModel: viewModel,
+            accountsViewModel: accountsViewModel,
+            categoriesViewModel: categoriesViewModel,
+            transactionStore: transactionStore,
+            depositsViewModel: coordinator.depositsViewModel,
+            loansViewModel: coordinator.loansViewModel,
+            cloudSyncViewModel: coordinator.cloudSyncViewModel
+        )
+    }
 
     private var historyDestination: some View {
         HistoryView(
@@ -426,12 +494,13 @@ struct ContentView: View {
     private var settingsButton: some View {
         Button {
             HapticManager.light()
-            showingSettings = true
+            navigationPath.append(HomeDestination.settings)
         } label: {
             Image(systemName: "gearshape")
                 .foregroundStyle(.primary)
         }
         .accessibilityLabel(String(localized: "settings.title"))
+        .accessibilityIdentifier("home.settingsButton")
     }
 
     private var timeFilterButton: some View {
@@ -471,21 +540,6 @@ struct ContentView: View {
         )
     }
 
-    private var settingsSheet: some View {
-        NavigationStack {
-            SettingsView(
-                settingsViewModel: coordinator.settingsViewModel,
-                transactionsViewModel: viewModel,
-                accountsViewModel: accountsViewModel,
-                categoriesViewModel: categoriesViewModel,
-                transactionStore: transactionStore,
-                depositsViewModel: coordinator.depositsViewModel,
-                loansViewModel: coordinator.loansViewModel,
-                cloudSyncViewModel: coordinator.cloudSyncViewModel
-            )
-        }
-        .softScrollEdges()
-    }
 
     /// Decodes `fileURL` into a UIImage downsampled to `screenSize × scale` pixels.
     /// Returns nil if the file cannot be read or decoded.

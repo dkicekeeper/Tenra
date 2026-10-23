@@ -28,7 +28,7 @@ struct AssistantTopicTests {
         case .account(let value): name = value
         case .category(let value, _): name = value
         case .insight(let value): name = value
-        case .history: name = ""
+        case .history, .allowance: name = ""
         case .goal(let value): name = value
         case .debt(let value, _): name = value
         }
@@ -39,6 +39,14 @@ struct AssistantTopicTests {
     @Test func historyAsksAboutTheMonth() {
         #expect(AssistantTopic.history.questions.count == 3)
         #expect(Set(AssistantTopic.history.questions).count == 3)
+    }
+
+    /// For today (Analytics): two different questions, both read as questions, not records.
+    @Test func allowanceAsksAboutTheMoneyLeft() {
+        let questions = AssistantTopic.allowance.questions
+        #expect(questions.count == 2)
+        #expect(Set(questions).count == 2)
+        #expect(questions.allSatisfy { AgentFastPath.readsAsQuestion($0) })
     }
 
     @Test func expenseAndIncomeCategoriesAskDifferently() {

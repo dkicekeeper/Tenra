@@ -27,6 +27,8 @@ struct OnboardingFlowView: View {
                         OnboardingAccountStep(vm: vm)
                     case .categories:
                         OnboardingCategoriesStep(vm: vm)
+                    case .autoCapture:
+                        OnboardingAutoCaptureStep(vm: vm)
                     }
                 }
         }

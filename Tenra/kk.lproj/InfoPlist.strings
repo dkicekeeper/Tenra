@@ -1,0 +1,6 @@
+/* System permission prompts (Info.plist usage descriptions). */
+"NSCameraUsageDescription" = "Tenra қағаз чектерді қолмен термеу үшін оларды камерамен сканерлейді.";
+"NSMicrophoneUsageDescription" = "Tenra шығыстарды дауыспен қосу үшін микрофонды пайдаланады.";
+"NSSpeechRecognitionUsageDescription" = "Tenra айтқаныңызды операцияларға айналдырады. Сөзді Apple өңдейді.";
+"NSDocumentPickerUsageDescription" = "Tenra импорттау үшін өзіңіз таңдаған банк үзінді көшірмелерін оқиды.";
+"NSFaceIDUsageDescription" = "Қолданбаны құлыптауды қоссаңыз, Tenra қаржыңызды Face ID арқылы қорғайды.";

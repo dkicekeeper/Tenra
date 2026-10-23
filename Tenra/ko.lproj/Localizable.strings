@@ -97,6 +97,23 @@
 "settings.background" = "배경";
 "settings.merchantLogos" = "가맹점 로고";
 "home.hint.categories" = "카테고리를 탭해 지출을 추가하세요";
+"home.autoCapture.title" = "기록은 Tenra에게 맡기세요";
+"home.autoCapture.message" = "Wallet 자동화를 한 번 설정하면 Apple Pay 결제가 여기에 저절로 나타납니다.";
+"home.autoCapture.action" = "설정하기";
+"home.today.title" = "오늘의 예산";
+"home.today.untilIncome" = "%@ 입금일까지 하루";
+"home.today.untilMonthEnd" = "월말까지 하루";
+"home.today.setAside" = "결제용으로 %@ 확보됨";
+"allowance.detail.how" = "계산 방법";
+"allowance.detail.footer" = "일상 계좌의 현재 잔액에서 그날까지의 구독, 대출 상환, 예정된 지출을 빼고 남은 일수로 나눈 금액입니다. 텐도 같은 방식으로 계산합니다.";
+"allowance.detail.balance" = "현재 계좌 잔액";
+"allowance.detail.setAside" = "결제용으로 확보";
+"allowance.detail.free" = "쓸 수 있는 금액";
+"allowance.detail.days" = "남은 일수";
+"allowance.detail.payments" = "확보한 결제";
+"home.iCloudAsk.title" = "백업을 iCloud에 보관하세요";
+"home.iCloudAsk.message" = "주간 백업이 지금은 이 iPhone에만 있습니다. iCloud Drive에 두면 새 휴대폰이나 재설치 후에도 남습니다.";
+"home.iCloudAsk.action" = "켜기";
 "settings.voiceLanguage" = "음성 언어";
 "settings.voiceLanguage.app" = "앱과 동일";
 "settings.background.none" = "배경 없음";
@@ -1270,6 +1287,14 @@
 "diagnostics.report.cpuExceptions" = "CPU 과부하: %lld";
 "diagnostics.report.slowLaunches" = "느린 실행: %lld";
 "diagnostics.share" = "진단 정보 공유";
+"diagnostics.capture.header" = "자동 기록";
+"diagnostics.capture.footer" = "지난 90일 동안 Wallet 및 은행 알림 자동화가 이 iPhone에 기록한 결제입니다. 기기 밖으로 아무것도 나가지 않습니다.";
+"diagnostics.capture.applePay" = "Apple Pay 결제";
+"diagnostics.capture.notifications" = "은행 알림";
+"diagnostics.capture.counts" = "7일간 %lld건, 30일간 %lld건";
+"diagnostics.capture.pending" = "환율 대기 중";
+"diagnostics.capture.last" = "마지막 기록";
+"diagnostics.capture.never" = "없음";
 
 // MARK: - Voice (extras)
 "voice.openSettings" = "설정 열기";
@@ -1550,17 +1575,18 @@
 
 "onboarding.welcome.page1.title" = "모든 금융을 한곳에";
 "onboarding.welcome.page1.subtitle" = "계좌, 예금, 대출, 구독, 지출 카테고리를 명확한 분석과 함께 관리해요.";
-"onboarding.welcome.page2.title" = "음성으로 거래를 추가하세요";
-"onboarding.welcome.page2.subtitle" = "\"커피 800텡게\"라고 말하면 Tenra가 금액, 통화, 카테고리를 알아들어요. PDF·CSV 명세서를 가져올 수도 있어요.";
+"onboarding.welcome.page2.title" = "알아서 기록";
+"onboarding.welcome.page2.subtitle" = "Apple Pay 결제, 은행 알림과 명세서가 입력 없이 거래가 됩니다. 은행 로그인은 필요 없습니다.";
 "onboarding.welcome.page3.title" = "내 데이터는 내 것이에요";
 "onboarding.welcome.page3.subtitle" = "모든 데이터는 기기에 저장돼요. iCloud 백업은 선택이에요. 계정도, 가입도 필요 없어요.";
+"onboarding.welcome.ten.title" = "돈에 대해 텐에게 물어보세요";
+"onboarding.welcome.ten.subtitle" = "돈이 어디로 가는지, 월급날까지 버틸 수 있는지, 대출을 더 빨리 갚는 법까지. 텐이 내 숫자로 답해 줘요.";
 
 "onboarding.cta.next" = "다음";
 "pager.previous" = "이전";
 "pager.next" = "다음";
 "onboarding.cta.start" = "시작하기";
 "onboarding.cta.done" = "완료";
-"onboarding.cta.doneWithCount" = "완료 • %d개 선택됨";
 "onboarding.cta.skip" = "건너뛰기";
 "onboarding.stepIndicator.label" = "%d / %d단계";
 
@@ -1688,7 +1714,6 @@
 // MARK: - Settings Pro Section
 
 "settings.pro.cta.title" = "Tenra Pro 구독하기";
-"settings.pro.cta.subtitle" = "무제한 계좌, 명세서 가져오기, 예금 및 대출";
 "settings.pro.status.active" = "활성";
 "settings.pro.plan.monthly" = "월간";
 "settings.pro.plan.annual" = "연간";
@@ -1700,17 +1725,9 @@
 "settings.pro.manage" = "구독 관리";
 "settings.pro.restore" = "구매 복원";
 "settings.pro.redeemCode" = "코드 사용";
-"settings.pro.restore.restored" = "복원됨";
 "settings.pro.restore.none" = "구매 내역 없음";
 "settings.pro.restore.failed" = "복원 실패";
 "pro.page.subtitle" = "Tenra의 모든 기능을 제한 없이";
-"pro.page.features" = "Pro에 포함된 기능";
-"pro.feature.accounts" = "무제한 계좌";
-"pro.feature.voice" = "음성 입력";
-"pro.feature.import" = "PDF 및 CSV 명세서 가져오기";
-"pro.feature.deposits" = "이자가 붙는 예금";
-"pro.feature.loans" = "상환 일정이 있는 대출";
-"pro.feature.debts" = "빌린 돈과 빌려준 돈";
 
 /* MARK: - App Intents / Siri */
 "intent.log.title" = "거래 기록";
@@ -1759,7 +1776,7 @@
 "intent.bankNotification.parameter.app" = "앱";
 "intent.bankNotification.parameter.date" = "날짜";
 "intent.bankNotification.notOperation" = "이 알림에는 지출이나 수입이 없어 아무것도 기록하지 않았습니다.";
-"intent.bankNotification.ownTransfer" = "내 계좌 간 이체는 기록되지 않습니다.";
+"intent.bankNotification.ownTransfer" = "내 계좌 간 이체입니다. 다른 은행의 알림이 오면 Tenra가 기록합니다.";
 "intent.bankNotification.cash" = "현금 인출은 기록되지 않습니다. 현금으로 쓴 내역을 기록하세요.";
 "walletSetup.title" = "Wallet 자동화 설정";
 "walletSetup.intro" = "설정하면 단말기에서 Apple Pay로 결제할 때마다 가맹점, 금액, 통화, 카드와 함께 자동으로 기록됩니다. 온라인 결제는 Wallet이 전달하지 않으므로 명세서로 들어옵니다.";
@@ -1887,6 +1904,18 @@
 /* Income presets and add-income-category action */
 "onboarding.preset.salary" = "급여";
 "onboarding.preset.otherIncome" = "기타 수입";
+"onboarding.autoCapture.title" = "기록은 Tenra에게 맡기세요";
+"onboarding.autoCapture.subtitle" = "은행 로그인은 필요 없습니다. 각각 몇 분이면 되고, 지금이나 나중에 할 수 있습니다.";
+"onboarding.autoCapture.applePay.title" = "Apple Pay 결제";
+"onboarding.autoCapture.applePay.hint" = "단말기에서 iPhone이나 Watch로 결제할 때마다 기록됩니다";
+"onboarding.autoCapture.notifications.title" = "은행 알림";
+"onboarding.autoCapture.notifications.hint" = "모든 은행 알림에서 이체, QR 결제, 온라인 결제를 기록합니다";
+"onboarding.autoCapture.statement.title" = "은행 명세서";
+"onboarding.autoCapture.statement.hint" = "지난달 PDF를 불러오면 텐이 거래로 정리합니다";
+"onboarding.autoCapture.afterStart" = "시작 후";
+"onboarding.restore" = "백업에서 복원";
+"onboarding.cta.nextWithCount" = "다음 • %d개 선택됨";
+"onboarding.restore.hint" = "백업을 탭하면 이 iPhone으로 데이터를 되돌릴 수 있습니다.";
 "transactionForm.addIncomeCategory" = "수입 카테고리 추가";
 
 /* Statement import duplicate markers */
@@ -2043,6 +2072,7 @@
 "assistant.forecast.balance" = "일별 잔액";
 "assistant.forecast.obligations" = "%@까지 나갈 금액";
 "assistant.error.generic" = "문제가 발생했습니다. 다시 시도하세요.";
+"assistant.error.tooLong" = "이 채팅은 어시스턴트에게 너무 길어졌습니다. 새 채팅을 시작하고 다시 물어보세요.";
 
 /* AI assistant: the chat screen */
 "tab.assistant" = "어시스턴트";
@@ -2175,10 +2205,13 @@
 "assistant.notice.ask.debt" = "%@ 관련 기록을 정리해 줘";
 "assistant.notice.goal.behind" = "%2$@까지 달성하려면 매달 %1$@씩 모아야 해요";
 "assistant.notice.ask.goal" = "“%@” 목표를 어떻게 따라잡을까?";
+"assistant.notice.setup" = "지출을 직접 입력하고 있어요. Wallet 자동화를 한 번만 설정하면 Apple Pay 결제가 저절로 기록돼요.";
 "assistant.topic.goal.onTrack" = "“%@” 목표는 잘 가고 있어?";
 "assistant.topic.goal.faster" = "“%@”를 더 빨리 모으려면?";
 "assistant.topic.debt.status" = "%@ 관련해서 얼마나 남았어?";
 "assistant.topic.debt.plan" = "%@에게 기한 안에 갚으려면?";
+"assistant.topic.allowance.enough" = "다음 수입까지 돈이 충분할까?";
+"assistant.topic.allowance.save" = "하루에 더 쓰려면 어디서 아껴야 할까?";
 
 /* Ten's lines around the conversation (AssistantChatter, DesignKit 4.10). */
 "assistant.chatter.morning" = "좋은 아침이에요!";
@@ -2237,3 +2270,23 @@
 "status.archived" = "보관됨";
 "status.pending" = "대기 중";
 "textInput.characterCount" = "%2$lld자 중 %1$lld자";
+
+"bankSetup.title" = "은행 알림 설정";
+"bankSetup.page.intro" = "은행 알림으로 거래 기록";
+"bankSetup.page.trigger" = "은행 앱 선택";
+"bankSetup.page.action" = "Tenra 동작 추가";
+"bankSetup.page.quiet" = "묻지 않고 실행";
+"bankSetup.page.check" = "알림 확인";
+"bankSetup.intro" = "iOS 27에서는 알림이 오면 단축어가 동작을 실행할 수 있습니다. Tenra는 은행 알림에서 금액, 통화, 카드, 가맹점을 읽어 묻지 않고 지출이나 수입을 기록합니다. 텍스트는 iPhone 밖으로 나가지 않습니다.";
+"bankSetup.step.trigger" = "**단축어** › **자동화** › **+**를 열고 앱 알림 트리거를 선택하세요. 사용하는 은행 앱을 모두 선택합니다. 필터는 추가하지 마세요. 코드, 광고, 잔액은 Tenra가 알아서 건너뜁니다.";
+"bankSetup.step.action" = "빈 자동화를 만들고 **%@**을(를) 찾아 추가하세요.";
+"bankSetup.step.fields" = "각 필드를 **알림** 변수의 해당 속성으로 채우세요. **%1$@**에는 제목, **%2$@**에는 부제, **%3$@**에는 본문, **%4$@**에는 앱, **%5$@**에는 날짜를 넣습니다.";
+"bankSetup.step.quiet" = "단축어에서 제안하면 즉시 실행을 선택하고 실행 알림을 끄세요. 완료되었습니다. 다음 결제 알림부터 Tenra의 거래가 됩니다.";
+"bankSetup.note.filters" = "추가한 필터는 채우거나 삭제해야 합니다. 그렇지 않으면 자동화가 켜지지 않습니다.";
+"bankSetup.check.text" = "은행 알림의 텍스트를 붙여 넣으면 Tenra가 무엇을 기록할지 볼 수 있습니다. 아무것도 저장되지 않습니다.";
+"bankSetup.check.placeholder" = "알림 텍스트";
+"bankSetup.check.result" = "Tenra가 기록할 내용";
+"bankSetup.check.kind" = "유형";
+"bankSetup.check.counterparty" = "가맹점 또는 보낸 사람";
+"bankSetup.check.card" = "카드";
+"bankSetup.check.none" = "거래가 아닙니다. Tenra는 이 텍스트에서 아무것도 기록하지 않습니다.";

@@ -94,6 +94,7 @@ struct DepositsListView: View {
                             transitionSourceID: deposit.id,
                             transitionNamespace: depositNamespace
                         )
+                        .accessibilityIdentifier("deposits.card")
                         .contextMenu {
                             Button {
                                 editingDeposit = deposit

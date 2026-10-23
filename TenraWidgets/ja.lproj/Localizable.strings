@@ -1,0 +1,16 @@
+/* TenraWidgets: the widget extension's strings (its own bundle). */
+
+"widget.today.name" = "今日の予算";
+"widget.today.description" = "次の入金まで1日に使える金額と、今日の支出。";
+"widget.today.title" = "今日の予算";
+"widget.today.untilIncome" = "%@まで1日あたり";
+"widget.today.untilMonthEnd" = "月末まで1日あたり";
+"widget.today.inline" = "今日は%@";
+"widget.today.spent" = "今日：%@";
+"widget.today.empty" = "Tenraを開いて今日のお金を確認";
+"widget.quickAdd.title" = "支出を記録";
+"widget.quickAdd.description" = "Tenraを開いて買い物を記録します。";
+"widget.sample.food" = "食費";
+"widget.sample.transport" = "交通";
+"widget.sample.coffee" = "コーヒー";
+"widget.sample.shopping" = "買い物";

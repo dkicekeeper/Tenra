@@ -10,11 +10,11 @@ on:
   workflow_dispatch:
     inputs:
       locales:
-        description: "ASC locales, space-separated (as in capture_screenshots.sh)"
+        description: "ASC locales, space-separated (as in capture_screenshots.sh; kk is the Kazakh set en-GB shows)"
         required: false
         default: "ru en-US fr-FR"
       frames:
-        description: "all (01-19), cpp (only 09-12, the custom product page frames) or ten (only Ten's 07, 13, 14, 17-19)"
+        description: "all (01-21), cpp (only 09-12, the custom product page frames), ten (only Ten's 07, 13, 14, 17-19) or autocapture (only 20-21, To review and a merchant's screen)"
         required: false
         default: cpp
       art:

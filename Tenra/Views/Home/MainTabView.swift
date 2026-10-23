@@ -261,6 +261,10 @@ struct MainTabView: View {
             if !WalletCaptureStore.shared.pending.isEmpty {
                 Task { await WalletPaymentRecorder.recordPending(services: IntentServices(coordinator: coordinator)) }
             }
+            // Sides of transfers between own accounts from bank notifications, paired.
+            if !WalletCaptureStore.shared.transferSides.isEmpty {
+                Task { await OwnTransferRecorder.recordPairs(services: IntentServices(coordinator: coordinator)) }
+            }
             // Merchant logos, looked up once each: Apple Pay merchants, then the history's
             // frequent ones (on device only), once the full load has the history.
             let store = coordinator.transactionStore
@@ -278,6 +282,30 @@ struct MainTabView: View {
                 openAssistant()
             } else if url.pathExtension.lowercased() == "pdf" {
                 openImport()
+            }
+        }
+        // Onboarding's "Read a bank statement": the assistant opens its file picker
+        // (AssistantAttachmentSources takes the request); without the assistant, the import tab.
+        .onChange(of: coordinator.pendingStatementPick, initial: true) { _, wanted in
+            guard wanted else { return }
+            if assistantTakesActionTab {
+                openAssistant()
+            } else {
+                _ = coordinator.consumePendingStatementPick()
+                openImport()
+            }
+        }
+        // A widget's category or Control Center's "Log an expense" (tenra://add): the add
+        // form on Home for a category (ContentView takes it), else the assistant.
+        .onChange(of: coordinator.pendingQuickAdd, initial: true) { _, request in
+            guard let request else { return }
+            if request.category == nil, assistantTakesActionTab {
+                _ = coordinator.consumePendingQuickAdd()
+                openAssistant()
+            } else {
+                if tabBarMode == .expanded { tabBarMode = .normal }
+                selectedTab = .home
+                previousTab = .home
             }
         }
         // "Ask Ten" on an account, a category, an insight or the history.

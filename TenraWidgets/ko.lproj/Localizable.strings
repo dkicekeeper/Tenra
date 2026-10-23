@@ -1,0 +1,16 @@
+/* TenraWidgets: the widget extension's strings (its own bundle). */
+
+"widget.today.name" = "오늘의 예산";
+"widget.today.description" = "다음 입금까지 하루에 쓸 수 있는 금액과 오늘 나간 돈.";
+"widget.today.title" = "오늘의 예산";
+"widget.today.untilIncome" = "%@까지 하루";
+"widget.today.untilMonthEnd" = "월말까지 하루";
+"widget.today.inline" = "오늘 %@";
+"widget.today.spent" = "오늘: %@";
+"widget.today.empty" = "Tenra를 열어 오늘의 돈을 확인하세요";
+"widget.quickAdd.title" = "지출 기록";
+"widget.quickAdd.description" = "구매를 적을 수 있도록 Tenra를 엽니다.";
+"widget.sample.food" = "식비";
+"widget.sample.transport" = "교통";
+"widget.sample.coffee" = "커피";
+"widget.sample.shopping" = "쇼핑";

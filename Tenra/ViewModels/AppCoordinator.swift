@@ -86,6 +86,21 @@ class AppCoordinator {
     /// asks its question. Cleared once taken.
     private(set) var pendingNotice: AssistantNotice?
 
+    /// What a widget or the Control Center button asked for (`tenra://add`): Home opens the
+    /// add-transaction form for the category, or with none the assistant (Home where it does
+    /// not run). Cleared once taken.
+    private(set) var pendingQuickAdd: QuickAdd?
+
+    /// Onboarding's "Read a bank statement" (OnboardingViewModel.FollowUp.statement): the
+    /// assistant opens its file picker, or without the assistant the import tab opens. Cleared
+    /// once taken.
+    private(set) var pendingStatementPick = false
+
+    nonisolated struct QuickAdd: Equatable, Sendable {
+        /// An expense category's name; nil opens the assistant.
+        let category: String?
+    }
+
     /// Cold-launch stash: when iOS launches the app from a notification tap, the
     /// `userNotificationCenter(_:didReceive:)` handler runs BEFORE `AppCoordinator`
     /// is constructed (the coordinator waits for CoreData prewarm). AppDelegate
@@ -155,8 +170,12 @@ class AppCoordinator {
         )
         let fastPath = AssistantViewModel.FastPath { text in
             let operations = parser.parseMulti(text)
-            guard AgentFastPath.isRecord(text, operations: operations, clauses: VoiceInputSegmenter.segment(text).count) else { return nil }
-            return await toolkit.fastPathOperations(for: operations, message: text)
+            guard AgentFastPath.isRecord(text, operations: operations, clauses: VoiceInputSegmenter.segment(text).count),
+                  let drafted = await toolkit.fastPathOperations(for: operations, message: text) else { return nil }
+            return AssistantViewModel.FastPath.Draft(
+                operations: drafted,
+                guessesCategory: AgentFastPath.guessesCategory(operations)
+            )
         }
         let usage = AssistantUsageStore()
         // Threads are kept in the CoreData store; previews on UserDefaults keep them in memory.
@@ -199,6 +218,37 @@ class AppCoordinator {
         pendingSubscriptionSeriesId = nil
     }
 
+    /// A URL the app was opened with: Tenra's own (`tenra://`, from a widget or Control Center)
+    /// or a file another app handed over.
+    func open(_ url: URL) {
+        if url.scheme == Self.urlScheme {
+            handleDeepLink(url)
+        } else {
+            openAttachment(url)
+        }
+    }
+
+    /// The app's URL scheme (Info.plist CFBundleURLTypes).
+    nonisolated static let urlScheme = "tenra"
+
+    /// `tenra://add` and `tenra://add?category=<name>`; anything else is ignored.
+    func handleDeepLink(_ url: URL) {
+        guard let request = Self.quickAdd(from: url) else { return }
+        pendingQuickAdd = request
+    }
+
+    nonisolated static func quickAdd(from url: URL) -> QuickAdd? {
+        guard url.scheme == urlScheme, url.host() == "add" else { return nil }
+        let category = URLComponents(url: url, resolvingAgainstBaseURL: false)?
+            .queryItems?.first { $0.name == "category" }?.value
+        return QuickAdd(category: category?.isEmpty == false ? category : nil)
+    }
+
+    func consumePendingQuickAdd() -> QuickAdd? {
+        defer { pendingQuickAdd = nil }
+        return pendingQuickAdd
+    }
+
     /// A file handed over by another app; anything but a PDF or a CSV is ignored.
     func openAttachment(_ url: URL) {
         guard url.isFileURL, ["pdf", "csv"].contains(url.pathExtension.lowercased()) else { return }
@@ -210,22 +260,52 @@ class AppCoordinator {
         return pendingAttachment
     }
 
-    /// Ten writes first about the subscriptions charged tomorrow, the debts due tomorrow and the
-    /// goals behind their schedule (AssistantInbox); insights and the weekly summary post from
-    /// the insights recompute.
+    func pickStatement() {
+        pendingStatementPick = true
+    }
+
+    func consumePendingStatementPick() -> Bool {
+        defer { pendingStatementPick = false }
+        return pendingStatementPick
+    }
+
+    /// Ten writes first about the subscriptions charged tomorrow, the debts due tomorrow, the
+    /// goals behind their schedule and auto-capture not set up (AssistantInbox); insights and
+    /// the weekly summary post from the insights recompute.
     func refreshAssistantInbox(now: Date = Date()) {
         guard AssistantAvailability.isAvailable else { return }
         observeStoreResetForAssistant()
+        if let subjects = assistantNoticeSubjects {
+            AssistantInbox.shared.drop(outside: subjects)
+        }
         let scheduler = SubscriptionNotificationScheduler.shared
-        AssistantInbox.shared.post(
-            AssistantNotices.charges(
-                subscriptions: transactionStore.activeSubscriptions,
-                nextCharge: { scheduler.calculateNextChargeDate(for: $0, today: now) },
-                now: now
-            )
-                + AssistantNotices.debtsDue(debtStore.debts, now: now)
-                + AssistantNotices.goalsBehind(goalStore.goals, saved: { [goalStore] in goalStore.saved(for: $0) }, now: now),
+        var candidates = AssistantNotices.charges(
+            subscriptions: transactionStore.activeSubscriptions,
+            nextCharge: { scheduler.calculateNextChargeDate(for: $0, today: now) },
             now: now
+        )
+        candidates += AssistantNotices.debtsDue(debtStore.debts, now: now)
+        candidates += AssistantNotices.goalsBehind(goalStore.goals, saved: { [goalStore] in goalStore.saved(for: $0) }, now: now)
+        if let nudge = AssistantNotices.setupNudge(
+            entries: transactionStore.transactionsCount,
+            capturing: WalletCaptureStore.shared.hasEverCaptured,
+            cardHidden: UserDefaults.standard.bool(forKey: AutoCaptureSetupCard.hiddenKey),
+            now: now
+        ) {
+            candidates.append(nudge)
+        }
+        AssistantInbox.shared.post(candidates, now: now)
+    }
+
+    /// What Ten's messages may still talk about (AssistantNotices.Subjects); nil until every
+    /// store has read its data, when an empty list would mean "not read yet".
+    var assistantNoticeSubjects: AssistantNotices.Subjects? {
+        guard isFullyInitialized, goalStore.isLoaded, debtStore.isLoaded else { return nil }
+        return AssistantNotices.Subjects(
+            subscriptions: Set(transactionStore.activeSubscriptions.map(\.id)),
+            debts: Set(debtStore.debts.filter { !$0.isSettled }.map(\.id)),
+            goals: Set(goalStore.goals.map(\.id)),
+            capturing: WalletCaptureStore.shared.hasEverCaptured
         )
     }
 

@@ -28,7 +28,8 @@ assistant is that tab's page (`AssistantTab`); elsewhere (Simulator, Mac, no App
 "Voice | Import". iOS 26+.
 
 **Entry points** (`AssistantEntryPoints`): the tab; "Ask Ten" in the "…" menu of an account,
-category, goal and debt, and as a button with Ten's glyph in an insight and History (the
+category, goal and debt, and as a button with Ten's glyph in an insight, History and For today
+on Analytics (the
 assistant opens with questions about that object, nothing is sent until one is chosen); "Go through
 it" on a Home notice; a PDF or CSV opened in Tenra from another app.
 
@@ -110,9 +111,12 @@ Rules:
   prompt-injection input, and writing needs a confirmation anyway.
 
 **FastPath** (`AgentFastPath`): a message the voice parser reads as incomes or expenses (each part
-with an amount and a category; no question, plan, transfer, repeat or budget in any of the 11
+with an amount and a category; no question, plan, transfer, repeat or budget in any of the 12
 languages) is drafted on the phone by `makeDraft`, with no cloud and no consent. Typed, it is free;
-spoken, it spends one free action. The model learns about it with the next question
+spoken, it spends one free action. When no keyword named a category (the parser put it in "Other",
+`AgentFastPath.guessesCategory`), the message goes to the model, which knows the person's
+categories, if the cloud is allowed, the country is served (no `regionUnavailable` this session)
+and Pro or a free action is left; otherwise the phone's draft in "Other" stands. The model learns about it with the next question
 (`<draft_status>`: "made on the phone"); the thread keeps its place
 (`AgentThreadSnapshot.LocalExchange`).
 
@@ -201,6 +205,17 @@ count of the rest; "Go through it" opens the assistant with a question and a `<n
 free action), "Hide" shows the next. Works without notification permission. A push of an insight
 still opens Analytics.
 
+Auto-capture not set up (`Kind.setup`, `AssistantNotices.setupNudge`): once, after
+`setupAfterEntries` entries, for someone who hid Home's auto-capture card; its button is "Set
+up" and opens the Wallet guide instead of asking Ten (no action spent), and it leaves once an
+automation records a payment (`Subjects.capturing`).
+
+A notice keeps a copy of its text with the amounts as dots (`hiddenBody`), shown while "hide
+amounts" is on. A notice about a subscription, a debt or a goal leaves with it: the Home section
+shows only notices whose subject is still there (`AssistantNotices.Subjects`: active
+subscriptions, open debts, goals, read once every store has loaded), and
+`refreshAssistantInbox` drops the rest for good (their keys stay posted).
+
 ## 7. The tab, the chat, voice and attachments
 
 - **Navigation** (owner's decisions, 2026-10-14): the tab's root is the assistant's home
@@ -275,6 +290,12 @@ The app runs the agent loop, because the tools run on the phone: one server call
 - Errors before the stream: 400 `invalid`, 401 `user`, 401 `attest` (with `reason`), 429 `quota`
   or `busy`, 451 `region_unavailable` (the app shows `assistant.error.region`), 502
   `entitlement_unavailable`, 503 `disabled`.
+- In the app (`AssistantFailure`): a turn refused as `invalid` (its size, its fields) is
+  `tooLong`, with no Retry (resending fails the same way); 502 (RevenueCat did not answer) and
+  5xx are `busy`; an `attest` refusal or a refused registration (400 `attestation` from
+  `/v1/attest`) is `generic` with Retry (a new assertion or a new key), except `unsupported`
+  (`unsupportedDevice`). A failure to sign (no network while registering the key) is thrown, not
+  swallowed: it reads as offline, not as a permanent refusal.
 - **App Attest** (`src/appattest.ts`): a turn is accepted only from the real app on a real device,
   Pro or not, and the signature is checked before RevenueCat and any KV write. Once per install:
   `GET /v1/attest/challenge` → `{challenge}` (single use, 5 minutes); the app makes a
@@ -321,7 +342,8 @@ spending, no em dashes, in all 11 languages.
 - **Free allowance** (`PremiumConfig.Assistant`, counted in Keychain by `AssistantUsageStore`, so
   it survives a reinstall; `AssistantAllowance`): 30 actions in the first 7 days, then 10 a month,
   reset on the 1st. An action is a spoken entry, an attachment, or a reply with analysis or a plan.
-  A typed entry the phone's parser understands ("coffee 1500") is free; so are the Home notices
+  A typed entry the phone's parser understands ("coffee 1500") is free (one whose category it
+  only guessed goes to the model while an action is left, §3); so are the Home notices
   (looking into one is an action) and the Analytics tab. `AssistantViewModel.Access` checks before
   sending: a question over the allowance stays in the thread with a Pro card ("Get Tenra Pro") and
   is sent after the purchase (`retry()`). A line "N left" shows above the composer at 3 or fewer.
@@ -334,8 +356,10 @@ spending, no em dashes, in all 11 languages.
   ≈ $0.002 a message, ≈ $0.12 for 60 a month, against ≈ $0.67 a month net of an annual Pro.
   Production runs Haiku 5.5: the same eval score as Sonnet and Opus, and the only one within the
   subscription's price. Another model is one line (`ASSISTANT_MODEL`) and a deploy. The Anthropic
-  workspace has a monthly spend limit ($20, raise if spending grows; at the limit Ten is silent for
-  everyone until the next month).
+  workspace has a monthly spend limit ($20; $50 with spend alerts at 50 % and 80 % while the ads
+  run; at the limit Ten is silent for everyone until the next month). `GLOBAL_DAILY_CALLS` (1 200)
+  keeps one day under a 30th of that limit, about $0.0014 a call, so a busy day silences Ten until
+  midnight UTC rather than the limit for the month; raise the two together (calls ≈ limit × 24).
 
 ## 12. Setup, deploy and eval
 

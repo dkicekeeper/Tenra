@@ -1,0 +1,16 @@
+/* TenraWidgets: the widget extension's strings (its own bundle). */
+
+"widget.today.name" = "Pour aujourd’hui";
+"widget.today.description" = "Ce que vous pouvez dépenser par jour jusqu’au prochain revenu, et ce qui est sorti aujourd’hui.";
+"widget.today.title" = "Pour aujourd’hui";
+"widget.today.untilIncome" = "par jour jusqu’au %@";
+"widget.today.untilMonthEnd" = "par jour jusqu’à la fin du mois";
+"widget.today.inline" = "%@ pour aujourd’hui";
+"widget.today.spent" = "Aujourd’hui : %@";
+"widget.today.empty" = "Ouvrez Tenra pour voir l’argent du jour";
+"widget.quickAdd.title" = "Noter une dépense";
+"widget.quickAdd.description" = "Ouvre Tenra pour noter un achat.";
+"widget.sample.food" = "Repas";
+"widget.sample.transport" = "Transport";
+"widget.sample.coffee" = "Café";
+"widget.sample.shopping" = "Achats";

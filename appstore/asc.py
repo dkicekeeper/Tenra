@@ -10,6 +10,17 @@
                                                     docs/release-notes.md, select build N (no submit)
     python3 appstore/asc.py keywords [--locale ru,en-US]
                                                     the app's keywords (custom pages link to them)
+    python3 appstore/asc.py metadata [--version 1.7]
+                                                    per locale: name, subtitle, promotional text,
+                                                    description and keyword lengths, and the primary
+                                                    language (what a storefront without its own
+                                                    language falls back to); keywords themselves only
+                                                    outside Actions
+    python3 appstore/asc.py push-metadata [--apply] the texts in appstore/metadata.json: name and
+                                                    subtitle (a version in preparation), promotional
+                                                    text, keywords, description; creates a missing
+                                                    locale from its `copyFrom`. Without --apply it
+                                                    only shows what would change
     python3 appstore/asc.py custom-pages            custom product pages and their review state
     python3 appstore/asc.py review-submissions      the latest review submissions, their items and
                                                     states; the creative images by state
@@ -24,6 +35,8 @@
     python3 appstore/asc.py push-version-screenshots --version 1.6 [--locale ru,en-US]
                                                     the version's own 6.9" screenshots, the frames
                                                     of `defaultOrder` in screenshot_captions.json
+                                                    (en-GB takes kk's: `screenshotsFrom` in
+                                                    metadata.json)
     python3 appstore/asc.py store-pages [--version 1.6]
                                                     what each storefront page shows: the version's
                                                     screenshots per locale against screenshots/final,
@@ -605,15 +618,19 @@ def editable_cpp_version(page_id: str) -> dict:
 
 def push_custom_pages(app: str, submit: bool) -> None:
     """Create or update every custom product page in appstore/product-pages.json: promotional text,
-    screenshots and keywords per locale. With submit, sends the edited versions for review."""
+    screenshots and keywords per locale. With submit, sends the edited versions for review.
+    A locale that shows another one's frames (en-GB: kk's, `screenshot_source`) is added after
+    the page exists, and one App Store Connect refuses (a language the app does not have yet) is
+    reported, not fatal."""
     config = page_config()
-    files = {(page["name"], locale): frame_files(config, page["frames"], locale)
+    files = {(page["name"], locale): frame_files(config, page["frames"], screenshot_source(locale))
              for page in config["customPages"] for locale in page["locales"]}
     existing, _ = get_all(f"/v1/apps/{app}/appCustomProductPages", {"limit": 50})
     by_name = {page["attributes"]["name"]: page for page in existing}
     rows, ready = [], []
     for page in config["customPages"]:
         record = by_name.get(page["name"])
+        own = [locale for locale in page["locales"] if screenshot_source(locale) == locale]
         if not record:
             record = send("POST", "/v1/appCustomProductPages", {
                 "data": {
@@ -628,11 +645,11 @@ def push_custom_pages(app: str, submit: bool) -> None:
                     {"type": "appCustomProductPageVersions", "id": "${version}", "relationships": {
                         "appCustomProductPageLocalizations": {"data": [
                             {"type": "appCustomProductPageLocalizations", "id": "${" + locale + "}"}
-                            for locale in page["locales"]]},
+                            for locale in own]},
                     }},
                     *[{"type": "appCustomProductPageLocalizations", "id": "${" + locale + "}",
-                       "attributes": {"locale": locale, "promotionalText": meta["promotionalText"]}}
-                      for locale, meta in page["locales"].items()],
+                       "attributes": {"locale": locale, "promotionalText": page["locales"][locale]["promotionalText"]}}
+                      for locale in own],
                 ],
             })["data"]
         version = editable_cpp_version(record["id"])
@@ -647,12 +664,18 @@ def push_custom_pages(app: str, submit: bool) -> None:
                     "attributes": {"promotionalText": meta["promotionalText"]},
                 }})
             else:
-                localization = send("POST", "/v1/appCustomProductPageLocalizations", {"data": {
-                    "type": "appCustomProductPageLocalizations",
-                    "attributes": {"locale": locale, "promotionalText": meta["promotionalText"]},
-                    "relationships": {"appCustomProductPageVersion": {
-                        "data": {"type": "appCustomProductPageVersions", "id": version["id"]}}},
-                }})["data"]
+                try:
+                    localization = send("POST", "/v1/appCustomProductPageLocalizations", {"data": {
+                        "type": "appCustomProductPageLocalizations",
+                        "attributes": {"locale": locale, "promotionalText": meta["promotionalText"]},
+                        "relationships": {"appCustomProductPageVersion": {
+                            "data": {"type": "appCustomProductPageVersions", "id": version["id"]}}},
+                    }})["data"]
+                except ApiError as error:
+                    if locale in own or error.code not in (409, 422):
+                        raise
+                    rows.append([page["name"], locale, f"not added: {error}", ""])
+                    continue
             shots = put_screenshots(screenshot_set("appCustomProductPageLocalization", localization["id"]),
                                     files[(page["name"], locale)])
             words = link_keywords(app, localization["id"], locale, meta.get("keywords", []))
@@ -669,7 +692,9 @@ def push_experiment(app: str, submit: bool, start: bool, stop: bool = False) -> 
     end it (every visitor then sees the default page)."""
     config = page_config()
     test = config["experiment"]
-    locales = sorted(path.name for path in (ROOT / "screenshots" / "final").iterdir() if path.is_dir())
+    # Every composed locale but kk, which App Store Connect does not have (`screenshots_only`).
+    locales = sorted(path.name for path in (ROOT / "screenshots" / "final").iterdir()
+                     if path.is_dir() and path.name not in screenshots_only())
     files = {(treatment["name"], locale): frame_files(config, treatment["frames"], locale)
              for treatment in test["treatments"] for locale in locales}
     existing, _ = get_all(f"/v1/apps/{app}/appStoreVersionExperimentsV2", {"limit": 20})
@@ -783,7 +808,9 @@ CAPTIONS = ROOT / "scripts" / "screenshot_captions.json"
 
 def push_version_screenshots(app: str, version: str, locales: list[str] | None) -> None:
     """The version's own 6.9" screenshots: per locale, the frames of `defaultOrder` (or the
-    locale's own order) from screenshots/final/<locale>/. Only a version in preparation."""
+    locale's own order) from screenshots/final/<locale>/, or from the folder `screenshot_source`
+    names (en-GB: kk/). Only a version in preparation. Goes through the version's
+    localizations, so kk, which App Store Connect does not have, is reached only through en-GB."""
     captions = json.loads(CAPTIONS.read_text(encoding="utf-8"))
     config = page_config()
     found, _ = get_all(f"/v1/apps/{app}/appStoreVersions",
@@ -800,9 +827,10 @@ def push_version_screenshots(app: str, version: str, locales: list[str] | None) 
         locale = item["attributes"]["locale"]
         if locales and locale not in locales:
             continue
-        settings = captions["locales"].get(locale, {})
+        source = screenshot_source(locale)
+        settings = captions["locales"].get(source, {})
         frames = settings.get("order") or captions["defaultOrder"]
-        files = frame_files(config, frames, locale)
+        files = frame_files(config, frames, source)
         print(f"{locale}: {len(files)} frames", flush=True)
         set_id = screenshot_set("appStoreVersionLocalization", item["id"])
         result = put_screenshots(set_id, files)
@@ -826,18 +854,200 @@ def store_version(app: str, version: str | None) -> dict:
     return found[0]
 
 
+def metadata(app: str, version: str | None) -> None:
+    """The texts each localization shows, read only. Kazakhstan, Belarus, Uzbekistan and most
+    storefronts index only English (U.K.) (Apple's "App Store localizations" table): without an
+    en-GB localization they fall back to the primary language printed here. The keyword field is
+    not public on the store, so in Actions (a public log) only its length shows."""
+    primary = get(f"/v1/apps/{app}")["data"]["attributes"].get("primaryLocale")
+    print(f"Primary language: {primary}\n")
+    infos, _ = get_all(f"/v1/apps/{app}/appInfos", {"limit": 10})
+    rows = []
+    for info in infos:
+        state = info["attributes"].get("appStoreState") or info["attributes"].get("state")
+        localizations, _ = get_all(f"/v1/appInfos/{info['id']}/appInfoLocalizations", {"limit": 50})
+        for item in sorted(localizations, key=lambda i: i["attributes"]["locale"]):
+            a = item["attributes"]
+            subtitle = a.get("subtitle") or ""
+            rows.append([state, a["locale"], a.get("name") or "", subtitle, len(subtitle)])
+    table("Name and subtitle (app info)", ["State", "Locale", "Name", "Subtitle", "Chars"], rows)
+
+    record = store_version(app, version)
+    in_actions = bool(os.environ.get("GITHUB_ACTIONS"))
+    localizations, _ = get_all(f"/v1/appStoreVersions/{record['id']}/appStoreVersionLocalizations", {"limit": 50})
+    rows = []
+    for item in sorted(localizations, key=lambda i: i["attributes"]["locale"]):
+        a = item["attributes"]
+        words = a.get("keywords") or ""
+        promo = (a.get("promotionalText") or "").replace("\n", " ")
+        rows.append([a["locale"], promo, len(promo), len(a.get("description") or ""), len(words),
+                     "(hidden in Actions)" if in_actions else words])
+    table(f"Version {record['attributes'].get('versionString')}",
+          ["Locale", "Promotional text", "Chars", "Description chars", "Keyword chars", "Keywords"], rows)
+
+
+METADATA = Path(__file__).resolve().parent / "metadata.json"
+TEXT_LIMITS = {"name": 30, "subtitle": 30, "promotionalText": 170, "keywords": 100, "description": 4000}
+
+
+def metadata_config() -> dict:
+    config = json.loads(METADATA.read_text(encoding="utf-8"))
+    for locale, fields in config["locales"].items():
+        for field, limit in TEXT_LIMITS.items():
+            text = fields.get(field)
+            if text is not None and len(text) > limit:
+                sys.exit(f"{locale} {field} is {len(text)} characters; App Store Connect allows {limit}.")
+            if text and "\u2014" in text:
+                sys.exit(f"{locale} {field} has an em dash (user rule: none in store texts).")
+    return config
+
+
+def screenshot_source(locale: str) -> str:
+    """The folder of screenshots/final (and screenshots/art) a locale takes: its own; when it has
+    none, its `screenshotsFrom` in metadata.json, else its `copyFrom`. en-GB has the Russian texts
+    (copyFrom ru) and the Kazakh frames and art (screenshotsFrom kk), decision D9."""
+    if (ROOT / "screenshots" / "final" / locale).is_dir() or not METADATA.exists():
+        return locale
+    fields = metadata_config()["locales"].get(locale, {})
+    return fields.get("screenshotsFrom") or fields.get("copyFrom", locale)
+
+
+def screenshots_only() -> set[str]:
+    """Folders of screenshots/final that are no App Store locale: a language App Store Connect
+    lacks (kk), composed only for the locale that shows it through `screenshotsFrom` (en-GB).
+    Nothing pushes them as a localization of their own."""
+    if not METADATA.exists():
+        return set()
+    locales = metadata_config()["locales"]
+    return {fields["screenshotsFrom"] for fields in locales.values() if fields.get("screenshotsFrom")} - set(locales)
+
+
+def edited_keywords(current: str, fields: dict) -> tuple[str, list[str]]:
+    """The keyword field after `keywords`, or after `keywordsRemove` and `keywordsAdd` applied to
+    the field as it is; words that would pass 100 characters are left out and returned."""
+    if "keywords" in fields:
+        return fields["keywords"], []
+    drop = {word.lower() for word in fields.get("keywordsRemove", [])}
+    words = [w.strip() for w in current.split(",") if w.strip() and w.strip().lower() not in drop]
+    no_room = []
+    for word in fields.get("keywordsAdd", []):
+        if word.lower() in {w.lower() for w in words}:
+            continue
+        if len(",".join(words + [word])) > TEXT_LIMITS["keywords"]:
+            no_room.append(word)
+        else:
+            words.append(word)
+    return ",".join(words), no_room
+
+
+def push_metadata(app: str, apply: bool) -> None:
+    """The store texts of appstore/metadata.json. Name and subtitle live in the app info and change
+    only while a version is in preparation; promotional text changes any time; keywords and
+    description belong to the version named in the file. A locale missing in App Store Connect is
+    created from its `copyFrom` (description, URLs, What's New, privacy policy). Without `apply`
+    nothing is written."""
+    config = metadata_config()
+    in_actions = bool(os.environ.get("GITHUB_ACTIONS"))
+    shown = lambda field, text: f"({len(text)} characters)" if field == "keywords" and in_actions else text
+
+    infos, _ = get_all(f"/v1/apps/{app}/appInfos", {"limit": 10})
+    info = next((i for i in infos if (i["attributes"].get("state") or i["attributes"].get("appStoreState")) in EDITABLE), None)
+    info_locs = {}
+    if info:
+        found, _ = get_all(f"/v1/appInfos/{info['id']}/appInfoLocalizations", {"limit": 50})
+        info_locs = {item["attributes"]["locale"]: item for item in found}
+    else:
+        live = infos[0] if infos else None
+        if live:
+            found, _ = get_all(f"/v1/appInfos/{live['id']}/appInfoLocalizations", {"limit": 50})
+            info_locs = {item["attributes"]["locale"]: item for item in found}
+
+    found, _ = get_all(f"/v1/apps/{app}/appStoreVersions",
+                       {"filter[versionString]": config["version"], "filter[platform]": "IOS"})
+    if not found:
+        sys.exit(f"Version {config['version']} does not exist: run prepare-version first.")
+    record = found[0]
+    editable = (record["attributes"].get("appVersionState") or record["attributes"].get("appStoreState")) in EDITABLE
+    existing, _ = get_all(f"/v1/appStoreVersions/{record['id']}/appStoreVersionLocalizations", {"limit": 50})
+    version_locs = {item["attributes"]["locale"]: item for item in existing}
+
+    rows = []
+    for locale, fields in config["locales"].items():
+        source = fields.get("copyFrom")
+        # App info: name and subtitle.
+        wanted = {k: fields[k] for k in ("name", "subtitle") if k in fields}
+        current = info_locs.get(locale)
+        if wanted and not info:
+            rows.append([locale, "name, subtitle", "", "needs a version in preparation"])
+        elif info and (wanted or (current is None and source)):
+            attrs = current["attributes"] if current else {}
+            changes = {k: v for k, v in wanted.items() if attrs.get(k) != v}
+            if current is None:
+                base = info_locs.get(source, {}).get("attributes", {}) if source else {}
+                changes = {"name": base.get("name"), "privacyPolicyUrl": base.get("privacyPolicyUrl"), **changes}
+                changes = {k: v for k, v in changes.items() if v}
+            for field, value in changes.items():
+                rows.append([locale, field, attrs.get(field) or "", value])
+            if apply and changes:
+                if current:
+                    send("PATCH", f"/v1/appInfoLocalizations/{current['id']}", {"data": {
+                        "type": "appInfoLocalizations", "id": current["id"], "attributes": changes}})
+                else:
+                    send("POST", "/v1/appInfoLocalizations", {"data": {
+                        "type": "appInfoLocalizations", "attributes": {"locale": locale, **changes},
+                        "relationships": {"appInfo": {"data": {"type": "appInfos", "id": info["id"]}}}}})
+
+        # Version: promotional text, keywords, description.
+        current = version_locs.get(locale)
+        if current is None and not editable:
+            rows.append([locale, "version texts", "", f"no {locale} yet: created while a version is in preparation"])
+            continue
+        attrs = current["attributes"] if current else {}
+        changes = {}
+        if "promotionalText" in fields:
+            changes["promotionalText"] = fields["promotionalText"]
+        if editable:
+            if any(k in fields for k in ("keywords", "keywordsAdd", "keywordsRemove")):
+                words, no_room = edited_keywords(attrs.get("keywords") or "", fields)
+                changes["keywords"] = words
+                if no_room:
+                    rows.append([locale, "keywords", "", "no room for: " + ", ".join(no_room)])
+            if "description" in fields:
+                changes["description"] = fields["description"]
+            if current is None and source:
+                base = version_locs.get(source, {}).get("attributes", {})
+                for field in ("description", "supportUrl", "marketingUrl", "whatsNew"):
+                    if base.get(field) and field not in changes:
+                        changes[field] = base[field]
+        elif any(k in fields for k in ("keywords", "keywordsAdd", "keywordsRemove", "description")):
+            rows.append([locale, "keywords, description", "", f"version {config['version']} is not in preparation"])
+        changes = {k: v for k, v in changes.items() if attrs.get(k) != v}
+        for field, value in changes.items():
+            rows.append([locale, field, shown(field, attrs.get(field) or ""), shown(field, value)])
+        if apply and changes:
+            if current:
+                send("PATCH", f"/v1/appStoreVersionLocalizations/{current['id']}", {"data": {
+                    "type": "appStoreVersionLocalizations", "id": current["id"], "attributes": changes}})
+            elif editable:
+                send("POST", "/v1/appStoreVersionLocalizations", {"data": {
+                    "type": "appStoreVersionLocalizations", "attributes": {"locale": locale, **changes},
+                    "relationships": {"appStoreVersion": {"data": {"type": "appStoreVersions", "id": record["id"]}}}}})
+    title = f"Store texts, {config['version']}" + ("" if apply else " (dry run: --apply writes them)")
+    table(title, ["Locale", "Field", "Now", "New"], [[r[0], r[1], str(r[2]).replace("|", "/"), str(r[3]).replace("|", "/")] for r in rows])
+
+
 def store_pages(app: str, version: str | None) -> None:
     """What the store shows, read only: per localization of the version (the latest one on the
     App Store by default), each screenshot set and how many of its screenshots are files in
-    screenshots/final/<locale>/ now; the product page tests with their state; the languages of
-    each custom page's versions."""
+    screenshots/final/<locale>/ now (en-GB: kk/, `screenshot_source`); the product page tests
+    with their state; the languages of each custom page's versions."""
     record = store_version(app, version)
     name = record["attributes"].get("versionString")
     localizations, _ = get_all(f"/v1/appStoreVersions/{record['id']}/appStoreVersionLocalizations", {"limit": 50})
     rows = []
     for item in sorted(localizations, key=lambda i: i["attributes"]["locale"]):
         locale = item["attributes"]["locale"]
-        folder = ROOT / "screenshots" / "final" / locale
+        folder = ROOT / "screenshots" / "final" / screenshot_source(locale)
         ours = {hashlib.md5(path.read_bytes()).hexdigest() for path in folder.glob("*.png")} if folder.is_dir() else set()
         sets, _ = get_all(f"/v1/appStoreVersionLocalizations/{item['id']}/appScreenshotSets", {"limit": 50})
         if not sets:
@@ -847,7 +1057,7 @@ def store_pages(app: str, version: str | None) -> None:
             current = sum(1 for shot in shots if shot["attributes"].get("sourceFileChecksum") in ours)
             rows.append([locale, screenshot_set_record["attributes"].get("screenshotDisplayType"), len(shots),
                          f"{current}/{len(shots)}" if ours else "no folder"])
-    table(f"Screenshots of {name} (current = a file in screenshots/final/<locale>/)",
+    table(f"Screenshots of {name} (current = a file in screenshots/final/<locale>/, en-GB: kk/)",
           ["Locale", "Set", "Shots", "Current"], rows)
 
     tests, _ = get_all(f"/v1/apps/{app}/appStoreVersionExperimentsV2", {"limit": 20})
@@ -958,8 +1168,13 @@ def push_creatives(app: str, version: str | None, locales: list[str] | None, pag
     used: set[str] = set()
 
     def art(locale: str, stem: str) -> Path | None:
-        path = ART / locale / f"{stem}.png"
-        return path if path.exists() else None
+        # A locale without its own art takes the art of the locale its screenshots come from
+        # (en-GB: kk's, `screenshot_source`).
+        for folder in dict.fromkeys([locale, screenshot_source(locale)]):
+            path = ART / folder / f"{stem}.png"
+            if path.exists():
+                return path
+        return None
 
     record = store_version(app, version)
     name = record["attributes"].get("versionString")
@@ -1184,6 +1399,10 @@ def main(argv: list[str]) -> None:
     elif command == "keywords":
         for locale in option("--locale", "en-US").split(","):
             keywords(app, locale)
+    elif command == "metadata":
+        metadata(app, option("--version"))
+    elif command == "push-metadata":
+        push_metadata(app, "--apply" in args)
     elif command == "custom-pages":
         custom_pages(app)
     elif command == "review-submissions":

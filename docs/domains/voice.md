@@ -166,7 +166,16 @@ so the post-stop confirmation state stays calm.
   then finds the user's category through `categoryGroups` (each preset under all its names), so
   "groceries" lands in "Продукты" and "lebensmittel" in "Groceries". No keyword → "Other" in any
   language. Adding keywords: a duplicate key across either map traps at runtime; check before
-  building.
+  building. A clause with no keyword is marked `categoryIsGuess`: Ten's FastPath leaves it to the
+  model when the model can answer ([assistant.md](assistant.md) §3).
+- **Kazakh.** Keys match as substrings, so suffixes count ("азық-түлікке", "дәріханаға");
+  words a Russian key has stay Russian-only, and short stems that sit inside other words are
+  left out ("нан" is in "финансы"). Verbs "жұмсадым", "төледім", "сатып алдым" (expense),
+  "жалақы", "түсті", "кіріс" (income); "кеше", "бүгін", "алдыңғы күні"; "теңге", "еуро".
+  Number words multiply hundreds ("екі жүз" = 200); "он" (10) counts only when the app runs in
+  Kazakh, since it is "he" in Russian.
+- **Thousand words after digits.** `expandThousandWords` rewrites "5 мың", "2,5 тысячи", "10
+  тыс." as digits before the amount regexes, so they read 5000, not 5.
 
 ## Account & category resolution (shared with App Intents)
 

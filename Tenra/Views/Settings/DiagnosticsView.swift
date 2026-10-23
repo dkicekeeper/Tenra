@@ -3,8 +3,9 @@
 //  Tenra
 //
 //  Settings → About → Diagnostics: the launch health check (database, saved settings, the
-//  App Store's products) and the crash and performance reports MetricKit delivered, with a
-//  share button for both. The owner's window into failures that would otherwise stay silent;
+//  App Store's products), what the Wallet and bank notification automations recorded, and the
+//  crash and performance reports MetricKit delivered, with a share button for the check and the
+//  reports. The owner's window into failures that would otherwise stay silent;
 //  nothing leaves the device unless the user shares it.
 //
 
@@ -21,6 +22,7 @@ struct DiagnosticsView: View {
         ScrollView {
             VStack(spacing: AppSpacing.xl) {
                 launchCheckSection
+                captureSection
                 reportsSection
                 FormSection {
                     ShareLink(items: shareItems) {
@@ -86,6 +88,58 @@ struct DiagnosticsView: View {
             )
             .disabled(center.isChecking)
         }
+    }
+
+    // MARK: - Automatic capture
+
+    /// Whether people keep the automations on: payments each one recorded lately, read from
+    /// `WalletCaptureStore` (its 90 days of captures). Local, like the rest of this screen.
+    private var captureSection: some View {
+        let activity = WalletCaptureStore.shared.activity()
+        return FormSection(
+            header: String(localized: "diagnostics.capture.header"),
+            footer: String(localized: "diagnostics.capture.footer")
+        ) {
+            UniversalRow(
+                String(localized: "diagnostics.capture.applePay"),
+                icon: "wave.3.right",
+                config: .info,
+                accessory: .info(counts(activity.applePayLast7Days, activity.applePayLast30Days))
+            )
+            UniversalRow(
+                String(localized: "diagnostics.capture.notifications"),
+                icon: "bell.badge",
+                config: .info,
+                accessory: .info(counts(activity.notificationsLast7Days, activity.notificationsLast30Days))
+            )
+            UniversalRow(
+                String(localized: "walletReview.title"),
+                icon: "checklist",
+                config: .info,
+                accessory: .info("\(activity.toReview)")
+            )
+            if activity.pending > 0 {
+                UniversalRow(
+                    String(localized: "diagnostics.capture.pending"),
+                    icon: "hourglass",
+                    config: .info,
+                    accessory: .info("\(activity.pending)")
+                )
+            }
+            UniversalRow(
+                String(localized: "diagnostics.capture.last"),
+                icon: "clock",
+                config: .info,
+                accessory: .info(
+                    activity.lastCaptureAt?.formatted(date: .abbreviated, time: .shortened)
+                        ?? String(localized: "diagnostics.capture.never")
+                )
+            )
+        }
+    }
+
+    private func counts(_ week: Int, _ month: Int) -> String {
+        String(format: String(localized: "diagnostics.capture.counts"), week, month)
     }
 
     private func checkRow(_ result: LaunchHealthCheck.Result) -> some View {

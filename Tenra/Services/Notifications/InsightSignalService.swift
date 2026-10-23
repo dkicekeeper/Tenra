@@ -203,6 +203,20 @@ final class InsightSignalService {
         }
     }
 
+    /// The same line as `notificationBody` with every amount as dots, for a message shown while
+    /// "hide amounts" is on (AssistantNotice.hiddenBody).
+    nonisolated static func hiddenNotificationBody(for insight: Insight) -> String {
+        var parts: [String] = []
+        let subtitle = insight.hiddenSubtitle ?? insight.subtitle
+        if !subtitle.isEmpty { parts.append(subtitle) }
+        var metricPart = insight.metric.currency.map { Formatting.hiddenAmount(currency: $0) } ?? insight.metric.formattedValue
+        if let pct = insight.trend?.changePercent, abs(pct) >= 1 {
+            metricPart += String(format: " (%+.0f%%)", pct)
+        }
+        parts.append(metricPart)
+        return parts.joined(separator: " · ")
+    }
+
     /// Notification body composed from the already-localized insight fields —
     /// no per-kind notification strings needed.
     nonisolated static func notificationBody(for insight: Insight) -> String {

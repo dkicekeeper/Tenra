@@ -17,6 +17,11 @@
 //  ScreenshotDemoMode is active, so displayed balances derive from the seeded
 //  transactions via the one true `BalanceCalculationEngine` path.
 //
+//  Auto-capture (frames 20-21): some expenses are Apple Pay payments the Wallet
+//  automation recorded, journaled in WalletCaptureStore as LogWalletPaymentIntent
+//  does, with the merchant and card memories and the merchants' logos. Those live
+//  in UserDefaults, outside the store, so they are wiped with it.
+//
 
 import Foundation
 
@@ -30,6 +35,12 @@ enum ScreenshotDemoSeeder {
         guard ScreenshotDemoMode.isActive else { return }
 
         try? CoreDataStack.shared.resetAllData()
+        // What the Wallet automation journaled and learned, kept in UserDefaults: wiped too, so
+        // every run starts from the same captures, memories and logos.
+        WalletCaptureStore.shared.reset()
+        MerchantCategoryMemory.shared.reset()
+        CardAccountMemory.shared.reset()
+        MerchantLogoStore.shared.reset()
 
         let dataset = ScreenshotDemoDataset(currency: ScreenshotDemoMode.currencyCode)
         let repository = CoreDataRepository()
@@ -59,6 +70,36 @@ enum ScreenshotDemoSeeder {
         let debts = DebtRepository()
         for debt in dataset.debts { await debts.save(debt) }
         AssistantInbox.shared.clear()
+
+        // The Apple Pay payments, as the Wallet automation leaves them (frames 20-21). With them
+        // `WalletCaptureStore.hasEverCaptured` is true, as on a phone where auto-capture works.
+        seedWalletCaptures(dataset)
+    }
+
+    /// What LogWalletPaymentIntent leaves behind: each payment journaled with what Tenra guessed
+    /// (To review), the merchant and card the person confirmed earlier, and the logos
+    /// MerchantLogoResolver finds for the merchants (recorded here, so no lookup races the
+    /// capture).
+    private static func seedWalletCaptures(_ dataset: ScreenshotDemoDataset) {
+        for logo in dataset.merchantLogos {
+            MerchantLogoStore.shared.record(.found(logo.key), merchant: logo.merchant)
+        }
+        for remembered in dataset.rememberedMerchants {
+            MerchantCategoryMemory.shared.remember(categoryId: remembered.categoryId, forMerchant: remembered.merchant)
+        }
+        for remembered in dataset.rememberedCards {
+            CardAccountMemory.shared.remember(accountId: remembered.accountId, forCard: remembered.card)
+        }
+        // Oldest first, each at its own moment: the journal's 90 days and its first capture
+        // follow the payments, not the moment of seeding.
+        for capture in dataset.captures.sorted(by: { $0.payment.date < $1.payment.date }) {
+            WalletCaptureStore.shared.record(
+                transactionId: capture.transactionId,
+                payment: capture.payment,
+                guesses: capture.guesses,
+                now: capture.payment.date
+            )
+        }
     }
 }
 
@@ -73,6 +114,13 @@ struct ScreenshotDemoDataset {
     let occurrences: [RecurringOccurrence]
     let goals: [SavingsGoal]
     let debts: [PersonalDebt]
+    /// Apple Pay payments among `transactions`, as the Wallet automation journaled them.
+    let captures: [ScreenshotDemoCapture]
+    /// What the person confirmed before: a merchant's category, a card's account.
+    let rememberedMerchants: [(merchant: String, categoryId: String)]
+    let rememberedCards: [(card: String, accountId: String)]
+    /// The logo key MerchantLogoResolver finds for each captured merchant.
+    let merchantLogos: [(merchant: String, key: String)]
 
     init(currency: String) {
         var builder = Builder(currency: currency)
@@ -84,6 +132,10 @@ struct ScreenshotDemoDataset {
         self.occurrences = builder.occurrences
         self.goals = builder.goals
         self.debts = builder.debts
+        self.captures = builder.captures
+        self.rememberedMerchants = builder.rememberedMerchants
+        self.rememberedCards = builder.rememberedCards
+        self.merchantLogos = builder.merchantLogos
     }
 
     // MARK: Builder
@@ -102,6 +154,10 @@ struct ScreenshotDemoDataset {
         var occurrences: [RecurringOccurrence] = []
         var goals: [SavingsGoal] = []
         var debts: [PersonalDebt] = []
+        var captures: [ScreenshotDemoCapture] = []
+        var rememberedMerchants: [(merchant: String, categoryId: String)] = []
+        var rememberedCards: [(card: String, accountId: String)] = []
+        var merchantLogos: [(merchant: String, key: String)] = []
 
         // Stable ids so re-runs produce identical data.
         let cardId = "demo-account-card"
@@ -109,6 +165,11 @@ struct ScreenshotDemoDataset {
         let savingsId = "demo-account-savings"
         let depositId = "demo-account-deposit"
         let loanId = "demo-account-loan"
+
+        /// Wallet's "Card or Pass" texts: the card the automation knows (its account confirmed
+        /// once), and one it has not seen, whose payment gets a guessed account.
+        let knownCard = "Visa 4821"
+        let newCard = "Mastercard 3307"
 
         init(currency: String) {
             self.currency = currency
@@ -162,7 +223,47 @@ struct ScreenshotDemoDataset {
             buildAccounts()
             buildTransactionHistory()
             buildSubscriptions()
+            buildApplePay()
             buildPlans()
+        }
+
+        /// Apple Pay payments the Wallet automation recorded (frames 20-21): coffee at Starbucks
+        /// every few days, whose merchant screen frame 21 shows; and over the last days, places
+        /// Tenra had not seen, whose category it guessed, and a payment from a card it did not
+        /// know, whose account it guessed: frame 20's To review. Brands with a logo
+        /// (tenra-assets, or the brand's site through logo.dev), the same in every language.
+        mutating func buildApplePay() {
+            // Its own sequence, so the amounts of the history above stay as they were.
+            var random = DeterministicRandom(seed: 20261022)
+            for daysAgo in stride(from: 89, through: 5, by: -4) {
+                addApplePay("Starbucks", daysAgo: daysAgo, hour: 8 + daysAgo % 3,
+                            eurBase: 4.2 + random.next(upTo: 2.6), presetId: "dining")
+            }
+            addApplePay("KFC", daysAgo: 1, hour: 13, eurBase: 11.5, presetId: "dining", guesses: [.category])
+            addApplePay("Shell", daysAgo: 2, hour: 18, eurBase: 48, presetId: "transport", guesses: [.category])
+            addApplePay("Starbucks", daysAgo: 3, hour: 8, eurBase: 5.6, presetId: "dining",
+                        card: newCard, guesses: [.account])
+            addApplePay("McDonald's", daysAgo: 4, hour: 20, eurBase: 9.4, presetId: "dining", guesses: [.category])
+            // Zara's latest monthly purchase (the history above), the first one paid with Apple Pay.
+            // Journaled rather than added: a fourth Zara charge would break the monthly run that
+            // "Looks like a subscription" finds (SubscriptionCandidateDetector).
+            if let zara = transactions
+                .filter({ $0.description == "Zara" })
+                .max(by: { ($0.date, $0.createdAt) < ($1.date, $1.createdAt) }) {
+                journal(zara, guesses: [.category])
+            }
+
+            rememberedMerchants = [(merchant: "Starbucks", categoryId: "demo-category-dining")]
+            rememberedCards = [(card: knownCard, accountId: cardId)]
+            // What MerchantLogoResolver.lookUp finds: tenra-assets files ("McDonald's" through its
+            // knownBrands), Shell's site through knownBrands.
+            merchantLogos = [
+                (merchant: "Starbucks", key: "starbucks"),
+                (merchant: "KFC", key: "kfc"),
+                (merchant: "Zara", key: "zara"),
+                (merchant: "McDonald's", key: "mcdonalds"),
+                (merchant: "Shell", key: "shell.com")
+            ]
         }
 
         /// Savings goals (one following the savings account, one with money put in by hand,
@@ -471,6 +572,45 @@ struct ScreenshotDemoDataset {
             ))
         }
 
+        /// An expense on the card as LogWalletPaymentIntent saves it (the merchant as Wallet
+        /// writes it is the description), journaled with what Tenra had to guess.
+        mutating func addApplePay(_ merchant: String, daysAgo: Int, hour: Int, eurBase: Double,
+                                  presetId: String, card: String? = nil,
+                                  guesses: Set<WalletCaptureStore.Guess> = []) {
+            let transaction = Transaction(
+                id: "demo-tx-applepay-\(captures.count)",
+                date: dateString(daysAgo: daysAgo),
+                description: merchant,
+                amount: local(eurBase),
+                currency: currency,
+                type: .expense,
+                category: presetName(presetId),
+                accountId: cardId,
+                createdAt: createdAt(daysAgo: daysAgo, hour: hour)
+            )
+            transactions.append(transaction)
+            journal(transaction, card: card, guesses: guesses)
+        }
+
+        /// The capture LogWalletPaymentIntent journals for a saved payment: the payment as Wallet
+        /// sent it (merchant, card, the moment of the tap) and what Tenra guessed.
+        mutating func journal(_ transaction: Transaction, card: String? = nil,
+                              guesses: Set<WalletCaptureStore.Guess>) {
+            captures.append(ScreenshotDemoCapture(
+                transactionId: transaction.id,
+                payment: WalletPayment(
+                    id: "demo-applepay-\(captures.count)",
+                    amount: transaction.amount,
+                    currencyCode: transaction.currency,
+                    merchant: transaction.description,
+                    card: card ?? knownCard,
+                    accountId: nil,
+                    date: Date(timeIntervalSince1970: transaction.createdAt)
+                ),
+                guesses: guesses
+            ))
+        }
+
         mutating func addTransfer(daysAgo: Int, eurBase: Double, targetId: String,
                                   targetCurrency: String, description: String) {
             let sourceAmount = local(eurBase)
@@ -547,6 +687,16 @@ struct ScreenshotDemoDataset {
             return dateString(daysAgo: 30)
         }
     }
+}
+
+// MARK: - Apple Pay captures
+
+/// One Apple Pay payment as LogWalletPaymentIntent journals it (`WalletCaptureStore.record`):
+/// the saved transaction, the payment as Wallet sent it, and what Tenra guessed.
+struct ScreenshotDemoCapture {
+    let transactionId: String
+    let payment: WalletPayment
+    let guesses: Set<WalletCaptureStore.Guess>
 }
 
 // MARK: - Deterministic randomness
@@ -729,6 +879,20 @@ struct ScreenshotDemoLexicon {
                          tenReply: "Вот куда ушли деньги в этом месяце, по категориям.",
                          goalTrip: "Отпуск", goalPhone: "Новый телефон", goalBike: "Велосипед",
                          debtFriend: "Асхат", debtFamily: "Мама")
+        case "kk":
+            // The Kazakh set en-GB shows on the App Store (decision D9). The voice phrase names
+            // "такси", a word the voice parser knows from Russian, so frame 14 drafts it to
+            // Transport on the phone (AgentFastPath); Kazakh keywords are not in the parser yet.
+            return .init(card: "Карта", cash: "Қолма-қол", savings: "Жинақ USD", deposit: "Депозит",
+                         loan: "Несие", bank: "Банк", salary: "Жалақы", rent: "Пәтерақы",
+                         utilities: "Коммуналдық төлем", pharmacy: "Дәріхана", cinema: "Кино",
+                         lunch: "Түскі ас", coffee: "Кофе", supermarket: "Magnum",
+                         taxi: "Такси", delivery: "Жеткізу", gym: "Фитнес",
+                         savingsTransfer: "Жинақ",
+                         voiceDemoPhrase: "Таксиге 2500 теңге жұмсадым",
+                         tenReply: "Осы айда ақшаңыз санаттар бойынша осылай жұмсалды.",
+                         goalTrip: "Демалыс", goalPhone: "Жаңа телефон", goalBike: "Велосипед",
+                         debtFriend: "Асхат", debtFamily: "Анам")
         default:
             return .init(card: "Card", cash: "Cash", savings: "Savings USD", deposit: "Deposit",
                          loan: "Loan", bank: "Bank", salary: "Salary", rent: "Rent",

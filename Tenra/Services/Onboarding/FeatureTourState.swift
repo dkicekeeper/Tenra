@@ -12,7 +12,7 @@ enum FeatureTourState {
     enum Hint: String, Hashable {
         /// The voice orb is the stop button (voice input).
         case voiceStopOrb = "featureTour.voiceStopOrb"
-        /// A tap on a category on Home adds an expense (the first launch, DesignKit's Tooltip).
+        /// A tap on a category on Home adds an expense (the first launch, the grid in a spotlight).
         case homeCategories = "featureTour.homeCategories"
     }
 

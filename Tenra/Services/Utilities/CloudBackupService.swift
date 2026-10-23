@@ -285,7 +285,21 @@ nonisolated final class CloudBackupService: @unchecked Sendable {
     /// Returns all available backups sorted by date (newest first)
     func listBackups() -> [BackupMetadata] {
         guard let backupsDir = backupsDirectoryURL() else { return [] }
+        return listBackups(in: backupsDir)
+    }
 
+    /// The backups in iCloud Drive whatever the preference: on a new phone or after a reinstall
+    /// they are there before iCloud backups are turned on again (onboarding offers them).
+    /// Blocks while the container resolves: call it off the main thread.
+    func listICloudBackups() -> [BackupMetadata] {
+        if backupsRootOverride != nil { return listBackups() }
+        guard let iCloudDir = iCloudBackupsDirectoryURL() else { return [] }
+        // On a new phone the folder's contents may still be in the cloud: ask for them.
+        try? FileManager.default.startDownloadingUbiquitousItem(at: iCloudDir)
+        return listBackups(in: iCloudDir)
+    }
+
+    private func listBackups(in backupsDir: URL) -> [BackupMetadata] {
         let fm = FileManager.default
         guard let contents = try? fm.contentsOfDirectory(
             at: backupsDir,

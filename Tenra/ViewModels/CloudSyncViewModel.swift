@@ -227,6 +227,93 @@ final class CloudSyncViewModel {
         }
     }
 
+    // MARK: - New installs, a new phone, the one-time ask
+
+    /// Set once the person has a decision on iCloud backups: a new install got them on, or an
+    /// older one answered the one-time ask on Home.
+    nonisolated static let iCloudDecidedKey = "backups.iCloud.decided"
+
+    /// An install from before iCloud backups were on by default (1.7), with iCloud reachable
+    /// and backups still on the phone: Home asks once (`ICloudBackupAskCard`).
+    var shouldAskForICloud: Bool {
+        !UserDefaults.standard.bool(forKey: Self.iCloudDecidedKey) && !iCloudEnabled && iCloudAvailable
+    }
+
+    /// The answer to the one-time ask: on moves the backups to iCloud Drive, either way it
+    /// never shows again.
+    func answerICloudAsk(enable: Bool) async {
+        UserDefaults.standard.set(true, forKey: Self.iCloudDecidedKey)
+        if enable { await setICloudEnabled(true) }
+    }
+
+    /// A new install keeps its backups in iCloud Drive from the start (owner's decision
+    /// 2026-10-22): a phone set up from scratch or a reinstall then finds the data. Quiet, no
+    /// banner; nothing without an iCloud account, and a person can still turn it off.
+    func adoptICloudForNewInstall() async {
+        UserDefaults.standard.set(true, forKey: Self.iCloudDecidedKey)
+        let service = backupService
+        let enabled = await Task.detached(priority: .utility) { () -> Bool in
+            if service.isICloudEnabled { return true }
+            guard service.isICloudAvailable else { return false }
+            return (try? service.setICloudEnabled(true)) != nil
+        }.value
+        iCloudEnabled = enabled
+    }
+
+    /// The backups iCloud Drive holds, for the welcome screen. iCloud may still be fetching
+    /// the folder on a new phone, so it is listed a few times a second apart (polls, not a
+    /// deadline).
+    func iCloudBackupsForRestore(attempts: Int = 4) async -> [BackupMetadata] {
+        let service = backupService
+        for attempt in 0..<attempts {
+            let found = await Task.detached(priority: .userInitiated) { service.listICloudBackups() }.value
+            if !found.isEmpty { return found }
+            if attempt < attempts - 1 { try? await Task.sleep(for: .seconds(1)) }
+        }
+        return []
+    }
+
+    /// Restores an iCloud backup before onboarding has created anything. iCloud backups go on
+    /// first (that is where the backup lives, and where the next ones should go), the store is
+    /// swapped and reloaded, and the base currency follows the restored accounts: settings live
+    /// in UserDefaults, outside the backup. True when the data is back.
+    func restoreFromOnboarding(_ metadata: BackupMetadata) async -> Bool {
+        isRestoringBackup = true
+        defer { isRestoringBackup = false }
+        let service = backupService
+        do {
+            try await Task.detached(priority: .userInitiated) {
+                if !service.isICloudEnabled { try service.setICloudEnabled(true) }
+            }.value
+            iCloudEnabled = true
+            UserDefaults.standard.set(true, forKey: Self.iCloudDecidedKey)
+            try await service.restoreBackup(metadata)
+        } catch {
+            await showError(error.localizedDescription)
+            return false
+        }
+        guard let coordinator = appCoordinator else { return true }
+        try? await coordinator.transactionStore.loadData()
+        coordinator.syncTransactionStoreToViewModels(batchMode: true)
+        await coordinator.balanceCoordinator.registerAccounts(coordinator.transactionStore.accounts)
+        if let currency = Self.dominantCurrency(of: coordinator.transactionStore.accounts) {
+            await coordinator.settingsViewModel.updateBaseCurrency(currency)
+        }
+        return true
+    }
+
+    /// The currency most accounts are kept in (ties: the first account's), loans aside.
+    nonisolated static func dominantCurrency(of accounts: [Account]) -> String? {
+        let candidates = accounts.filter { !$0.isLoan }
+        guard let first = candidates.first else { return accounts.first?.currency }
+        var counts: [String: Int] = [:]
+        for account in candidates { counts[account.currency, default: 0] += 1 }
+        let best = counts.values.max() ?? 0
+        return counts[first.currency] == best
+            ? first.currency
+            : counts.filter { $0.value == best }.keys.sorted().first
+    }
+
     // MARK: - Messages
 
     private func showSuccess(_ message: String) async {

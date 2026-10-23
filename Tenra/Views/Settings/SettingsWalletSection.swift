@@ -30,6 +30,7 @@ struct SettingsWalletSection: View {
                     )
                 }
             )
+            .accessibilityIdentifier("settings.wallet.toReview")
 
             UniversalRow(
                 String(localized: "settings.wallet.merchants"),
@@ -42,6 +43,7 @@ struct SettingsWalletSection: View {
                     )
                 }
             )
+            .accessibilityIdentifier("settings.wallet.merchants")
 
             UniversalRow(
                 String(localized: "settings.wallet.cards"),

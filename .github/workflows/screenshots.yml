@@ -47,16 +47,26 @@ jobs:
         run: |
           xcodebuild -version
           # The Xcode 27 image has no iPhone 17 Pro (its iOS 27 devices are the 17, 17e, Air and
-          # 18 Pro): make one on the newest iOS runtime, so the store shots keep their device.
+          # 18 Pro): make one, so the store shots keep their device. On the newest iOS runtime that
+          # takes it: since 2026-10-23 the image's newest, iOS 27.1, refuses the 17 Pro
+          # ("Incompatible device"), so each runtime is tried, newest first.
           if ! xcrun simctl list devices available | grep -q "iPhone 17 Pro ("; then
-            RUNTIME=$(xcrun simctl list runtimes available -j | python3 -c '
+            RUNTIMES=$(xcrun simctl list runtimes available -j | python3 -c '
           import json, sys
           ios = [r for r in json.load(sys.stdin)["runtimes"] if ".iOS-" in r["identifier"]]
-          if ios:
-              print(max(ios, key=lambda r: [int(x) for x in r["version"].split(".")])["identifier"])
+          for r in sorted(ios, key=lambda r: [int(x) for x in r["version"].split(".")], reverse=True):
+              print(r["identifier"])
           ')
-            if [ -z "$RUNTIME" ]; then echo "::error::No iOS simulator runtime on this runner"; exit 1; fi
-            xcrun simctl create "iPhone 17 Pro" "iPhone 17 Pro" "$RUNTIME"
+            if [ -z "$RUNTIMES" ]; then echo "::error::No iOS simulator runtime on this runner"; exit 1; fi
+            CREATED=""
+            for RUNTIME in $RUNTIMES; do
+              if xcrun simctl create "iPhone 17 Pro" "iPhone 17 Pro" "$RUNTIME"; then
+                CREATED="$RUNTIME"
+                break
+              fi
+            done
+            if [ -z "$CREATED" ]; then echo "::error::No iOS runtime on this runner takes an iPhone 17 Pro"; exit 1; fi
+            echo "iPhone 17 Pro made on $CREATED"
           fi
           # The newest runtime that has an iPhone 17 Pro (the store shots' device).
           SIM_OS=$(xcrun simctl list devices available -j | python3 -c '

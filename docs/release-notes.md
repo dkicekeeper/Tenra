@@ -329,11 +329,14 @@ Tenra 1.7의 새로운 기능:
      and the App Review notes only if it works.
 2. **The store build** is the TestFlight build from GitHub that passed step 1: built with Xcode 27,
    it has the iOS 27 code paths ([asc.md](asc.md)).
-3. **What's New**: this file, after step 1 (`prepare-version` with that build).
-4. **Screenshots** of the main page from 1.7 (the decision of 2026-10-19 in
-   [promotion-plan.md](promotion-plan.md) §7): Actions → Screenshots, now on iOS 27 (iPhone 17 Pro
-   made by the workflow). 13 locales take about 160 minutes on the Xcode 27 runner, so two runs of
-   six or seven locales each, within the 180-minute limit.
+3. **What's New**: this file. Version 1.7 exists in App Store Connect since 2026-10-23 with build 55
+   and this What's New; after step 1, run `prepare-version` again with the checked build (it
+   updates What's New and selects the build).
+4. **Screenshots** of the main page from 1.7: done on 2026-10-23. The 14 sets (13 locales and kk
+   for en-GB) were shot in two runs of seven, about 70 minutes each, approved by the founder and
+   uploaded to version 1.7 in 13 locales (`push-version-screenshots`). en-GB gets kk's once
+   `push-metadata --apply` has created it. Re-shoot only what changes: `frames: home` and the
+   other partial modes ([asc.md](asc.md)).
 5. **App Privacy**: unchanged. Logo lookups by a merchant's name (logo.dev, Apple Pay merchants
    only, never a sole proprietor) send only a company name, as the privacy policy already says
    (`docs/public/privacy-policy.html`, Logos).

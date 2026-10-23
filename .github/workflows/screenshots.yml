@@ -14,7 +14,7 @@ on:
         required: false
         default: "ru en-US fr-FR"
       frames:
-        description: "all (01-21), cpp (only 09-12, the custom product page frames), ten (only Ten's 07, 13, 14, 17-19) or autocapture (only 20-21, To review and a merchant's screen)"
+        description: "all (01-21), cpp (only 09-12, the custom product page frames), ten (only Ten's 07, 13, 14, 17-19) autocapture (only 20-21, To review and a merchant's screen) or home (only 01)"
         required: false
         default: cpp
       art:

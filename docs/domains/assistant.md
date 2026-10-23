@@ -110,9 +110,12 @@ Rules:
   prompt-injection input, and writing needs a confirmation anyway.
 
 **FastPath** (`AgentFastPath`): a message the voice parser reads as incomes or expenses (each part
-with an amount and a category; no question, plan, transfer, repeat or budget in any of the 11
+with an amount and a category; no question, plan, transfer, repeat or budget in any of the 12
 languages) is drafted on the phone by `makeDraft`, with no cloud and no consent. Typed, it is free;
-spoken, it spends one free action. The model learns about it with the next question
+spoken, it spends one free action. When no keyword named a category (the parser put it in "Other",
+`AgentFastPath.guessesCategory`), the message goes to the model, which knows the person's
+categories, if the cloud is allowed, the country is served (no `regionUnavailable` this session)
+and Pro or a free action is left; otherwise the phone's draft in "Other" stands. The model learns about it with the next question
 (`<draft_status>`: "made on the phone"); the thread keeps its place
 (`AgentThreadSnapshot.LocalExchange`).
 
@@ -338,7 +341,8 @@ spending, no em dashes, in all 11 languages.
 - **Free allowance** (`PremiumConfig.Assistant`, counted in Keychain by `AssistantUsageStore`, so
   it survives a reinstall; `AssistantAllowance`): 30 actions in the first 7 days, then 10 a month,
   reset on the 1st. An action is a spoken entry, an attachment, or a reply with analysis or a plan.
-  A typed entry the phone's parser understands ("coffee 1500") is free; so are the Home notices
+  A typed entry the phone's parser understands ("coffee 1500") is free (one whose category it
+  only guessed goes to the model while an action is left, §3); so are the Home notices
   (looking into one is an action) and the Analytics tab. `AssistantViewModel.Access` checks before
   sending: a question over the allowance stays in the thread with a Pro card ("Get Tenra Pro") and
   is sent after the purchase (`retry()`). A line "N left" shows above the composer at 3 or fewer.

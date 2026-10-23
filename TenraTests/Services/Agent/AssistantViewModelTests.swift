@@ -485,7 +485,59 @@ struct AssistantViewModelTests {
 
     /// Drafts "кофе …" on the phone, sends anything else to the model.
     private static let coffeeFastPath = AssistantViewModel.FastPath { text in
-        text.hasPrefix("кофе") ? [coffee()] : nil
+        text.hasPrefix("кофе") ? AssistantViewModel.FastPath.Draft(operations: [coffee()]) : nil
+    }
+
+    /// Drafts everything, but only "кофе" with a category of its own: the rest lands in Other.
+    private static let guessingFastPath = AssistantViewModel.FastPath { text in
+        AssistantViewModel.FastPath.Draft(operations: [coffee()], guessesCategory: !text.hasPrefix("кофе"))
+    }
+
+    /// A category the phone only guessed goes to the model, which knows the person's
+    /// categories; without the cloud the guess stands on the phone.
+    @Test func aGuessedCategoryGoesToTheModelWhenItCanAnswer() async {
+        let transport = ScriptedTransport([[AgentScript.done([AgentScript.render("toolu_1", source: "none")])]])
+        let book = Self.book()
+        let model = AssistantViewModel(
+            conversation: AgentConversation(transport: transport, toolkit: FakeToolkit()),
+            context: { "" },
+            drafts: book,
+            fastPath: Self.guessingFastPath
+        )
+        await model.send("азық 5000")
+        #expect(transport.calls.count == 1)
+        #expect(book.drafts.isEmpty)
+        // A keyword of its own: the phone drafts it.
+        await model.send("кофе 1500")
+        #expect(transport.calls.count == 1)
+        #expect(book.drafts.count == 1)
+
+        let offlineBook = Self.book()
+        let offline = AssistantViewModel(
+            conversation: AgentConversation(transport: ScriptedTransport([]), toolkit: FakeToolkit()),
+            context: { "" },
+            drafts: offlineBook,
+            fastPath: Self.guessingFastPath
+        )
+        #expect(await offline.send("азық 5000", cloudAllowed: false))
+        #expect(offlineBook.drafts.count == 1)
+    }
+
+    /// With no free answer left the model can't take it: the guess stands, as before.
+    @Test func aGuessedCategoryStaysOnThePhoneWithNoFreeAnswerLeft() async {
+        let usage = UsageBox(AssistantUsage(firstUse: Self.now, trialUsed: PremiumConfig.Assistant.trialActions))
+        let transport = ScriptedTransport([])
+        let book = Self.book()
+        let model = AssistantViewModel(
+            conversation: AgentConversation(transport: transport, toolkit: FakeToolkit()),
+            context: { "" },
+            access: usage.access(now: Self.now),
+            drafts: book,
+            fastPath: Self.guessingFastPath
+        )
+        #expect(await model.send("азық 5000"))
+        #expect(transport.calls.isEmpty)
+        #expect(book.drafts.count == 1)
     }
 
     @Test func aPlainRecordIsDraftedOnThePhoneWithoutTheCloud() async {

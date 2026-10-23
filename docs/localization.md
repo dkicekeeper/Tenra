@@ -18,11 +18,12 @@ is in [archive/localization-2026-07/](archive/localization-2026-07/).
   too, for search in Kazakhstan (decision D9, [plan-ads-readiness.md](plan-ads-readiness.md) A6):
   the Russian texts and the Kazakh screenshots, since App Store Connect has no Kazakh; the kk
   screenshot set exists only for it ([asc.md](asc.md) «Скриншоты»).
-- **Features per language.** Voice input (`VoiceInputParser`, `VoiceInputSegmenter`) and CSV type
-  values (`CSVColumnMapping`) understand the nine languages written with spaces (not kk yet:
-  its keywords would collide with Russian ones in the flat maps, see Adding a language). ja and ko get the
-  UI, dates and currencies in voice input; parsing amounts and categories from ja/ko speech is
-  deferred (it needs word segmentation; notes in the archive). Statement and receipt import is
+- **Features per language.** Voice input (`VoiceInputParser`, `VoiceInputSegmenter`) reads
+  categories, dates, currencies and amounts in all 12 languages, and the expense and income words
+  in the ten written with spaces (ja and ko default to an expense); kk matches by substring so its
+  suffixes count ("азық-түлікке"), and a word a Russian key already has ("такси", "кафе") is
+  left to it ([domains/voice.md](domains/voice.md) §Parsing). CSV type values (`CSVColumnMapping`)
+  cover the nine languages written with spaces, not kk. Statement and receipt import is
   language-independent (Vision documents, [domains/import.md](domains/import.md)).
 
 ## Changing or adding a string

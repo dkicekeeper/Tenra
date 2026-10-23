@@ -170,8 +170,12 @@ class AppCoordinator {
         )
         let fastPath = AssistantViewModel.FastPath { text in
             let operations = parser.parseMulti(text)
-            guard AgentFastPath.isRecord(text, operations: operations, clauses: VoiceInputSegmenter.segment(text).count) else { return nil }
-            return await toolkit.fastPathOperations(for: operations, message: text)
+            guard AgentFastPath.isRecord(text, operations: operations, clauses: VoiceInputSegmenter.segment(text).count),
+                  let drafted = await toolkit.fastPathOperations(for: operations, message: text) else { return nil }
+            return AssistantViewModel.FastPath.Draft(
+                operations: drafted,
+                guessesCategory: AgentFastPath.guessesCategory(operations)
+            )
         }
         let usage = AssistantUsageStore()
         // Threads are kept in the CoreData store; previews on UserDefaults keep them in memory.

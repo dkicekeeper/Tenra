@@ -55,7 +55,14 @@ final class AssistantViewModel {
     /// Drafts a message on the phone when it is a plain record (AgentFastPath); nil sends it to
     /// the model.
     struct FastPath {
-        var draft: (String) async -> [AgentDraftOperation]?
+        var draft: (String) async -> Draft?
+
+        struct Draft {
+            var operations: [AgentDraftOperation]
+            /// No keyword named a category, the phone put it in "Other"
+            /// (AgentFastPath.guessesCategory): the model reads it when it can answer.
+            var guessesCategory = false
+        }
     }
 
     /// Where the thread is kept between launches (AgentThreadStore).
@@ -143,6 +150,9 @@ final class AssistantViewModel {
     @ObservationIgnored private var local: [AgentThreadSnapshot.LocalExchange] = []
     /// A message is being drafted on the phone: another waits.
     @ObservationIgnored private var draftingLocally = false
+    /// The server answered that the cloud does not serve this country (RU, BY): a guessed
+    /// category stays on the phone instead of asking a model that cannot answer.
+    @ObservationIgnored private var cloudOutOfRegion = false
     /// What each attachment's review screen needs, by its entry.
     @ObservationIgnored private var attachments: [UUID: AgentAttachment] = [:]
     /// The attachments whose review has been paid for.
@@ -321,6 +331,15 @@ final class AssistantViewModel {
         ))
     }
 
+    /// Whether the model can take a message now: the country is served, and Pro or a free
+    /// answer is left.
+    private var modelCanAnswer: Bool {
+        guard !cloudOutOfRegion else { return false }
+        guard !access.isPro() else { return true }
+        refreshAllowance()
+        return allowance?.isExhausted != true
+    }
+
     /// Re-reads Pro and the allowance (after a purchase, on appearing).
     func refreshAllowance() {
         allowance = access.isPro() ? nil : AssistantAllowance.status(access.loadUsage(), now: access.now())
@@ -401,7 +420,7 @@ final class AssistantViewModel {
     func send(_ raw: String, spoken: Bool = false, cloudAllowed: Bool = true, phoneMayAnswer: Bool = true) async -> Bool {
         let text = raw.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty, !isWorking, !draftingLocally else { return false }
-        if phoneMayAnswer, let operations = await draftOnPhone(text, spoken: spoken), let drafts {
+        if phoneMayAnswer, let operations = await draftOnPhone(text, spoken: spoken, cloudAllowed: cloudAllowed), let drafts {
             dropFailedQuestion()
             let id = drafts.add(operations, madeOnPhoneFrom: text)
             local.append(AgentThreadSnapshot.LocalExchange(position: conversation.messages.count, question: text, draftId: id))
@@ -429,8 +448,11 @@ final class AssistantViewModel {
     }
 
     /// The message as a draft made on the phone, or nil for the model. A spoken one spends a
-    /// free answer, and with none left goes the usual way (which then offers Pro).
-    private func draftOnPhone(_ text: String, spoken: Bool) async -> [AgentDraftOperation]? {
+    /// free answer, and with none left goes the usual way (which then offers Pro). A category
+    /// the phone only guessed goes to the model when it can answer: the cloud is allowed, the
+    /// country is served and an answer is left (Pro, or the free allowance); else the guess
+    /// stands, as before.
+    private func draftOnPhone(_ text: String, spoken: Bool, cloudAllowed: Bool) async -> [AgentDraftOperation]? {
         guard let fastPath, drafts != nil else { return nil }
         let charged = spoken && !access.isPro()
         if charged {
@@ -439,7 +461,9 @@ final class AssistantViewModel {
         }
         draftingLocally = true
         defer { draftingLocally = false }
-        guard let operations = await fastPath.draft(text), !operations.isEmpty else { return nil }
+        guard let result = await fastPath.draft(text), !result.operations.isEmpty else { return nil }
+        if result.guessesCategory, cloudAllowed, modelCanAnswer { return nil }
+        let operations = result.operations
         if charged {
             access.saveUsage(AssistantAllowance.recording(access.loadUsage(), now: access.now()))
             refreshAllowance()
@@ -575,7 +599,9 @@ final class AssistantViewModel {
             await persist()
         } catch {
             streamingReply = []
-            phase = .failed(AssistantFailure(error))
+            let failure = AssistantFailure(error)
+            if failure == .regionUnavailable { cloudOutOfRegion = true }
+            phase = .failed(failure)
         }
     }
 }

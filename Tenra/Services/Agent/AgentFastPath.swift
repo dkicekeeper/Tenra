@@ -30,6 +30,14 @@ enum AgentFastPath {
         return operations.allSatisfy(isDraftable)
     }
 
+    /// Whether the parser only guessed a category ("Other": no keyword of its own in the text).
+    /// The assistant then asks the model, which knows the person's categories, when it can
+    /// answer (AssistantViewModel.draftOnPhone); without the cloud or a free answer the guess
+    /// stands.
+    static func guessesCategory(_ operations: [ParsedOperation]) -> Bool {
+        operations.contains(where: \.categoryIsGuess)
+    }
+
     private static func isDraftable(_ operation: ParsedOperation) -> Bool {
         guard operation.type == .expense || operation.type == .income else { return false }
         guard let amount = operation.amount, amount > 0 else { return false }
@@ -99,6 +107,11 @@ enum AgentFastPath {
         "kaç", "ne kadar", "nasıl", "neden", "niye", "ne zaman", "nerede", "hangi", "mı", "mi", "mu",
         "mü", "yardım", "göster", "karşılaştır", "bütçe", "abonelik", "her ay", "aylık", "biriktir",
         "yatırım", "kredi", "havale", "eğer", "istiyorum",
+        // kk: the question particles stand as words of their own ("жұмсадым ба")
+        "қанша", "қалай", "неге", "неліктен", "қашан", "қайда", "қандай", "қай", "ма", "ме",
+        "ба", "бе", "па", "пе", "көрсет", "көмектес", "салыстыр", "жоспар", "жазылым",
+        "ай сайын", "апта сайын", "жыл сайын", "айына", "жина", "несие", "аудар", "болжа", "егер",
+        "қалаймын", "үнемде",
     ]
 
     /// Japanese and Korean: no spaces between words.

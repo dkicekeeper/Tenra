@@ -178,6 +178,50 @@ struct VoiceInputParserLocaleTests {
         #expect(AgentFastPath.isRecord(phrase, operations: ops, clauses: VoiceInputSegmenter.segment(phrase).count))
     }
 
+    /// Kazakh speech: categories, the expense and income verbs, "теңге", the date words, and
+    /// numbers in words or with "мың".
+    @Test func kazakhPhrasesFindTheirCategories() throws {
+        let (parser, cat, acc, tx) = Self.makeParser(categories: [
+            "Азық-түлік", "Кафе мен мейрамханалар", "Көлік", "Денсаулық", "Жалақы", "Басқа",
+        ])
+        _ = (cat, acc, tx)
+
+        let groceries = try #require(parser.parseMulti("Азық-түлікке 5000 теңге жұмсадым").first)
+        #expect(groceries.categoryName == "Азық-түлік")
+        #expect(groceries.amount == Decimal(5000))
+        #expect(groceries.currencyCode == "KZT")
+        #expect(groceries.type == .expense)
+        #expect(!groceries.categoryIsGuess)
+
+        let salary = try #require(parser.parseMulti("жалақы 450000 түсті").first)
+        #expect(salary.type == .income)
+        #expect(salary.categoryName == "Жалақы")
+
+        let pharmacy = try #require(parser.parseMulti("кеше дәріханаға 3200").first)
+        #expect(pharmacy.categoryName == "Денсаулық")
+        let yesterday = try #require(Calendar.current.date(byAdding: .day, value: -1, to: Calendar.current.startOfDay(for: Date())))
+        #expect(Calendar.current.isDate(pharmacy.date, inSameDayAs: yesterday))
+
+        // A thousand word after the digits, in Kazakh and in Russian.
+        #expect(parser.parseMulti("көлікке 5 мың теңге").first?.amount == Decimal(5000))
+        #expect(parser.parseMulti("такси 2,5 тысячи").first?.amount == Decimal(2500))
+        // Hundreds multiply: "бес жүз" is 500.
+        #expect(parser.parseMulti("кофеге бес жүз теңге").first?.amount == Decimal(500))
+
+        // No keyword: "Other", marked as a guess for the assistant (AgentFastPath.guessesCategory).
+        let unknown = try #require(parser.parseMulti("қағаз 700").first)
+        #expect(unknown.categoryName == "Басқа")
+        #expect(unknown.categoryIsGuess)
+        #expect(AgentFastPath.guessesCategory([unknown]))
+    }
+
+    /// A Kazakh question goes to the model, not to a draft.
+    @Test func kazakhQuestionsAreNotRecords() {
+        #expect(AgentFastPath.readsAsQuestion("осы айда кафеге қанша жұмсадым"))
+        #expect(AgentFastPath.readsAsQuestion("такси 2000 жұмсадым ба"))
+        #expect(!AgentFastPath.readsAsQuestion("таксиге 2000 теңге жұмсадым"))
+    }
+
     // MARK: - Amounts
 
     @Test func groupedAndDecimalAmounts() {

@@ -17,6 +17,8 @@ struct ParsedOperation: Identifiable, Hashable {
     var categoryName: String?
     var subcategoryNames: [String]
     var note: String
+    /// No keyword named the category: `categoryName` is the "Other" fallback.
+    var categoryIsGuess = false
     
     init(
         type: TransactionType = .expense,

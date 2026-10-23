@@ -4,7 +4,8 @@
 //
 //  Step 1: choose the base currency. Uses the shared CurrencyListContent (native
 //  `.searchable` drawer). Wrapping it in an outer ScrollView keeps the navigation
-//  bar transparent over the onboarding accent-glow (no scroll-edge plate).
+//  bar transparent over the onboarding accent-glow (no scroll-edge plate); that
+//  ScrollView carries the list's grey, so the page is one colour up to the bar.
 //
 
 import SwiftUI
@@ -33,6 +34,9 @@ struct OnboardingCurrencyStep: View {
                 }
                 .padding(.top, AppSpacing.md)
             }
+            // CurrencyList paints its own scroll the grouped grey; the page under the bar takes
+            // the same, else a white band sits between the bar and the cards.
+            .background(AppColors.Background.baseAlt)
         }
     }
 }

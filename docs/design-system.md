@@ -133,8 +133,14 @@ what is still unused and where it could go):
 - `HeroSymbol`: the import tab's picture and the CSV import's result.
 - `StepTracker`: the CSV import's sheets (`CSVImportSteps`: preview, columns, import; all done on
   the result).
-- `Tooltip` with `FeatureTourState`: once, the first launch's hint over Home's categories, for a
-  person without transactions (`ContentView.showCategoryHintIfNeeded`).
+- `.spotlight` with `FeatureTourState`: once, the first launch's hint on Home's categories for a
+  person without transactions (`ContentView.showCategoryHintIfNeeded`): Home dims, the grid stays
+  lit (`.spotlightAnchor`) with the message beside it, a tap lifts it. The voice orb's hint is
+  the same (`VoiceInputView`).
+- The onboarding welcome (`OnboardingWelcomeStep`): DesignKit's `LoopOnboardingHero` at 140 pt
+  (`WelcomeHeroMetrics`), a fresh hero per slide (`.id` + `.blurReplace`), Ten
+  (`ParticleCreature`) as the hero of its slide where the assistant runs. Slides: auto-capture,
+  Ten, everything in one place, privacy.
 - `LiveAmountText` in `InfoRowLayout`: the add form's "Balance after" for an income or expense
   dated today or earlier (`TransactionAddModal.balanceAfter`).
 - `SpentBudgetText`: the category screen's budget row.

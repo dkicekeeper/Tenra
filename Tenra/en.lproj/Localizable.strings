@@ -1572,6 +1572,8 @@
 "onboarding.welcome.page2.subtitle" = "Apple Pay payments, your bank’s notifications and statements become entries with no typing. No bank login.";
 "onboarding.welcome.page3.title" = "Your data stays yours";
 "onboarding.welcome.page3.subtitle" = "Everything is stored on-device. iCloud backup is optional. No accounts, no signup.";
+"onboarding.welcome.ten.title" = "Ask Ten about your money";
+"onboarding.welcome.ten.subtitle" = "Where the money goes, whether it lasts until payday, how to pay off a loan sooner: Ten answers with your own numbers.";
 
 "onboarding.cta.next" = "Next";
 "pager.previous" = "Previous";

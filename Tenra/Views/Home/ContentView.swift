@@ -32,8 +32,9 @@ struct ContentView: View {
     @State private var showingTimeFilter = false
     @State private var showingAddAccount = false
     @State private var showingSettings = false
-    /// The first launch's hint over the categories (showCategoryHintIfNeeded).
-    @State private var showingCategoryHint = false
+    /// The first launch's hint on the categories (showCategoryHintIfNeeded), DesignKit's
+    /// spotlight: the rest of Home dims, the grid stays lit with the message beside it.
+    @State private var categoryHint: FeatureTourState.Hint?
     /// A widget's category to open the add form for (AppCoordinator.pendingQuickAdd).
     @State private var quickAddCategory: String?
     /// "For today" under the history card (DailyAllowance); nil without an everyday account.
@@ -282,6 +283,12 @@ struct ContentView: View {
     // MARK: - Main Content
     @ViewBuilder
     private var mainContent: some View {
+        scrollContent
+            .spotlight($categoryHint, message: { _ in String(localized: "home.hint.categories") })
+            .onDisappear { categoryHint = nil }
+    }
+
+    private var scrollContent: some View {
         ScrollView {
             VStack(spacing: AppSpacing.lg) {
                 // accountsSection + categoriesSection render unconditionally: the fast
@@ -397,17 +404,8 @@ struct ContentView: View {
             externalSelection: $quickAddCategory
         )
         .screenPadding()
-        // The first launch: a hint over the categories, once (DesignKit's Tooltip, over the
-        // grid so nothing moves; touches go through to the tiles).
-        .overlay(alignment: .top) {
-            if showingCategoryHint {
-                Tooltip(String(localized: "home.hint.categories"))
-                    .tooltipAnchor(.top)
-                    .allowsHitTesting(false)
-                    .transition(.opacity)
-            }
-        }
-        .zIndex(showingCategoryHint ? 1 : 0)
+        // The first launch: the grid lit, the rest of Home dimmed, once (`categoryHint`).
+        .spotlightAnchor(FeatureTourState.Hint.homeCategories)
         .task(id: coordinator.isFullyInitialized) { await showCategoryHintIfNeeded() }
     }
 
@@ -424,10 +422,8 @@ struct ContentView: View {
         try? await Task.sleep(for: .seconds(1))
         guard !Task.isCancelled else { return }
         FeatureTourState.markSeen(.homeCategories)
-        withAnimation(AppAnimation.smooth) { showingCategoryHint = true }
-        // Gone after a while, or at once when Home goes away (the task is cancelled).
-        try? await Task.sleep(for: .seconds(6))
-        withAnimation(AppAnimation.smooth) { showingCategoryHint = false }
+        // A tap anywhere lifts it (DesignKit's spotlight); leaving Home lifts it too.
+        categoryHint = .homeCategories
     }
 
     @ViewBuilder

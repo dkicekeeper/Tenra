@@ -1572,6 +1572,8 @@
 "onboarding.welcome.page2.subtitle" = "Apple Pay ödemeleri, bankanızın bildirimleri ve ekstreleri yazmadan işleme dönüşür. Banka girişi yok.";
 "onboarding.welcome.page3.title" = "Verilerin sende kalır";
 "onboarding.welcome.page3.subtitle" = "Her şey cihazında saklanır. iCloud yedeği isteğe bağlıdır. Hesap yok, kayıt yok.";
+"onboarding.welcome.ten.title" = "Paranı Ten'e sor";
+"onboarding.welcome.ten.subtitle" = "Para nereye gidiyor, maaşa kadar yeter mi, krediyi nasıl daha erken kapatırsın: Ten kendi rakamlarınla yanıtlar.";
 
 "onboarding.cta.next" = "İleri";
 "pager.previous" = "Önceki";

@@ -1572,6 +1572,8 @@
 "onboarding.welcome.page2.subtitle" = "Apple Payの支払い、銀行の通知や明細が入力なしで取引になります。銀行へのログインは不要です。";
 "onboarding.welcome.page3.title" = "データはあなたのもの";
 "onboarding.welcome.page3.subtitle" = "すべて端末内に保存されます。iCloudバックアップは任意です。アカウント登録もサインアップも不要です。";
+"onboarding.welcome.ten.title" = "お金のことはテンに聞こう";
+"onboarding.welcome.ten.subtitle" = "お金の行き先、給料日までもつか、ローンを早く返す方法まで。テンがあなたの数字で答えます。";
 
 "onboarding.cta.next" = "次へ";
 "pager.previous" = "前へ";

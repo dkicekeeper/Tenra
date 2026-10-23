@@ -1572,6 +1572,8 @@
 "onboarding.welcome.page2.subtitle" = "Apple Pay 결제, 은행 알림과 명세서가 입력 없이 거래가 됩니다. 은행 로그인은 필요 없습니다.";
 "onboarding.welcome.page3.title" = "내 데이터는 내 것이에요";
 "onboarding.welcome.page3.subtitle" = "모든 데이터는 기기에 저장돼요. iCloud 백업은 선택이에요. 계정도, 가입도 필요 없어요.";
+"onboarding.welcome.ten.title" = "돈에 대해 텐에게 물어보세요";
+"onboarding.welcome.ten.subtitle" = "돈이 어디로 가는지, 월급날까지 버틸 수 있는지, 대출을 더 빨리 갚는 법까지. 텐이 내 숫자로 답해 줘요.";
 
 "onboarding.cta.next" = "다음";
 "pager.previous" = "이전";

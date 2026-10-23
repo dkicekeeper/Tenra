@@ -1572,6 +1572,8 @@
 "onboarding.welcome.page2.subtitle" = "Apple Pay-Zahlungen, Mitteilungen und Kontoauszüge Ihrer Bank werden ohne Tippen zu Einträgen. Ohne Bank-Login.";
 "onboarding.welcome.page3.title" = "Ihre Daten gehören Ihnen";
 "onboarding.welcome.page3.subtitle" = "Alles wird auf dem Gerät gespeichert. iCloud-Backup ist optional. Kein Benutzerkonto, keine Registrierung.";
+"onboarding.welcome.ten.title" = "Fragen Sie Ten zu Ihrem Geld";
+"onboarding.welcome.ten.subtitle" = "Wohin das Geld geht, ob es bis zum Gehalt reicht, wie Sie einen Kredit schneller tilgen: Ten antwortet mit Ihren Zahlen.";
 
 "onboarding.cta.next" = "Weiter";
 "pager.previous" = "Zurück";

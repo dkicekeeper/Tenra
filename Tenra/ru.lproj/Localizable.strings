@@ -1572,6 +1572,8 @@
 "onboarding.welcome.page2.subtitle" = "Оплаты Apple Pay, уведомления и выписки банка становятся операциями без ручного ввода. Без входа в банк.";
 "onboarding.welcome.page3.title" = "Ваши данные принадлежат только вам";
 "onboarding.welcome.page3.subtitle" = "Всё хранится локально на устройстве. iCloud-бэкап опциональный. Никаких аккаунтов и регистраций.";
+"onboarding.welcome.ten.title" = "Спросите Тэна о деньгах";
+"onboarding.welcome.ten.subtitle" = "Куда уходят деньги, хватит ли до зарплаты, как быстрее закрыть кредит: Тэн ответит на ваших цифрах.";
 
 "onboarding.cta.next" = "Далее";
 "pager.previous" = "Назад";

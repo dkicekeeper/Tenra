@@ -6,6 +6,10 @@
 //  and stacks the synced title/subtitle just above the primary CTA so the
 //  copy reads alongside the action, not floating under the hero.
 //
+//  The slides, in the order the store sells them: auto-capture, Ten (where the assistant runs;
+//  its hero is Ten itself), everything in one place, privacy. Each slide gets a fresh hero
+//  (`.id`), so its bounce and rings start with it and the swap is one blur crossfade.
+//
 //  When the user advances past welcome (`vm.path` becomes non-empty), the
 //  TimelineView and its keyframe animators are torn down — the welcome view
 //  is invisible behind the pushed step, no need to keep ticking. They are
@@ -23,25 +27,46 @@ struct OnboardingWelcomeStep: View {
     /// (no inline `.spring(...)` literals in view bodies).
     private static let phaseSpring: Animation = .spring(response: 0.55, dampingFraction: 0.85) // design-lint:ignore the welcome choreography's own spring
 
-    private static let phases: [LoopOnBoardingPhase] = [
-        LoopOnBoardingPhase(
-            symbol: "chart.pie.fill",
-            title: String(localized: "onboarding.welcome.page1.title"),
-            subtitle: String(localized: "onboarding.welcome.page1.subtitle")
-        ),
-        LoopOnBoardingPhase(
-            symbol: "wave.3.right",
-            title: String(localized: "onboarding.welcome.page2.title"),
-            subtitle: String(localized: "onboarding.welcome.page2.subtitle")
-        ),
-        LoopOnBoardingPhase(
-            symbol: "lock.shield.fill",
-            title: String(localized: "onboarding.welcome.page3.title"),
-            subtitle: String(localized: "onboarding.welcome.page3.subtitle")
-        ),
-    ]
+    /// A slide: an SF Symbol hero, or Ten (`symbol` nil).
+    private struct Phase {
+        let symbol: String?
+        let title: String
+        let subtitle: String
+    }
 
-    private let config = LoopOnBoardingConfig()
+    private static let phases: [Phase] = {
+        var phases = [
+            Phase(
+                symbol: "wave.3.right",
+                title: String(localized: "onboarding.welcome.page2.title"),
+                subtitle: String(localized: "onboarding.welcome.page2.subtitle")
+            ),
+        ]
+        if AssistantAvailability.isAvailable {
+            phases.append(Phase(
+                symbol: nil,
+                title: String(localized: "onboarding.welcome.ten.title"),
+                subtitle: String(localized: "onboarding.welcome.ten.subtitle")
+            ))
+        }
+        phases += [
+            Phase(
+                symbol: "chart.pie.fill",
+                title: String(localized: "onboarding.welcome.page1.title"),
+                subtitle: String(localized: "onboarding.welcome.page1.subtitle")
+            ),
+            Phase(
+                symbol: "lock.shield.fill",
+                title: String(localized: "onboarding.welcome.page3.title"),
+                subtitle: String(localized: "onboarding.welcome.page3.subtitle")
+            ),
+        ]
+        return phases
+    }()
+
+    /// A larger hero than DesignKit's default (100): the icon reads from across the room. The
+    /// rings keep about the same reach (`iconSize / 2 * pulseScale`).
+    private let config = LoopOnBoardingConfig(pulseScale: WelcomeHeroMetrics.pulseScale, iconSize: WelcomeHeroMetrics.iconSize)
 
     var body: some View {
         Group {
@@ -79,7 +104,9 @@ struct OnboardingWelcomeStep: View {
             VStack(spacing: 0) {
                 Spacer()
 
-                LoopOnboardingHero(symbol: phase.symbol, config: config)
+                hero(for: phase)
+                    .id(index)
+                    .transition(.blurReplace)
 
                 Spacer()
 
@@ -123,6 +150,24 @@ struct OnboardingWelcomeStep: View {
             .sensoryFeedback(.selection, trigger: index)
         }
     }
+
+    @ViewBuilder
+    private func hero(for phase: Phase) -> some View {
+        if let symbol = phase.symbol {
+            LoopOnboardingHero(symbol: symbol, config: config)
+        } else {
+            ParticleCreature(mood: .happy)
+                .frame(width: WelcomeHeroMetrics.tenSize, height: WelcomeHeroMetrics.tenSize)
+                .accessibilityHidden(true)
+        }
+    }
+}
+
+private enum WelcomeHeroMetrics {
+    static let iconSize: CGFloat = 140
+    static let pulseScale: CGFloat = 9
+    /// Ten fills about the rings' first swell.
+    static let tenSize: CGFloat = 200
 }
 
 #Preview("Onboarding — Welcome") {

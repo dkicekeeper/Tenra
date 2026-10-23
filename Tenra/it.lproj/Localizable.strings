@@ -1572,6 +1572,8 @@
 "onboarding.welcome.page2.subtitle" = "Pagamenti Apple Pay, notifiche ed estratti della tua banca diventano operazioni senza digitare. Senza accesso alla banca.";
 "onboarding.welcome.page3.title" = "I tuoi dati restano tuoi";
 "onboarding.welcome.page3.subtitle" = "Tutto è salvato sul dispositivo. Il backup su iCloud è facoltativo. Nessun account, nessuna registrazione.";
+"onboarding.welcome.ten.title" = "Chiedi a Ten dei tuoi soldi";
+"onboarding.welcome.ten.subtitle" = "Dove vanno i soldi, se bastano fino allo stipendio, come chiudere prima un prestito: Ten risponde con i tuoi numeri.";
 
 "onboarding.cta.next" = "Avanti";
 "pager.previous" = "Precedente";

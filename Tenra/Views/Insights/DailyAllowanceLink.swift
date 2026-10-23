@@ -48,7 +48,9 @@ struct DailyAllowanceLink: View {
     }
 
     var body: some View {
-        Group {
+        // A ZStack, not a Group: a Group without content hands `.task` to no view, and the
+        // first value would never be computed. Empty, it takes no height.
+        ZStack {
             if let value {
                 NavigationLink {
                     DailyAllowanceDetailView(value: value)

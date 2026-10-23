@@ -66,11 +66,13 @@ enum DailyAllowance {
         guard let forecast = try? await toolkit.forecast(until: FastDateParser.string(from: horizon.date)) else {
             return nil
         }
+        // Whole units: kopecks in a day's allowance are noise. The allowance rounds down and
+        // what is set aside rounds up, so neither promises more than there is.
         return Value(
-            amount: forecast.dailyAllowance,
+            amount: forecast.dailyAllowance.rounded(.down),
             currency: forecast.currency,
             income: horizon.isIncome ? horizon.date : nil,
-            setAside: forecast.outflowTotal
+            setAside: forecast.outflowTotal.rounded(.up)
         )
     }
 }

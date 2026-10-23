@@ -406,7 +406,8 @@ final class ScreenshotCaptureTests: XCTestCase {
         let depositsCard = app.descendants(matching: .any)["finances.depositsCard"].firstMatch
         XCTAssertTrue(depositsCard.waitForExistence(timeout: 10), "Deposits card not found")
         depositsCard.tap()
-        let firstDeposit = app.cells.firstMatch
+        // A card per deposit (DesignKit's CardList, no table cells).
+        let firstDeposit = app.descendants(matching: .any)["deposits.card"].firstMatch
         if firstDeposit.waitForExistence(timeout: 10) {
             firstDeposit.tap()
             sleep(3)

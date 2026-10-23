@@ -499,7 +499,8 @@ APIs an extension may not): system fonts, the accent from its own asset catalog,
 - **For today** (`TodayWidget`): small, medium (with the four categories), Lock Screen
   rectangular, inline and circular. "Hide amounts" shows dots. Home shows the same figure under
   the history card (`DailyAllowanceCard`, ContentView's `.task(id: allowanceTrigger)`: the
-  history, accounts, series, categories, rates, base currency and the day).
+  history, accounts, series, categories, rates, base currency and the day). Whole units: the
+  allowance rounds down, what is set aside rounds up (`DailyAllowance.value`).
 - **Log an expense** (`QuickAddControl`, a `ControlWidgetButton` with `OpenURLIntent`): Control
   Center, the Lock Screen and the Action button.
 - **Links**: `tenra://add` opens the assistant (Home where it does not run), `tenra://add?category=

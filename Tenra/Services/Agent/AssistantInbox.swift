@@ -29,6 +29,8 @@ struct AssistantNotice: Codable, Equatable, Identifiable, Sendable {
         case debt
         /// A savings goal behind its schedule.
         case goal
+        /// Auto-capture not set up yet: its action opens the Wallet guide, not Ten.
+        case setup
     }
 
     enum Mood: String, Codable, Sendable {
@@ -235,6 +237,25 @@ extension AssistantNotices {
         }
     }
 
+    /// Auto-capture not set up (docs/plan-ads-readiness.md B1): once, after the first entries,
+    /// for someone who hid Home's auto-capture card (while the card shows, it asks).
+    static func setupNudge(entries: Int, capturing: Bool, cardHidden: Bool, now: Date) -> AssistantNotice? {
+        guard entries >= setupAfterEntries, !capturing, cardHidden else { return nil }
+        return AssistantNotice(
+            id: "setup:autoCapture",
+            kind: .setup,
+            title: String(localized: "home.autoCapture.title"),
+            body: String(localized: "assistant.notice.setup"),
+            mood: .idle,
+            question: "",
+            insightId: nil,
+            createdAt: now
+        )
+    }
+
+    /// Entries before the setup message.
+    static let setupAfterEntries = 5
+
     /// A goal younger than this is never behind.
     static let goalGraceDays: Double = 30
     /// How far below the time gone the saved share must fall.
@@ -249,6 +270,8 @@ extension AssistantNotices {
         var subscriptions: Set<String>
         var debts: Set<String>
         var goals: Set<String>
+        /// An automation has recorded a payment: the setup message has done its job.
+        var capturing = false
 
         func contains(_ notice: AssistantNotice) -> Bool {
             switch notice.kind {
@@ -258,6 +281,7 @@ extension AssistantNotices {
                 return id.map(subscriptions.contains) ?? true
             case .debt: return notice.subjectId.map(debts.contains) ?? true
             case .goal: return notice.subjectId.map(goals.contains) ?? true
+            case .setup: return !capturing
             case .signal, .digest: return true
             }
         }

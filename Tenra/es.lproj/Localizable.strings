@@ -1578,7 +1578,6 @@
 "pager.next" = "Siguiente";
 "onboarding.cta.start" = "Comenzar";
 "onboarding.cta.done" = "Listo";
-"onboarding.cta.doneWithCount" = "Listo • %d seleccionadas";
 "onboarding.cta.skip" = "Omitir";
 "onboarding.stepIndicator.label" = "Paso %d de %d";
 
@@ -2207,6 +2206,7 @@
 "assistant.notice.ask.debt" = "Analiza la deuda con %@";
 "assistant.notice.goal.behind" = "Aparta %1$@ al mes para llegar antes del %2$@";
 "assistant.notice.ask.goal" = "¿Cómo me pongo al día con «%@»?";
+"assistant.notice.setup" = "Anotas los gastos a mano. Configura una vez la automatización de Wallet y los pagos con Apple Pay se anotarán solos.";
 "assistant.topic.goal.onTrack" = "¿Voy bien con «%@»?";
 "assistant.topic.goal.faster" = "¿Cómo ahorro más rápido para «%@»?";
 "assistant.topic.debt.status" = "¿Cuánto queda de la deuda con %@?";

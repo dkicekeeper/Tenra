@@ -11,7 +11,7 @@
 //  - a CSV file: the CSV import flow as it is (preview, column mapping, result), with no card;
 //    Tenra Pro, as Settings → Import CSV is.
 //  A file opened in Tenra from another app (AppCoordinator.pendingAttachment) is read the same
-//  way. Statements hold names, account numbers and balances: the copy read here is deleted once
+//  way; onboarding's "Read a bank statement" (pendingStatementPick) opens the file picker. Statements hold names, account numbers and balances: the copy read here is deleted once
 //  read.
 //
 
@@ -118,6 +118,11 @@ private struct AssistantAttachmentSources: ViewModifier {
         .onChange(of: coordinator.pendingAttachment, initial: true) { _, url in
             guard takesHandedOverFiles, url != nil, let url = coordinator.consumePendingAttachment() else { return }
             openFile(url)
+        }
+        // Onboarding's "Read a bank statement": the file picker, as if picked from the paperclip.
+        .onChange(of: coordinator.pendingStatementPick, initial: true) { _, wanted in
+            guard takesHandedOverFiles, wanted, coordinator.consumePendingStatementPick() else { return }
+            source = .file
         }
         .paywallSheet(isPresented: $showingPaywall) {
             guard let url = csvAwaitingPro else { return }

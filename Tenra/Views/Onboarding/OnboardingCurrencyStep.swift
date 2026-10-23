@@ -24,7 +24,8 @@ struct OnboardingCurrencyStep: View {
             },
             onSkip: {
                 Task { await vm.skip() }
-            }
+            },
+            stepSymbols: OnboardingViewModel.stepSymbols
         ) {
             ScrollView {
                 CurrencyListContent(selectedCurrency: vm.draftCurrency) { code in

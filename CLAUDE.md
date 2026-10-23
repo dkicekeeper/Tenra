@@ -326,7 +326,7 @@ Schema version-bump checklist (currently v15) lives in the `/coredata-schema-bum
 - ⚠️ `try #require(f(try #require(x)))` doesn't compile ("recursive expansion of macro"): unwrap the inner value into a `let` first.
 - ⚠️ `#expect(optionalDouble == 1000 + 300)` always fails: against a `Double?` the macro types an integer-literal *expression* as `Int` and compares the two through `AnyHashable` (prints `1300.0 == 1300`). Write `Double(1000 + 300)`; a single literal (`== 1300`) is fine.
 - Extract crash details from `.xcresult`: `xcrun xcresulttool get test-results tests --path <bundle.xcresult> --filter-by-test-id 'TenraTests/<Suite>/<test>'`
-- Re-test onboarding: `OnboardingState.reset()` clears the `hasCompletedOnboarding` UserDefaults key (a fresh Simulator install also resets it). Flow: `OnboardingFlowView` → welcome (`Начать`) → currency/account/categories steps.
+- Re-test onboarding: `OnboardingState.reset()` clears the `hasCompletedOnboarding` UserDefaults key (a fresh Simulator install also resets it). Flow: `OnboardingFlowView` → welcome (`Начать`; «Восстановить из копии» when iCloud holds a backup) → currency/account/categories → auto-capture step (`OnboardingAutoCaptureStep`: Wallet guide, bank notifications on iOS 27, a statement after onboarding), whose button saves everything.
 
 ## Git Workflow
 

@@ -23,79 +23,9 @@ struct ScreenMockupTests {
         URL(fileURLWithPath: ProcessInfo.processInfo.environment["MOCKUP_DIR"] ?? NSTemporaryDirectory())
     }
 
-    // MARK: - Onboarding
-
-    @Test("Welcome with a backup in iCloud")
-    func welcomeWithBackup() async throws {
-        let vm = OnboardingViewModel.makeForTesting()
-        vm.hasCloudBackup = true
-        try await render("01-welcome-restore") {
-            NavigationStack { OnboardingWelcomeStep(vm: vm) }
-        }
-    }
-
-    @Test("Step 4: let Tenra log it for you")
-    func autoCaptureStep() async throws {
-        let vm = OnboardingViewModel.makeForTesting()
-        try await render("02-onboarding-auto-capture") {
-            NavigationStack { OnboardingAutoCaptureStep(vm: vm, showsBankNotifications: true) }
-        }
-        vm.afterFinish = .statement
-        try await render("03-onboarding-auto-capture-statement") {
-            NavigationStack { OnboardingAutoCaptureStep(vm: vm, showsBankNotifications: true) }
-        }
-    }
-
-    // MARK: - Home
-
-    @Test("Home: the history card, For today and the auto-capture card")
-    func homeCards() async throws {
-        try await render("04-home-cards") {
-            ScrollView {
-                VStack(spacing: AppSpacing.lg) {
-                    TransactionsSummaryCard(
-                        summary: Summary(
-                            totalIncome: 450_000,
-                            totalExpenses: 287_400,
-                            totalInternalTransfers: 0,
-                            netFlow: 162_600,
-                            currency: "KZT",
-                            startDate: "2026-10-01",
-                            endDate: "2026-10-31",
-                            plannedAmount: 23_990
-                        ),
-                        currency: "KZT",
-                        isEmpty: false
-                    )
-                    DailyAllowanceCard(
-                        amount: 8_400,
-                        currency: "KZT",
-                        until: Calendar.current.date(byAdding: .day, value: 6, to: Date()),
-                        setAside: 23_990,
-                        isLoading: false
-                    )
-                    AutoCaptureSetupCard(onSetUp: {}, onHide: {})
-                }
-                .screenPadding()
-                .padding(.vertical, AppSpacing.lg)
-            }
-            .background(AppColors.Background.base)
-        }
-    }
-
-    @Test("Home: the one-time iCloud ask for an older install")
-    func homeICloudAsk() async throws {
-        try await render("05-home-icloud-ask", height: 500) {
-            VStack(spacing: AppSpacing.lg) {
-                ICloudBackupAskCard(onTurnOn: {}, onHide: {})
-                AutoCaptureSetupCard(onSetUp: {}, onHide: {})
-                Spacer()
-            }
-            .screenPadding()
-            .padding(.vertical, AppSpacing.xl)
-            .background(AppColors.Background.base)
-        }
-    }
+    // Nothing in review: the 1.7 screens (welcome with a backup, the auto-capture step, Home's
+    // For today, auto-capture and iCloud cards) were approved on 2026-10-23 and ship in the app.
+    // A new screen in review gets a `@Test` here that calls `render(_:height:_:)`.
 
     // MARK: - Rendering
 

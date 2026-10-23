@@ -180,6 +180,27 @@ struct AssistantInboxTests {
         #expect(decoded.body == charge.body)
     }
 
+    /// Auto-capture not set up: one message after the first entries, only once Home's card
+    /// was hidden, gone once an automation records a payment.
+    @Test func autoCaptureSetupIsAskedOnceAfterTheCardWasHidden() throws {
+        let enough = AssistantNotices.setupAfterEntries
+        #expect(AssistantNotices.setupNudge(entries: enough - 1, capturing: false, cardHidden: true, now: Self.now) == nil)
+        #expect(AssistantNotices.setupNudge(entries: enough, capturing: true, cardHidden: true, now: Self.now) == nil)
+        // While the card shows, the card asks.
+        #expect(AssistantNotices.setupNudge(entries: enough, capturing: false, cardHidden: false, now: Self.now) == nil)
+        let notice = try #require(AssistantNotices.setupNudge(entries: enough, capturing: false, cardHidden: true, now: Self.now))
+        #expect(notice.kind == .setup)
+
+        let inbox = Self.inbox()
+        inbox.post([notice], now: Self.now)
+        #expect(inbox.notices.map(\.id) == [notice.id])
+        inbox.post([notice], now: Self.now)
+        #expect(inbox.notices.count == 1)
+        // Once a payment is captured, it leaves for good.
+        inbox.drop(outside: AssistantNotices.Subjects(subscriptions: [], debts: [], goals: [], capturing: true))
+        #expect(inbox.notices.isEmpty)
+    }
+
     /// A message about a subscription, a debt or a goal that is gone leaves the list for good.
     @Test func aMessageLeavesWithWhatItIsAbout() throws {
         let tomorrow = Calendar.current.date(byAdding: .day, value: 1, to: Calendar.current.startOfDay(for: Self.now))!

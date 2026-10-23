@@ -263,6 +263,12 @@ Code is nested: reachable only through a Set Variable step), Merchant, Card or P
 merchant category. It is known to time out, to send an empty merchant with amount 0, and to fire
 for declined payments. Plan in flight: [plan-auto-capture.md](../plan-auto-capture.md).
 
+Where the setup is offered: onboarding's last step (`OnboardingAutoCaptureStep`, the Wallet
+guide and on iOS 27 the bank notification guide in sheets), Home's card under the history
+(`AutoCaptureSetupCard`, until `WalletCaptureStore.hasEverCaptured` or its ✕, key
+`home.autoCaptureCard.hidden`), and once Ten's message after the first entries for someone who
+hid the card ([assistant.md](assistant.md) §6). Settings → Siri & Shortcuts keeps the guides.
+
 ### 6.1 `LogWalletPaymentIntent` (silent)
 
 `WalletPaymentRecorder.record`:
@@ -491,7 +497,9 @@ APIs an extension may not): system fonts, the accent from its own asset catalog,
   are pinned by `WidgetSnapshotTests`. A snapshot from another day shows 0 spent; the timeline
   redraws after midnight.
 - **For today** (`TodayWidget`): small, medium (with the four categories), Lock Screen
-  rectangular, inline and circular. "Hide amounts" shows dots.
+  rectangular, inline and circular. "Hide amounts" shows dots. Home shows the same figure under
+  the history card (`DailyAllowanceCard`, ContentView's `.task(id: allowanceTrigger)`: the
+  history, accounts, series, categories, rates, base currency and the day).
 - **Log an expense** (`QuickAddControl`, a `ControlWidgetButton` with `OpenURLIntent`): Control
   Center, the Lock Screen and the Action button.
 - **Links**: `tenra://add` opens the assistant (Home where it does not run), `tenra://add?category=

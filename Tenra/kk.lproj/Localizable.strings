@@ -1578,7 +1578,6 @@
 "pager.next" = "Келесі";
 "onboarding.cta.start" = "Бастау";
 "onboarding.cta.done" = "Дайын";
-"onboarding.cta.doneWithCount" = "Дайын • %d таңдалды";
 "onboarding.cta.skip" = "Өткізіп жіберу";
 "onboarding.stepIndicator.label" = "Қадам %d / %d";
 
@@ -2207,6 +2206,7 @@
 "assistant.notice.ask.debt" = "Қарызды талдап бер: %@";
 "assistant.notice.goal.behind" = "%2$@ күніне дейін үлгеру үшін айына %1$@ жинап отырыңыз";
 "assistant.notice.ask.goal" = "«%@» мақсаты бойынша қалай қуып жетемін?";
+"assistant.notice.setup" = "Шығындарды қолмен енгізіп жүрсіз. Wallet автоматтандыруын бір рет баптаңыз, сонда Apple Pay төлемдері өздігінен жазылады.";
 "assistant.topic.goal.onTrack" = "«%@» мақсатына уақытында жетемін бе?";
 "assistant.topic.goal.faster" = "«%@» үшін қалай тезірек жинаймын?";
 "assistant.topic.debt.status" = "Қарыз бойынша қанша қалды: %@?";

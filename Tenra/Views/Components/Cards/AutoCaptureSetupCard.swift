@@ -11,6 +11,10 @@
 import SwiftUI
 
 struct AutoCaptureSetupCard: View {
+    /// UserDefaults: the card's ✕ was tapped (ContentView). Ten asks once more after the first
+    /// entries (AssistantNotices.setupNudge).
+    static let hiddenKey = "home.autoCaptureCard.hidden"
+
     let onSetUp: () -> Void
     let onHide: () -> Void
 

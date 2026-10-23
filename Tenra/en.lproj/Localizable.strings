@@ -1578,7 +1578,6 @@
 "pager.next" = "Next";
 "onboarding.cta.start" = "Get started";
 "onboarding.cta.done" = "Done";
-"onboarding.cta.doneWithCount" = "Done • %d selected";
 "onboarding.cta.skip" = "Skip";
 "onboarding.stepIndicator.label" = "Step %d of %d";
 
@@ -2207,6 +2206,7 @@
 "assistant.notice.ask.debt" = "Go through the debt with %@";
 "assistant.notice.goal.behind" = "Put aside %1$@ a month to make it by %2$@";
 "assistant.notice.ask.goal" = "How do I catch up on “%@”?";
+"assistant.notice.setup" = "You enter expenses by hand. Set up the Wallet automation once, and Apple Pay payments will log themselves.";
 "assistant.topic.goal.onTrack" = "Am I on track for “%@”?";
 "assistant.topic.goal.faster" = "How can I save for “%@” faster?";
 "assistant.topic.debt.status" = "How much is left on the debt with %@?";

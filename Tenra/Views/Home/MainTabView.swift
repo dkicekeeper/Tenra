@@ -284,6 +284,17 @@ struct MainTabView: View {
                 openImport()
             }
         }
+        // Onboarding's "Read a bank statement": the assistant opens its file picker
+        // (AssistantAttachmentSources takes the request); without the assistant, the import tab.
+        .onChange(of: coordinator.pendingStatementPick, initial: true) { _, wanted in
+            guard wanted else { return }
+            if assistantTakesActionTab {
+                openAssistant()
+            } else {
+                _ = coordinator.consumePendingStatementPick()
+                openImport()
+            }
+        }
         // A widget's category or Control Center's "Log an expense" (tenra://add): the add
         // form on Home for a category (ContentView takes it), else the assistant.
         .onChange(of: coordinator.pendingQuickAdd, initial: true) { _, request in

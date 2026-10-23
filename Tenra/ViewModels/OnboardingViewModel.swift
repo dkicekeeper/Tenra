@@ -131,6 +131,12 @@ final class OnboardingViewModel {
         logger.info("onboarding_step_completed step=account")
     }
 
+    func advanceToAutoCaptureStep() {
+        // The categories stay drafts too: `finish()` on the next step saves everything.
+        path.append(.autoCapture)
+        logger.info("onboarding_step_completed step=categories selectedCount=\(self.selectedPresetCount, privacy: .public)")
+    }
+
     /// The backups' view model, for the restore sheet; nil in tests.
     var cloudSyncViewModel: CloudSyncViewModel? { coordinator?.cloudSyncViewModel }
 
@@ -237,6 +243,8 @@ final class OnboardingViewModel {
             await coordinator.balanceCoordinator.setInitialBalance(account.initialBalance ?? 0, for: account.id)
         }
 
+        // Asked for before Home appears, so the tab bar finds it on its first pass.
+        if afterFinish == .statement { coordinator.pickStatement() }
         coordinator.completeOnboarding()
         adoptICloudBackups(coordinator)
         logger.info("onboarding_finished selectedCount=\(self.selectedPresetCount, privacy: .public)")

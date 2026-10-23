@@ -1578,7 +1578,6 @@
 "pager.next" = "次へ";
 "onboarding.cta.start" = "はじめる";
 "onboarding.cta.done" = "完了";
-"onboarding.cta.doneWithCount" = "完了 • %d件選択中";
 "onboarding.cta.skip" = "スキップ";
 "onboarding.stepIndicator.label" = "ステップ %d / %d";
 
@@ -2207,6 +2206,7 @@
 "assistant.notice.ask.debt" = "%@との貸し借りを確認して";
 "assistant.notice.goal.behind" = "%2$@までに達成するには毎月%1$@を貯めましょう";
 "assistant.notice.ask.goal" = "「%@」の遅れを取り戻すには？";
+"assistant.notice.setup" = "支出を手入力しています。Wallet のオートメーションを一度設定すれば、Apple Pay の支払いが自動で記録されます。";
 "assistant.topic.goal.onTrack" = "「%@」は順調ですか？";
 "assistant.topic.goal.faster" = "「%@」をもっと早く貯めるには？";
 "assistant.topic.debt.status" = "%@との貸し借りはあといくら残っていますか？";

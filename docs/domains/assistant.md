@@ -201,6 +201,11 @@ count of the rest; "Go through it" opens the assistant with a question and a `<n
 free action), "Hide" shows the next. Works without notification permission. A push of an insight
 still opens Analytics.
 
+Auto-capture not set up (`Kind.setup`, `AssistantNotices.setupNudge`): once, after
+`setupAfterEntries` entries, for someone who hid Home's auto-capture card; its button is "Set
+up" and opens the Wallet guide instead of asking Ten (no action spent), and it leaves once an
+automation records a payment (`Subjects.capturing`).
+
 A notice keeps a copy of its text with the amounts as dots (`hiddenBody`), shown while "hide
 amounts" is on. A notice about a subscription, a debt or a goal leaves with it: the Home section
 shows only notices whose subject is still there (`AssistantNotices.Subjects`: active

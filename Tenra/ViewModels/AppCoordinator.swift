@@ -91,6 +91,11 @@ class AppCoordinator {
     /// not run). Cleared once taken.
     private(set) var pendingQuickAdd: QuickAdd?
 
+    /// Onboarding's "Read a bank statement" (OnboardingViewModel.FollowUp.statement): the
+    /// assistant opens its file picker, or without the assistant the import tab opens. Cleared
+    /// once taken.
+    private(set) var pendingStatementPick = false
+
     nonisolated struct QuickAdd: Equatable, Sendable {
         /// An expense category's name; nil opens the assistant.
         let category: String?
@@ -251,9 +256,18 @@ class AppCoordinator {
         return pendingAttachment
     }
 
-    /// Ten writes first about the subscriptions charged tomorrow, the debts due tomorrow and the
-    /// goals behind their schedule (AssistantInbox); insights and the weekly summary post from
-    /// the insights recompute.
+    func pickStatement() {
+        pendingStatementPick = true
+    }
+
+    func consumePendingStatementPick() -> Bool {
+        defer { pendingStatementPick = false }
+        return pendingStatementPick
+    }
+
+    /// Ten writes first about the subscriptions charged tomorrow, the debts due tomorrow, the
+    /// goals behind their schedule and auto-capture not set up (AssistantInbox); insights and
+    /// the weekly summary post from the insights recompute.
     func refreshAssistantInbox(now: Date = Date()) {
         guard AssistantAvailability.isAvailable else { return }
         observeStoreResetForAssistant()
@@ -261,16 +275,22 @@ class AppCoordinator {
             AssistantInbox.shared.drop(outside: subjects)
         }
         let scheduler = SubscriptionNotificationScheduler.shared
-        AssistantInbox.shared.post(
-            AssistantNotices.charges(
-                subscriptions: transactionStore.activeSubscriptions,
-                nextCharge: { scheduler.calculateNextChargeDate(for: $0, today: now) },
-                now: now
-            )
-                + AssistantNotices.debtsDue(debtStore.debts, now: now)
-                + AssistantNotices.goalsBehind(goalStore.goals, saved: { [goalStore] in goalStore.saved(for: $0) }, now: now),
+        var candidates = AssistantNotices.charges(
+            subscriptions: transactionStore.activeSubscriptions,
+            nextCharge: { scheduler.calculateNextChargeDate(for: $0, today: now) },
             now: now
         )
+        candidates += AssistantNotices.debtsDue(debtStore.debts, now: now)
+        candidates += AssistantNotices.goalsBehind(goalStore.goals, saved: { [goalStore] in goalStore.saved(for: $0) }, now: now)
+        if let nudge = AssistantNotices.setupNudge(
+            entries: transactionStore.transactionsCount,
+            capturing: WalletCaptureStore.shared.hasEverCaptured,
+            cardHidden: UserDefaults.standard.bool(forKey: AutoCaptureSetupCard.hiddenKey),
+            now: now
+        ) {
+            candidates.append(nudge)
+        }
+        AssistantInbox.shared.post(candidates, now: now)
     }
 
     /// What Ten's messages may still talk about (AssistantNotices.Subjects); nil until every
@@ -280,7 +300,8 @@ class AppCoordinator {
         return AssistantNotices.Subjects(
             subscriptions: Set(transactionStore.activeSubscriptions.map(\.id)),
             debts: Set(debtStore.debts.filter { !$0.isSettled }.map(\.id)),
-            goals: Set(goalStore.goals.map(\.id))
+            goals: Set(goalStore.goals.map(\.id)),
+            capturing: WalletCaptureStore.shared.hasEverCaptured
         )
     }
 

@@ -1578,7 +1578,6 @@
 "pager.next" = "다음";
 "onboarding.cta.start" = "시작하기";
 "onboarding.cta.done" = "완료";
-"onboarding.cta.doneWithCount" = "완료 • %d개 선택됨";
 "onboarding.cta.skip" = "건너뛰기";
 "onboarding.stepIndicator.label" = "%d / %d단계";
 
@@ -2207,6 +2206,7 @@
 "assistant.notice.ask.debt" = "%@ 관련 기록을 정리해 줘";
 "assistant.notice.goal.behind" = "%2$@까지 달성하려면 매달 %1$@씩 모아야 해요";
 "assistant.notice.ask.goal" = "“%@” 목표를 어떻게 따라잡을까?";
+"assistant.notice.setup" = "지출을 직접 입력하고 있어요. Wallet 자동화를 한 번만 설정하면 Apple Pay 결제가 저절로 기록돼요.";
 "assistant.topic.goal.onTrack" = "“%@” 목표는 잘 가고 있어?";
 "assistant.topic.goal.faster" = "“%@”를 더 빨리 모으려면?";
 "assistant.topic.debt.status" = "%@ 관련해서 얼마나 남았어?";

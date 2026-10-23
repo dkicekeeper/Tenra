@@ -26,8 +26,11 @@ struct AssistantNoticeCard: View {
         NoticeCard(
             title: notice.title,
             message: amountsHidden ? (notice.hiddenBody ?? notice.body) : notice.body,
-            actionTitle: String(localized: "assistant.notice.goThrough"),
-            actionSystemImage: "sparkles",
+            // The setup message opens the Wallet guide; the rest ask Ten.
+            actionTitle: notice.kind == .setup
+                ? String(localized: "home.autoCapture.action")
+                : String(localized: "assistant.notice.goThrough"),
+            actionSystemImage: notice.kind == .setup ? "wave.3.right" : "sparkles",
             action: onAsk,
             hideLabel: String(localized: "assistant.notice.hide"),
             onHide: onHide
@@ -56,6 +59,7 @@ struct AssistantNoticeCard: View {
 struct AssistantNoticesSection: View {
     @Environment(AppCoordinator.self) private var coordinator
     private let inbox = AssistantInbox.shared
+    @State private var showingWalletGuide = false
 
     var body: some View {
         // A message about a subscription, a debt or a goal deleted since is not shown; the next
@@ -71,6 +75,10 @@ struct AssistantNoticesSection: View {
             }
         }
         .animation(AppAnimation.smooth, value: unread.first?.id)
+        // On the group, not the section: the setup message is read (gone) once its guide opens.
+        .sheet(isPresented: $showingWalletGuide) {
+            NavigationStack { WalletSetupGuideView() }
+        }
     }
 
     private func section(notice: AssistantNotice, count: Int) -> some View {
@@ -81,7 +89,12 @@ struct AssistantNoticesSection: View {
                 notice: notice,
                 onAsk: {
                     HapticManager.light()
-                    coordinator.goThrough(notice)
+                    if notice.kind == .setup {
+                        inbox.markRead(notice.id)
+                        showingWalletGuide = true
+                    } else {
+                        coordinator.goThrough(notice)
+                    }
                 },
                 onHide: { inbox.markRead(notice.id) }
             )

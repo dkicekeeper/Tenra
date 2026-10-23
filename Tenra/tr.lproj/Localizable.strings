@@ -1578,7 +1578,6 @@
 "pager.next" = "Sonraki";
 "onboarding.cta.start" = "Başla";
 "onboarding.cta.done" = "Bitti";
-"onboarding.cta.doneWithCount" = "Bitti • %d seçildi";
 "onboarding.cta.skip" = "Atla";
 "onboarding.stepIndicator.label" = "Adım %d / %d";
 
@@ -2207,6 +2206,7 @@
 "assistant.notice.ask.debt" = "%@ ile olan borcu incele";
 "assistant.notice.goal.behind" = "%2$@ tarihine yetişmek için ayda %1$@ ayır";
 "assistant.notice.ask.goal" = "“%@” hedefine nasıl yetişirim?";
+"assistant.notice.setup" = "Harcamaları elle giriyorsun. Wallet otomasyonunu bir kez kur, Apple Pay ödemeleri kendiliğinden kaydedilsin.";
 "assistant.topic.goal.onTrack" = "“%@” hedefinde yolunda mıyım?";
 "assistant.topic.goal.faster" = "“%@” için nasıl daha hızlı biriktiririm?";
 "assistant.topic.debt.status" = "%@ ile olan borçta ne kadar kaldı?";

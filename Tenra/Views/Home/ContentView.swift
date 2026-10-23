@@ -36,6 +36,43 @@ struct ContentView: View {
     @State private var showingCategoryHint = false
     /// A widget's category to open the add form for (AppCoordinator.pendingQuickAdd).
     @State private var quickAddCategory: String?
+    /// "For today" under the history card (DailyAllowance); nil without an everyday account.
+    @State private var allowance: DailyAllowance.Value?
+    /// The auto-capture card's ✕: hidden for good.
+    @AppStorage(AutoCaptureSetupCard.hiddenKey) private var autoCaptureCardHidden = false
+    @State private var showingWalletGuide = false
+    /// The iCloud ask answered now: CloudSyncViewModel keeps the answer in UserDefaults, which
+    /// a view does not observe.
+    @State private var iCloudAskAnswered = false
+
+    // Everything "For today" depends on (CLAUDE.md, red flag 12): the history, the accounts,
+    // the subscriptions and other series before the next income, the income categories that
+    // find that income, the rates, the base currency and the day.
+    private struct AllowanceTrigger: Equatable {
+        let txVersion: Int
+        let accountsVersion: Int
+        let series: [RecurringSeries]
+        let categoriesVersion: Int
+        let ratesVersion: Int
+        let baseCurrency: String
+        let day: Date
+        let isFullyInitialized: Bool
+    }
+    private var allowanceTrigger: AllowanceTrigger {
+        // Both versions are @ObservationIgnored: touch the observable arrays so `body` re-runs.
+        _ = transactionStore.transactions.count
+        _ = transactionStore.accounts.count
+        return AllowanceTrigger(
+            txVersion: transactionStore.mutationVersion,
+            accountsVersion: transactionStore.accountsMutationVersion,
+            series: transactionStore.recurringSeries,
+            categoriesVersion: transactionStore.categoriesMutationVersion,
+            ratesVersion: transactionStore.currencyRatesVersion,
+            baseCurrency: viewModel.appSettings.baseCurrency,
+            day: Calendar.current.startOfDay(for: Date()),
+            isFullyInitialized: coordinator.isFullyInitialized
+        )
+    }
 
     // MARK: - Summary Trigger
     // Equatable snapshot of every input that drives the summary card.
@@ -127,6 +164,9 @@ struct ContentView: View {
             .sheet(isPresented: $showingTimeFilter) { timeFilterSheet }
             .sheet(isPresented: $showingAddAccount) { addAccountSheet }
             .sheet(isPresented: $showingSettings) { settingsSheet }
+            .sheet(isPresented: $showingWalletGuide) {
+                NavigationStack { WalletSetupGuideView() }
+            }
             .task {
                 // initializeFastPath() ran in TenraApp before the coordinator was
                 // published, so accounts + categories are already in place. Only the
@@ -200,6 +240,14 @@ struct ContentView: View {
                 homeState.cachedSummary = summary
                 homeState.cachedCategoryWeights = categoryWeights
             }
+            // "For today": Ten's forecast to the next income (DailyAllowance), once the history
+            // is loaded and again whenever an input changes.
+            .task(id: allowanceTrigger) {
+                guard coordinator.isFullyInitialized, !transactionStore.isImporting else { return }
+                let value = await DailyAllowance.value(store: transactionStore)
+                guard !Task.isCancelled else { return }
+                allowance = value
+            }
             // Reactive wallpaper
             // Fires when wallpaperImageName changes. Skips re-appear when the image
             // for the current name is already loaded in homeState.
@@ -248,6 +296,7 @@ struct ContentView: View {
                     historyNavigationLink
                         .transition(.opacity)
                 }
+                setupCards
                 categoriesSection
                 errorSection
             }
@@ -295,6 +344,47 @@ struct ContentView: View {
         .buttonStyle(.bounce)
         .accessibilityIdentifier("home.historyLink")
         .screenPadding()
+    }
+
+    /// Under the history card, as in the mockups approved on 2026-10-23: "For today", the
+    /// one-time iCloud ask for an older install, and the auto-capture card until an automation
+    /// records its first payment.
+    @ViewBuilder
+    private var setupCards: some View {
+        let showsICloudAsk = !iCloudAskAnswered && coordinator.cloudSyncViewModel.shouldAskForICloud
+        let showsAutoCapture = !autoCaptureCardHidden && !WalletCaptureStore.shared.hasEverCaptured
+        if coordinator.isFullyInitialized, allowance != nil || showsICloudAsk || showsAutoCapture {
+            VStack(spacing: AppSpacing.lg) {
+                if let allowance {
+                    DailyAllowanceCard(
+                        amount: allowance.amount,
+                        currency: allowance.currency,
+                        until: allowance.income,
+                        setAside: allowance.setAside,
+                        isLoading: false
+                    )
+                }
+                if showsICloudAsk {
+                    ICloudBackupAskCard(
+                        onTurnOn: { answerICloudAsk(enable: true) },
+                        onHide: { answerICloudAsk(enable: false) }
+                    )
+                }
+                if showsAutoCapture {
+                    AutoCaptureSetupCard(
+                        onSetUp: { showingWalletGuide = true },
+                        onHide: { withAnimation(AppAnimation.smooth) { autoCaptureCardHidden = true } }
+                    )
+                }
+            }
+            .screenPadding()
+            .transition(.opacity)
+        }
+    }
+
+    private func answerICloudAsk(enable: Bool) {
+        withAnimation(AppAnimation.smooth) { iCloudAskAnswered = true }
+        Task { await coordinator.cloudSyncViewModel.answerICloudAsk(enable: enable) }
     }
 
     private var categoriesSection: some View {

@@ -399,7 +399,10 @@ struct ScreenshotDemoDataset {
                     iconSource: .sfSymbol("dollarsign.circle.fill"),
                     createdDate: date(daysAgo: 300),
                     initialBalance: ScreenshotDemoCurrency.amount(800, in: savingsCurrency),
-                    order: 2
+                    order: 2,
+                    // Savings, not money to spend: out of the total balance, so "For today"
+                    // (DailyAllowance, everyday accounts only) counts the card and the cash.
+                    includeInBalance: false
                 ),
                 Account(
                     id: depositId, name: lexicon.deposit, currency: currency,
@@ -453,8 +456,13 @@ struct ScreenshotDemoDataset {
                     break
                 }
 
-                if daysAgo == 55 {
-                    addDepositTopUp(daysAgo: daysAgo, eurBase: 500)
+                // What is left after the salary goes to the deposit each month, as a saver does,
+                // so the card and the cash hold a month's spending, not three months of surplus:
+                // "For today" comes to about 30-40 EUR a day whatever the capture date. The last
+                // three months only: a fourth, at the start of the window, would take the card
+                // below zero.
+                if dom == 6 && daysAgo <= 80 {
+                    addDepositTopUp(daysAgo: daysAgo, eurBase: 1100)
                 }
 
                 if daysAgo % 3 == 0 {

@@ -999,6 +999,12 @@ def push_metadata(app: str, apply: bool) -> None:
 
         # Version: promotional text, keywords, description.
         current = version_locs.get(locale)
+        if current is None and apply and editable:
+            # A language added to the app info just now is added to the version in preparation
+            # too, empty: update that one (a POST would get HTTP 409).
+            found, _ = get_all(f"/v1/appStoreVersions/{record['id']}/appStoreVersionLocalizations", {"limit": 50})
+            version_locs = {item["attributes"]["locale"]: item for item in found}
+            current = version_locs.get(locale)
         if current is None and not editable:
             rows.append([locale, "version texts", "", f"no {locale} yet: created while a version is in preparation"])
             continue
@@ -1014,10 +1020,12 @@ def push_metadata(app: str, apply: bool) -> None:
                     rows.append([locale, "keywords", "", "no room for: " + ", ".join(no_room)])
             if "description" in fields:
                 changes["description"] = fields["description"]
-            if current is None and source:
+            if source:
+                # A new localization, or the empty one App Store Connect made with the language,
+                # takes what it lacks from `copyFrom`.
                 base = version_locs.get(source, {}).get("attributes", {})
                 for field in ("description", "supportUrl", "marketingUrl", "whatsNew"):
-                    if base.get(field) and field not in changes:
+                    if base.get(field) and not attrs.get(field) and field not in changes:
                         changes[field] = base[field]
         elif any(k in fields for k in ("keywords", "keywordsAdd", "keywordsRemove", "description")):
             rows.append([locale, "keywords, description", "", f"version {config['version']} is not in preparation"])

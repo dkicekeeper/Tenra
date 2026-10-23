@@ -125,7 +125,9 @@ python3 appstore/asc.py push-metadata [--apply]  # тексты из appstore/me
                                                 # или keywordsAdd/keywordsRemove к тому, что есть, описание;
                                                 # недостающую локаль создаёт по copyFrom (описание, ссылки,
                                                 # What's New; кадры и картинки берёт по screenshotsFrom,
-                                                # если он есть). Без --apply только показывает изменения
+                                                # если он есть); пустую локаль версии, которую ASC
+                                                # заводит вместе с языком, дополняет так же.
+                                                # Без --apply только показывает изменения
 python3 appstore/asc.py custom-pages            # специальные страницы и состояние их версий
 python3 appstore/asc.py push-custom-pages [--submit]
                                                 # создать/обновить страницы из appstore/product-pages.json

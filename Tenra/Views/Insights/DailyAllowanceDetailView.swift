@@ -57,6 +57,18 @@ struct DailyAllowanceDetailView: View {
                 }
                 .screenPadding()
 
+                // Payments in a currency with no rate yet are not set aside: said, not hidden.
+                if !value.missingRates.isEmpty {
+                    InlineStatusText(
+                        message: String(
+                            format: String(localized: "allowance.detail.missingRates"),
+                            value.missingRates.joined(separator: ", ")
+                        ),
+                        type: .warning
+                    )
+                    .screenPadding()
+                }
+
                 if !value.outflows.isEmpty {
                     FormSection(header: String(localized: "allowance.detail.payments")) {
                         ForEach(Array(value.outflows.enumerated()), id: \.offset) { _, outflow in

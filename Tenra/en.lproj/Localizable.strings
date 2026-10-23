@@ -105,12 +105,13 @@
 "home.today.untilMonthEnd" = "A day until the end of the month";
 "home.today.setAside" = "%@ set aside for payments";
 "allowance.detail.how" = "How it's counted";
-"allowance.detail.footer" = "Your everyday accounts now, less the subscriptions, loan payments and planned expenses due before then, split over the days left. Ten counts the same way.";
+"allowance.detail.footer" = "Your cards, cash and deposits marked to count, less the subscriptions, loan payments and planned expenses due before then, split over the days left. Ten counts the same way.";
 "allowance.detail.balance" = "On your accounts now";
 "allowance.detail.setAside" = "Set aside for payments";
 "allowance.detail.free" = "Free to spend";
 "allowance.detail.days" = "Days left";
 "allowance.detail.payments" = "Payments set aside";
+"allowance.detail.missingRates" = "Payments in %@ are not counted: no exchange rate yet.";
 "home.iCloudAsk.title" = "Keep backups in iCloud";
 "home.iCloudAsk.message" = "Your weekly backup is only on this iPhone. In iCloud Drive it survives a new phone or a reinstall.";
 "home.iCloudAsk.action" = "Turn on";
@@ -336,6 +337,8 @@
 "deposit.capitalizationTitle" = "Capitalization";
 "deposit.enableCapitalization" = "Enable Capitalization";
 "deposit.capitalizationHint" = "When capitalization is enabled, interest is added to the principal amount each month";
+"deposit.countsForToday" = "Count in For today";
+"deposit.countsForToday.hint" = "Money you can withdraw any time. For today and Ten count it with your cards.";
 "deposit.new" = "New Deposit";
 "deposit.editTitle" = "Edit Deposit";
 "deposit.interestAccrual.description" = "Interest";

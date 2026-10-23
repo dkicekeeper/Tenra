@@ -105,12 +105,13 @@
 "home.today.untilMonthEnd" = "На день до кінця місяця";
 "home.today.setAside" = "%@ відкладено на платежі";
 "allowance.detail.how" = "Як рахується";
-"allowance.detail.footer" = "Залишок на повсякденних рахунках мінус підписки, платежі за кредитами та заплановані витрати до цієї дати, поділений на дні, що лишилися. Тен рахує так само.";
+"allowance.detail.footer" = "Залишок на картках, готівці та позначених депозитах мінус підписки, платежі за кредитами та заплановані витрати до цієї дати, поділений на дні, що лишилися. Тен рахує так само.";
 "allowance.detail.balance" = "На рахунках зараз";
 "allowance.detail.setAside" = "Відкладено на платежі";
 "allowance.detail.free" = "Можна витратити";
 "allowance.detail.days" = "Залишилось днів";
 "allowance.detail.payments" = "Відкладені платежі";
+"allowance.detail.missingRates" = "Платежі в %@ не враховано: поки немає курсу.";
 "home.iCloudAsk.title" = "Зберігайте копії в iCloud";
 "home.iCloudAsk.message" = "Щотижнева копія зараз лише на цьому iPhone. В iCloud Drive вона переживе новий телефон або перевстановлення.";
 "home.iCloudAsk.action" = "Увімкнути";
@@ -336,6 +337,8 @@
 "deposit.capitalizationTitle" = "Капіталізація";
 "deposit.enableCapitalization" = "Увімкнути капіталізацію";
 "deposit.capitalizationHint" = "Коли капіталізацію ввімкнено, відсотки щомісяця додаються до основної суми";
+"deposit.countsForToday" = "Враховувати в «На сьогодні»";
+"deposit.countsForToday.hint" = "Гроші, які можна зняти будь-коли. «На сьогодні» і Тен рахують їх разом із картками.";
 "deposit.new" = "Новий депозит";
 "deposit.editTitle" = "Редагувати депозит";
 "deposit.interestAccrual.description" = "Відсотки";

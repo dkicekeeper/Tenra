@@ -105,12 +105,13 @@
 "home.today.untilMonthEnd" = "월말까지 하루";
 "home.today.setAside" = "결제용으로 %@ 확보됨";
 "allowance.detail.how" = "계산 방법";
-"allowance.detail.footer" = "일상 계좌의 현재 잔액에서 그날까지의 구독, 대출 상환, 예정된 지출을 빼고 남은 일수로 나눈 금액입니다. 텐도 같은 방식으로 계산합니다.";
+"allowance.detail.footer" = "카드, 현금, 포함하도록 표시한 예금의 잔액에서 그날까지의 구독, 대출 상환, 예정된 지출을 빼고 남은 일수로 나눈 금액입니다. 텐도 같은 방식으로 계산합니다.";
 "allowance.detail.balance" = "현재 계좌 잔액";
 "allowance.detail.setAside" = "결제용으로 확보";
 "allowance.detail.free" = "쓸 수 있는 금액";
 "allowance.detail.days" = "남은 일수";
 "allowance.detail.payments" = "확보한 결제";
+"allowance.detail.missingRates" = "%@ 결제는 포함되지 않았어요. 아직 환율이 없어요.";
 "home.iCloudAsk.title" = "백업을 iCloud에 보관하세요";
 "home.iCloudAsk.message" = "주간 백업이 지금은 이 iPhone에만 있습니다. iCloud Drive에 두면 새 휴대폰이나 재설치 후에도 남습니다.";
 "home.iCloudAsk.action" = "켜기";
@@ -336,6 +337,8 @@
 "deposit.capitalizationTitle" = "이자 복리";
 "deposit.enableCapitalization" = "복리 사용";
 "deposit.capitalizationHint" = "복리를 사용하면 매달 이자가 원금에 더해져요";
+"deposit.countsForToday" = "'오늘의 예산'에 포함";
+"deposit.countsForToday.hint" = "언제든 인출할 수 있는 돈이에요. '오늘의 예산'과 텐이 카드와 함께 계산해요.";
 "deposit.new" = "새 예금";
 "deposit.editTitle" = "예금 편집";
 "deposit.interestAccrual.description" = "이자";

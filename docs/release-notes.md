@@ -43,7 +43,9 @@ New since 1.6 (in the store since 2026-10-19):
   Ten's message once after the first entries when the card was hidden.
 - The founder's notes of 2026-10-23: For today on Analytics (off Home), a link to how it is
   reached; Settings a page of Home's stack (not a sheet) topped by a Tenra Pro hero with one
-  button that opens the paywall (what Pro includes is the RevenueCat paywall's list).
+  button that opens the paywall (what Pro includes is the RevenueCat paywall's list); For today
+  counts a deposit marked "Count in For today" and sets aside payments in other currencies at
+  today's rate (a planned dollar expense on a tenge card was left out).
 
 ## en-US
 

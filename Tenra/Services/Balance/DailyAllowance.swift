@@ -4,9 +4,10 @@
 //
 //  "For today" on Analytics and in the widget (DailyAllowanceLink, the For today widget): how
 //  much can go out a day until the next income, once what is known to go out before it is set
-//  aside. The number is Ten's forecast_balance (FinanceToolkit.forecast: the everyday accounts'
-//  realized balance, less every subscription and recurring payment, loan payment and planned
-//  expense before that day), so the app and the assistant never disagree. Only the horizon is chosen here: the next occurrence of an active
+//  aside. The number is Ten's forecast_balance (FinanceToolkit.forecast: the realized balance of
+//  the accounts that count for today, `Account.countsForToday`, less every subscription and
+//  recurring payment, loan payment and planned expense before that day, each in the base
+//  currency), so the app and the assistant never disagree. Only the horizon is chosen here: the next occurrence of an active
 //  income series within `maxHorizonDays`, else the first day of next month.
 //
 
@@ -27,6 +28,8 @@ enum DailyAllowance {
         var free: Double = 0
         var days: Int = 0
         var outflows: [Outflow] = []
+        /// Currencies with no rate: their payments are not in `outflows` (the breakdown says so).
+        var missingRates: [String] = []
     }
 
     /// A payment set aside before the horizon, in the base currency.
@@ -69,8 +72,7 @@ enum DailyAllowance {
     /// The allowance for today, or nil without an everyday account to spend from.
     @MainActor
     static func value(store: TransactionStore, now: Date = Date()) async -> Value? {
-        let everyday = store.accounts.filter { !$0.isLoan && !$0.isDeposit && $0.includeInBalance }
-        guard !everyday.isEmpty else { return nil }
+        guard store.accounts.contains(where: \.countsForToday) else { return nil }
         let calendar = FastDateParser.calendar
         let incomeCategories = Set(store.categories.filter { $0.type == .income }.map(\.name))
         guard let horizon = horizon(series: store.recurringSeries, incomeCategories: incomeCategories, today: now, calendar: calendar) else {
@@ -92,7 +94,8 @@ enum DailyAllowance {
             days: forecast.days,
             outflows: forecast.outflows.compactMap { outflow in
                 FastDateParser.date(from: outflow.date).map { Outflow(date: $0, label: outflow.label, amount: outflow.amount) }
-            }
+            },
+            missingRates: forecast.missingRates.sorted()
         )
     }
 }

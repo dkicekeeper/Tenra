@@ -105,12 +105,13 @@
 "home.today.untilMonthEnd" = "Ay sonuna kadar günlük";
 "home.today.setAside" = "Ödemeler için %@ ayrıldı";
 "allowance.detail.how" = "Nasıl hesaplanır";
-"allowance.detail.footer" = "Günlük hesaplarındaki para, o tarihe kadarki abonelikler, kredi ödemeleri ve planlanan harcamalar düşülerek kalan günlere bölünür. Ten da aynı şekilde hesaplar.";
+"allowance.detail.footer" = "Kartların, nakit ve işaretlediğin mevduatlar, o tarihe kadarki abonelikler, kredi ödemeleri ve planlanan harcamalar düşülerek kalan günlere bölünür. Ten da aynı şekilde hesaplar.";
 "allowance.detail.balance" = "Şu an hesaplarında";
 "allowance.detail.setAside" = "Ödemeler için ayrılan";
 "allowance.detail.free" = "Harcanabilir";
 "allowance.detail.days" = "Kalan gün";
 "allowance.detail.payments" = "Ayrılan ödemeler";
+"allowance.detail.missingRates" = "%@ cinsinden ödemeler sayılmadı: henüz kur yok.";
 "home.iCloudAsk.title" = "Yedekleri iCloud’da saklayın";
 "home.iCloudAsk.message" = "Haftalık yedeğiniz yalnızca bu iPhone’da. iCloud Drive’da yeni bir telefona veya yeniden yüklemeye dayanır.";
 "home.iCloudAsk.action" = "Aç";
@@ -336,6 +337,8 @@
 "deposit.capitalizationTitle" = "Kapitalizasyon";
 "deposit.enableCapitalization" = "Kapitalizasyonu Aç";
 "deposit.capitalizationHint" = "Kapitalizasyon açıkken faiz her ay anaparaya eklenir";
+"deposit.countsForToday" = "\"Bugün için\"de say";
+"deposit.countsForToday.hint" = "İstediğin zaman çekebileceğin para. \"Bugün için\" ve Ten onu kartlarınla birlikte sayar.";
 "deposit.new" = "Yeni Mevduat";
 "deposit.editTitle" = "Mevduatı Düzenle";
 "deposit.interestAccrual.description" = "Faiz";

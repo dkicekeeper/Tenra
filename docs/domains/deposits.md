@@ -10,7 +10,9 @@ Interest accrual, capitalization, and account → deposit conversion.
   field goes into the JSON with a decode default, no schema change.
 - Fields: `initialPrincipal` (what the deposit starts from, = `Account.initialBalance`), `startDate`,
   `conversionTimestamp` (converted deposits only), `capitalizationEnabled`, `interestRateAnnual` and
-  `interestRateHistory`, `interestPostingDay`, `dayCount`, and the interest state
+  `interestRateHistory`, `interestPostingDay`, `dayCount`, `countsForToday` (the form's "Count in
+  For today": money the person can take out any time joins the cards and cash in "For today" and
+  Ten's forecast, `Account.countsForToday`; off by default), and the interest state
   `interestAccruedForCurrentPeriod`, `lastInterestCalculationDate`, `lastInterestPostingMonth`.
 - **There is no stored principal.** `principalBalance` and `interestAccruedNotCapitalized` are
   decode-only keys: a payload that has only `principalBalance` decodes it as `initialPrincipal`.

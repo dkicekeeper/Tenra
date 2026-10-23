@@ -595,7 +595,7 @@ final class FinanceToolkit: AgentToolExecuting {
 
         let base = store.baseCurrency
         await loadMissingRates(store.accounts.map(\.currency) + store.recurringSeries.map(\.currency))
-        let rates = RateSnapshot()
+        var rates = RateSnapshot()
         var missingRates: Set<String> = []
         func inBase(_ amount: Double, _ currency: String) -> Double? {
             if currency == base { return amount }
@@ -615,7 +615,7 @@ final class FinanceToolkit: AgentToolExecuting {
                 return account
             }
         } else {
-            accounts = store.accounts.filter { !$0.isLoan && !$0.isDeposit && $0.includeInBalance }
+            accounts = store.accounts.filter(\.countsForToday)
         }
         let accountIds = Set(accounts.map(\.id))
         let balances = store.balanceCoordinator.balances
@@ -673,16 +673,35 @@ final class FinanceToolkit: AgentToolExecuting {
         // Planned expenses not tied to a series, off the main actor.
         let snapshot = makeSnapshot()
         let planned = await Task.detached(priority: .userInitiated) {
-            snapshot.transactions.compactMap { transaction -> (String, String, Double, String)? in
+            snapshot.transactions.compactMap { transaction -> (date: String, label: String, amount: Double, currency: String, account: String, converted: Double?)? in
                 guard transaction.type == .expense, transaction.recurringSeriesId == nil,
                       transaction.date > todayKey, transaction.date < untilKey,
                       let account = transaction.accountId, accountIds.contains(account) else { return nil }
                 let label = transaction.description.isEmpty ? transaction.category : transaction.description
-                return (transaction.date, label, transaction.amount, transaction.currency)
+                return (transaction.date, label, transaction.amount, transaction.currency, account, transaction.convertedAmount)
             }
         }.value
-        for (date, label, amount, currency) in planned {
-            if let converted = inBase(amount, currency) { outflows.append(Outflow(date: date, label: label, amount: converted)) }
+        // A planned expense can be in a currency no account or series has (dollars on a tenge
+        // card): its rate is loaded too, else the expense was left out of the forecast.
+        let plannedCurrencies = Set(planned.map(\.currency)).subtracting([base])
+        if !plannedCurrencies.isEmpty {
+            await loadMissingRates(plannedCurrencies)
+            rates = RateSnapshot()
+        }
+        for item in planned {
+            var amount: Double?
+            if item.currency == base {
+                amount = item.amount
+            } else if let direct = rates.convert(item.amount, from: item.currency, to: base) {
+                amount = direct
+            } else if let converted = item.converted, let accountCurrency = accountsById[item.account]?.currency {
+                // No rate for its own currency: what it takes from its account (`convertedAmount`
+                // is in the account's currency), converted from there.
+                amount = inBase(converted, accountCurrency)
+            } else {
+                missingRates.insert(item.currency)
+            }
+            if let amount { outflows.append(Outflow(date: item.date, label: item.label, amount: amount)) }
         }
         outflows.sort { $0.date == $1.date ? $0.label < $1.label : $0.date < $1.date }
 

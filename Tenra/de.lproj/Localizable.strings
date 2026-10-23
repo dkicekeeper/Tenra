@@ -105,12 +105,13 @@
 "home.today.untilMonthEnd" = "Pro Tag bis Monatsende";
 "home.today.setAside" = "%@ für Zahlungen zurückgelegt";
 "allowance.detail.how" = "So wird gerechnet";
-"allowance.detail.footer" = "Ihre Alltagskonten jetzt, abzüglich Abos, Kreditraten und geplanter Ausgaben bis dahin, verteilt auf die verbleibenden Tage. Ten rechnet genauso.";
+"allowance.detail.footer" = "Ihre Karten, Bargeld und markierten Festgelder, abzüglich Abos, Kreditraten und geplanter Ausgaben bis dahin, verteilt auf die verbleibenden Tage. Ten rechnet genauso.";
 "allowance.detail.balance" = "Jetzt auf Ihren Konten";
 "allowance.detail.setAside" = "Für Zahlungen zurückgelegt";
 "allowance.detail.free" = "Frei verfügbar";
 "allowance.detail.days" = "Verbleibende Tage";
 "allowance.detail.payments" = "Zurückgelegte Zahlungen";
+"allowance.detail.missingRates" = "Zahlungen in %@ sind nicht eingerechnet: noch kein Wechselkurs.";
 "home.iCloudAsk.title" = "Backups in iCloud sichern";
 "home.iCloudAsk.message" = "Ihr wöchentliches Backup liegt nur auf diesem iPhone. In iCloud Drive übersteht es ein neues Telefon oder eine Neuinstallation.";
 "home.iCloudAsk.action" = "Einschalten";
@@ -336,6 +337,8 @@
 "deposit.capitalizationTitle" = "Zinskapitalisierung";
 "deposit.enableCapitalization" = "Kapitalisierung aktivieren";
 "deposit.capitalizationHint" = "Bei aktivierter Kapitalisierung werden die Zinsen jeden Monat dem Kapital hinzugefügt";
+"deposit.countsForToday" = "In „Für heute“ einrechnen";
+"deposit.countsForToday.hint" = "Geld, das Sie jederzeit abheben können. „Für heute“ und Ten rechnen es zu Ihren Karten.";
 "deposit.new" = "Neues Sparkonto";
 "deposit.editTitle" = "Sparkonto bearbeiten";
 "deposit.interestAccrual.description" = "Zinsen";

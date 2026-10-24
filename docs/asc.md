@@ -135,7 +135,8 @@ python3 appstore/asc.py push-experiment [--submit | --start]
                                                 # тест страницы из того же файла; --start после одобрения
 python3 appstore/asc.py subscription-prices [--territory KAZ]   # цены подписок в стране, с запланированными
 python3 appstore/asc.py push-price --product tenra.pro.annual --price 7990 [--territory KAZ] [--start YYYY-MM-DD] [--apply]
-                                                # новая цена (точка цены страны) сразу или с даты; текущие
+                                                # новая цена (точка цены страны) с даты, не раньше завтра
+                                                # (сегодня API не принимает; по умолчанию завтра); текущие
                                                 # подписчики платят прежнюю (preserveCurrentPrice)
 python3 appstore/asc.py review-notes --version 1.7 [--apply]   # заметки для App Review из release-notes.md
 python3 appstore/asc.py prepare-review --version 1.7   # черновик отправки на проверку: версия и спецстраницы,

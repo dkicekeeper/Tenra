@@ -51,9 +51,9 @@
                                                     changes included
     python3 appstore/asc.py push-price --product tenra.pro.annual --price 7990 [--territory KAZ]
                                    [--start YYYY-MM-DD] [--apply]
-                                                    a new price (a price point of the territory),
-                                                    at once or from a date; current subscribers
-                                                    keep theirs
+                                                    a new price (a price point of the territory)
+                                                    from a date, tomorrow at the earliest and by
+                                                    default; current subscribers keep theirs
     python3 appstore/asc.py review-notes --version 1.7 [--apply]
                                                     the App Review notes from docs/release-notes.md
     python3 appstore/asc.py prepare-review --version 1.7
@@ -856,12 +856,13 @@ def subscription_prices(app: str, territory: str) -> None:
 
 
 def push_price(app: str, product: str, territory: str, price: str, start: str | None, apply: bool) -> None:
-    """A new price for one subscription in one territory, from `start` (YYYY-MM-DD), today by
-    default: an approved subscription takes a change only with a start date (without one the API
-    reads it as the initial price, which can't be set again). Current subscribers keep what they
+    """A new price for one subscription in one territory, from `start` (YYYY-MM-DD), tomorrow by
+    default: an approved subscription takes a change only with a start date, and only a future one
+    (without one the API reads it as the initial price, which can't be set again; today is
+    refused, the earliest is tomorrow). Current subscribers keep what they
     pay (`preserveCurrentPrice`), so a rise needs no consent. The price must be one of the
     territory's price points. Without `apply` only shows the change."""
-    start = start or date.today().isoformat()
+    start = start or (date.today() + timedelta(days=1)).isoformat()
     item = next((s for s in subscriptions(app) if s["attributes"].get("productId") == product), None)
     if not item:
         sys.exit(f"No subscription {product}.")

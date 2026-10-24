@@ -178,7 +178,14 @@ def request(path: str, accept: str = "application/json", method: str = "GET", bo
             details = error.read().decode(errors="replace")
             try:
                 errors = json.loads(details).get("errors", [])
+                # A review submission item refused "check associated errors" keeps the why in meta.
+                associated = [f"{e.get('code', '')}: {e.get('detail', '')}"
+                              for error_item in errors
+                              for found in ((error_item.get("meta") or {}).get("associatedErrors") or {}).values()
+                              for e in found]
                 details = "; ".join(f"{e.get('title', '')}: {e.get('detail', '')}" for e in errors) or details
+                if associated:
+                    details += " [" + "; ".join(associated) + "]"
             except ValueError:
                 pass
             if error.code >= 500 and method in RETRIED_METHODS and attempt < len(RETRY_DELAYS):
@@ -189,7 +196,7 @@ def request(path: str, accept: str = "application/json", method: str = "GET", bo
             # A DELETE whose earlier attempt went through on the server despite the 5xx.
             if error.code == 404 and method == "DELETE" and attempt > 0:
                 return b""
-            raise ApiError(error.code, f"{method} {path.split('?')[0]}: {details[:600]}") from None
+            raise ApiError(error.code, f"{method} {path.split('?')[0]}: {details[:1500]}") from None
         except (TimeoutError, ConnectionError, urllib.error.URLError) as error:
             # No HTTP status at all: a read timeout or a dropped connection.
             if method in RETRIED_METHODS and attempt < len(RETRY_DELAYS):
@@ -955,6 +962,7 @@ def prepare_review(app: str, version: str) -> None:
         for page_version in versions:
             if page_version["attributes"].get("state") in CPP_EDITABLE:
                 items.append(("appCustomProductPageVersion", page_version["id"]))
+                print(f"  {page['attributes'].get('name')}: version {page_version['id']}", flush=True)
     submit_for_review(app, items, lenient={"appCustomProductPageVersion"}, submit=False)
 
 

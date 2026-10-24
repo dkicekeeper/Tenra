@@ -355,5 +355,6 @@ automation is in Settings > Siri & Shortcuts.
 Nothing about the payment leaves the device. The only network request is a logo lookup by the
 shop's name (never a person's name), as described in the privacy policy.
 
-Tenra Pro features can be tried with a sandbox purchase on the paywall (Settings > Tenra Pro).
+Tenra Pro features can be tried with a sandbox purchase on the paywall: Settings, the
+"Get Tenra Pro" button at the top.
 ```

@@ -133,6 +133,13 @@ python3 appstore/asc.py push-custom-pages [--submit]
                                                 # создать/обновить страницы из appstore/product-pages.json
 python3 appstore/asc.py push-experiment [--submit | --start]
                                                 # тест страницы из того же файла; --start после одобрения
+python3 appstore/asc.py subscription-prices [--territory KAZ]   # цены подписок в стране, с запланированными
+python3 appstore/asc.py push-price --product tenra.pro.annual --price 7990 [--territory KAZ] [--start YYYY-MM-DD] [--apply]
+                                                # новая цена (точка цены страны) сразу или с даты; текущие
+                                                # подписчики платят прежнюю (preserveCurrentPrice)
+python3 appstore/asc.py review-notes --version 1.7 [--apply]   # заметки для App Review из release-notes.md
+python3 appstore/asc.py prepare-review --version 1.7   # черновик отправки на проверку: версия и спецстраницы,
+                                                # не отправляет; отправляет основатель кнопкой в ASC
 python3 appstore/asc.py reviews [--limit 20]    # отзывы с текстом (оценки без текста API не отдаёт)
 python3 appstore/asc.py availability            # в скольких странах доступно, статус DSA в ЕС
 python3 appstore/asc.py crashes [--build 12]    # отчёты о сбоях из TestFlight, без данных тестировщика

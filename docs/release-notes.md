@@ -368,4 +368,6 @@ Tenra Pro features can be tried with a sandbox purchase on the paywall: Settings
    version and all five pages are in it). A page whose
    screenshots App Store Connect is still processing is refused for a few minutes
    (`ASSET_IN_POST_PROCESSING`): run it again. The founder sends the draft: App Store Connect →
-   Tenra → Distribution → the draft submission → Submit for Review.
+   Tenra → Distribution → the draft submission → Submit for Review. **Sent on 2026-10-24**
+   (`review-submissions`: WAITING_FOR_REVIEW); the version is released as soon as it is
+   approved (`AFTER_APPROVAL`).

@@ -856,9 +856,12 @@ def subscription_prices(app: str, territory: str) -> None:
 
 
 def push_price(app: str, product: str, territory: str, price: str, start: str | None, apply: bool) -> None:
-    """A new price for one subscription in one territory, from `start` (YYYY-MM-DD) or at once.
-    Current subscribers keep what they pay (`preserveCurrentPrice`), so a rise needs no consent.
-    The price must be one of the territory's price points. Without `apply` only shows the change."""
+    """A new price for one subscription in one territory, from `start` (YYYY-MM-DD), today by
+    default: an approved subscription takes a change only with a start date (without one the API
+    reads it as the initial price, which can't be set again). Current subscribers keep what they
+    pay (`preserveCurrentPrice`), so a rise needs no consent. The price must be one of the
+    territory's price points. Without `apply` only shows the change."""
+    start = start or date.today().isoformat()
     item = next((s for s in subscriptions(app) if s["attributes"].get("productId") == product), None)
     if not item:
         sys.exit(f"No subscription {product}.")
@@ -871,14 +874,12 @@ def push_price(app: str, product: str, territory: str, price: str, start: str | 
         sys.exit(f"{price} is not a price point in {territory}; the nearest: "
                  + ", ".join(p["attributes"].get("customerPrice") for p in near))
     rows = [[product, territory, start_, now] for start_, now in current_prices(item["id"], territory)]
-    rows.append([product, territory, start or "now", f"{point['attributes'].get('customerPrice')} (new)"])
+    rows.append([product, territory, start, f"{point['attributes'].get('customerPrice')} (new)"])
     table("Subscription price" + ("" if apply else " (dry run: --apply sets it)"),
           ["Product", "Territory", "From", "Price"], rows)
     if not apply:
         return
-    attributes = {"preserveCurrentPrice": True}
-    if start:
-        attributes["startDate"] = start
+    attributes = {"preserveCurrentPrice": True, "startDate": start}
     send("POST", "/v1/subscriptionPrices", {"data": {
         "type": "subscriptionPrices",
         "attributes": attributes,
@@ -888,7 +889,7 @@ def push_price(app: str, product: str, territory: str, price: str, start: str | 
             "territory": {"data": {"type": "territories", "id": territory}},
         },
     }})
-    print(f"{product} in {territory}: {price} from {start or 'now'}; current subscribers keep their price.")
+    print(f"{product} in {territory}: {price} from {start}; current subscribers keep their price.")
 
 
 # Review notes and the draft submission ------------------------------------------------------------

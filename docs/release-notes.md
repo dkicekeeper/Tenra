@@ -360,3 +360,12 @@ shop's name (never a person's name), as described in the privacy policy.
 Tenra Pro features can be tried with a sandbox purchase on the paywall: Settings, the
 "Get Tenra Pro" button at the top.
 ```
+
+7. **Custom product pages**: the five pages of `appstore/product-pages.json` (Auto-capture new)
+   pushed to all 14 localizations on 2026-10-24 (`push-custom-pages`, not submitted on their own).
+8. **One submission**: `asc.py prepare-review --version 1.7` puts version 1.7 and the custom
+   page versions into a draft review submission, never submitted (done on 2026-10-24: the
+   version and all five pages are in it). A page whose
+   screenshots App Store Connect is still processing is refused for a few minutes
+   (`ASSET_IN_POST_PROCESSING`): run it again. The founder sends the draft: App Store Connect →
+   Tenra → Distribution → the draft submission → Submit for Review.

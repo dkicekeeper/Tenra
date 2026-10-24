@@ -1404,7 +1404,13 @@ def push_creatives(app: str, version: str | None, locales: list[str] | None, pag
                         continue
                     image_id = library_image(library, existing, path)
                     used.add(image_id)
-                    result = place("appCustomProductPageLocalization", item["id"], placement_type, image_id)
+                    try:
+                        result = place("appCustomProductPageLocalization", item["id"], placement_type, image_id)
+                    except ApiError as error:
+                        # A version in the draft keeps its art but takes no new placement.
+                        if error.code != 409 or "not permitted" not in str(error):
+                            raise
+                        result = "not placed: the version is in the draft submission"
                     rows.append([page["name"], locale, stem, result])
                     print(f"{page['name']} {locale} {stem}: {result}", flush=True)
             ready.append(("appCustomProductPageVersion", page_version["id"]))

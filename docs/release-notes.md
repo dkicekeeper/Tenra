@@ -329,11 +329,12 @@ Tenra 1.7의 새로운 기능:
    - the bank notification automation with Kaspi and Freedom (iOS 27,
      [plan-notification-capture.md](plan-notification-capture.md) §11): announce it in What's New
      and the App Review notes only if it works.
+   The founder checked build 56 on 2026-10-24.
 2. **The store build** is the TestFlight build from GitHub that passed step 1: built with Xcode 27,
-   it has the iOS 27 code paths ([asc.md](asc.md)).
-3. **What's New**: this file. Version 1.7 exists in App Store Connect since 2026-10-23 with build 55
-   and this What's New; after step 1, run `prepare-version` again with the checked build (it
-   updates What's New and selects the build).
+   it has the iOS 27 code paths ([asc.md](asc.md)). Build 56 is selected for version 1.7
+   (`prepare-version --build 56`, 2026-10-24).
+3. **What's New**: this file, in version 1.7 since 2026-10-23 (`prepare-version`; en-GB took ru's
+   with `push-metadata`). Bank notifications are not announced.
 4. **Screenshots** of the main page from 1.7: done on 2026-10-23. The 14 sets (13 locales and kk
    for en-GB) were shot in two runs of seven, about 70 minutes each, approved by the founder and
    uploaded to version 1.7 in all 14 localizations (`push-version-screenshots`), en-GB with kk's.
@@ -342,7 +343,8 @@ Tenra 1.7의 새로운 기능:
 5. **App Privacy**: unchanged. Logo lookups by a merchant's name (logo.dev, Apple Pay merchants
    only, never a sole proprietor) send only a company name, as the privacy policy already says
    (`docs/public/privacy-policy.html`, Logos).
-6. **App Review notes** (App Store Connect → 1.7 → App Review Information → Notes), in English:
+6. **App Review notes** (App Store Connect → 1.7 → App Review Information → Notes), in English,
+   set from this block by `asc.py review-notes --version 1.7 --apply` (done on 2026-10-24):
 
 ```
 Apple Pay capture (new in 1.7) uses the Shortcuts "Wallet" personal automation, which fires only
@@ -355,5 +357,17 @@ automation is in Settings > Siri & Shortcuts.
 Nothing about the payment leaves the device. The only network request is a logo lookup by the
 shop's name (never a person's name), as described in the privacy policy.
 
-Tenra Pro features can be tried with a sandbox purchase on the paywall (Settings > Tenra Pro).
+Tenra Pro features can be tried with a sandbox purchase on the paywall: Settings, the
+"Get Tenra Pro" button at the top.
 ```
+
+7. **Custom product pages**: the five pages of `appstore/product-pages.json` (Auto-capture new)
+   pushed to all 14 localizations on 2026-10-24 (`push-custom-pages`, not submitted on their own).
+8. **One submission**: `asc.py prepare-review --version 1.7` puts version 1.7 and the custom
+   page versions into a draft review submission, never submitted (done on 2026-10-24: the
+   version and all five pages are in it). A page whose
+   screenshots App Store Connect is still processing is refused for a few minutes
+   (`ASSET_IN_POST_PROCESSING`): run it again. The founder sends the draft: App Store Connect →
+   Tenra → Distribution → the draft submission → Submit for Review. **Sent on 2026-10-24**
+   (`review-submissions`: WAITING_FOR_REVIEW); the version is released as soon as it is
+   approved (`AFTER_APPROVAL`).

@@ -46,6 +46,19 @@
                                                     screenshots/art/<locale>/ on the version (the
                                                     live one by default) and, with --pages, on the
                                                     custom pages; --submit sends them for review
+    python3 appstore/asc.py subscription-prices [--territory KAZ]
+                                                    each subscription's price there, scheduled
+                                                    changes included
+    python3 appstore/asc.py push-price --product tenra.pro.annual --price 7990 [--territory KAZ]
+                                   [--start YYYY-MM-DD] [--apply]
+                                                    a new price (a price point of the territory)
+                                                    from a date, tomorrow at the earliest and by
+                                                    default; current subscribers keep theirs
+    python3 appstore/asc.py review-notes --version 1.7 [--apply]
+                                                    the App Review notes from docs/release-notes.md
+    python3 appstore/asc.py prepare-review --version 1.7
+                                                    a draft review submission with the version and
+                                                    the custom pages in preparation, NOT submitted
     python3 appstore/asc.py reviews [--limit 20]    latest customer reviews
     python3 appstore/asc.py availability            storefronts, EU trader (DSA) status
     python3 appstore/asc.py crashes [--build N]     TestFlight crash reports (no tester details)
@@ -165,7 +178,14 @@ def request(path: str, accept: str = "application/json", method: str = "GET", bo
             details = error.read().decode(errors="replace")
             try:
                 errors = json.loads(details).get("errors", [])
+                # A review submission item refused "check associated errors" keeps the why in meta.
+                associated = [f"{e.get('code', '')}: {e.get('detail', '')}"
+                              for error_item in errors
+                              for found in ((error_item.get("meta") or {}).get("associatedErrors") or {}).values()
+                              for e in found]
                 details = "; ".join(f"{e.get('title', '')}: {e.get('detail', '')}" for e in errors) or details
+                if associated:
+                    details += " [" + "; ".join(associated) + "]"
             except ValueError:
                 pass
             if error.code >= 500 and method in RETRIED_METHODS and attempt < len(RETRY_DELAYS):
@@ -176,7 +196,7 @@ def request(path: str, accept: str = "application/json", method: str = "GET", bo
             # A DELETE whose earlier attempt went through on the server despite the 5xx.
             if error.code == 404 and method == "DELETE" and attempt > 0:
                 return b""
-            raise ApiError(error.code, f"{method} {path.split('?')[0]}: {details[:600]}") from None
+            raise ApiError(error.code, f"{method} {path.split('?')[0]}: {details[:1500]}") from None
         except (TimeoutError, ConnectionError, urllib.error.URLError) as error:
             # No HTTP status at all: a read timeout or a dropped connection.
             if method in RETRIED_METHODS and attempt < len(RETRY_DELAYS):
@@ -409,6 +429,8 @@ ROOT = Path(__file__).resolve().parent.parent
 PAGES = Path(__file__).resolve().parent / "product-pages.json"
 IPHONE = "APP_IPHONE_67"   # the 6.9" set (1320 x 2868), the only size Tenra uploads
 CPP_EDITABLE = {"PREPARE_FOR_SUBMISSION", "REJECTED"}
+# A page version in a draft review submission (prepare-review) is not sent yet: art still goes on it.
+CPP_IN_DRAFT = CPP_EDITABLE | {"READY_FOR_REVIEW"}
 
 
 def page_config() -> dict:
@@ -528,16 +550,19 @@ def link_keywords(app: str, localization_id: str, locale: str, wanted: list[str]
     return f"{len(ids)} linked" + (f"; not app keywords: {', '.join(unknown)}" if unknown else "")
 
 
-def submit_for_review(app: str, items: list[tuple[str, str]], lenient: set[str] = frozenset()) -> None:
+def submit_for_review(app: str, items: list[tuple[str, str]], lenient: set[str] = frozenset(),
+                      submit: bool = True) -> None:
     """Add (relationship, id) items to the open review submission, or a new one, and submit it.
-    An item of a `lenient` relationship that App Store Connect refuses is reported, not fatal."""
+    An item of a `lenient` relationship that App Store Connect refuses is reported, not fatal.
+    With `submit` False the submission stays a draft: the founder sends it from App Store Connect."""
     open_ones, _ = get_all("/v1/reviewSubmissions",
                            {"filter[app]": app, "filter[platform]": "IOS", "filter[state]": "READY_FOR_REVIEW"})
     submission = open_ones[0] if open_ones else send("POST", "/v1/reviewSubmissions", {"data": {
         "type": "reviewSubmissions", "attributes": {"platform": "IOS"},
         "relationships": {"app": {"data": {"type": "apps", "id": app}}},
     }})["data"]
-    types = {"appCustomProductPageVersion": "appCustomProductPageVersions",
+    types = {"appStoreVersion": "appStoreVersions",
+             "appCustomProductPageVersion": "appCustomProductPageVersions",
              "appStoreVersionExperimentV2": "appStoreVersionExperiments",
              "appAssetLibraryImage": "appAssetLibraryImages"}
     added = 0
@@ -558,6 +583,10 @@ def submit_for_review(app: str, items: list[tuple[str, str]], lenient: set[str] 
                 raise
     if not added:
         sys.exit("App Store Connect took none of the items: nothing submitted.")
+    if not submit:
+        print(f"Draft review submission: {added} of {len(items)} item(s) in it, not submitted. "
+              "Send it from App Store Connect (Distribution, the draft submission, Submit for Review).")
+        return
     send("PATCH", f"/v1/reviewSubmissions/{submission['id']}", {"data": {
         "type": "reviewSubmissions", "id": submission["id"], "attributes": {"submitted": True},
     }})
@@ -799,6 +828,144 @@ def age_rating(app: str, apply: bool) -> None:
         "type": "ageRatingDeclarations", "id": editable, "attributes": AGE_RATING,
     }})
     print("Age rating answers set on the version in preparation.")
+
+
+# Subscription prices ------------------------------------------------------------------------------
+
+def subscriptions(app: str) -> list[dict]:
+    """Every subscription of the app's subscription groups."""
+    groups, _ = get_all(f"/v1/apps/{app}/subscriptionGroups", {"limit": 50})
+    found = []
+    for group in groups:
+        items, _ = get_all(f"/v1/subscriptionGroups/{group['id']}/subscriptions", {"limit": 50})
+        found += items
+    return found
+
+
+def current_prices(subscription_id: str, territory: str) -> list[tuple[str, str]]:
+    """(start date, customer price) of a subscription in a territory, scheduled ones included."""
+    prices, included = get_all(f"/v1/subscriptions/{subscription_id}/prices", {
+        "filter[territory]": territory, "include": "subscriptionPricePoint", "limit": 50})
+    points = {item["id"]: item["attributes"].get("customerPrice") for item in included
+              if item["type"] == "subscriptionPricePoints"}
+    rows = []
+    for price in prices:
+        point = ((price.get("relationships") or {}).get("subscriptionPricePoint") or {}).get("data") or {}
+        rows.append((price["attributes"].get("startDate") or "now", points.get(point.get("id"), "?")))
+    return sorted(rows)
+
+
+def subscription_prices(app: str, territory: str) -> None:
+    """Each subscription's price in a territory, with any change already scheduled. Read only."""
+    rows = []
+    for item in subscriptions(app):
+        for start, price in current_prices(item["id"], territory):
+            rows.append([item["attributes"].get("productId"), item["attributes"].get("state"), start, price])
+    table(f"Subscription prices in {territory}", ["Product", "State", "From", "Price"], rows)
+
+
+def push_price(app: str, product: str, territory: str, price: str, start: str | None, apply: bool) -> None:
+    """A new price for one subscription in one territory, from `start` (YYYY-MM-DD), tomorrow by
+    default: an approved subscription takes a change only with a start date, and only a future one
+    (without one the API reads it as the initial price, which can't be set again; today is
+    refused, the earliest is tomorrow). Current subscribers keep what they
+    pay (`preserveCurrentPrice`), so a rise needs no consent. The price must be one of the
+    territory's price points. Without `apply` only shows the change."""
+    start = start or (date.today() + timedelta(days=1)).isoformat()
+    item = next((s for s in subscriptions(app) if s["attributes"].get("productId") == product), None)
+    if not item:
+        sys.exit(f"No subscription {product}.")
+    points, _ = get_all(f"/v1/subscriptions/{item['id']}/pricePoints",
+                        {"filter[territory]": territory, "limit": 200}, pages=20)
+    wanted = float(price)
+    point = next((p for p in points if float(p["attributes"].get("customerPrice") or -1) == wanted), None)
+    if not point:
+        near = sorted(points, key=lambda p: abs(float(p["attributes"].get("customerPrice") or 0) - wanted))[:4]
+        sys.exit(f"{price} is not a price point in {territory}; the nearest: "
+                 + ", ".join(p["attributes"].get("customerPrice") for p in near))
+    rows = [[product, territory, start_, now] for start_, now in current_prices(item["id"], territory)]
+    rows.append([product, territory, start, f"{point['attributes'].get('customerPrice')} (new)"])
+    table("Subscription price" + ("" if apply else " (dry run: --apply sets it)"),
+          ["Product", "Territory", "From", "Price"], rows)
+    if not apply:
+        return
+    attributes = {"preserveCurrentPrice": True, "startDate": start}
+    send("POST", "/v1/subscriptionPrices", {"data": {
+        "type": "subscriptionPrices",
+        "attributes": attributes,
+        "relationships": {
+            "subscription": {"data": {"type": "subscriptions", "id": item["id"]}},
+            "subscriptionPricePoint": {"data": {"type": "subscriptionPricePoints", "id": point["id"]}},
+            "territory": {"data": {"type": "territories", "id": territory}},
+        },
+    }})
+    print(f"{product} in {territory}: {price} from {start}; current subscribers keep their price.")
+
+
+# Review notes and the draft submission ------------------------------------------------------------
+
+def review_notes_text(path: Path = NOTES) -> str:
+    """The App Review notes of the submission checklist: the fenced block after its heading."""
+    text = path.read_text(encoding="utf-8")
+    match = re.search(r"\*\*App Review notes\*\*.*?```\n(.*?)```", text, re.S)
+    if not match:
+        sys.exit(f"No App Review notes block in {path.name}.")
+    return match.group(1).strip()
+
+
+def review_notes(app: str, version: str, apply: bool) -> None:
+    """The version's App Review notes from docs/release-notes.md (contact details are left as
+    they are and never printed). Without `apply` only shows them."""
+    record = store_version(app, version)
+    notes = review_notes_text()
+    print(notes)
+    if not apply:
+        print("\n(dry run: --apply sets these notes)")
+        return
+    try:
+        detail = get(f"/v1/appStoreVersions/{record['id']}/appStoreReviewDetail")["data"]
+    except ApiError as error:
+        if error.code != 404:
+            raise
+        detail = None
+    if detail:
+        send("PATCH", f"/v1/appStoreReviewDetails/{detail['id']}", {"data": {
+            "type": "appStoreReviewDetails", "id": detail["id"], "attributes": {"notes": notes}}})
+        print(f"App Review notes set on {version}.")
+        return
+    # A version without review details yet: the contact details of the latest version that has them.
+    found, _ = get_all(f"/v1/apps/{app}/appStoreVersions", {"filter[platform]": "IOS", "limit": 20})
+    contact = {}
+    for other in sorted(found, key=lambda v: v["attributes"].get("createdDate") or "", reverse=True):
+        if other["id"] == record["id"]:
+            continue
+        try:
+            attrs = get(f"/v1/appStoreVersions/{other['id']}/appStoreReviewDetail")["data"]["attributes"]
+        except ApiError:
+            continue
+        contact = {k: attrs[k] for k in ("contactFirstName", "contactLastName", "contactPhone", "contactEmail",
+                                          "demoAccountRequired") if attrs.get(k) is not None}
+        break
+    send("POST", "/v1/appStoreReviewDetails", {"data": {
+        "type": "appStoreReviewDetails", "attributes": {**contact, "notes": notes},
+        "relationships": {"appStoreVersion": {"data": {"type": "appStoreVersions", "id": record["id"]}}}}})
+    print(f"App Review notes set on {version} (contact details from the previous version).")
+
+
+def prepare_review(app: str, version: str) -> None:
+    """A draft review submission with the version and every custom page version in preparation,
+    not submitted: App Store Connect checks each item as it is added (a missing build, screenshot
+    or text is refused here), and the founder sends the whole release with one button."""
+    record = store_version(app, version)
+    items = [("appStoreVersion", record["id"])]
+    pages, _ = get_all(f"/v1/apps/{app}/appCustomProductPages", {"limit": 50})
+    for page in pages:
+        versions, _ = get_all(f"/v1/appCustomProductPages/{page['id']}/appCustomProductPageVersions", {"limit": 10})
+        for page_version in versions:
+            if page_version["attributes"].get("state") in CPP_EDITABLE:
+                items.append(("appCustomProductPageVersion", page_version["id"]))
+                print(f"  {page['attributes'].get('name')}: version {page_version['id']}", flush=True)
+    submit_for_review(app, items, lenient={"appCustomProductPageVersion"}, submit=False)
 
 
 # Version screenshots -----------------------------------------------------------------------------
@@ -1220,7 +1387,9 @@ def push_creatives(app: str, version: str | None, locales: list[str] | None, pag
             if not record:
                 rows.append([page["name"], "", "", "no page: run push-custom-pages first"])
                 continue
-            page_version = editable_cpp_version(record["id"])
+            versions, _ = get_all(f"/v1/appCustomProductPages/{record['id']}/appCustomProductPageVersions", {"limit": 10})
+            page_version = next((v for v in versions if v["attributes"].get("state") in CPP_IN_DRAFT), None) \
+                or editable_cpp_version(record["id"])
             page_locs, _ = get_all(
                 f"/v1/appCustomProductPageVersions/{page_version['id']}/appCustomProductPageLocalizations", {"limit": 50})
             for item in page_locs:
@@ -1235,7 +1404,13 @@ def push_creatives(app: str, version: str | None, locales: list[str] | None, pag
                         continue
                     image_id = library_image(library, existing, path)
                     used.add(image_id)
-                    result = place("appCustomProductPageLocalization", item["id"], placement_type, image_id)
+                    try:
+                        result = place("appCustomProductPageLocalization", item["id"], placement_type, image_id)
+                    except ApiError as error:
+                        # A version in the draft keeps its art but takes no new placement.
+                        if error.code != 409 or "not permitted" not in str(error):
+                            raise
+                        result = "not placed: the version is in the draft submission"
                     rows.append([page["name"], locale, stem, result])
                     print(f"{page['name']} {locale} {stem}: {result}", flush=True)
             ready.append(("appCustomProductPageVersion", page_version["id"]))
@@ -1433,6 +1608,23 @@ def main(argv: list[str]) -> None:
         locales = option("--locale")
         push_creatives(app, option("--version"), locales.split(",") if locales else None,
                        "--pages" in args, "--submit" in args)
+    elif command == "subscription-prices":
+        subscription_prices(app, option("--territory", "KAZ"))
+    elif command == "push-price":
+        product, price = option("--product"), option("--price")
+        if not product or not price:
+            sys.exit("push-price needs --product ID --price N [--territory KAZ] [--start YYYY-MM-DD]")
+        push_price(app, product, option("--territory", "KAZ"), price, option("--start"), "--apply" in args)
+    elif command == "review-notes":
+        version = option("--version")
+        if not version:
+            sys.exit("review-notes needs --version X.Y")
+        review_notes(app, version, "--apply" in args)
+    elif command == "prepare-review":
+        version = option("--version")
+        if not version:
+            sys.exit("prepare-review needs --version X.Y")
+        prepare_review(app, version)
     elif command == "reviews":
         reviews(app, int(option("--limit", 20)))
     elif command == "availability":

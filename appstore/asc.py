@@ -429,6 +429,8 @@ ROOT = Path(__file__).resolve().parent.parent
 PAGES = Path(__file__).resolve().parent / "product-pages.json"
 IPHONE = "APP_IPHONE_67"   # the 6.9" set (1320 x 2868), the only size Tenra uploads
 CPP_EDITABLE = {"PREPARE_FOR_SUBMISSION", "REJECTED"}
+# A page version in a draft review submission (prepare-review) is not sent yet: art still goes on it.
+CPP_IN_DRAFT = CPP_EDITABLE | {"READY_FOR_REVIEW"}
 
 
 def page_config() -> dict:
@@ -1385,7 +1387,9 @@ def push_creatives(app: str, version: str | None, locales: list[str] | None, pag
             if not record:
                 rows.append([page["name"], "", "", "no page: run push-custom-pages first"])
                 continue
-            page_version = editable_cpp_version(record["id"])
+            versions, _ = get_all(f"/v1/appCustomProductPages/{record['id']}/appCustomProductPageVersions", {"limit": 10})
+            page_version = next((v for v in versions if v["attributes"].get("state") in CPP_IN_DRAFT), None) \
+                or editable_cpp_version(record["id"])
             page_locs, _ = get_all(
                 f"/v1/appCustomProductPageVersions/{page_version['id']}/appCustomProductPageLocalizations", {"limit": 50})
             for item in page_locs:

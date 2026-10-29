@@ -28,15 +28,18 @@ struct NetWorthTests {
         calendar.date(from: DateComponents(year: year, month: month, day: day))!
     }
 
-    /// 24M in 2018, worth 70M.
-    private static let flat = Asset(
-        id: "flat", name: "Flat", kind: .apartment, currency: "KZT",
-        purchaseDate: day(2018, 10, 29), purchasePrice: 24_000_000,
-        valuations: [AssetValuation(id: "v", date: day(2026, 10, 16), value: 70_000_000)]
-    )
+    /// 24M in 2018, worth 70M. Computed: a static stored property is initialized off the main
+    /// actor, where `day` cannot be called.
+    private static var flat: Asset {
+        Asset(
+            id: "flat", name: "Flat", kind: .apartment, currency: "KZT",
+            purchaseDate: day(2018, 10, 29), purchasePrice: 24_000_000,
+            valuations: [AssetValuation(id: "v", date: day(2026, 10, 16), value: 70_000_000)]
+        )
+    }
 
-    private static func summary(_ asset: Asset = flat, today: Date = day(2026, 10, 29)) -> AssetValuationMath.Summary {
-        AssetValuationMath.summary(of: asset, today: today, calendar: calendar)
+    private static func summary() -> AssetValuationMath.Summary {
+        AssetValuationMath.summary(of: flat, today: day(2026, 10, 29), calendar: calendar)
     }
 
     // MARK: - Rent and upkeep

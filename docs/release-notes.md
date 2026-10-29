@@ -165,7 +165,8 @@ Tenra 1.7.1의 새로운 기능:
 ## Submission checklist (1.7.1)
 
 1. **CI green** on the branch (build and TenraTests on Xcode 27), then a TestFlight build from
-   `main` (Actions → TestFlight, [asc.md](asc.md)).
+   `main` (Actions → TestFlight, [asc.md](asc.md)). Done 2026-10-29: merged in PR #104, build 57
+   (from the branch at the merged commit) is in TestFlight.
 2. **Device check** of that build on the iOS 27 iPhone:
    - a goal following an account: move money into the account past the target, return to the
      app, open the goal: "Reached" shows today's date (no need to have had the goal open);

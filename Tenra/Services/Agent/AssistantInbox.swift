@@ -237,7 +237,7 @@ extension AssistantNotices {
         }
     }
 
-    /// Auto-capture not set up (docs/plan-ads-readiness.md B1): once, after the first entries,
+    /// Auto-capture not set up (docs/archive/plans/plan-ads-readiness.md B1): once, after the first entries,
     /// for someone who hid Home's auto-capture card (while the card shows, it asks).
     static func setupNudge(entries: Int, capturing: Bool, cardHidden: Bool, now: Date) -> AssistantNotice? {
         guard entries >= setupAfterEntries, !capturing, cardHidden else { return nil }

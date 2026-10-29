@@ -278,7 +278,7 @@
     },
     {
       "name": "Auto-capture",
-      "comment": "For Apple Search Ads (docs/plan-ads-readiness.md A6 item 5). No keywords yet: a page links only words already in the locale's keyword field, and the auto-capture words (A6 item 2) are not there; add them here once they are. Subscriptions frame 09 stands in for the \"Looks like a subscription\" screen, which has no frame.",
+      "comment": "For Apple Search Ads (docs/archive/plans/plan-ads-readiness.md A6 item 5). No keywords yet: a page links only words already in the locale's keyword field, and the auto-capture words (A6 item 2) are not there; add them here once they are. Subscriptions frame 09 stands in for the \"Looks like a subscription\" screen, which has no frame.",
       "searchFrame": "autocapture",
       "frames": ["autocapture", "merchant", "subscriptions", "home"],
       "locales": {

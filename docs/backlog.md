@@ -34,9 +34,18 @@ with the commit of every fix, are in
   `recalculateBalances(for:)` with the touched accounts would do.
 
 - **Product audit of 2026-10-22** ([archive/product-audit-2026-10-22.md](archive/product-audit-2026-10-22.md)):
-  its items are in [plan-ads-readiness.md](plan-ads-readiness.md); all that went into 1.7 (the
-  Pro page, activation, iCloud backups by default, auto-capture counters, widgets, Kazakh, money
-  for today) shipped on 2026-10-24, the ASA launch and the rest are open there.
+  its plan ([archive/plans/plan-ads-readiness.md](archive/plans/plan-ads-readiness.md)) landed:
+  1.7 shipped on 2026-10-24, the ads in Kazakhstan run since 2026-10-29. What is left: the
+  Anthropic limit and the retention metrics ([promotion-plan.md](promotion-plan.md) §7), bank
+  notifications part two ([plan-notification-capture.md](plan-notification-capture.md)), the
+  server before traffic (below). Next, by signal: net worth ([plan-assets.md](plan-assets.md),
+  1.8 in December), Ten on Apple's models when Anthropic spend nears the limit or RU and BY are
+  wanted ([plan-assistant-ios27.md](plan-assistant-ios27.md)), investments once the ads show
+  conversion, starting with a manual portfolio and crypto ([plan-investments.md](plan-investments.md)),
+  the US after 10+ ratings there.
+- **Ten and Kazakhstan's personal data law** (the founder, decision D7 of the ads plan): a short
+  legal opinion on Ten under the Law on Personal Data (art. 12-2) and the AI law before the ad
+  budget grows; it does not block $10 a day.
 
 Found by the design-system audit of 2026-10-15 (everything since 1.5):
 - **Logic in `Views/Assistant`:** `AppStreak`, `AssistantChatter` and `AssistantDaydreams`
@@ -61,8 +70,8 @@ Found by the release audit of 2026-10-15 (details and file references:
 - **Races:** fetch-or-insert without a uniqueness constraint (threads, goals, debts, facts); a
   load overwriting an `add`; FastPath vs `reset()`; a chat deleted during its save comes back.
 - **Copy:** mic and speech permission texts don't mention Ten.
-- **Server before traffic** (sizing in [plan-ads-readiness.md](plan-ads-readiness.md) A5, the
-  rest C5): Durable Objects counters, a Rate Limiting binding, separate free and Pro caps, a
+- **Server before traffic** (sizing in [domains/assistant.md](domains/assistant.md) §11; the
+  daily cap of 1 200 calls is live since 2026-10-29): Durable Objects counters, a Rate Limiting binding, separate free and Pro caps, a
   RevenueCat timeout, no count for a failed upstream call, abort on disconnect, a `protocol`
   range and an app build header.
 

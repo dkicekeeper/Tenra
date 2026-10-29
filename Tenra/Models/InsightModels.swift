@@ -142,10 +142,10 @@ enum InsightType: String, Hashable {
     case accountDormancy        // accounts idle 30+ days with non-zero balance
     case subscriptionPriceIncrease // latest charge higher than the previous one (audit 2026-07)
     case largeTransaction          // big non-recurring expense vs 90d average (audit 2026-07)
+    case spendingByDay             // "By day": the weekdays of everyday spending, their categories, patterns
     case topMerchant               // where the current bucket's money went, by merchant
     case averageCheckGrowth        // a merchant's average check, 90 days against the 90 before
     case dailyAllowance            // "For today": a day's money until the next income (DailyAllowance)
-    case spendingByDay             // "By day": the weekdays of everyday spending, their categories, patterns
 }
 
 // MARK: - Insight Metric

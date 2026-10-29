@@ -587,14 +587,14 @@ nonisolated final class InsightsService {
     /// These are computed once on the first granularity and reused for all subsequent ones.
     private static let sharedInsightIDs: Set<String> = Set([
         "spending_spike",
+        "spending_by_day",
         // "subscription_growth" — now granularity-dependent (lookback scales)
         // "balance_runway" — merged into emergency_fund (audit 2026-07)
         "accountDormancy",
         "emergency_fund",
         "spending_forecast",
         "year_over_year",
-        "check_growth",
-        "spending_by_day"
+        "check_growth"
     ]).union(budgetInsightIDs)
 
     /// Ids `generateBudgetInsights` emits. Shared: each budget's spent covers the budget's

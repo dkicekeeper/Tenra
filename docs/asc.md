@@ -209,18 +209,18 @@ Vendor number для отчётов о продажах — 94171379 (`ASC_VENDO
    `defaultOrder` в `scripts/screenshot_captions.json`, у tr свой `order`, не больше 10; с 1.7
    первым идёт кадр автозаписи 20);
    специальные страницы: `push-custom-pages --submit` (пятая, «Автозапись», с кадрами 20, 21, 09 и
-   01; пока 20-21 не собраны во всех локалях, команда останавливается на «Missing screenshots» для
+   01; если 20-21 собраны не во всех локалях, команда останавливается на «Missing screenshots» для
    всех страниц, как и `push-version-screenshots`); тест страницы: `push-experiment --submit`,
    потом после одобрения `push-experiment --start`. Повторный запуск не перезаливает
    неизменённые скриншоты.
    en-GB берёт кадры из `screenshots/final/kk/`: `screenshotsFrom: kk` в `appstore/metadata.json`
    важнее `copyFrom: ru` (тот даёт тексты), папку выбирает `screenshot_source` в `asc.py`.
    `push-version-screenshots` и `push-creatives` идут по локализациям версии и доходят до kk
-   только через en-GB, `push-experiment` папку kk пропускает (`screenshots_only`). Пока kk не
+   только через en-GB, `push-experiment` папку kk пропускает (`screenshots_only`). Если kk не
    собран, `push-version-screenshots` останавливается на en-GB («Missing screenshots»: остальные
    локали отправить через `--locale`). На специальных страницах en-GB с текстами ru, ключами из
    своего поля и кадрами kk: `push-custom-pages` добавляет его, когда страница уже есть, а отказ
-   App Store Connect (en-GB появится в приложении с 1.7) пишет строкой в таблицу и идёт дальше;
+   App Store Connect (en-GB в приложении есть с 1.7) пишет строкой в таблицу и идёт дальше;
    без кадров kk команда тоже останавливается на «Missing screenshots».
 4. **Шапка и кадр для поиска (iOS 27):** `python3 scripts/compose_store_art.py [локали]
    [--preview <папка>]` собирает в `screenshots/art/<локаль>/` шапку `header.png` (3840×1646:

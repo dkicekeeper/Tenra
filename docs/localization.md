@@ -14,7 +14,7 @@ is in [archive/localization-2026-07/](archive/localization-2026-07/).
   competitors have it and it is a system language in iOS 27). Each `Tenra/<locale>.lproj/` holds `Localizable.strings`, `Localizable.stringsdict`
   (plurals), `InfoPlist.strings` (permission prompts) and `AppShortcuts.strings` (Siri phrases).
 - **On the App Store: 13 storefront locales**: de-DE, en-US, es-ES, es-MX, fr-CA, fr-FR, it, ja,
-  ko, pt-BR, ru, tr, uk. The app's es and fr cover both of their storefronts. With 1.7, en-GB
+  ko, pt-BR, ru, tr, uk. The app's es and fr cover both of their storefronts. Since 1.7, en-GB
   too, for search in Kazakhstan (decision D9, [plan-ads-readiness.md](plan-ads-readiness.md) A6):
   the Russian texts and the Kazakh screenshots, since App Store Connect has no Kazakh; the kk
   screenshot set exists only for it ([asc.md](asc.md) «Скриншоты»).

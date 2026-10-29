@@ -93,8 +93,8 @@ Bank and brand logos render through the provider chain with `IconSource.brandSer
 
 A transaction row shows its merchant's logo instead of the category icon (`TransactionCard`,
 after a subscription's and a loan's logo; the category stays the row's title), behind Settings →
-General → "Merchant logos" (`MerchantLogoStore.enabledKey`, on by default). Plan:
-[plan-auto-capture.md](../plan-auto-capture.md) §5.
+General → "Merchant logos" (`MerchantLogoStore.enabledKey`, on by default). Archived plan:
+[archive/plans/plan-auto-capture.md](../archive/plans/plan-auto-capture.md) §5.
 
 - `MerchantName.displayName` (`Services/Categories/`): the clean name from a bank's or Wallet's
   text ("MAGNUM CASH&CARRY 123" → "Magnum Cash&Carry"): store numbers, processor prefixes

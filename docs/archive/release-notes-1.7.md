@@ -2,8 +2,8 @@
 
 Version 1.7, drafted 2026-10-20 from PR #80 (`claude/auto-capture`, in `main` since 2026-10-21),
 updated 2026-10-21 with the new Settings and DesignKit 8.0 (PRs #84-#88, TestFlight build 49),
-before the device check of [plan-auto-capture.md](plan-auto-capture.md) §8: change it with what
-that check changes. `prepare-version` (Actions → App Store Connect, [asc.md](asc.md)) pastes each
+before the device check of [plan-auto-capture.md](plans/plan-auto-capture.md) §8: change it with what
+that check changes. `prepare-version` (Actions → App Store Connect, [asc.md](../asc.md)) pastes each
 block into App Store Connect → Tenra → 1.7 → the locale → "What's New in This Version". No em
 dashes (user rule). Names of screens as the app shows them in each locale (`settings.siri.header`,
 `walletReview.title`, `subscriptions.candidates.title`). When 1.7 ships, move this file to
@@ -28,10 +28,10 @@ New since 1.6 (in the store since 2026-10-19):
 - The cloud builds compile with Xcode 27, so 1.7 is the first store build with the iOS 27 UI.
 - In the build since 2026-10-22, not in What's New until the device check says it works: "Log a
   bank notification" for the iOS 27 notification automation (any bank's expenses and incomes,
-  [plan-notification-capture.md](plan-notification-capture.md)), its guide in Settings with
+  [plan-notification-capture.md](../plan-notification-capture.md)), its guide in Settings with
   "Check a notification", and transfers between the person's own cards in two banks recorded as
   one transfer.
-- From [plan-ads-readiness.md](plan-ads-readiness.md) (2026-10-22, the 1.8 scope shipped with
+- From [plan-ads-readiness.md](../plan-ads-readiness.md) (2026-10-22, the 1.8 scope shipped with
   1.7): the widgets (For today on the Home Screen and the Lock Screen, the medium one with four
   categories; Log an expense in Control Center; `tenra://` links), iCloud backups on for new
   installs and restore from the welcome screen, Kazakh (the 12th locale; App Store Connect has
@@ -309,7 +309,7 @@ Tenra 1.7의 새로운 기능:
 
 ## Submission checklist (1.7)
 
-0. **Ready for ads:** P0 of [plan-ads-readiness.md](plan-ads-readiness.md) §2.2 has landed (ASA
+0. **Ready for ads:** P0 of [plan-ads-readiness.md](../plan-ads-readiness.md) §2.2 has landed (ASA
    attribution, the Pro page names Ten, onboarding sells auto-capture, iCloud backups by default
    and restore on the welcome screen, Ten's capacity, the store page), P1 §2.3 as far as it fits;
    What's New below gets the lines for what the user sees, and the device check covers the new
@@ -318,7 +318,7 @@ Tenra 1.7의 새로운 기능:
    widgets, Kazakh, the screens from the approved mockups and the founder's notes of 2026-10-23)
    on the iOS 27 iPhone, then
    fix what it finds:
-   - the Wallet automation ([plan-auto-capture.md](plan-auto-capture.md) §8 and the "not yet
+   - the Wallet automation ([plan-auto-capture.md](plans/plan-auto-capture.md) §8 and the "not yet
      checked" list of PR #80), set up by the new step-by-step guide;
    - **the update from 1.6** (CoreData v15 → v16, lightweight): install the store's 1.6 with data,
      then the TestFlight build over it; debts and subscriptions keep their order, nothing lost;
@@ -327,11 +327,11 @@ Tenra 1.7의 새로운 기능:
      in light and dark, the paywall from its button, For today on Analytics and its breakdown,
      the Wallet section;
    - the bank notification automation with Kaspi and Freedom (iOS 27,
-     [plan-notification-capture.md](plan-notification-capture.md) §11): announce it in What's New
+     [plan-notification-capture.md](../plan-notification-capture.md) §11): announce it in What's New
      and the App Review notes only if it works.
    The founder checked build 56 on 2026-10-24.
 2. **The store build** is the TestFlight build from GitHub that passed step 1: built with Xcode 27,
-   it has the iOS 27 code paths ([asc.md](asc.md)). Build 56 is selected for version 1.7
+   it has the iOS 27 code paths ([asc.md](../asc.md)). Build 56 is selected for version 1.7
    (`prepare-version --build 56`, 2026-10-24).
 3. **What's New**: this file, in version 1.7 since 2026-10-23 (`prepare-version`; en-GB took ru's
    with `push-metadata`). Bank notifications are not announced.
@@ -339,7 +339,7 @@ Tenra 1.7의 새로운 기능:
    for en-GB) were shot in two runs of seven, about 70 minutes each, approved by the founder and
    uploaded to version 1.7 in all 14 localizations (`push-version-screenshots`), en-GB with kk's.
    The store texts are applied (`push-metadata --apply`). Re-shoot only what changes:
-   `frames: home` and the other partial modes ([asc.md](asc.md)).
+   `frames: home` and the other partial modes ([asc.md](../asc.md)).
 5. **App Privacy**: unchanged. Logo lookups by a merchant's name (logo.dev, Apple Pay merchants
    only, never a sole proprietor) send only a company name, as the privacy policy already says
    (`docs/public/privacy-policy.html`, Logos).

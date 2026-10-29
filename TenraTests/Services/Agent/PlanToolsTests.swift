@@ -30,7 +30,13 @@ struct PlanToolsTests {
         let debts: DebtStore
     }
 
-    private static func make(isPro: Bool = true) -> Setup {
+    /// Tenra Pro that can end between a draft and its Save.
+    private final class ProFlag {
+        var isPro = true
+    }
+
+    private static func make(isPro: Bool = true, pro: ProFlag? = nil) -> Setup {
+        let checkPro: () -> Bool = { pro?.isPro ?? isPro }
         let defaults = UserDefaults(suiteName: "tests.\(UUID().uuidString)")!
         let repo = UserDefaultsRepository(userDefaults: defaults)
         let store = TransactionStore(
@@ -48,7 +54,7 @@ struct PlanToolsTests {
         }
         let debts = DebtStore(repository: nil)
         let book = AgentDraftBook(writer: AgentDraftBook.Writer(
-            save: { try await AgentDraftBook.Writer.savePlan($0, goals: goals, debts: debts) },
+            save: { try await AgentDraftBook.Writer.savePlan($0, goals: goals, debts: debts, isPro: checkPro) },
             undo: { await AgentDraftBook.Writer.undoPlan($0, goals: goals, debts: debts) }
         ))
         let toolkit = FinanceToolkit(
@@ -56,7 +62,7 @@ struct PlanToolsTests {
             drafts: book,
             goals: goals,
             debts: debts,
-            isPro: { isPro },
+            isPro: checkPro,
             learned: VoiceLearningStore(defaults: defaults),
             now: { now }
         )
@@ -222,6 +228,42 @@ struct PlanToolsTests {
         await setup.book.undo(draftId)
         #expect(setup.debts.debt(id: "d_askhat")?.isSettled == false)
         #expect(setup.debts.debt(id: "d_askhat")?.repayments.isEmpty == true)
+    }
+
+    @Test func aSecondRepaymentDraftCannotOverRepay() async throws {
+        let setup = Self.make()
+        await setup.debts.add(PersonalDebt(id: "d_askhat", direction: .owedToMe, person: "Асхат", amount: 50_000, currency: "KZT"))
+        // Both fit in what is left when Ten drafts them.
+        let first = await setup.toolkit.execute(name: "draft_debt_repayment", input: ["debt": "d_askhat", "amount": 30_000, "date": .null, "note": .null])
+        let second = await setup.toolkit.execute(name: "draft_debt_repayment", input: ["debt": "d_askhat", "amount": 30_000, "date": .null, "note": .null])
+        let firstId = try #require(first.value?["draft_id"]?.stringValue)
+        let secondId = try #require(second.value?["draft_id"]?.stringValue)
+
+        await setup.book.save(firstId)
+        await setup.book.save(secondId)
+
+        // The second no longer fits after the first: nothing written, the debt stays open.
+        #expect(setup.book.states[secondId] == .failed)
+        let debt = try #require(setup.debts.debt(id: "d_askhat"))
+        #expect(debt.repayments.count == 1)
+        #expect(debt.remaining == 20_000)
+        #expect(debt.isSettled == false)
+    }
+
+    @Test func aDebtDraftNeedsProStillAtSave() async throws {
+        let pro = ProFlag()
+        let setup = Self.make(pro: pro)
+        let output = await setup.toolkit.execute(name: "draft_debt", input: [
+            "direction": "owed_to_me", "person": "Ерлан", "amount": 30_000, "currency": .null, "date": .null, "due_date": .null, "note": .null,
+        ])
+        let draftId = try #require(output.value?["draft_id"]?.stringValue, "\(output.error ?? "")")
+
+        // Pro ends before the card's Save.
+        pro.isPro = false
+        await setup.book.save(draftId)
+
+        #expect(setup.book.states[draftId] == .failed)
+        #expect(setup.debts.debts.isEmpty)
     }
 
     @Test func describeNamesWhatAPlanDraftWrites() {

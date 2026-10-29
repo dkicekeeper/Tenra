@@ -1,6 +1,6 @@
 /* System permission prompts (Info.plist usage descriptions). */
 "NSCameraUsageDescription" = "Tenra, kâğıt fişleri taramak için kamerayı kullanır, böylece onları elle yazmanız gerekmez.";
-"NSMicrophoneUsageDescription" = "Tenra, harcamaları sesle ekleyebilmeniz için mikrofonu kullanır.";
-"NSSpeechRecognitionUsageDescription" = "Tenra söylediklerinizi işlemlere dönüştürür. Konuşma Apple tarafından işlenir.";
+"NSMicrophoneUsageDescription" = "Tenra, harcamaları sesle ekleyebilmeniz ve Ten ile konuşabilmeniz için mikrofonu kullanır.";
+"NSSpeechRecognitionUsageDescription" = "Tenra söylediklerinizi işlemlere ve Ten'e giden mesajlara dönüştürür. Konuşma Apple tarafından işlenir.";
 "NSDocumentPickerUsageDescription" = "Tenra, içe aktarmak için seçtiğiniz banka ekstrelerini okur.";
 "NSFaceIDUsageDescription" = "Tenra, uygulama kilidi açıkken finanslarınızı korumak için Face ID kullanır.";

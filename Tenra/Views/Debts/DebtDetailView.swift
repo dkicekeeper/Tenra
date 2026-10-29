@@ -130,8 +130,11 @@ struct DebtDetailView: View {
                 appSettings: appSettings,
                 suggestedAmount: debt.remaining
             ) { amount, date, note in
+                // Never more than what is left, as a receipt's repayment: the rest is not this debt.
+                let repaid = min(amount, debtStore.debt(id: debt.id)?.remaining ?? debt.remaining)
+                guard repaid > 0 else { return }
                 Task {
-                    await debtStore.addRepayment(DebtRepayment(amount: amount, date: date, note: note), to: debt.id)
+                    await debtStore.addRepayment(DebtRepayment(amount: repaid, date: date, note: note), to: debt.id)
                     if debtStore.debt(id: debt.id)?.isSettled == true {
                         celebrations += 1
                     }

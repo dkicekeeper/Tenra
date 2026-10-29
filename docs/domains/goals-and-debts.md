@@ -50,9 +50,18 @@ people and has no account.
   today on a goal not reached is overdue. Every screen (and Ten) uses this, never its own maths.
 - **Reached** is noted once: `GoalStore.refreshReached` sets `reachedAt` when the saved amount
   first reaches the target (the detail screen bursts confetti on `true`) and clears it if the
-  goal falls back below.
+  goal falls back below. `refreshAllReached` does it for every goal after the goals load and
+  whenever the app comes to the front (`MainTabView`), so a goal its linked account carried
+  over the target keeps its date without its screen being open.
+- **Freshness.** The goal list and the goal screen read `TransactionStore.currencyRatesVersion`
+  (a goal in another currency converts at the cached rates) and keep `today` in `@State`,
+  moved by `UIApplication.significantTimeChangeNotification`: months left, what to put aside
+  and overdue follow a new day.
 - **Settling.** A repayment that covers what is left settles the debt on its date; deleting that
-  repayment opens it again. "Settle" by hand (returned outside the app, or the rest forgiven)
+  repayment opens it again. A repayment is never more than what is left: the debt screen's
+  "Repay" saves at most the rest, as a receipt does, and Ten's draft is checked again at Save.
+  A due date is never before the debt's date (the picker starts there; Save moves an earlier
+  one up to it). "Settle" by hand (returned outside the app, or the rest forgiven)
   and "Reopen" are the person's own; lowering the amount to what already came back settles it.
 - **A receipt repays a debt.** A bank receipt shared to Tenra names who the money went to; when
   exactly one open "I owe" debt has that person (`DebtRecipientMatcher`: the same first name, and
@@ -104,7 +113,10 @@ Navigation goes through `FinancesDestination` (`.goals`, `.goalDetail(id)`, `.de
   from `already_saved`), `draft_goal_contribution` (refused for a goal with an account: the
   answer points to a transfer), `draft_debt` (refused without Tenra Pro: the answer points to
   `draft_fact`), `draft_debt_repayment` (no amount is all that is left; more than left is
-  refused; settles the debt on Save).
+  refused; settles the debt on Save). `savePlan` checks again at Save: a debt still needs Pro
+  (`AgentDraftError.needsPro`), and a repayment must still fit in what is left
+  (`.overRepayment`: two drafts for one debt, or a repayment added by hand since); the card
+  then shows the draft as failed. Pinned by `PlanToolsTests`.
 - **Ten writes first** (`AssistantInbox`): a debt due tomorrow (`debt:<id>:<day>`) and a goal
   behind its schedule (`goal:<id>:<month>`: a deadline, not reached, a month or more old, the
   saved share a fifth or more below the share of time gone). Posted after the stores load and

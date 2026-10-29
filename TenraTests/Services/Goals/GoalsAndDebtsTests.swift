@@ -131,6 +131,28 @@ struct GoalsAndDebtsTests {
         #expect(store.goal(id: "g")?.reachedAt == nil)
     }
 
+    @Test func aLinkedBalanceReachesAGoalWithoutItsScreen() async {
+        let store = GoalStore(repository: nil)
+        var balance = 400.0
+        store.accountBalance = { _ in GoalStore.AccountBalance(amount: balance, currency: "KZT") }
+        await store.add(SavingsGoal(id: "linked", name: "Car", targetAmount: 500, currency: "KZT", linkedAccountId: "acc"))
+        await store.add(SavingsGoal(id: "manual", name: "Phone", targetAmount: 100, currency: "KZT"))
+
+        await store.refreshAllReached()
+        #expect(store.goal(id: "linked")?.reachedAt == nil)
+
+        // The account grows over the target while no goal screen is open.
+        balance = 650
+        await store.refreshAllReached()
+        #expect(store.goal(id: "linked")?.reachedAt != nil)
+        #expect(store.goal(id: "manual")?.reachedAt == nil)
+
+        // And falls back below it.
+        balance = 100
+        await store.refreshAllReached()
+        #expect(store.goal(id: "linked")?.reachedAt == nil)
+    }
+
     // MARK: - DebtStore
 
     @Test func aRepaymentThatCoversTheRestSettlesTheDebt() async {

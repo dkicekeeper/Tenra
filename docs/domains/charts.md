@@ -17,7 +17,7 @@ maps Tenra's model onto DesignKit's generic `ChartPoint` / `ChartSeries`:
   current year), `chartTitle` = `granularity.bannerLabel(for: key)` (banner title), `chartDate` =
   `periodStart` (the first future period gets the "Today" marker), `chartIsPartial` = the period has
   not ended (never for `.allTime`): its bar fades, its line is dashed and the banner says "so far"
-  (DesignKit 8.2.0).
+  (DesignKit 8.3.0).
 - **`PeriodChartSeries`** (`spending`, `income`, `avgDailyExpenses`, `cashFlow`, `wealth`):
   `value(for:)` (what the series plots) and `chart` (the `ChartSeries`: id, the localized name
   VoiceOver reads when several series share a chart, colouring, baseline, line width, which way is

@@ -227,7 +227,7 @@ struct CategoryDetailView: View {
         static let forecast = "forecast"
     }
 
-    /// The last 12 months as bars (DesignKit 8.2.0): this month fading towards its forecast,
+    /// The last 12 months as bars (DesignKit 8.3.0): this month fading towards its forecast,
     /// the same month a year ago behind each bar, a monthly budget as a line that turns the
     /// bars past it orange. The person's chart options (`ChartOptionsHost`) add the average and
     /// the highs and lows, or hide the forecast and the year ago. None until a month has money.

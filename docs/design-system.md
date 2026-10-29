@@ -145,7 +145,7 @@ what is still unused and where it could go):
   dated today or earlier (`TransactionAddModal.balanceAfter`).
 - `SpentBudgetText`: the category screen's budget row.
 - `.sparkleBurst`: money put towards a goal (`GoalDetailView`); reaching it celebrates instead.
-- DesignKit 8.2.0's charts: `.chartDisplayOptions` once on `MainTabView` (`ChartOptionsHost`, the
+- DesignKit 8.3.0's charts: `.chartDisplayOptions` once on `MainTabView` (`ChartOptionsHost`, the
   person's options in a menu by every `ChartSwitcher`'s zoom), `chartIsPartial` on the current
   period, a year ago and the spending forecast (`PeriodChartSeries.chart(in:)`), the category
   screen's 12 months with its budget line, and "By day" (`SpendingByDaySection`):

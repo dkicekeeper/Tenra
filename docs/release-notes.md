@@ -1,14 +1,14 @@
 # Tenra 1.8: What's New (ASC, 13 storefront locales)
 
-Version 1.8, drafted 2026-10-29 from branch `claude/jolly-hopper-in3dwi` (DesignKit 8.2.0's charts and
-the "By day" insight; it needs DesignKit 8.2.0 released, DesignKit PR #91). Add the lines of every
+Version 1.8, drafted 2026-10-29 from branch `claude/jolly-hopper-in3dwi` (DesignKit 8.3.0's charts and
+the "By day" insight; it needs DesignKit 8.3.0 released, DesignKit PR #91). Add the lines of every
 other change that ships in 1.8. `prepare-version` (Actions → App Store Connect, [asc.md](asc.md))
 pastes each block into App Store Connect → Tenra → 1.8 → the locale → "What's New in This
 Version". No em dashes (user rule). Names of screens as the app shows them in each locale
 (`insights.byDay.title`). When 1.8 ships, move this file to `archive/release-notes-1.8.md`.
 
 New since 1.7 (in the store since 2026-10-24):
-- DesignKit 8.2.0's charts: the current period selected in the middle of the window, marked as
+- DesignKit 8.3.0's charts: the current period selected in the middle of the window, marked as
   not over ("so far"), with the spending forecast and the same period a year ago; the banner
   names the series and gives the change from the period before (green the better way); a long
   press and a drag sum up a stretch; the axis always labels its periods.
@@ -138,7 +138,7 @@ Tenra 1.8의 새로운 기능:
 
 ## Submission checklist (1.8)
 
-1. **DesignKit 8.2.0** released and Tenra's pin on it (the DesignKit update workflow bumps `main`).
+1. **DesignKit 8.3.0** released and Tenra's pin on it (the DesignKit update workflow bumps `main`).
 2. **Device check** of the TestFlight build with these changes, in light and dark, Russian and
    English: the charts on Analytics (the current period in the middle, "so far", the forecast and
    a year ago, the options menu and a ruler the chart scrolls under), a category's 12 months with

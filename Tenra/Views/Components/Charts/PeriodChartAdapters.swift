@@ -10,7 +10,7 @@
 //
 //  - `PeriodDataPoint: ChartPoint` — axis label per granularity ("ЯНВ", "W07", "Q1"),
 //    banner title (`granularity.bannerLabel`), period start for the Today marker, the
-//    current period as not over (DesignKit 8.2.0: a fading bar, a dashed line, "so far")
+//    current period as not over (DesignKit 8.3.0: a fading bar, a dashed line, "so far")
 //  - `PeriodChartSeries` → `ChartSeries<PeriodDataPoint>` (value, colouring, baseline,
 //    which way is better, what a picked stretch sums up to); over a dataset it adds the same
 //    period a year back and, for spending, where the current period is heading

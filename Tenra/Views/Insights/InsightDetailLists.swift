@@ -44,6 +44,8 @@ private struct InsightDetailListCard<Rows: View>: View {
 /// Category rows with optional deep-dive drill-down. Generic over the
 /// destination (mirrors InsightDetailView — no AnyView type erasure).
 struct InsightCategoryBreakdownList<Destination: View>: View {
+    /// A header above the card ("By day": the picked weekday's categories); none by default.
+    var title: String? = nil
     let items: [CategoryBreakdownItem]
     let currency: String
     /// Period key of the page the user is viewing (paged breakdown);
@@ -52,7 +54,7 @@ struct InsightCategoryBreakdownList<Destination: View>: View {
     let onCategoryTap: ((CategoryBreakdownItem, String?) -> Destination)?
 
     var body: some View {
-        InsightDetailListCard {
+        InsightDetailListCard(title: title) {
             ForEach(items) { item in
                 row(item)
             }
@@ -69,6 +71,29 @@ struct InsightCategoryBreakdownList<Destination: View>: View {
             .buttonStyle(.plain)
         } else {
             CategoryBreakdownRow(item: item, currency: currency)
+        }
+    }
+}
+
+// MARK: - By day: what stands out
+
+/// "By day"'s patterns: an average per day said against what it is compared with, with a
+/// category's symbol on its colour, or a symbol in the accent for the weekends and the month.
+struct InsightWeekdayPatternList: View {
+    let items: [WeekdayPatternItem]
+    let currency: String
+
+    var body: some View {
+        InsightDetailListCard(title: String(localized: "insights.byDay.patterns")) {
+            ForEach(items) { item in
+                AmountRow(
+                    item.title,
+                    subtitle: item.subtitle,
+                    leading: .tinted(item.icon, item.tint),
+                    value: .amount(item.amount, caption: String(localized: "insights.perDay")),
+                    currency: currency
+                )
+            }
         }
     }
 }

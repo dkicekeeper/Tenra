@@ -61,6 +61,7 @@ struct TenraApp: App {
                                 .environment(coordinator)
                         } else {
                             MainTabView()
+                                .chartOptionsHost()
                                 .environment(timeFilterManager)
                                 .environment(coordinator)
                                 .environment(coordinator.transactionStore)

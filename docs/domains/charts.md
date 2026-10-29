@@ -15,11 +15,25 @@ maps Tenra's model onto DesignKit's generic `ChartPoint` / `ChartSeries`:
 - **`PeriodDataPoint: ChartPoint`**: `chartLabel` = `label` (unique category-axis key),
   `chartAxisLabel` = `PeriodAxisLabel.compact` ("ЯНВ", "W07", "Q1", with a `'25` suffix outside the
   current year), `chartTitle` = `granularity.bannerLabel(for: key)` (banner title), `chartDate` =
-  `periodStart` (the first future period gets the "Today" marker).
-- **`PeriodChartSeries`** (`spending`, `income`, `avgDailyExpenses`, `cashFlow`, `wealth`) has two
-  members: `value(for:)` (what the series plots) and `chart` (the `ChartSeries`: id, the localized name
-  VoiceOver reads when several series share a chart, colouring, baseline, line width). A new case needs
-  an arm in both; the switches are exhaustive.
+  `periodStart` (the first future period gets the "Today" marker), `chartIsPartial` = the period has
+  not ended (never for `.allTime`): its bar fades, its line is dashed and the banner says "so far"
+  (DesignKit 8.2.0).
+- **`PeriodChartSeries`** (`spending`, `income`, `avgDailyExpenses`, `cashFlow`, `wealth`):
+  `value(for:)` (what the series plots) and `chart` (the `ChartSeries`: id, the localized name
+  VoiceOver reads when several series share a chart, colouring, baseline, line width, which way is
+  better (spending and the daily average lower, the rest higher: the banner's change and the record),
+  what a long-press stretch sums up to (a total; the last value for wealth and the daily average)).
+  A new case needs an arm in each switch; they are exhaustive.
+- **`chart(in: points)`** is the series over its dataset (`PeriodChartHistory`), what the call-site
+  inits pass: **a year ago** (the period that held this period's start a year earlier, weeks,
+  months and quarters only) and, for spending, **the forecast** of the current period: so far plus
+  the rest of it at the average of the last three finished periods. The `spending_forecast` insight
+  also adds the subscriptions still due this month, so the two can differ by those.
+- **Chart options** (`ChartOptionsHost`, `.chartOptionsHost()` on `MainTabView`): DesignKit's
+  `ChartDisplayOptions` in `@AppStorage("charts.displayOptions")` (default: forecast and a year ago)
+  handed to every chart through `.chartDisplayOptions`. Each `ChartSwitcher` shows them in a menu by
+  its zoom: the average line, highs and lows, the forecast, a year ago, a ruler the chart scrolls
+  under. A change applies to every chart of the app, standalone `BarChart`s included.
 - **Call-site inits** on `LineChart`, `BarChart`, `ChartSwitcher`, `HeroSparkline` and `Sparkline` take
   `PeriodDataPoint`s, `PeriodChartSeries` and the `granularity:` / `currency:` parameters. An empty
   `currency` formats banner and VoiceOver values compactly ("75K"). `MiniSparkline` is a typealias of
@@ -35,6 +49,15 @@ Call sites:
   net flow.
 - `InsightDetailView.chartSection` (`.periodTrend`): `ChartSwitcher` with the series matching the
   insight, default style `.line`.
+- `MerchantDetailView.monthlyChart` and `CategoryDetailView.monthlyChart`: the last 12 months as a
+  `BarChart` of `ChartValuePoint`s (`PeriodAxisLabel.month`), this month as not over. The category's
+  (`CategoryMonthHistory`, off the main actor, 24 months for the year ago) adds the same month a year
+  ago, this month's forecast for an expense category and a monthly budget as a line the bars past it
+  turn orange at.
+- `AssistantReplyView`'s timeline: this month or week as not over.
+- `SpendingByDaySection` ("By day"): `CalendarHeatmap` of the window's days and a `BarChart` of the
+  weekdays with the average line, opening on the busiest (`selection:`), which picks the categories
+  listed under it.
 
 Scrollable charts bleed to the screen edges: no horizontal padding on the chart's parent, padding goes on
 the neighbouring header and list.
@@ -72,6 +95,7 @@ generators with ready-to-draw values) in a 120×60 pt slot, with DesignKit's Can
 | `.ring` | `ProgressRing` | none |
 | `.budgetBars` | up to 3 `LinearProgressBar`s | none |
 | `.donut` | `MiniDonut` | none |
+| `.weekdayBars` | `MiniBars` (the busiest weekday in colour, initials under the bars) | none: `SpendingByDaySection` |
 
 - Visual grammar: solid fill = fact, translucent or dashed = forecast, grey = comparison base, tick =
   norm or target.
@@ -89,5 +113,5 @@ generators with ready-to-draw values) in a 120×60 pt slot, with DesignKit's Can
 
 `InsightDetailView.heroChartSection` renders the hero for the same `cardVisual` payload (table above).
 Every hero gets `entranceDelay: heroEntranceDelay` (0.5 s), so its entrance animation starts after the
-zoom navigation transition settles; at 0 the hero jumps when the push completes. `.ring`, `.budgetBars`
-and `.donut` have no hero: their detail screens already render full-size sections.
+zoom navigation transition settles; at 0 the hero jumps when the push completes. `.ring`, `.budgetBars`,
+`.donut` and `.weekdayBars` have no hero: their detail screens already render full-size sections.

@@ -59,7 +59,7 @@ struct InsightsCardView<BottomChart: View>: View {
             return !items.isEmpty
         case .periodTrend(let points):
             return !points.isEmpty
-        case .recurringList, .accountComparison, .wealthBreakdown, .formulaBreakdown, .dailyAllowance, nil:
+        case .recurringList, .accountComparison, .wealthBreakdown, .formulaBreakdown, .dailyAllowance, .weekdayPattern, nil:
             return false
         }
     }
@@ -170,6 +170,8 @@ struct InsightsCardView<BottomChart: View>: View {
             )
         case .proportionBar(let segments):
             MiniProportionBar(segments: segments)
+        case .weekdayBars(let values, let highlighted, let labels):
+            MiniBars(values: values, highlighted: highlighted, color: AppColors.accent, labels: labels)
         }
     }
 
@@ -209,7 +211,7 @@ struct InsightsCardView<BottomChart: View>: View {
         case .formulaBreakdown:
             // No mini chart for formula breakdown — the hero metric is already in the card header
             EmptyView()
-        case .dailyAllowance:
+        case .dailyAllowance, .weekdayPattern:
             EmptyView()
         case nil:
             EmptyView()

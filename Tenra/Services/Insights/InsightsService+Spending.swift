@@ -4,7 +4,7 @@
 //
 //  Top spending category, top merchant, period-over-period spending change,
 //  average daily spending, spending spike detection, category trend, a merchant's
-//  growing average check.
+//  growing average check, spending by day of the week.
 //
 
 import Foundation
@@ -1066,5 +1066,249 @@ extension InsightsService {
                 markExtremes: false
             )
         )
+    }
+
+    // MARK: - By day
+
+    /// Weeks "By day" reads: enough of each weekday for an average, recent enough to be a habit.
+    nonisolated static let byDayWeeks = 16
+    /// Everyday expenses its window needs, and the days of history.
+    nonisolated static let byDayMinimumExpenses = 20
+    nonisolated static let byDayMinimumDays = 28
+    /// A one-off at least this many times the window's average expense is not a habit of its
+    /// weekday (a laptop on a Tuesday); the same bar as `large_tx_`.
+    nonisolated static let byDayOutlierMultiplier = 4.0
+
+    /// "By day" (the owner's request, 2026-10): on which weekdays the everyday spending
+    /// happens, in which categories, and what stands out. Everyday = realized `.expense`
+    /// transactions that are not a recurring charge (rent, subscriptions; loan payments are not
+    /// `.expense`) and not a one-off at least 4× the window's average expense. The last 16
+    /// weeks up to today, from the first transaction when the history is shorter; a weekday's
+    /// average = its total ÷ how many of it the window had. The same for every granularity
+    /// (shared). Card `.weekdayBars`, detail `.weekdayPattern`.
+    nonisolated func generateSpendingByDay(
+        baseCurrency: String,
+        transactions: [Transaction],
+        categories: [CustomCategory],
+        firstTransactionDate: Date?,
+        txDateMap: [String: Date]? = nil,
+        now: Date = Date()
+    ) -> Insight? {
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: now)
+        guard let windowStart = calendar.date(byAdding: .day, value: -(Self.byDayWeeks * 7 - 1), to: today) else { return nil }
+        let start = max(windowStart, firstTransactionDate.map { calendar.startOfDay(for: $0) } ?? windowStart)
+        guard let span = calendar.dateComponents([.day], from: start, to: today).day,
+              span + 1 >= Self.byDayMinimumDays else { return nil }
+
+        // The window's everyday expenses.
+        var expenses: [(day: Date, category: String, amount: Double)] = []
+        for tx in transactions where tx.type == .expense && tx.recurringSeriesId == nil {
+            guard let date = txDateMap?[tx.date] ?? FastDateParser.date(from: tx.date),
+                  LedgerPolicyRule.isRealized(date) else { continue }
+            let day = calendar.startOfDay(for: date)
+            guard day >= start, day <= today else { continue }
+            expenses.append((day, InsightsService.categoryKey(for: tx), resolveAmount(tx, baseCurrency: baseCurrency)))
+        }
+        guard expenses.count >= Self.byDayMinimumExpenses else { return nil }
+        let averageExpense = expenses.reduce(0) { $0 + $1.amount } / Double(expenses.count)
+        let everyday = expenses.filter { $0.amount < averageExpense * Self.byDayOutlierMultiplier }
+
+        // Index 1...7 = `Calendar` weekday; index 0 unused.
+        var days: [Date: Double] = [:]
+        var weekdayTotal = [Double](repeating: 0, count: 8)
+        var weekdayCategory = [[String: Double]](repeating: [:], count: 8)
+        var weekdayCategoryCount = [[String: Int]](repeating: [:], count: 8)
+        var categoryTotal: [String: Double] = [:]
+        var thirdTotal = [Double](repeating: 0, count: 3)
+        for expense in everyday {
+            days[expense.day, default: 0] += expense.amount
+            let weekday = calendar.component(.weekday, from: expense.day)
+            weekdayTotal[weekday] += expense.amount
+            thirdTotal[Self.monthThird(of: expense.day, calendar: calendar)] += expense.amount
+            guard !expense.category.isEmpty else { continue }
+            weekdayCategory[weekday][expense.category, default: 0] += expense.amount
+            weekdayCategoryCount[weekday][expense.category, default: 0] += 1
+            categoryTotal[expense.category, default: 0] += expense.amount
+        }
+        let total = weekdayTotal.reduce(0, +)
+        guard total > 0 else { return nil }
+
+        // How many of each weekday, and of each third of the month, the window had.
+        var weekdayDays = [Int](repeating: 0, count: 8)
+        var thirdDays = [Int](repeating: 0, count: 3)
+        var day = start
+        while day <= today {
+            weekdayDays[calendar.component(.weekday, from: day)] += 1
+            thirdDays[Self.monthThird(of: day, calendar: calendar)] += 1
+            guard let next = calendar.date(byAdding: .day, value: 1, to: day) else { break }
+            day = next
+        }
+
+        var categoryByName: [String: CustomCategory] = [:]
+        for category in categories { categoryByName[category.name] = category }
+        func style(of key: String) -> (icon: IconSource?, color: Color) {
+            let category = categoryByName[key]
+            let synthetic = InsightsService.syntheticCategoryStyle(for: key)
+            return (category?.iconSource ?? synthetic?.icon,
+                    category.map { Color(hex: $0.colorHex) } ?? synthetic?.color ?? AppColors.accent)
+        }
+
+        let order = (0..<7).map { (calendar.firstWeekday - 1 + $0) % 7 + 1 }
+        let weekdays: [WeekdaySpending] = order.map { weekday in
+            let count = Double(max(weekdayDays[weekday], 1))
+            let dayTotal = weekdayTotal[weekday]
+            let items = weekdayCategory[weekday]
+                .sorted { $0.value != $1.value ? $0.value > $1.value : $0.key < $1.key }
+                .prefix(5)
+                .map { key, amount -> CategoryBreakdownItem in
+                    let look = style(of: key)
+                    return CategoryBreakdownItem(
+                        id: key, categoryName: key, amount: amount / count,
+                        percentage: dayTotal > 0 ? amount / dayTotal * 100 : 0,
+                        color: look.color, iconSource: look.icon, subcategories: []
+                    )
+                }
+            return WeekdaySpending(
+                id: weekday,
+                name: calendar.standaloneWeekdaySymbols[weekday - 1].capitalizedFirstLetter,
+                shortName: calendar.shortStandaloneWeekdaySymbols[weekday - 1],
+                onPhrase: Self.onWeekdayPhrase(weekday),
+                average: dayTotal / count,
+                categories: Array(items)
+            )
+        }
+        guard let busiestIndex = weekdays.indices.max(by: { weekdays[$0].average < weekdays[$1].average }) else { return nil }
+        let busiest = weekdays[busiestIndex]
+
+        // What stands out.
+        var patterns: [WeekdayPatternItem] = []
+        let percent = FloatingPointFormatStyle<Double>.Percent().precision(.fractionLength(0)).sign(strategy: .always())
+
+        // Weekends against weekdays, per day.
+        let weekendDays = Double(weekdayDays[1] + weekdayDays[7])
+        let workDays = Double((2...6).reduce(0) { $0 + weekdayDays[$1] })
+        if weekendDays > 0, workDays > 0 {
+            let weekend = (weekdayTotal[1] + weekdayTotal[7]) / weekendDays
+            let work = (2...6).reduce(0.0) { $0 + weekdayTotal[$1] } / workDays
+            if weekend > 0, work > 0, max(weekend, work) / min(weekend, work) >= 1.2 {
+                let weekendsLead = weekend > work
+                let change = max(weekend, work) / min(weekend, work) - 1
+                patterns.append(WeekdayPatternItem(
+                    id: "weekends",
+                    title: weekendsLead ? String(localized: "insights.byDay.weekends") : String(localized: "insights.byDay.weekdays"),
+                    subtitle: String(
+                        format: weekendsLead ? String(localized: "insights.byDay.vsWeekdays") : String(localized: "insights.byDay.vsWeekends"),
+                        change.formatted(percent)
+                    ),
+                    amount: max(weekend, work),
+                    icon: .sfSymbol(weekendsLead ? "sun.max.fill" : "briefcase.fill"),
+                    tint: AppColors.accent
+                ))
+            }
+        }
+
+        // A third of the month against the rest of it, per day.
+        if let third = (0..<3).max(by: { thirdTotal[$0] / Double(max(thirdDays[$0], 1)) < thirdTotal[$1] / Double(max(thirdDays[$1], 1)) }),
+           thirdDays[third] > 0 {
+            let restDays = (0..<3).filter { $0 != third }.reduce(0) { $0 + thirdDays[$1] }
+            let restTotal = (0..<3).filter { $0 != third }.reduce(0.0) { $0 + thirdTotal[$1] }
+            let average = thirdTotal[third] / Double(thirdDays[third])
+            let rest = restDays > 0 ? restTotal / Double(restDays) : 0
+            if rest > 0, average / rest >= 1.25 {
+                let title: String
+                switch third {
+                case 0: title = String(localized: "insights.byDay.monthStart")
+                case 1: title = String(localized: "insights.byDay.monthMiddle")
+                default: title = String(localized: "insights.byDay.monthEnd")
+                }
+                patterns.append(WeekdayPatternItem(
+                    id: "month_third_\(third)",
+                    title: title,
+                    subtitle: String(format: String(localized: "insights.byDay.vsRestOfMonth"), (average / rest - 1).formatted(percent)),
+                    amount: average,
+                    icon: .sfSymbol("calendar"),
+                    tint: AppColors.accent
+                ))
+            }
+        }
+
+        // A category whose share of a weekday is well above its share of the whole: its best
+        // weekday only, at least three times there, at least a tenth of that day.
+        var standouts: [(key: String, weekday: Int, lift: Double, amount: Double)] = []
+        for weekday in 1...7 where weekdayTotal[weekday] > 0 {
+            for (key, amount) in weekdayCategory[weekday] {
+                guard (weekdayCategoryCount[weekday][key] ?? 0) >= 3,
+                      let all = categoryTotal[key], all > 0 else { continue }
+                let share = amount / weekdayTotal[weekday]
+                let lift = share / (all / total)
+                guard share >= 0.1, lift >= 1.5 else { continue }
+                standouts.append((key, weekday, lift, amount / Double(max(weekdayDays[weekday], 1))))
+            }
+        }
+        var seen = Set<String>()
+        for standout in standouts.sorted(by: { $0.lift != $1.lift ? $0.lift > $1.lift : $0.key < $1.key })
+        where !seen.contains(standout.key) && seen.count < 3 {
+            seen.insert(standout.key)
+            let look = style(of: standout.key)
+            patterns.append(WeekdayPatternItem(
+                id: "category_\(standout.key)",
+                title: InsightsService.categoryLabel(for: standout.key),
+                subtitle: String(format: String(localized: "insights.byDay.categoryLift"),
+                                 Self.onWeekdayPhrase(standout.weekday).capitalizedFirstLetter,
+                                 standout.lift.formatted(.number.precision(.fractionLength(1)))),
+                amount: standout.amount,
+                icon: look.icon,
+                tint: look.color
+            ))
+        }
+
+        let detail = WeekdayPatternDetail(
+            days: days,
+            weeks: Self.byDayWeeks,
+            weekdays: weekdays,
+            busiestIndex: busiestIndex,
+            patterns: patterns
+        )
+        Self.logger.debug("📅 [Insights] SpendingByDay — busiest weekday \(busiest.id) avg \(String(format: "%.0f", busiest.average), privacy: .public), \(patterns.count) patterns")
+        return Insight(
+            id: "spending_by_day",
+            type: .spendingByDay,
+            title: String(localized: "insights.byDay.title"),
+            subtitle: String(format: String(localized: "insights.byDay.subtitle"), busiest.onPhrase),
+            metric: InsightMetric(
+                value: busiest.average,
+                formattedValue: Formatting.formatCurrencySmart(busiest.average, currency: baseCurrency),
+                currency: baseCurrency,
+                unit: nil
+            ),
+            trend: nil,
+            severity: .neutral,
+            category: .spending,
+            detailData: .weekdayPattern(detail),
+            cardVisual: .weekdayBars(
+                values: weekdays.map(\.average),
+                highlighted: busiestIndex,
+                labels: order.map { calendar.veryShortStandaloneWeekdaySymbols[$0 - 1] }
+            )
+        )
+    }
+
+    /// 0 for days 1 to 10, 1 for 11 to 20, 2 for the rest of the month.
+    private nonisolated static func monthThird(of day: Date, calendar: Calendar) -> Int {
+        min((calendar.component(.day, from: day) - 1) / 10, 2)
+    }
+
+    /// "on Saturdays", to go inside a sentence (`insights.byDay.on.<weekday>`, 1 = Sunday).
+    nonisolated static func onWeekdayPhrase(_ weekday: Int) -> String {
+        switch weekday {
+        case 1: return String(localized: "insights.byDay.on.1")
+        case 2: return String(localized: "insights.byDay.on.2")
+        case 3: return String(localized: "insights.byDay.on.3")
+        case 4: return String(localized: "insights.byDay.on.4")
+        case 5: return String(localized: "insights.byDay.on.5")
+        case 6: return String(localized: "insights.byDay.on.6")
+        default: return String(localized: "insights.byDay.on.7")
+        }
     }
 }

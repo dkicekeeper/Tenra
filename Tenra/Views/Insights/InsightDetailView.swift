@@ -167,7 +167,7 @@ struct InsightDetailView<CategoryDestination: View>: View {
         switch insight.cardVisual {
         case .halfGauge, .barPair, .milestoneGauge, .sparkline, .proportionBar:
             return true
-        case .ring, .budgetBars, .donut, nil:
+        case .ring, .budgetBars, .donut, .weekdayBars, nil:
             return false
         }
     }
@@ -308,9 +308,10 @@ struct InsightDetailView<CategoryDestination: View>: View {
                 entranceDelay: Self.heroEntranceDelay
             )
             .screenPadding()
-        case .ring, .budgetBars, .donut, nil:
+        case .ring, .budgetBars, .donut, .weekdayBars, nil:
             // Ring/budget-bars/donut details already render their own full-size
             // sections (budget rows, OrbChart, account lists) — no hero needed.
+            // "By day"'s charts and lists are one section (SpendingByDaySection).
             EmptyView()
         }
     }
@@ -380,6 +381,9 @@ struct InsightDetailView<CategoryDestination: View>: View {
                 }
             }
             .screenPadding()
+        case .weekdayPattern(let detail):
+            // The weekday chart's selection drives the category list: one view.
+            SpendingByDaySection(detail: detail, currency: currency)
         case nil:
             EmptyView()
         }
@@ -425,6 +429,9 @@ struct InsightDetailView<CategoryDestination: View>: View {
             if !detail.payments.isEmpty {
                 InsightAllowancePaymentsList(items: detail.payments, currency: currency)
             }
+        case .weekdayPattern:
+            // Rendered with its chart in chartSection (SpendingByDaySection).
+            EmptyView()
         case nil:
             EmptyView()
         }

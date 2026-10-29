@@ -95,6 +95,9 @@ enum InsightCardVisual: Equatable {
     /// Horizontal stacked composition bar (MiniProportionBar) — e.g. the
     /// recurring total split into top subscriptions + "other".
     case proportionBar([DonutSlice])
+    /// A row of small bars, one in colour (DesignKit's MiniBars): "By day"'s seven weekdays
+    /// in the calendar's order, the busiest highlighted, their initials under them.
+    case weekdayBars(values: [Double], highlighted: Int, labels: [String])
 }
 
 /// One row of the `.budgetBars` card visual.
@@ -142,6 +145,7 @@ enum InsightType: String, Hashable {
     case topMerchant               // where the current bucket's money went, by merchant
     case averageCheckGrowth        // a merchant's average check, 90 days against the 90 before
     case dailyAllowance            // "For today": a day's money until the next income (DailyAllowance)
+    case spendingByDay             // "By day": the weekdays of everyday spending, their categories, patterns
 }
 
 // MARK: - Insight Metric
@@ -195,7 +199,7 @@ extension InsightType {
              .categoryTrend, .totalRecurringCost, .subscriptionGrowth,
              .budgetOverspend, .budgetUnderutilized, .projectedOverspend, .accountDormancy,
              .yearOverYear, .spendingForecast, .subscriptionPriceIncrease, .largeTransaction,
-             .averageCheckGrowth:
+             .averageCheckGrowth, .spendingByDay:
             return true
         case .topSpendingCategory, .topMerchant, .incomeGrowth, .incomeSourceBreakdown,
              .netCashFlow, .bestMonth, .projectedBalance, .accountActivity,
@@ -317,6 +321,56 @@ enum InsightDetailData: Hashable {
     case wealthBreakdown([AccountInsightItem])   // Per-account balances
     case formulaBreakdown(InsightFormulaModel)   // Header + hero + formula rows + recommendation
     case dailyAllowance(DailyAllowanceDetail)   // "For today": the formula, then each payment set aside
+    case weekdayPattern(WeekdayPatternDetail)   // "By day": heatmap, weekdays, their categories, patterns
+}
+
+// MARK: - By day
+
+/// "By day"'s detail (`spending_by_day`): the days of the window for the heatmap, each
+/// weekday's average and its categories, and what stands out. Everyday spending only
+/// (InsightsService+Spending, `generateSpendingByDay`).
+struct WeekdayPatternDetail: Hashable {
+    /// Each day's everyday spending, keyed by the day's start: the heatmap's squares.
+    let days: [Date: Double]
+    /// Weeks the heatmap shows: the window.
+    let weeks: Int
+    /// The seven weekdays in the calendar's order (Monday first where weeks start on Monday).
+    let weekdays: [WeekdaySpending]
+    /// Index in `weekdays` of the busiest.
+    let busiestIndex: Int
+    /// What stands out: weekends or weekdays, a part of the month, a category on a weekday.
+    let patterns: [WeekdayPatternItem]
+}
+
+/// One weekday of "By day".
+struct WeekdaySpending: Identifiable, Hashable {
+    /// `Calendar` weekday: 1 is Sunday.
+    let id: Int
+    /// "Saturday" (capitalized), for the chart's banner.
+    let name: String
+    /// "Sat", for the chart's axis.
+    let shortName: String
+    /// "on Saturdays", to go inside a sentence (`insights.byDay.on.<id>`).
+    let onPhrase: String
+    /// Its total ÷ how many of it the window had.
+    let average: Double
+    /// Its categories, largest first: amounts are averages per this weekday, percentages its
+    /// shares of the weekday's total.
+    let categories: [CategoryBreakdownItem]
+}
+
+/// A line of "What stands out": an average per day, said against what it is compared with.
+struct WeekdayPatternItem: Identifiable, Hashable {
+    let id: String
+    let title: String
+    let subtitle: String
+    let amount: Double
+    let icon: IconSource?
+    let tint: Color
+
+    // Color is not Hashable; hash and compare by id only.
+    static func == (lhs: WeekdayPatternItem, rhs: WeekdayPatternItem) -> Bool { lhs.id == rhs.id }
+    func hash(into hasher: inout Hasher) { hasher.combine(id) }
 }
 
 // MARK: - For today

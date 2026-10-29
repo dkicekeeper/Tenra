@@ -153,7 +153,7 @@ struct DepositDetailView: View {
                 onSave: { updatedAccount in
                     HapticManager.success()
                     depositsViewModel.updateDeposit(updatedAccount)
-                    transactionsViewModel.recalculateAccountBalances()
+                    transactionsViewModel.recalculateBalances(for: [updatedAccount.id])
                     showingEditView = false
                 }
             )

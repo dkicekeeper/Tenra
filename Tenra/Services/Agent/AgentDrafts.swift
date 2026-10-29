@@ -94,6 +94,10 @@ enum AgentDraftError: Error {
     case categoryGone
     /// The goal or the debt was deleted between the draft and Save, or there is nowhere to keep it.
     case planGone
+    /// A new debt needs Tenra Pro, and it ended between the draft and Save.
+    case needsPro
+    /// The repayment is more than what is left on the debt: another one was saved after the draft.
+    case overRepayment
 }
 
 struct AgentDraft: Equatable, Identifiable {
@@ -216,7 +220,8 @@ extension AgentDraftBook.Writer {
         categoriesViewModel: CategoriesViewModel,
         memory: AgentMemory = .shared,
         goals: GoalStore? = nil,
-        debts: DebtStore? = nil
+        debts: DebtStore? = nil,
+        isPro: @escaping () -> Bool = { true }
     ) -> Self {
         Self(
             save: { operation in
@@ -233,7 +238,7 @@ extension AgentDraftBook.Writer {
                 case .fact(let fact):
                     return .fact(try await memory.apply(fact))
                 case .goal, .goalContribution, .debt, .debtRepayment:
-                    return try await Self.savePlan(operation, goals: goals, debts: debts)
+                    return try await Self.savePlan(operation, goals: goals, debts: debts, isPro: isPro)
                 case .transfer(let transfer):
                     return .transaction(try await store.add(Transaction(
                         id: "",
@@ -278,7 +283,15 @@ extension AgentDraftBook.Writer {
 
 extension AgentDraftBook.Writer {
     /// Saves a goal, money towards it, a debt or a repayment through GoalStore and DebtStore.
-    static func savePlan(_ operation: AgentDraftOperation, goals: GoalStore?, debts: DebtStore?) async throws -> AgentSavedRecord {
+    /// What the draft tools checked is checked again here, since time passes before Save: a
+    /// new debt still needs Tenra Pro, and a repayment still fits in what is left (two drafts
+    /// for the same debt, or a repayment added by hand since).
+    static func savePlan(
+        _ operation: AgentDraftOperation,
+        goals: GoalStore?,
+        debts: DebtStore?,
+        isPro: () -> Bool = { true }
+    ) async throws -> AgentSavedRecord {
         switch operation {
         case .goal(let goal):
             guard let goals else { throw AgentDraftError.planGone }
@@ -290,10 +303,14 @@ extension AgentDraftBook.Writer {
             return .goalContribution(goalId: goalId, contributionId: contribution.id)
         case .debt(let debt):
             guard let debts else { throw AgentDraftError.planGone }
+            guard isPro() else { throw AgentDraftError.needsPro }
             await debts.add(debt)
             return .debt(debt.id)
         case .debtRepayment(let debtId, let repayment):
-            guard let debts, debts.debt(id: debtId) != nil else { throw AgentDraftError.planGone }
+            guard let debts, let debt = debts.debt(id: debtId) else { throw AgentDraftError.planGone }
+            guard repayment.amount <= debt.remaining + PersonalDebt.centTolerance else {
+                throw AgentDraftError.overRepayment
+            }
             await debts.addRepayment(repayment, to: debtId)
             return .debtRepayment(debtId: debtId, repaymentId: repayment.id)
         default:

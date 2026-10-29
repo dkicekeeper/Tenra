@@ -57,7 +57,8 @@ is in [archive/localization-2026-07/](archive/localization-2026-07/).
 Every locale has `InfoPlist.strings` with the five usage strings (`NSCameraUsageDescription`,
 `NSMicrophoneUsageDescription`, `NSSpeechRecognitionUsageDescription`,
 `NSDocumentPickerUsageDescription`, `NSFaceIDUsageDescription`); `Info.plist` holds the English
-fallback. A new `NS…UsageDescription` key goes into all 11 files.
+fallback. A new `NS…UsageDescription` key goes into all 12 files. The microphone and speech texts
+name Ten (voice input and talking to Ten), in each locale's form of the name.
 
 ## Adding a language
 

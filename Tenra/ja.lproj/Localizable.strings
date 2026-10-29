@@ -2186,6 +2186,10 @@
 "debt.amount" = "金額";
 "debt.returned" = "返済済み";
 "debt.leftAmount" = "残り%@";
+"debt.overpay.title" = "残りより多い金額です";
+"debt.overpay.message" = "この貸し借りの残りは %@ です。";
+"debt.overpay.recordAll" = "%@ をすべて記録";
+"debt.overpay.onlyLeft" = "残りの %@ だけ記録";
 "debt.overdue" = "期限切れ";
 "debt.overdueSince" = "%@から期限切れ";
 "debt.settledOn" = "%@に完済";

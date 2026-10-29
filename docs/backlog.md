@@ -29,9 +29,6 @@ with the commit of every fix, are in
 - **Performance left on the main actor:** `recalculateAll` for balances (one inverted O(N)
   pass); History's CoreData refetch after each debounced (300 ms) search change (the fetched
   results controller is bound to the view context).
-- **All-accounts rescans on small edits:** `DepositDetailView`'s edit `onSave` and both
-  `LoanDetailView` delete paths call `recalculateAccountBalances()` where
-  `recalculateBalances(for:)` with the touched accounts would do.
 
 - **Product audit of 2026-10-22** ([archive/product-audit-2026-10-22.md](archive/product-audit-2026-10-22.md)):
   its plan ([archive/plans/plan-ads-readiness.md](archive/plans/plan-ads-readiness.md)) landed:
@@ -64,12 +61,8 @@ Found by the release audit of 2026-10-15 (details and file references:
 - **Assistant performance:** full-resolution photo decode on the main thread; each streamed piece
   re-parses the reply and re-renders the chat; allowance Keychain calls on the main thread;
   FastPath runs the voice parser on questions; `forecast_balance` series O(days × occurrences).
-- **Goals and debts:** goal screens ignore FX refreshes and a new day; `reachedAt` only while the
-  goal's screen is open; Pro re-check and over-repayment at a draft's Save; the UI accepts a
-  repayment above what is left and a due date before the loan.
 - **Races:** fetch-or-insert without a uniqueness constraint (threads, goals, debts, facts); a
   load overwriting an `add`; FastPath vs `reset()`; a chat deleted during its save comes back.
-- **Copy:** mic and speech permission texts don't mention Ten.
 - **Server before traffic** (sizing in [domains/assistant.md](domains/assistant.md) §11; the
   daily cap of 1 200 calls is live since 2026-10-29): Durable Objects counters, a Rate Limiting binding, separate free and Pro caps, a
   RevenueCat timeout, no count for a failed upstream call, abort on disconnect, a `protocol`

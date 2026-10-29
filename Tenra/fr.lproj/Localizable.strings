@@ -2186,6 +2186,10 @@
 "debt.amount" = "Montant";
 "debt.returned" = "Remboursé";
 "debt.leftAmount" = "Reste %@";
+"debt.overpay.title" = "Plus que ce qui reste";
+"debt.overpay.message" = "Il reste %@ sur cette dette.";
+"debt.overpay.recordAll" = "Enregistrer les %@";
+"debt.overpay.onlyLeft" = "Seulement le reste, %@";
 "debt.overdue" = "En retard";
 "debt.overdueSince" = "En retard depuis le %@";
 "debt.settledOn" = "Réglée le %@";

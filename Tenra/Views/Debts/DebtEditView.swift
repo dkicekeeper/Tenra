@@ -75,7 +75,8 @@ struct DebtEditView: View {
                             UniversalRow(
                                 String(localized: "debt.dueDate"),
                                 icon: "calendar.badge.clock",
-                                accessory: .date($dueDate)
+                                // Not before the money changed hands.
+                                accessory: .date($dueDate, from: date)
                             )
                         }
                     }
@@ -129,7 +130,8 @@ struct DebtEditView: View {
         result.amount = amount
         result.currency = currency
         result.date = date
-        result.dueDate = hasDueDate ? Calendar.current.startOfDay(for: dueDate) : nil
+        // The date may have moved past a due date picked earlier: never due before it.
+        result.dueDate = hasDueDate ? Calendar.current.startOfDay(for: max(dueDate, date)) : nil
         let trimmedNote = note.trimmingCharacters(in: .whitespacesAndNewlines)
         result.note = trimmedNote.isEmpty ? nil : trimmedNote
         if let debt, debt.currency != currency, !debt.repayments.isEmpty {

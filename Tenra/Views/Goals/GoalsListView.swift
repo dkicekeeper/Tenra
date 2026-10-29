@@ -20,6 +20,8 @@ struct GoalsListView: View {
     @State private var editingGoal: SavingsGoal?
     /// The goals a confirmation is asked for: one from its menu, or the ones selected.
     @State private var goalsToDelete: [String] = []
+    /// Months left, what to put aside and overdue depend on the day: moved at midnight.
+    @State private var today = Date()
 
     private var baseCurrency: String {
         coordinator.transactionsViewModel.appSettings.baseCurrency
@@ -31,7 +33,8 @@ struct GoalsListView: View {
     }
 
     var body: some View {
-        let today = Date()
+        // A goal in another currency converts at the cached rates: drawn again when they change.
+        let _ = coordinator.transactionStore.currencyRatesVersion
         let inProgress = goalStore.goals.filter { !goalStore.status(for: $0, today: today).isReached }
         let reached = goalStore.goals.filter { goalStore.status(for: $0, today: today).isReached }
         Group {
@@ -120,6 +123,9 @@ struct GoalsListView: View {
             Text(String(localized: "goal.deleteMessage"))
         }
         .task { await goalStore.load() }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.significantTimeChangeNotification)) { _ in
+            today = Date()
+        }
     }
 
     /// Goals as DesignKit's `CardList` of ready-made cards (8.0.0); a drag puts a goal in its

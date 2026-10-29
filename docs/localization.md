@@ -15,7 +15,7 @@ is in [archive/localization-2026-07/](archive/localization-2026-07/).
   (plurals), `InfoPlist.strings` (permission prompts) and `AppShortcuts.strings` (Siri phrases).
 - **On the App Store: 13 storefront locales**: de-DE, en-US, es-ES, es-MX, fr-CA, fr-FR, it, ja,
   ko, pt-BR, ru, tr, uk. The app's es and fr cover both of their storefronts. Since 1.7, en-GB
-  too, for search in Kazakhstan (decision D9, [plan-ads-readiness.md](plan-ads-readiness.md) A6):
+  too, for search in Kazakhstan (decision D9, [archive/plans/plan-ads-readiness.md](archive/plans/plan-ads-readiness.md) A6):
   the Russian texts and the Kazakh screenshots, since App Store Connect has no Kazakh; the kk
   screenshot set exists only for it ([asc.md](asc.md) «Скриншоты»).
 - **Features per language.** Voice input (`VoiceInputParser`, `VoiceInputSegmenter`) reads

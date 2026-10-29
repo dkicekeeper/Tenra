@@ -1,11 +1,10 @@
 # Charts on DesignKit 8.3.0 and the "By day" insight
 
-Status (2026-10-29): in branch `claude/jolly-hopper-in3dwi`, built green against DesignKit's
-branch of the same name by DesignKit's CI (`tenra_ref`). Waiting on DesignKit 8.3.0
-(dkicekeeper/DesignKit#91): once it is tagged, the DesignKit update workflow moves `main` to it,
-`main` goes into this branch, and its own CI (build and TenraTests, `SpendingByDayInsightTests`
-among them) can run. Ships in the version after 1.7.1: when the branch merges, the What's New
-below goes into that version's `release-notes.md`, and this file moves to `archive/plans/`.
+Status (2026-10-29): in branch `claude/jolly-hopper-in3dwi`, on DesignKit 8.3.0
+(dkicekeeper/DesignKit#91, released). Version 1.8, with the assets of PR #105 (its branch
+`claude/assets-phase-2` sets the same 1.8, and the two merge in either order; whichever lands
+second sets the insights catalogue's count to 28). When the branch merges, the What's New below
+goes into 1.8's `release-notes.md`, and this file moves to `archive/plans/`.
 
 ## What the branch does
 

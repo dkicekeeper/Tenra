@@ -40,7 +40,7 @@
 | # | Вопрос | Решение | На что влияет |
 |---|---|---|---|
 | D0 | Состав релиза | **22.10:** §4 (бывший 1.8) делается сейчас и выходит вместе с 1.7; реклама с выхода этой версии | всё |
-| D1 | Запуск ASA | **29.10:** аккаунт и карта заведены, KZ-Brand запущена; API-ключ и интеграция в RevenueCat впереди | §3 |
+| D1 | Запуск ASA | **29.10:** аккаунт и карта заведены, KZ-Brand запущена; интеграция в RevenueCat впереди | §3 |
 | D2 | Цена | **22.10:** годовой 7 990 ₸ вместо 4 990 с выходом 1.7; месячный 1 490 и lifetime без изменений; пробный период 14 дней; эксперименты §5 D promotion-plan с ценой и 7 днями отменены | B5 |
 | D3 | Запись из пушей банков: Free или Pro | **22.10:** Free, как автозапись Apple Pay | B4 |
 | D4 | Казахский язык | **22.10:** да, в этом релизе (D0) | C2 |
@@ -73,8 +73,8 @@
   - `PremiumManager.configure()`: после `Purchases.configure` вызвать
     `Purchases.shared.attribution.enableAdServicesAttributionTokenCollection()`. AdServices
     работает без ATT.
-  - В панели RevenueCat включить интеграцию Apple Search Ads (основатель или Claude по
-    инструкции).
+  - В панели RevenueCat включить интеграцию Apple Search Ads: основатель, Sign in with Apple
+    с доступом Read Only (шаги в promotion-plan §5 B).
   - Проверить, не меняет ли это ярлык App Privacy: по правилам Apple атрибуция AdServices не
     считается слежкой, но формулировку RevenueCat сверить.
 - *Доки:* CLAUDE.md, Monetization (одна строка); promotion-plan §5 B (галочка).
@@ -326,7 +326,7 @@
 | Основатель | Время |
 |---|---|
 | Решения D1, D6, D7 | 10 минут, в чат |
-| API-ключ ASA, интеграция в RevenueCat | около 15 минут, сейчас |
+| Интеграция Apple Ads в RevenueCat (Sign in with Apple, promotion-plan §5 B) | 5 минут, сейчас |
 | Лимит и уведомления Anthropic (A5) | 5 минут |
 | Юрист (D7) | вне сессий |
 | Создать KZ-Category, KZ-Competitor, KZ-Discovery (настройки в promotion-plan §5 B) | около 30 минут |

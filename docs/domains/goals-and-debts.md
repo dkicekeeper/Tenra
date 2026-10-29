@@ -12,7 +12,7 @@ Ten (the assistant) reads and drafts them in phase 4b of
 |---|---|---|
 | `SavingsGoal` | `Models/SavingsGoal.swift` | name, icon, target, currency, optional deadline, optional `linkedAccountId`, `contributions`, `reachedAt`, `order` |
 | `GoalContribution` | same | money put towards a goal by hand, in the goal's currency |
-| `PersonalDebt` | `Models/PersonalDebt.swift` | `direction` (`owedToMe` / `iOwe`), person, amount, currency, `date`, optional `dueDate`, note, `repayments`, `settledAt` |
+| `PersonalDebt` | `Models/PersonalDebt.swift` | `direction` (`owedToMe` / `iOwe`), person, amount, currency, `date`, optional `dueDate`, note, `repayments`, `settledAt`, optional `order` |
 | `DebtRepayment` | same | money that came back, in the debt's currency |
 
 Bank loans are accounts with `LoanInfo` ([loans.md](loans.md)); a `PersonalDebt` is between
@@ -20,7 +20,7 @@ people and has no account.
 
 ## Storage
 
-- `GoalEntity` and `DebtEntity` (CoreData v15), read and written only by `GoalRepository`
+- `GoalEntity` and `DebtEntity` (CoreData v15; v16 added the optional `DebtEntity.order`), read and written only by `GoalRepository`
   (`Services/Goals/`) and `DebtRepository` (`Services/Debts/`), outside the
   `DataRepositoryProtocol` facade like the assistant's threads and facts. A goal's
   contributions and a debt's repayments are JSON on their row; the icon is `IconSource` JSON as
@@ -65,8 +65,11 @@ people and has no account.
   `DebtRecipientMatcherTests`.
 - **Overdue**: open and its due date is before today (`PersonalDebt.isOverdue`), a red badge in
   the list.
-- **Sorting.** Goals in list order (creation); reached goals in their own section. Open debts per
-  direction by due date (soonest first, undated after, then oldest), settled ones latest first.
+- **Sorting.** Goals by `order` (creation order until the person drags them; a drag gives the
+  dragged list's goals that list's places, `GoalStore.reorder`); reached goals in their own
+  section. Debts the person placed by dragging come first, by their `order` (`DebtStore.reorder`);
+  the rest of the open debts per direction by due date (soonest first, undated after, then
+  oldest), settled ones latest first.
 - **Pro gate (debts).** Every add path (the list's "+", the empty state's button) opens the
   paywall without Pro and continues into the form once Pro is on (`paywallSheet(onUnlocked:)`).
   Debts already kept stay open to view, repay, settle and edit. Goals have no gate.

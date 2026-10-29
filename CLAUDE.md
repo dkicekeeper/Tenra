@@ -83,7 +83,7 @@ Tenra is a native iOS finance management application built with SwiftUI and Core
 **Tech Stack:**
 - SwiftUI (iOS 26+ with Liquid Glass adoption)
 - Swift 5.0 (project setting), targeting Swift 6 patterns; `SWIFT_STRICT_CONCURRENCY = minimal`; `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor`
-- CoreData for persistence (v15 schema)
+- CoreData for persistence (v16 schema)
 - Observation framework (@Observable)
 - MVVM + Coordinator architecture
 
@@ -186,7 +186,7 @@ New file needed?
 
 | Working on... | Read first |
 |---|---|
-| AppCoordinator, TransactionStore role, BalanceCoordinator, Repository pattern, CoreData v15 model | [docs/architecture.md](docs/architecture.md) |
+| AppCoordinator, TransactionStore role, BalanceCoordinator, Repository pattern, CoreData v16 model | [docs/architecture.md](docs/architecture.md) |
 | `@Observable`, `Task`, `MainActor`, `nonisolated`, CoreData threading, `Sendable` | [docs/concurrency.md](docs/concurrency.md) |
 | `Views/Components/**`, a new screen or sheet, DesignKit in Tenra (bridge, adapters, screen patterns), amount formatting, dates and category styling, animations and effects | [docs/design-system.md](docs/design-system.md); tokens and components themselves: DesignKit's `docs/design-system.md` |
 | `Services/Insights/**` (operational guide) | [docs/domains/insights.md](docs/domains/insights.md) |
@@ -299,7 +299,7 @@ On iOS 26 `.swipeActions` silently no-ops outside a `List` (e.g. `LazyVStack`, `
 
 ⚠️ **The Xcode project uses file-system-synchronized groups (`PBXFileSystemSynchronizedRootGroup`).** Adding, deleting, or renaming files (`.swift`, `.stringsdict`, etc.) needs NO `project.pbxproj` edits — just create/`rm` on disk and they're auto-included in the target. (Verified: deleted a view + added `.stringsdict` files, both picked up by the build.)
 
-Schema version-bump checklist (currently v15) lives in the `/coredata-schema-bump` skill ([.claude/skills/coredata-schema-bump/SKILL.md](.claude/skills/coredata-schema-bump/SKILL.md)) — invoke it before touching `Tenra.xcdatamodeld`.
+Schema version-bump checklist (currently v16) lives in the `/coredata-schema-bump` skill ([.claude/skills/coredata-schema-bump/SKILL.md](.claude/skills/coredata-schema-bump/SKILL.md)) — invoke it before touching `Tenra.xcdatamodeld`.
 
 ## Testing
 
@@ -403,6 +403,6 @@ When unsure about architecture decisions:
 
 ---
 
-**Last Updated**: 2026-10-21
+**Last Updated**: 2026-10-29
 **iOS Target**: 26.0+ (built with Xcode 27 / SDK 27 — iOS 27 APIs need `if #available(iOS 27, *)` **inside `#if compiler(>=6.4)`**, with the iOS 26 path in `#else`, so the project still builds with Xcode 26. Every GitHub workflow (CI, TestFlight, DesignKit update, Screenshots) builds with Xcode 27.0 on the `xcode-27` runner since 2026-10-21, so the iOS 27 paths are compiled, tested and shipped from the cloud; the Xcode pin is raised in all four at once, see [docs/asc.md](docs/asc.md))
 **Swift Version**: 5.0 project setting; Swift 6 patterns; `SWIFT_STRICT_CONCURRENCY = minimal`; `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor`

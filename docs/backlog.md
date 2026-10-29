@@ -16,9 +16,6 @@ with the commit of every fix, are in
   Plan §3.8 keeps the file in the app's container with the thread; only worth it if people come
   back to an unsaved attachment.
 
-- **Automatic payment capture and merchants** (plan in flight:
-  [plan-auto-capture.md](plan-auto-capture.md) §9): built; what is left is the device checks of
-  §8, then the plan moves to the archive.
 - **One merchant under several keys.** Every merchant store keys on
   `CategorySuggestionService.normalizedMerchant`, which keeps processor prefixes, legal forms and
   a trailing city: Wallet's "MAGNUM CASH&CARRY 123" and a statement's "ТОО MAGNUM CASH&CARRY
@@ -37,9 +34,9 @@ with the commit of every fix, are in
   `recalculateBalances(for:)` with the touched accounts would do.
 
 - **Product audit of 2026-10-22** ([archive/product-audit-2026-10-22.md](archive/product-audit-2026-10-22.md)):
-  its items are in [plan-ads-readiness.md](plan-ads-readiness.md) (the Pro page, activation,
-  iCloud backups by default, auto-capture counters for 1.7; widgets and templates, Kazakh,
-  money for today for 1.8).
+  its items are in [plan-ads-readiness.md](plan-ads-readiness.md); all that went into 1.7 (the
+  Pro page, activation, iCloud backups by default, auto-capture counters, widgets, Kazakh, money
+  for today) shipped on 2026-10-24, the ASA launch and the rest are open there.
 
 Found by the design-system audit of 2026-10-15 (everything since 1.5):
 - **Logic in `Views/Assistant`:** `AppStreak`, `AssistantChatter` and `AssistantDaydreams`
@@ -71,8 +68,8 @@ Found by the release audit of 2026-10-15 (details and file references:
 
 Found by the docs audit of 2026-10-12, not verified on device yet:
 - **Duplicate Siri submissions:** repeating a phrase can log the same transaction twice; the
-  confirmation snippet is the only guard. Decide whether intents deduplicate. (Wallet payments get
-  their own 90-second guard in [plan-auto-capture.md](plan-auto-capture.md).)
+  confirmation snippet is the only guard. Decide whether intents deduplicate. (Wallet payments and
+  bank notifications have their own guard: [domains/intents.md](domains/intents.md) §6.1.)
 - **Health score budget adherence** uses the calendar month, not each budget's own period;
   **`largeTransaction`** counts `.expense` only, so loan payments never qualify. Design calls.
 - **`SilenceDetector`** is created in `VoiceInputService` but never fed audio.
@@ -106,15 +103,15 @@ Found by the docs audit of 2026-10-12, not verified on device yet:
 - **Logo lookups** send brand names to Google favicons and logo.dev: accepted (2026-09-25).
   Merchant names from payments go to logo.dev's name lookup too, after the local sources
   (2026-10-19).
-- **No SMS or email capture** (2026-10-19): every bank the owner uses notifies by push, which iOS
-  never shows other apps. Payments outside Apple Pay come from statements, shared receipts or by
-  hand ([plan-auto-capture.md](plan-auto-capture.md) §2).
+- **No SMS or email capture** (2026-10-19): every bank the owner uses notifies by push. On iOS 27
+  the notification automation records those pushes ([plan-notification-capture.md](plan-notification-capture.md));
+  on iOS 26, payments outside Apple Pay come from statements, shared receipts or by hand.
 - **No automatic repairs that move balances** (2026-10-06): a transfer out of a deposit lowers
   its interest base by the raw amount (pinned by a characterization test); changing an
   account's currency doesn't reconvert its transactions; transfers saved without a target
   amount before the edit fix stay as saved.
 - **No family / shared budget**: it needs sync, and CloudKit sync was removed on 2026-04-22
-  after data loss. Drop `семейный` from the ru keyword field in the next ASO pass. Up for review
+  after data loss (`семейный` left the ru keywords with 1.7). Up for review
   (product audit 2026-10-22, decision D6): both Qalta apps in KZ now offer a shared or family book.
 - **No Create ML category model**: history, brand and keyword tiers are cheaper and explainable.
 - **iPad deferred**: it matters for featuring, not for traffic

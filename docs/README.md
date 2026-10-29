@@ -34,7 +34,7 @@ this file is the full index.
 
 | File | Purpose |
 |------|---------|
-| [architecture.md](architecture.md) | MVVM + Coordinator, TransactionStore, BalanceCoordinator, Repository, CoreData v15, backups |
+| [architecture.md](architecture.md) | MVVM + Coordinator, TransactionStore, BalanceCoordinator, Repository, CoreData v16, backups |
 | [concurrency.md](concurrency.md) | Swift 6 concurrency, CoreData threading, `@Observable` rules, DataSnapshot |
 | [design-system.md](design-system.md) | Tenra on DesignKit: the bridge and hooks, what stays in Tenra, screen patterns, amount formatting, dates and category styling, effects in use (tokens and components: DesignKit's own docs) |
 | [gotchas.md](gotchas.md) | SwiftUI layout, performance hot paths, previews, ignorable console warnings |
@@ -68,10 +68,9 @@ this file is the full index.
 | [promotion-plan.md](promotion-plan.md) | The product, Tenra Pro and the growth plan: facts, releases, decisions, channels, weekly metrics. Living doc |
 | [asc.md](asc.md) | App Store Connect and TestFlight from a cloud session (`appstore/asc.py`, workflows) |
 | [backlog.md](backlog.md) | Open items, ideas not planned yet, decisions that stand |
-| [plan-ads-readiness.md](plan-ads-readiness.md) | Plan from the product audit of 2026-10-22, not started: 1.7 ready for paid traffic (ASA attribution, the Pro page names Ten, onboarding sells auto-capture, iCloud backups by default and restore on the welcome screen, the store page and an "Auto-capture" custom page), the ASA launch, then 1.8 (widgets, Kazakh, money for today) and what follows; the owner's decisions D1-D8 |
+| [plan-ads-readiness.md](plan-ads-readiness.md) | Plan in flight from the product audit of 2026-10-22: 1.7 ready for paid traffic shipped on 2026-10-24 (ASA attribution, onboarding sells auto-capture, iCloud backups by default and restore on the welcome screen, the store page and an "Auto-capture" custom page, with the widgets, Kazakh and money for today planned for 1.8); still open: the ASA launch in KZ and what it waits on, bank notifications part two, the server before traffic, then 1.8+; the owner's decisions D0-D9 |
 | [plan-assistant-ios27.md](plan-assistant-ios27.md) | Plan, not started: Ten on Apple's models (Private Cloud Compute, on device) behind a router, and Siri on iOS 27 |
-| [plan-auto-capture.md](plan-auto-capture.md) | Plan in flight, owner's decisions taken 2026-10-19: a silent Wallet action (currency, card, duplicates, "To review"), merchants with logos, receipts shared from bank apps, merchant screens and insights |
-| [plan-notification-capture.md](plan-notification-capture.md) | Plan, first version in the code (2026-10-22): expenses and incomes from any bank's push notifications through iOS 27's notification trigger (`LogBankNotificationIntent`, the bank-agnostic `BankNotificationParser`, recorded through the Wallet path); waits for the owner's device check; own-account transfers, learned templates and the setup guide still ahead |
+| [plan-notification-capture.md](plan-notification-capture.md) | Plan in flight: expenses and incomes from any bank's push notifications through iOS 27's notification trigger (`LogBankNotificationIntent`, the bank-agnostic `BankNotificationParser`, recorded through the Wallet path), own-account transfers and the setup guide: in 1.7, checked on the owner's phone, not yet in What's New; learned templates, "Unparsed" and the Apple model layer still ahead |
 | [plan-assets.md](plan-assets.md) | Plan, owner's decisions taken 2026-10-16, not started: assets (real estate, vehicles) with market valuations, rent and upkeep, and net worth |
 | [plan-investments.md](plan-investments.md) | Plan, owner's decisions taken 2026-10-16, not started: investment portfolios (KASE and US stocks, ETFs, crypto on exchanges and wallets), quote sources and their licences, read-only exchange keys, purchases in parts (trade journal, average cost, XIRR), what Ten may and may not say about investments |
 | [public/](public/) | The support site: privacy policy, terms of use, support (GitHub Pages) |

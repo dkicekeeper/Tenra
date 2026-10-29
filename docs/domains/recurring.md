@@ -95,6 +95,13 @@ Occurrence records, not transaction ids, are what stop regeneration across launc
 
 `TransactionStore.getPlannedTransactions(for:horizon:)` has no callers: to list a series' transactions, filter `transactionStore.transactions` (or use `transactionsBySeriesId`).
 
+## Subscriptions order
+
+`RecurringSeries.order` (optional, CoreData v16): the person's place for a subscription, set by
+dragging in `SubscriptionsListView` (`TransactionStore.reorderSubscriptions` →
+`RecurringStore.reorderSeries`). `TransactionStore.subscriptions` puts the placed ones first by
+`order`, the rest after them as they were added.
+
 ## TransactionStore Interaction
 
 ⚠️ **`TransactionStore.update()` blocks removing a LIVE `recurringSeriesId`**: throws `cannotRemoveRecurring`. Scope of the guard:

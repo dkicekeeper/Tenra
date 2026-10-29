@@ -261,7 +261,7 @@ The Shortcuts "Wallet" trigger fires when a card is tapped at a terminal (iPhone
 not for Apple Pay on websites and in apps. It passes Amount (a currency amount whose Currency
 Code is nested: reachable only through a Set Variable step), Merchant, Card or Pass and Date; no
 merchant category. It is known to time out, to send an empty merchant with amount 0, and to fire
-for declined payments. Plan in flight: [plan-auto-capture.md](../plan-auto-capture.md).
+for declined payments. The plan it was built from (in 1.7): [archive/plans/plan-auto-capture.md](../archive/plans/plan-auto-capture.md).
 
 Where the setup is offered: onboarding's last step (`OnboardingAutoCaptureStep`, the Wallet
 guide and on iOS 27 the bank notification guide in sheets), Home's card under the history

@@ -151,7 +151,14 @@ class AppCoordinator {
         let memory = AgentMemory.shared
         let goals = goalStore
         let debts = debtStore
-        let drafts = AgentDraftBook(writer: .app(store: store, categoriesViewModel: categoriesViewModel, memory: memory, goals: goals, debts: debts))
+        let drafts = AgentDraftBook(writer: .app(
+            store: store,
+            categoriesViewModel: categoriesViewModel,
+            memory: memory,
+            goals: goals,
+            debts: debts,
+            isPro: { PremiumManager.shared.isPro }
+        ))
         let toolkit = FinanceToolkit(
             store: store,
             insights: insightsViewModel,
@@ -651,6 +658,8 @@ class AppCoordinator {
         Task { [weak self] in
             await self?.goalStore.load()
             await self?.debtStore.load()
+            // Goals a linked balance carried over the target while their screen was closed.
+            await self?.goalStore.refreshAllReached()
             // Due debts and goals behind schedule, now that they are read.
             self?.refreshAssistantInbox()
         }

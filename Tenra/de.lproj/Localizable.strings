@@ -2226,6 +2226,10 @@
 "debt.amount" = "Betrag";
 "debt.returned" = "Zurückgezahlt";
 "debt.leftAmount" = "Noch %@";
+"debt.overpay.title" = "Mehr als der Rest";
+"debt.overpay.message" = "Von dieser Schuld sind noch %@ offen.";
+"debt.overpay.recordAll" = "Alle %@ erfassen";
+"debt.overpay.onlyLeft" = "Nur den Rest, %@";
 "debt.overdue" = "Überfällig";
 "debt.overdueSince" = "Überfällig seit %@";
 "debt.settledOn" = "Beglichen am %@";

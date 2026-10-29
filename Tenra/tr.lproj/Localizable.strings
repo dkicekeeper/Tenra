@@ -2226,6 +2226,10 @@
 "debt.amount" = "Tutar";
 "debt.returned" = "Geri ödenen";
 "debt.leftAmount" = "Kalan %@";
+"debt.overpay.title" = "Kalandan fazla";
+"debt.overpay.message" = "Bu borçta %@ kaldı.";
+"debt.overpay.recordAll" = "%@ tutarın tamamını kaydet";
+"debt.overpay.onlyLeft" = "Yalnızca kalanı, %@";
 "debt.overdue" = "Gecikmiş";
 "debt.overdueSince" = "%@ tarihinden beri gecikmiş";
 "debt.settledOn" = "%@ tarihinde kapandı";

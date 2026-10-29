@@ -2226,6 +2226,10 @@
 "debt.amount" = "Сума";
 "debt.returned" = "Повернуто";
 "debt.leftAmount" = "Залишилось %@";
+"debt.overpay.title" = "Більше, ніж залишилося";
+"debt.overpay.message" = "За цим боргом залишилося %@.";
+"debt.overpay.recordAll" = "Записати всі %@";
+"debt.overpay.onlyLeft" = "Лише залишок, %@";
 "debt.overdue" = "Прострочено";
 "debt.overdueSince" = "Прострочено з %@";
 "debt.settledOn" = "Погашено %@";

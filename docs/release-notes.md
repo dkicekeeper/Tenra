@@ -1,147 +1,200 @@
-# Tenra 1.8: What's New (ASC, 13 storefront locales)
+# Tenra 1.7.1: What's New (ASC, 13 storefront locales and en-GB)
 
-Version 1.8, drafted 2026-10-29 from branch `claude/jolly-hopper-in3dwi` (DesignKit 8.3.0's charts and
-the "By day" insight; it needs DesignKit 8.3.0 released, DesignKit PR #91). Add the lines of every
-other change that ships in 1.8. `prepare-version` (Actions → App Store Connect, [asc.md](asc.md))
-pastes each block into App Store Connect → Tenra → 1.8 → the locale → "What's New in This
-Version". No em dashes (user rule). Names of screens as the app shows them in each locale
-(`insights.byDay.title`). When 1.8 ships, move this file to `archive/release-notes-1.8.md`.
+Version 1.7.1, drafted 2026-10-29. `prepare-version` (Actions → App Store Connect,
+[asc.md](asc.md)) pastes each block into App Store Connect → Tenra → 1.7.1 → the locale →
+"What's New in This Version"; en-GB (search in Kazakhstan, decision D9) carries ru's text in its
+own block, since App Store Connect has had the en-GB localization since 1.7. No em dashes (user
+rule). Names of screens as the app shows them in each locale (`settings.siri.header`,
+`bankSetup.title`). No bank names in store texts (App Review 2.3.7). When 1.7.1 ships, move this
+file to `archive/release-notes-1.7.1.md`.
 
 New since 1.7 (in the store since 2026-10-24):
-- DesignKit 8.3.0's charts: the current period selected in the middle of the window, marked as
-  not over ("so far"), with the spending forecast and the same period a year ago; the banner
-  names the series and gives the change from the period before (green the better way); a long
-  press and a drag sum up a stretch; the axis always labels its periods.
-- The chart options menu by every chart's zoom (`ChartOptionsHost`): the average line, highs and
-  lows, the forecast, a year ago, a ruler the chart scrolls under, kept for every chart.
-- The category screen: its last 12 months as bars with the same month a year ago, this month's
-  forecast and a monthly budget as a line (`CategoryDetailView.monthlyChart`). The merchant
-  screen's and Ten's charts mark this month as not over.
-- The "By day" insight in Spending (`spending_by_day`, docs/domains/insights.md).
+- Bank notification capture announced: in the app since 1.7 (iOS 27, "Log a bank notification",
+  its guide and "Check a notification" in Settings › Siri & Shortcuts), checked on the founder's
+  phone with two banks after 1.7 was submitted
+  ([plan-notification-capture.md](plan-notification-capture.md)).
+- Goals: the list and the goal screen follow exchange-rate refreshes and a new day; a goal's
+  reached date is noted after the goals load and whenever the app comes to the front, not only
+  while its screen is open ([domains/goals-and-debts.md](domains/goals-and-debts.md)).
+- Debts: "Repay" above what is left asks: record all of it (the debt settles, overpaid) or only
+  the rest; a due date is never before the debt's date; Ten's debt and repayment drafts are
+  checked again at Save (Pro, what is left).
+- The microphone and speech permission texts name Ten (12 locales).
+- Editing a deposit or a loan and deleting a loan recalculate only the accounts they touch.
 
 ## en-US
 
 ```
-What's new in Tenra 1.8:
-• Charts open on the current period in the middle of the screen and show where it is heading, next to the same period a year ago. A new menu next to the zoom adds the average line and the highs and lows, or lets the chart scroll under a ruler; your choice applies to every chart.
-• Each category now has a chart of its last 12 months, with its budget as a line: months over it turn orange.
-• New insight, By day: on which days of the week you spend the most and on what, every day of the last 16 weeks on a calendar, and what stands out, like weekends or the start of the month.
+What's new in Tenra 1.7.1:
+• On iOS 27, your bank's notifications log themselves: card and QR payments, online purchases, transfers and money coming in, from any bank, without a single question. A transfer between your own cards in two banks becomes one transfer. Set it up once in Settings › Siri & Shortcuts › Set up bank notifications. The text never leaves your iPhone.
+• Goals keep up with exchange rates and the calendar: what is left, the monthly amount and the overdue mark update on their own, and a goal your account carried past the target remembers the day it got there.
+• Debts: a repayment above what is left asks whether to record all of it or only the rest, a due date can't come before the day you lent or borrowed, and Ten checks its draft once more when you save it.
+• Editing a deposit or deleting a loan is quicker: only the accounts it touches are recounted.
 ```
 
 ## ru
 
 ```
-Что нового в Tenra 1.8:
-• Графики открываются на текущем периоде посередине экрана и показывают, куда он идёт, рядом с тем же периодом год назад. Новое меню рядом с лупами добавляет линию среднего, максимум и минимум или прокрутку под линейкой, и выбор действует на всех графиках.
-• У каждой категории появился график за последние 12 месяцев с бюджетом в виде линии: месяцы выше него окрашиваются оранжевым.
-• Новый инсайт «По дням»: в какие дни недели вы тратите больше всего и на что, каждый день последних 16 недель в календаре и закономерности, например выходные или начало месяца.
+Что нового в Tenra 1.7.1:
+• На iOS 27 уведомления банка записываются сами: оплаты картой и по QR, покупки в интернете, переводы и поступления от любого банка, без единого вопроса. Перевод между своими картами в двух банках станет одним переводом. Один раз настройте в Настройках › Siri и команды › Настроить уведомления банка. Текст уведомлений не покидает iPhone.
+• Цели следят за курсом и календарём: остаток, сумма в месяц и отметка о просрочке обновляются сами, а цель, которую счёт довёл до нужной суммы, запоминает день, когда она достигнута.
+• Долги: если возврат больше остатка, Tenra спросит, записать всю сумму или только остаток; срок нельзя поставить раньше дня, когда вы дали или взяли в долг, а Тэн ещё раз проверяет свой черновик, когда вы его сохраняете.
+• Правка депозита и удаление кредита работают быстрее: пересчитываются только затронутые счета.
+```
+
+## en-GB
+
+```
+Что нового в Tenra 1.7.1:
+• На iOS 27 уведомления банка записываются сами: оплаты картой и по QR, покупки в интернете, переводы и поступления от любого банка, без единого вопроса. Перевод между своими картами в двух банках станет одним переводом. Один раз настройте в Настройках › Siri и команды › Настроить уведомления банка. Текст уведомлений не покидает iPhone.
+• Цели следят за курсом и календарём: остаток, сумма в месяц и отметка о просрочке обновляются сами, а цель, которую счёт довёл до нужной суммы, запоминает день, когда она достигнута.
+• Долги: если возврат больше остатка, Tenra спросит, записать всю сумму или только остаток; срок нельзя поставить раньше дня, когда вы дали или взяли в долг, а Тэн ещё раз проверяет свой черновик, когда вы его сохраняете.
+• Правка депозита и удаление кредита работают быстрее: пересчитываются только затронутые счета.
 ```
 
 ## de-DE
 
 ```
-Neu in Tenra 1.8:
-• Diagramme öffnen sich mit dem aktuellen Zeitraum in der Bildschirmmitte und zeigen, wohin er sich entwickelt, neben demselben Zeitraum vor einem Jahr. Ein neues Menü neben dem Zoom fügt die Durchschnittslinie sowie Höchst- und Tiefstwerte hinzu oder lässt das Diagramm unter einem Lineal scrollen; Ihre Wahl gilt für alle Diagramme.
-• Jede Kategorie hat jetzt ein Diagramm der letzten 12 Monate mit ihrem Budget als Linie: Monate darüber werden orange.
-• Neuer Insight „Nach Tagen“: an welchen Wochentagen Sie am meisten ausgeben und wofür, jeder Tag der letzten 16 Wochen in einem Kalender und was auffällt, etwa Wochenenden oder der Monatsanfang.
+Neu in Tenra 1.7.1:
+• Unter iOS 27 tragen sich Ihre Bankmitteilungen selbst ein: Karten- und QR-Zahlungen, Onlinekäufe, Überweisungen und Geldeingänge jeder Bank, ohne eine einzige Frage. Eine Überweisung zwischen Ihren eigenen Karten bei zwei Banken wird zu einer Umbuchung. Richten Sie das einmal unter Einstellungen › Siri und Kurzbefehle › Bankmitteilungen einrichten ein. Der Text verlässt Ihr iPhone nie.
+• Sparziele halten mit Wechselkursen und Kalender Schritt: Restbetrag, Monatsbetrag und die Markierung „überfällig“ aktualisieren sich von selbst, und ein Sparziel, das Ihr Konto erreicht hat, merkt sich den Tag.
+• Schulden: Ist eine Rückzahlung höher als der Rest, fragt Tenra, ob der ganze Betrag oder nur der Rest erfasst wird, ein Fälligkeitsdatum liegt nie vor dem Tag, an dem Sie Geld verliehen oder geliehen haben, und Ten prüft seinen Entwurf beim Speichern noch einmal.
+• Ein Sparkonto bearbeiten oder einen Kredit löschen geht schneller: Nur die betroffenen Konten werden neu berechnet.
 ```
 
 ## es-ES
 
 ```
-Novedades de Tenra 1.8:
-• Los gráficos se abren en el periodo actual, en el centro de la pantalla, y muestran hacia dónde va junto al mismo periodo de hace un año. Un nuevo menú junto al zoom añade la línea de promedio y los máximos y mínimos, o hace que el gráfico se desplace bajo una regla; tu elección se aplica a todos los gráficos.
-• Cada categoría tiene ahora un gráfico de sus últimos 12 meses con su presupuesto como línea: los meses que lo superan se ven en naranja.
-• Nuevo análisis, Por días: qué días de la semana gastas más y en qué, cada día de las últimas 16 semanas en un calendario y lo que destaca, como los fines de semana o el inicio de mes.
+Novedades de Tenra 1.7.1:
+• En iOS 27, las notificaciones de tu banco se registran solas: pagos con tarjeta y con QR, compras por internet, transferencias y dinero que entra, de cualquier banco, sin una sola pregunta. Una transferencia entre tus propias tarjetas de dos bancos se convierte en una sola. Configúralo una vez en Ajustes › Siri y atajos › Configurar las notificaciones del banco. El texto nunca sale de tu iPhone.
+• Las metas siguen el tipo de cambio y el calendario: lo que falta, el importe mensual y el aviso de retraso se actualizan solos, y una meta que tu cuenta alcanzó recuerda el día en que lo hizo.
+• Deudas: si un pago supera lo que falta, Tenra pregunta si registrar todo o solo lo que falta, la fecha de vencimiento no puede ser anterior al día del préstamo y Ten vuelve a comprobar su borrador al guardarlo.
+• Editar un depósito o eliminar un préstamo es más rápido: solo se recalculan las cuentas afectadas.
 ```
 
 ## es-MX
 
 ```
-Novedades de Tenra 1.8:
-• Las gráficas se abren en el periodo actual, en el centro de la pantalla, y muestran hacia dónde va junto al mismo periodo de hace un año. Un nuevo menú junto al zoom agrega la línea de promedio y los máximos y mínimos, o hace que la gráfica se desplace bajo una regla; tu elección se aplica a todas las gráficas.
-• Cada categoría tiene ahora una gráfica de sus últimos 12 meses con su presupuesto como línea: los meses que lo superan se ven en naranja.
-• Nuevo análisis, Por días: qué días de la semana gastas más y en qué, cada día de las últimas 16 semanas en un calendario y lo que destaca, como los fines de semana o el inicio de mes.
+Novedades de Tenra 1.7.1:
+• En iOS 27, las notificaciones de tu banco se registran solas: pagos con tarjeta y con QR, compras en línea, transferencias y dinero que entra, de cualquier banco, sin una sola pregunta. Una transferencia entre tus propias tarjetas de dos bancos se convierte en una sola. Configúralo una vez en Ajustes › Siri y atajos › Configurar las notificaciones del banco. El texto nunca sale de tu iPhone.
+• Las metas siguen el tipo de cambio y el calendario: lo que falta, el monto mensual y el aviso de retraso se actualizan solos, y una meta que tu cuenta alcanzó recuerda el día en que lo hizo.
+• Deudas: si un pago supera lo que falta, Tenra pregunta si registrar todo o solo lo que falta, la fecha de vencimiento no puede ser anterior al día del préstamo y Ten vuelve a revisar su borrador al guardarlo.
+• Editar un depósito o eliminar un préstamo es más rápido: solo se recalculan las cuentas afectadas.
 ```
 
 ## fr-FR
 
 ```
-Nouveautés de Tenra 1.8 :
-• Les graphiques s'ouvrent sur la période en cours, au milieu de l'écran, et montrent où elle va, à côté de la même période il y a un an. Un nouveau menu à côté du zoom ajoute la ligne de moyenne et les plus hauts et plus bas, ou fait défiler le graphique sous une règle ; votre choix s'applique à tous les graphiques.
-• Chaque catégorie a désormais un graphique de ses 12 derniers mois, avec son budget en ligne : les mois au-dessus passent en orange.
-• Nouvel aperçu, Par jour : les jours de la semaine où vous dépensez le plus et pour quoi, chaque jour des 16 dernières semaines dans un calendrier, et ce qui ressort, comme les week-ends ou le début du mois.
+Nouveautés de Tenra 1.7.1 :
+• Sous iOS 27, les notifications de votre banque s'enregistrent toutes seules : paiements par carte et par QR, achats en ligne, virements et argent reçu, quelle que soit la banque, sans une seule question. Un virement entre vos propres cartes dans deux banques devient un seul virement. Configurez-le une fois dans Réglages › Siri et raccourcis › Configurer les notifications bancaires. Le texte ne quitte jamais votre iPhone.
+• Les objectifs suivent les taux de change et le calendrier : le reste, le montant mensuel et la mention « en retard » se mettent à jour seuls, et un objectif atteint grâce à votre compte retient le jour où il l'a été.
+• Dettes : si un remboursement dépasse ce qui reste, Tenra demande s'il faut tout enregistrer ou seulement le reste, une échéance ne peut pas précéder le jour du prêt, et Ten vérifie à nouveau son brouillon quand vous l'enregistrez.
+• Modifier un compte épargne ou supprimer un crédit est plus rapide : seuls les comptes concernés sont recalculés.
 ```
 
 ## fr-CA
 
 ```
-Nouveautés de Tenra 1.8 :
-• Les graphiques s'ouvrent sur la période en cours, au milieu de l'écran, et montrent où elle va, à côté de la même période il y a un an. Un nouveau menu à côté du zoom ajoute la ligne de moyenne et les plus hauts et plus bas, ou fait défiler le graphique sous une règle ; votre choix s'applique à tous les graphiques.
-• Chaque catégorie a maintenant un graphique de ses 12 derniers mois, avec son budget en ligne : les mois au-dessus passent en orange.
-• Nouvel aperçu, Par jour : les jours de la semaine où vous dépensez le plus et pour quoi, chaque jour des 16 dernières semaines dans un calendrier, et ce qui ressort, comme les fins de semaine ou le début du mois.
+Nouveautés de Tenra 1.7.1 :
+• Sous iOS 27, les notifications de votre banque s'enregistrent toutes seules : paiements par carte et par QR, achats en ligne, virements et argent reçu, quelle que soit la banque, sans une seule question. Un virement entre vos propres cartes dans deux banques devient un seul virement. Configurez-le une fois dans Réglages › Siri et raccourcis › Configurer les notifications bancaires. Le texte ne quitte jamais votre iPhone.
+• Les objectifs suivent les taux de change et le calendrier : le reste, le montant mensuel et la mention « en retard » se mettent à jour seuls, et un objectif atteint grâce à votre compte retient le jour où il l'a été.
+• Dettes : si un remboursement dépasse ce qui reste, Tenra demande s'il faut tout enregistrer ou seulement le reste, une échéance ne peut pas précéder le jour du prêt, et Ten vérifie à nouveau son brouillon quand vous l'enregistrez.
+• Modifier un compte épargne ou supprimer un crédit est plus rapide : seuls les comptes concernés sont recalculés.
 ```
 
 ## tr
 
 ```
-Tenra 1.8'deki yenilikler:
-• Grafikler mevcut dönemi ekranın ortasında açıyor ve bir yıl önceki aynı dönemin yanında nereye gittiğini gösteriyor. Yakınlaştırmanın yanındaki yeni menü ortalama çizgisini, en yüksek ve en düşük değerleri ekliyor ya da grafiğin bir cetvelin altında kaymasını sağlıyor; seçiminiz tüm grafiklere uygulanır.
-• Her kategorinin artık son 12 ayının grafiği var, bütçesi bir çizgi olarak gösteriliyor: bütçeyi aşan aylar turuncu olur.
-• Yeni içgörü, Günlere göre: haftanın hangi günlerinde neye en çok harcadığınız, son 16 haftanın her günü bir takvimde ve öne çıkanlar, örneğin hafta sonları ya da ay başı.
+Tenra 1.7.1'deki yenilikler:
+• iOS 27'de bankanın bildirimleri kendiliğinden kaydedilir: kartla ve QR ile ödemeler, internet alışverişleri, havaleler ve gelen paralar, hangi banka olursa olsun, tek bir soru sormadan. İki bankadaki kendi kartların arasındaki bir havale tek bir transfer olur. Ayarlar › Siri ve kısayollar › Banka bildirimlerini kur bölümünden bir kez kur. Bildirim metni iPhone'undan hiç çıkmaz.
+• Hedefler döviz kurlarına ve takvime ayak uydurur: kalan tutar, aylık tutar ve gecikme işareti kendiliğinden güncellenir; hesabının hedefe ulaştırdığı bir hedef, ulaşıldığı günü hatırlar.
+• Borçlar: geri ödeme kalan tutarı aşarsa Tenra tamamını mı yoksa yalnızca kalanı mı kaydedeceğini sorar, vade tarihi borcun verildiği ya da alındığı günden önce olamaz ve Ten taslağını kaydederken bir kez daha kontrol eder.
+• Bir mevduatı düzenlemek ya da bir krediyi silmek daha hızlı: yalnızca etkilenen hesaplar yeniden hesaplanır.
 ```
 
 ## pt-BR
 
 ```
-Novidades do Tenra 1.8:
-• Os gráficos abrem no período atual, no meio da tela, e mostram para onde ele vai, ao lado do mesmo período há um ano. Um novo menu ao lado do zoom adiciona a linha da média e os máximos e mínimos, ou faz o gráfico rolar sob uma régua; sua escolha vale para todos os gráficos.
-• Cada categoria agora tem um gráfico dos últimos 12 meses com o orçamento como linha: os meses acima dele ficam laranja.
-• Novo insight, Por dia: em quais dias da semana você gasta mais e com o quê, cada dia das últimas 16 semanas em um calendário e o que se destaca, como os fins de semana ou o início do mês.
+Novidades do Tenra 1.7.1:
+• No iOS 27, as notificações do seu banco se registram sozinhas: pagamentos no cartão e por QR, compras on-line, transferências e dinheiro que entra, de qualquer banco, sem uma única pergunta. Uma transferência entre seus próprios cartões em dois bancos vira uma só. Configure uma vez em Ajustes › Siri e atalhos › Configurar notificações do banco. O texto nunca sai do seu iPhone.
+• As metas acompanham o câmbio e o calendário: o que falta, o valor mensal e o aviso de atraso se atualizam sozinhos, e uma meta que sua conta alcançou lembra o dia em que isso aconteceu.
+• Dívidas: se um pagamento passar do que falta, o Tenra pergunta se registra tudo ou só o que falta, o vencimento não pode ser antes do dia do empréstimo e o Ten confere o rascunho de novo quando você salva.
+• Editar um depósito ou excluir um empréstimo ficou mais rápido: só as contas afetadas são recalculadas.
 ```
 
 ## it
 
 ```
-Novità di Tenra 1.8:
-• I grafici si aprono sul periodo in corso, al centro dello schermo, e mostrano dove sta andando, accanto allo stesso periodo di un anno fa. Un nuovo menu accanto allo zoom aggiunge la linea della media e i massimi e minimi, oppure fa scorrere il grafico sotto un righello; la scelta vale per tutti i grafici.
-• Ogni categoria ha ora un grafico degli ultimi 12 mesi con il suo budget come linea: i mesi oltre il budget diventano arancioni.
-• Nuovo insight, Per giorno: in quali giorni della settimana spendi di più e per cosa, ogni giorno delle ultime 16 settimane in un calendario e cosa spicca, come i fine settimana o l'inizio del mese.
+Novità di Tenra 1.7.1:
+• Su iOS 27 le notifiche della tua banca si registrano da sole: pagamenti con carta e con QR, acquisti online, bonifici e soldi in entrata, da qualsiasi banca, senza una sola domanda. Un bonifico tra le tue carte in due banche diventa un unico trasferimento. Configuralo una volta in Impostazioni › Siri e comandi rapidi › Configura le notifiche della banca. Il testo non lascia mai il tuo iPhone.
+• Gli obiettivi seguono i cambi e il calendario: quanto manca, la cifra mensile e il segno di ritardo si aggiornano da soli, e un obiettivo che il tuo conto ha raggiunto ricorda il giorno in cui è successo.
+• Debiti: se un rimborso supera quanto resta, Tenra chiede se registrare tutto o solo quanto resta, la scadenza non può essere prima del giorno del prestito e Ten ricontrolla la sua bozza quando la salvi.
+• Modificare un deposito o eliminare un prestito è più veloce: vengono ricalcolati solo i conti coinvolti.
 ```
 
 ## uk
 
 ```
-Що нового в Tenra 1.8:
-• Графіки відкриваються на поточному періоді посередині екрана й показують, куди він іде, поруч із тим самим періодом рік тому. Нове меню поруч із лупами додає лінію середнього, максимум і мінімум або прокручування під лінійкою, і вибір діє на всіх графіках.
-• Кожна категорія має графік за останні 12 місяців із бюджетом у вигляді лінії: місяці понад нього стають помаранчевими.
-• Новий інсайт «За днями»: у які дні тижня ви витрачаєте найбільше і на що, кожен день останніх 16 тижнів у календарі та закономірності, наприклад вихідні чи початок місяця.
+Що нового в Tenra 1.7.1:
+• На iOS 27 сповіщення банку записуються самі: оплати карткою і за QR, покупки в інтернеті, перекази та надходження від будь-якого банку, без жодного питання. Переказ між власними картками у двох банках стане одним переказом. Один раз налаштуйте в Налаштуваннях › Siri та команди › Налаштувати сповіщення банку. Текст сповіщень не залишає iPhone.
+• Цілі стежать за курсом і календарем: залишок, сума на місяць і позначка про прострочення оновлюються самі, а ціль, яку рахунок довів до потрібної суми, запам'ятовує день, коли її досягнуто.
+• Борги: якщо повернення більше за залишок, Tenra спитає, записати всю суму чи лише залишок; строк не можна поставити раніше дня, коли ви дали або взяли в борг, а Тен ще раз перевіряє свою чернетку, коли ви її зберігаєте.
+• Редагування депозиту й видалення кредиту працюють швидше: перераховуються лише зачеплені рахунки.
 ```
 
 ## ja
 
 ```
-Tenra 1.8の新機能：
-• グラフは現在の期間を画面中央にして開き、1年前の同じ期間と並べて今後の見込みを示します。ズームの横の新しいメニューで平均線や最高・最低を追加したり、ルーラーの下でスクロールしたりできます。選択はすべてのグラフに適用されます。
-• 各カテゴリに直近12か月のグラフが加わり、予算が線で表示されます。予算を超えた月はオレンジになります。
-• 新しいインサイト「曜日別」：どの曜日に何に最も多く使っているか、直近16週間の毎日をカレンダーで、週末や月初など目立つ傾向も表示します。
+Tenra 1.7.1 の新機能:
+• iOS 27 では、銀行の通知が自動で記録されます。カードや QR での支払い、オンラインでの買い物、振込、入金を、どの銀行でも質問なしで記録します。2 つの銀行にある自分のカード間の振込は 1 件の振替になります。設定 › Siri とショートカット › 銀行の通知を設定 で一度設定するだけです。通知の文面が iPhone の外に出ることはありません。
+• 貯金目標が為替レートと日付に合わせて更新されます。残り、毎月の金額、期限切れの表示が自動で変わり、口座の残高で達成した目標は達成した日を覚えています。
+• 貸し借り: 返済額が残りを超えると、全額を記録するか残りだけにするかを確認します。期日を貸し借りした日より前にはできません。テンは下書きを保存するときにもう一度確認します。
+• 預金の編集やローンの削除が速くなりました。関係する口座だけを再計算します。
 ```
 
 ## ko
 
 ```
-Tenra 1.8의 새로운 기능:
-• 차트가 현재 기간을 화면 가운데에 두고 열리며, 1년 전 같은 기간과 함께 앞으로의 예상을 보여줍니다. 확대 옆의 새 메뉴에서 평균선과 최고·최저를 추가하거나 눈금자 아래로 차트를 스크롤할 수 있으며, 선택은 모든 차트에 적용됩니다.
-• 각 카테고리에 예산을 선으로 표시한 최근 12개월 차트가 생겼습니다. 예산을 넘은 달은 주황색으로 표시됩니다.
-• 새 인사이트 '요일별': 어느 요일에 무엇에 가장 많이 쓰는지, 최근 16주의 매일을 달력으로, 주말이나 월초처럼 눈에 띄는 패턴을 보여줍니다.
+Tenra 1.7.1의 새로운 기능:
+• iOS 27에서는 은행 알림이 저절로 기록돼요. 카드·QR 결제, 온라인 구매, 송금, 입금을 어느 은행이든 아무것도 묻지 않고 기록해요. 두 은행에 있는 내 카드끼리의 송금은 한 건의 이체가 돼요. 설정 › Siri 및 단축어 › 은행 알림 설정에서 한 번만 설정하세요. 알림 내용은 iPhone 밖으로 나가지 않아요.
+• 저축 목표가 환율과 날짜에 맞춰 업데이트돼요. 남은 금액, 매달 모을 금액, 기한 지남 표시가 저절로 바뀌고, 계좌 잔액으로 달성한 목표는 달성한 날을 기억해요.
+• 빌린 돈: 상환 금액이 남은 금액보다 많으면 전부 기록할지 남은 금액만 기록할지 물어봐요. 기한은 빌려주거나 빌린 날보다 앞설 수 없어요. 텐은 초안을 저장할 때 한 번 더 확인해요.
+• 예금 편집과 대출 삭제가 빨라졌어요. 관련된 계좌만 다시 계산해요.
 ```
 
-## Submission checklist (1.8)
+## Submission checklist (1.7.1)
 
-1. **DesignKit 8.3.0** released and Tenra's pin on it (the DesignKit update workflow bumps `main`).
-2. **Device check** of the TestFlight build with these changes, in light and dark, Russian and
-   English: the charts on Analytics (the current period in the middle, "so far", the forecast and
-   a year ago, the options menu and a ruler the chart scrolls under), a category's 12 months with
-   its budget line, and "By day" (the feed card's bars, the calendar, the weekday chart opening on
-   the busiest day and its categories, what stands out).
-3. **What's New**: this file, through `prepare-version`.
+1. **CI green** on the branch (build and TenraTests on Xcode 27), then a TestFlight build from
+   `main` (Actions → TestFlight, [asc.md](asc.md)).
+2. **Device check** of that build on the iOS 27 iPhone:
+   - a goal following an account: move money into the account past the target, return to the
+     app, open the goal: "Reached" shows today's date (no need to have had the goal open);
+   - a goal in another currency and a goal with a deadline: the list and the screen redraw after
+     a rate refresh and after midnight;
+   - a debt: "Repay" with more than is left asks "Record all" or "Only what is left", both
+     settle the debt, Cancel records nothing; the due date picker does not go before the debt's
+     date;
+   - Ten: draft two repayments for one debt, save both: the second fails; draft a debt, then
+     Save as a free user (or after Pro ends): it fails;
+   - the microphone and speech permission prompts on a fresh install (they name Ten);
+   - deleting a loan both ways and editing a deposit: the paying accounts' balances are right.
+3. **The store build**: the TestFlight build that passed step 2, `prepare-version --version 1.7.1
+   --build N`.
+4. **What's New**: this file (`prepare-version`), en-GB included.
+5. **Screenshots**: unchanged from 1.7 (a new version takes the previous version's screenshots in
+   App Store Connect); no re-shoot.
+6. **App Privacy**: unchanged. The notification text is read on the device and never sent.
+7. **App Review notes**, in English, set from this block by
+   `asc.py review-notes --version 1.7.1 --apply`:
+
+```
+Bank notification capture (announced in 1.7.1) uses the Shortcuts personal automation "When I get a notification from an app" (iOS 27), which runs the Tenra action "Log a bank notification" with the notification's Title, Subtitle, Text, App and Date. To try it without a bank app: open Shortcuts, create a new shortcut, add the Tenra action "Log a bank notification", set Text to "Card ending 4321 was charged $25.00 at COFFEE SHOP" and App to "My Bank", and run it. The expense appears in Tenra at once and waits in Settings > Wallet > To review. Settings > Siri & Shortcuts > Set up bank notifications has the step-by-step guide and "Check a notification", which shows what Tenra reads from a pasted notification without saving anything. The notification's text never leaves the device.
+
+Apple Pay capture uses the Shortcuts "Wallet" personal automation, which fires only on a real contactless payment. To try it without one: create a shortcut with the Tenra action "Log an Apple Pay payment", fill in an amount (e.g. 1500) and a merchant (e.g. "Coffee Boom") and run it. The step-by-step setup guide is in Settings > Siri & Shortcuts.
+
+Tenra Pro features can be tried with a sandbox purchase on the paywall: Settings, the "Get Tenra Pro" button at the top.
+```
+
+8. **One submission**: `asc.py prepare-review --version 1.7.1` puts the version into a draft
+   review submission (the custom pages are unchanged), never submitted; the founder sends it:
+   App Store Connect → Tenra → Distribution → the draft submission → Submit for Review.

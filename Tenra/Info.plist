@@ -94,9 +94,9 @@
 	<key>NSFaceIDUsageDescription</key>
 	<string>Tenra uses Face ID to keep your finances locked when you turn on the app lock.</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>Tenra uses the microphone so you can add expenses by voice.</string>
+	<string>Tenra uses the microphone so you can add expenses and talk to Ten by voice.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
-	<string>Tenra turns what you say into transactions. Speech is processed by Apple.</string>
+	<string>Tenra turns what you say into transactions and messages to Ten. Speech is processed by Apple.</string>
 	<key>NSUbiquitousContainers</key>
 	<dict>
 		<key>iCloud.dakacom.Tenra</key>

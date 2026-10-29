@@ -267,17 +267,16 @@ extension InsightsService {
                 : String(localized: "insights.formula.netWorth.rec.addAssets"),
             baseCurrency: baseCurrency
         )
-        // What the person has, as a bar: money, assets, what others owe.
-        let palette: [NetWorthCalculator.Line.Kind: Color] = [
-            .money: AppColors.accent, .assets: AppColors.income, .owedToMe: AppColors.transfer,
-        ]
+        // What the person has, as a bar: money (the accent), assets (green), what others owe.
         let owned = result.lines.filter { !$0.kind.isLiability && $0.amount > 0 }
         let ownedTotal = owned.reduce(0) { $0 + $1.amount }
         let segments = owned.map { line in
             DonutSlice(
                 id: line.kind.rawValue,
                 amount: line.amount,
-                color: palette[line.kind] ?? AppColors.accent,
+                color: line.kind == .assets ? AppColors.income
+                    : line.kind == .owedToMe ? AppColors.transfer
+                    : AppColors.accent,
                 label: String(localized: String.LocalizationValue("insights.formula.netWorth.row.\(line.kind.rawValue)")),
                 percentage: ownedTotal > 0 ? line.amount / ownedTotal * 100 : 0
             )

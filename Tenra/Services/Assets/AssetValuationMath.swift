@@ -103,8 +103,8 @@ nonisolated enum AssetValuationMath {
                 multiple = value / price
                 let end = asset.soldAt ?? today
                 if let start = asset.purchaseDate, value > 0,
-                   let years = years(from: start, to: end, calendar: calendar), years >= 1 {
-                    annualGrowth = (pow(value / price, 1 / years) - 1) * 100
+                   let span = years(from: start, to: end, calendar: calendar), span >= 1 {
+                    annualGrowth = (pow(value / price, 1 / span) - 1) * 100
                 }
             }
         }

@@ -1004,7 +1004,7 @@
 
 // Wealth card
 "insights.wealth" = "Капітал";
-"insights.wealth.title" = "Накопичений капітал";
+"insights.wealth.title" = "Гроші на рахунках";
 "insights.wealth.subtitle" = "Загальний баланс за всіма рахунками";
 "insights.wealth.accounts" = "Рахунки";
 "insights.wealthGrowth" = "Зміна капіталу";
@@ -2359,3 +2359,33 @@
 "asset.valuationHint" = "Скільки коштує зараз?";
 "asset.saleHint" = "За скільки продали?";
 "asset.chart.value" = "Вартість";
+
+/* Assets, phase 2: rent, upkeep and net worth (docs/domains/assets.md) */
+"asset.rent" = "Оренда";
+"asset.rent.hint" = "Доходи цієї категорії рахуються орендою активу.";
+"asset.upkeep" = "Утримання";
+"asset.upkeep.hint" = "Витрати цієї категорії рахуються його утриманням: податок, внески, ремонт, страховка.";
+"asset.link.category" = "Категорія";
+"asset.link.none" = "Не вибрано";
+"asset.link.subcategory" = "Підкатегорія";
+"asset.link.wholeCategory" = "Уся категорія";
+"asset.link.taken" = "Ці операції вже рахує інший актив. Виберіть підкатегорію або іншу категорію.";
+"asset.rentYear" = "Оренда за 12 міс.";
+"asset.upkeepYear" = "Утримання за 12 міс.";
+"asset.yield" = "Дохідність оренди";
+"asset.fullResult" = "Повний результат";
+"asset.rent.empty" = "У «%@» ще немає оренди. Запишіть перший платіж і зробіть його щомісячним.";
+"insights.netWorth.title" = "Чистий капітал";
+"insights.netWorth.subtitle" = "Гроші, активи та борги";
+"insights.formula.netWorth.title" = "Чистий капітал";
+"insights.formula.netWorth.heroLabel" = "Чистий капітал";
+"insights.formula.netWorth.formulaHeader" = "З чого складається";
+"insights.formula.netWorth.row.money" = "Гроші на рахунках";
+"insights.formula.netWorth.row.assets" = "Активи";
+"insights.formula.netWorth.row.owedToMe" = "Мені винні";
+"insights.formula.netWorth.row.loans" = "Кредити";
+"insights.formula.netWorth.row.iOwe" = "Мої борги";
+"insights.formula.netWorth.row.total" = "Чистий капітал";
+"insights.formula.netWorth.explainer" = "Усе, що у вас є, мінус усе, що ви винні: гроші на рахунках, активи за вашою часткою і те, що винні вам, без залишку кредитів і ваших боргів.";
+"insights.formula.netWorth.rec.withAssets" = "Час від часу оновлюйте оцінку активів, щоб капітал залишався чесним.";
+"insights.formula.netWorth.rec.addAssets" = "Додайте квартиру чи авто у «Фінансах», щоб побачити весь капітал.";

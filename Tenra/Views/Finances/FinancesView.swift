@@ -91,6 +91,7 @@ struct FinancesView: View {
                     AssetsListView(assetStore: coordinator.assetStore)
                 case .assetDetail(let assetId):
                     AssetDetailView(assetStore: coordinator.assetStore, assetId: assetId)
+                        .environment(timeFilterManager)
                 case .subscriptions:
                     SubscriptionsListView(
                         transactionStore: transactionStore,

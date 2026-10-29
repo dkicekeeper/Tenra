@@ -1004,7 +1004,7 @@
 
 // Wealth card
 "insights.wealth" = "資産";
-"insights.wealth.title" = "積み上げた資産";
+"insights.wealth.title" = "口座のお金";
 "insights.wealth.subtitle" = "全口座の残高合計";
 "insights.wealth.accounts" = "口座";
 "insights.wealthGrowth" = "資産の変化";
@@ -2359,3 +2359,33 @@
 "asset.valuationHint" = "今の価値は？";
 "asset.saleHint" = "いくらで売りましたか？";
 "asset.chart.value" = "価値";
+
+/* Assets, phase 2: rent, upkeep and net worth (docs/domains/assets.md) */
+"asset.rent" = "家賃収入";
+"asset.rent.hint" = "このカテゴリの収入を資産の家賃収入として数えます。";
+"asset.upkeep" = "維持費";
+"asset.upkeep.hint" = "このカテゴリの支出を維持費として数えます：税金、管理費、修理、保険。";
+"asset.link.category" = "カテゴリ";
+"asset.link.none" = "なし";
+"asset.link.subcategory" = "サブカテゴリ";
+"asset.link.wholeCategory" = "カテゴリ全体";
+"asset.link.taken" = "これらの取引は別の資産がすでに数えています。サブカテゴリか別のカテゴリを選んでください。";
+"asset.rentYear" = "家賃収入（12か月）";
+"asset.upkeepYear" = "維持費（12か月）";
+"asset.yield" = "利回り";
+"asset.fullResult" = "トータルの結果";
+"asset.rent.empty" = "「%@」にはまだ家賃収入がありません。最初の入金を記録して、毎月にしましょう。";
+"insights.netWorth.title" = "純資産";
+"insights.netWorth.subtitle" = "お金、資産、借金";
+"insights.formula.netWorth.title" = "純資産";
+"insights.formula.netWorth.heroLabel" = "純資産";
+"insights.formula.netWorth.formulaHeader" = "内訳";
+"insights.formula.netWorth.row.money" = "口座のお金";
+"insights.formula.netWorth.row.assets" = "資産";
+"insights.formula.netWorth.row.owedToMe" = "貸しているお金";
+"insights.formula.netWorth.row.loans" = "ローン";
+"insights.formula.netWorth.row.iOwe" = "借りているお金";
+"insights.formula.netWorth.row.total" = "純資産";
+"insights.formula.netWorth.explainer" = "持っているものから借りているものを引いた額です：口座のお金、持ち分の資産、貸しているお金から、ローン残高と借りているお金を差し引きます。";
+"insights.formula.netWorth.rec.withAssets" = "純資産が正しく保てるよう、ときどき資産の評価を更新しましょう。";
+"insights.formula.netWorth.rec.addAssets" = "家や車を「ファイナンス」に追加すると、純資産の全体が見えます。";

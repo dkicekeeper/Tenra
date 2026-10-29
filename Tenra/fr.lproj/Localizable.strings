@@ -1004,7 +1004,7 @@
 
 // Wealth card
 "insights.wealth" = "Capital";
-"insights.wealth.title" = "Capital accumulé";
+"insights.wealth.title" = "Argent sur les comptes";
 "insights.wealth.subtitle" = "Solde total de tous vos comptes";
 "insights.wealth.accounts" = "Comptes";
 "insights.wealthGrowth" = "Évolution du patrimoine";
@@ -2359,3 +2359,33 @@
 "asset.valuationHint" = "Combien vaut-il maintenant ?";
 "asset.saleHint" = "Vendu combien ?";
 "asset.chart.value" = "Valeur";
+
+/* Assets, phase 2: rent, upkeep and net worth (docs/domains/assets.md) */
+"asset.rent" = "Loyer";
+"asset.rent.hint" = "Les revenus de cette catégorie comptent comme le loyer de l’actif.";
+"asset.upkeep" = "Entretien";
+"asset.upkeep.hint" = "Les dépenses de cette catégorie comptent comme son entretien : taxes, charges, réparations, assurance.";
+"asset.link.category" = "Catégorie";
+"asset.link.none" = "Aucune";
+"asset.link.subcategory" = "Sous-catégorie";
+"asset.link.wholeCategory" = "Toute la catégorie";
+"asset.link.taken" = "Un autre actif compte déjà ces opérations. Choisissez une sous-catégorie ou une autre catégorie.";
+"asset.rentYear" = "Loyers sur 12 mois";
+"asset.upkeepYear" = "Entretien sur 12 mois";
+"asset.yield" = "Rendement locatif";
+"asset.fullResult" = "Résultat total";
+"asset.rent.empty" = "Pas encore de loyer dans « %@ ». Enregistrez le premier paiement et rendez-le mensuel.";
+"insights.netWorth.title" = "Patrimoine net";
+"insights.netWorth.subtitle" = "Argent, actifs et dettes";
+"insights.formula.netWorth.title" = "Patrimoine net";
+"insights.formula.netWorth.heroLabel" = "Patrimoine net";
+"insights.formula.netWorth.formulaHeader" = "De quoi il se compose";
+"insights.formula.netWorth.row.money" = "Argent sur les comptes";
+"insights.formula.netWorth.row.assets" = "Actifs";
+"insights.formula.netWorth.row.owedToMe" = "On vous doit";
+"insights.formula.netWorth.row.loans" = "Prêts";
+"insights.formula.netWorth.row.iOwe" = "Vos dettes";
+"insights.formula.netWorth.row.total" = "Patrimoine net";
+"insights.formula.netWorth.explainer" = "Tout ce que vous avez moins tout ce que vous devez : l’argent des comptes, les actifs à votre part et ce qu’on vous doit, moins le reste de vos prêts et vos dettes.";
+"insights.formula.netWorth.rec.withAssets" = "Mettez à jour l’estimation de vos actifs de temps en temps pour que le patrimoine reste juste.";
+"insights.formula.netWorth.rec.addAssets" = "Ajoutez votre logement ou votre voiture dans Finances pour voir tout votre patrimoine.";

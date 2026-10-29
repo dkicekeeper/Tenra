@@ -1004,7 +1004,7 @@
 
 // Wealth card
 "insights.wealth" = "Капитал";
-"insights.wealth.title" = "Жинақталған капитал";
+"insights.wealth.title" = "Шоттардағы ақша";
 "insights.wealth.subtitle" = "Барлық шоттардың жалпы балансы";
 "insights.wealth.accounts" = "Шоттар";
 "insights.wealthGrowth" = "Капитал өзгерісі";
@@ -2359,3 +2359,33 @@
 "asset.valuationHint" = "Қазір қанша тұрады?";
 "asset.saleHint" = "Қаншаға саттыңыз?";
 "asset.chart.value" = "Құны";
+
+/* Assets, phase 2: rent, upkeep and net worth (docs/domains/assets.md) */
+"asset.rent" = "Жалға беру";
+"asset.rent.hint" = "Бұл санаттағы кірістер активтің жалдау ақысы болып саналады.";
+"asset.upkeep" = "Ұстау шығыны";
+"asset.upkeep.hint" = "Бұл санаттағы шығыстар оны ұстау шығыны болып саналады: салық, жарналар, жөндеу, сақтандыру.";
+"asset.link.category" = "Санат";
+"asset.link.none" = "Таңдалмаған";
+"asset.link.subcategory" = "Ішкі санат";
+"asset.link.wholeCategory" = "Бүкіл санат";
+"asset.link.taken" = "Бұл операцияларды басқа актив санап жатыр. Ішкі санатты не басқа санатты таңдаңыз.";
+"asset.rentYear" = "Жалдау, 12 ай";
+"asset.upkeepYear" = "Ұстау, 12 ай";
+"asset.yield" = "Жалдау табыстылығы";
+"asset.fullResult" = "Толық нәтиже";
+"asset.rent.empty" = "«%@» санатында әлі жалдау ақысы жоқ. Алғашқы төлемді жазып, оны ай сайынғы етіңіз.";
+"insights.netWorth.title" = "Таза капитал";
+"insights.netWorth.subtitle" = "Ақша, активтер және қарыздар";
+"insights.formula.netWorth.title" = "Таза капитал";
+"insights.formula.netWorth.heroLabel" = "Таза капитал";
+"insights.formula.netWorth.formulaHeader" = "Неден құралады";
+"insights.formula.netWorth.row.money" = "Шоттардағы ақша";
+"insights.formula.netWorth.row.assets" = "Активтер";
+"insights.formula.netWorth.row.owedToMe" = "Маған қарыз";
+"insights.formula.netWorth.row.loans" = "Несиелер";
+"insights.formula.netWorth.row.iOwe" = "Менің қарыздарым";
+"insights.formula.netWorth.row.total" = "Таза капитал";
+"insights.formula.netWorth.explainer" = "Сізде бардың бәрінен қарыз бәрі шегеріледі: шоттардағы ақша, сіздің үлесіңіздегі активтер және сізге қарыздар, несие қалдығы мен өз қарыздарыңыз шегеріліп.";
+"insights.formula.netWorth.rec.withAssets" = "Капитал шынайы болуы үшін активтердің бағасын анда-санда жаңартып тұрыңыз.";
+"insights.formula.netWorth.rec.addAssets" = "Бүкіл капиталды көру үшін пәтерді не көлікті «Қаржы» бөліміне қосыңыз.";

@@ -32,6 +32,11 @@ struct AssetsListView: View {
         coordinator.transactionsViewModel.appSettings.baseCurrency
     }
 
+    /// What the form offers for rent and upkeep, without the links the other assets hold.
+    private func linkOptions(for assetId: String?) -> AssetLinkOptions {
+        AssetLinkOptions.make(store: coordinator.transactionStore, assets: assetStore, excluding: assetId)
+    }
+
     /// The loan accounts an asset can be bought with (a mortgage, a car loan).
     private var loanAccounts: [Account] {
         coordinator.transactionStore.accounts.filter { $0.loanInfo != nil }
@@ -82,12 +87,12 @@ struct AssetsListView: View {
             showingAdd = true
         }
         .sheet(isPresented: $showingAdd) {
-            AssetEditView(asset: nil, loanAccounts: loanAccounts, baseCurrency: baseCurrency) { asset in
+            AssetEditView(asset: nil, loanAccounts: loanAccounts, baseCurrency: baseCurrency, linkOptions: linkOptions(for: nil)) { asset in
                 Task { await assetStore.add(asset) }
             }
         }
         .sheet(item: $editingAsset) { asset in
-            AssetEditView(asset: asset, loanAccounts: loanAccounts, baseCurrency: baseCurrency) { updated in
+            AssetEditView(asset: asset, loanAccounts: loanAccounts, baseCurrency: baseCurrency, linkOptions: linkOptions(for: asset.id)) { updated in
                 Task { await assetStore.update(updated) }
             }
         }

@@ -1004,7 +1004,7 @@
 
 // Wealth card
 "insights.wealth" = "Capital";
-"insights.wealth.title" = "Accumulated Capital";
+"insights.wealth.title" = "Money on Accounts";
 "insights.wealth.subtitle" = "Total balance across all accounts";
 "insights.wealth.accounts" = "Accounts";
 "insights.wealthGrowth" = "Wealth Change";
@@ -2359,3 +2359,33 @@
 "asset.valuationHint" = "What is it worth now?";
 "asset.saleHint" = "What did you sell it for?";
 "asset.chart.value" = "Value";
+
+/* Assets, phase 2: rent, upkeep and net worth (docs/domains/assets.md) */
+"asset.rent" = "Rent";
+"asset.rent.hint" = "Income in this category counts as the asset's rent.";
+"asset.upkeep" = "Upkeep";
+"asset.upkeep.hint" = "Expenses in this category count as its upkeep: tax, fees, repairs, insurance.";
+"asset.link.category" = "Category";
+"asset.link.none" = "Not linked";
+"asset.link.subcategory" = "Subcategory";
+"asset.link.wholeCategory" = "Whole category";
+"asset.link.taken" = "Another asset already counts these transactions. Choose a subcategory or another category.";
+"asset.rentYear" = "Rent, 12 months";
+"asset.upkeepYear" = "Upkeep, 12 months";
+"asset.yield" = "Rental yield";
+"asset.fullResult" = "Total result";
+"asset.rent.empty" = "No rent in “%@” yet. Record the first payment and make it monthly.";
+"insights.netWorth.title" = "Net Worth";
+"insights.netWorth.subtitle" = "Money, assets and debts";
+"insights.formula.netWorth.title" = "Net Worth";
+"insights.formula.netWorth.heroLabel" = "Net worth";
+"insights.formula.netWorth.formulaHeader" = "What it is made of";
+"insights.formula.netWorth.row.money" = "Money on accounts";
+"insights.formula.netWorth.row.assets" = "Assets";
+"insights.formula.netWorth.row.owedToMe" = "Owed to you";
+"insights.formula.netWorth.row.loans" = "Loans";
+"insights.formula.netWorth.row.iOwe" = "Your debts";
+"insights.formula.netWorth.row.total" = "Net worth";
+"insights.formula.netWorth.explainer" = "Everything you have minus everything you owe: money on the accounts, assets at your share and what others owe you, less what is left of your loans and your own debts.";
+"insights.formula.netWorth.rec.withAssets" = "Update your assets' valuations now and then so net worth stays true.";
+"insights.formula.netWorth.rec.addAssets" = "Add your home or car in Finances to see your whole net worth.";

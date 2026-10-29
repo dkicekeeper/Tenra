@@ -1004,7 +1004,7 @@
 
 // Wealth card
 "insights.wealth" = "Capital";
-"insights.wealth.title" = "Capital acumulado";
+"insights.wealth.title" = "Dinheiro nas contas";
 "insights.wealth.subtitle" = "Saldo total de todas as contas";
 "insights.wealth.accounts" = "Contas";
 "insights.wealthGrowth" = "Variação do patrimônio";
@@ -2359,3 +2359,33 @@
 "asset.valuationHint" = "Quanto vale agora?";
 "asset.saleHint" = "Por quanto vendeu?";
 "asset.chart.value" = "Valor";
+
+/* Assets, phase 2: rent, upkeep and net worth (docs/domains/assets.md) */
+"asset.rent" = "Aluguel";
+"asset.rent.hint" = "As receitas desta categoria contam como aluguel do bem.";
+"asset.upkeep" = "Manutenção";
+"asset.upkeep.hint" = "As despesas desta categoria contam como manutenção: impostos, taxas, reparos, seguro.";
+"asset.link.category" = "Categoria";
+"asset.link.none" = "Nenhuma";
+"asset.link.subcategory" = "Subcategoria";
+"asset.link.wholeCategory" = "Categoria inteira";
+"asset.link.taken" = "Outro bem já conta essas transações. Escolha uma subcategoria ou outra categoria.";
+"asset.rentYear" = "Aluguel, 12 meses";
+"asset.upkeepYear" = "Manutenção, 12 meses";
+"asset.yield" = "Rendimento do aluguel";
+"asset.fullResult" = "Resultado total";
+"asset.rent.empty" = "Ainda não há aluguel em “%@”. Registre o primeiro pagamento e torne-o mensal.";
+"insights.netWorth.title" = "Patrimônio líquido";
+"insights.netWorth.subtitle" = "Dinheiro, bens e dívidas";
+"insights.formula.netWorth.title" = "Patrimônio líquido";
+"insights.formula.netWorth.heroLabel" = "Patrimônio líquido";
+"insights.formula.netWorth.formulaHeader" = "Do que é feito";
+"insights.formula.netWorth.row.money" = "Dinheiro nas contas";
+"insights.formula.netWorth.row.assets" = "Bens";
+"insights.formula.netWorth.row.owedToMe" = "Devem a você";
+"insights.formula.netWorth.row.loans" = "Empréstimos";
+"insights.formula.netWorth.row.iOwe" = "Suas dívidas";
+"insights.formula.netWorth.row.total" = "Patrimônio líquido";
+"insights.formula.netWorth.explainer" = "Tudo o que você tem menos tudo o que deve: dinheiro nas contas, bens na sua parte e o que devem a você, menos o que resta dos empréstimos e das suas dívidas.";
+"insights.formula.netWorth.rec.withAssets" = "Atualize de vez em quando a avaliação dos seus bens para o patrimônio ficar real.";
+"insights.formula.netWorth.rec.addAssets" = "Adicione seu imóvel ou carro em Finanças para ver todo o seu patrimônio.";

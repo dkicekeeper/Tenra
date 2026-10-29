@@ -22,6 +22,10 @@ final class DebtStore {
     /// The kept debts have been read: an empty list means there are none.
     private(set) var isLoaded: Bool
 
+    /// Called after the debts change (and once they are read): net worth is recomputed. Set by
+    /// AppCoordinator.
+    @ObservationIgnored var didChange: () -> Void = {}
+
     @ObservationIgnored private let repository: DebtRepository?
     @ObservationIgnored private var loading: Task<Void, Never>?
     @ObservationIgnored private var resetObserver: NSObjectProtocol?
@@ -51,6 +55,7 @@ final class DebtStore {
         let task = Task { @MainActor in
             self.debts = await repository.all()
             self.isLoaded = true
+            self.didChange()
         }
         loading = task
         await task.value
@@ -102,11 +107,17 @@ final class DebtStore {
         }
     }
 
+    /// What is left of the open debts one way, in their own currencies (net worth).
+    func netWorthHoldings(_ direction: DebtDirection) -> [NetWorthCalculator.Holding] {
+        open(direction).map { NetWorthCalculator.Holding(amount: $0.remaining, currency: $0.currency) }
+    }
+
     // MARK: - Changes
 
     func add(_ debt: PersonalDebt) async {
         debts.append(debt)
         await repository?.save(debt)
+        didChange()
     }
 
     /// Writes the debt over its earlier copy.
@@ -114,11 +125,13 @@ final class DebtStore {
         guard let index = debts.firstIndex(where: { $0.id == debt.id }) else { return }
         debts[index] = debt
         await repository?.save(debt)
+        didChange()
     }
 
     func delete(id: String) async {
         debts.removeAll { $0.id == id }
         await repository?.delete(id: id)
+        didChange()
     }
 
     /// The debts of one list in the order the person dragged them to: each gets its place, in

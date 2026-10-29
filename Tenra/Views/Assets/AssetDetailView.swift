@@ -7,9 +7,11 @@
 //  trend pill, then its worth over time, the purchase and every valuation, drawing in. Actions:
 //  "Update value" (a valuation, MoneyEntrySheet) and "Sell" (the sale price and day), or
 //  "Return to assets" once sold. Info rows: the purchase, the gain, the growth a year, the
-//  person's share, the linked loan and their own money in it. Then the valuations, newest first
-//  (a long press deletes one, which breaks into dust). A valuation above the value bursts
-//  sparkles over the hero; a sale above the purchase price celebrates.
+//  person's share, the linked loan and their own money in it, the rent and upkeep of the last 12
+//  months, the yield and the full result. Then the valuations, newest first (a long press deletes
+//  one, which breaks into dust), and the rent and upkeep transactions by day; with a rent
+//  category and no rent yet, a banner opens the add form in it. A valuation above the value
+//  bursts sparkles over the hero; a sale above the purchase price celebrates.
 //
 
 import SwiftUI
@@ -19,12 +21,15 @@ struct AssetDetailView: View {
     let assetId: String
 
     @Environment(AppCoordinator.self) private var coordinator
+    @Environment(TimeFilterManager.self) private var timeFilterManager
     @Environment(\.dismiss) private var dismiss
     @Environment(\.amountsHidden) private var amountsHidden
     @State private var showingEdit = false
     @State private var showingValuation = false
     @State private var showingSale = false
     @State private var showingDelete = false
+    /// The add form in the rent category.
+    @State private var showingRentEntry = false
     /// Bumped by a valuation above the value: one burst of sparkles over the hero.
     @State private var valuationSparkles = 0
     /// Bumped by a sale above the purchase price: one confetti burst.
@@ -55,7 +60,15 @@ struct AssetDetailView: View {
         // linked loan's balance moves with its payments: drawn again when either changes.
         let _ = coordinator.transactionStore.currencyRatesVersion
         let _ = coordinator.transactionStore.accounts.count
+        // Rent and upkeep come from the category indexes (@ObservationIgnored): the transactions,
+        // the categories and the subcategory links are read so an edit to any redraws.
+        let _ = coordinator.transactionStore.transactions.count
+        let _ = coordinator.transactionStore.categoriesMutationVersion
+        let _ = coordinator.transactionStore.subcategoriesMutationVersion
         let summary = assetStore.summary(for: asset, today: today)
+        let income = assetStore.incomeSummary(for: asset, today: today)
+        let linked = assetStore.linkedTransactions(of: asset)
+        let linkedTransactions = ((linked.rent ?? []) + (linked.upkeep ?? [])).sorted { $0.date > $1.date }
         let history = AssetValuationMath.history(of: asset)
         EntityDetailScaffold(
             navigationTitle: asset.name,
@@ -83,11 +96,37 @@ struct AssetDetailView: View {
                         showingSale = true
                     }
                 ),
-            infoRows: infoRows(for: asset, summary: summary),
+            infoRows: infoRows(for: asset, summary: summary, income: income),
+            transactions: linkedTransactions,
+            historyCurrency: appSettings.baseCurrency,
+            accountsById: coordinator.transactionStore.accountById,
+            styleHelper: { tx in
+                CategoryStyleHelper.cached(
+                    category: tx.category,
+                    type: tx.type,
+                    customCategories: coordinator.categoriesViewModel.customCategories
+                )
+            },
+            viewModel: coordinator.transactionsViewModel,
+            categoriesViewModel: coordinator.categoriesViewModel,
+            accountsViewModel: coordinator.accountsViewModel,
+            balanceCoordinator: coordinator.balanceCoordinator,
             hero: {
                 hero(for: asset, summary: summary, history: history)
             },
             customSections: {
+                if let category = rentCategory(of: asset), !income.hasRent, !asset.isSold {
+                    // A rent category without rent: the first payment, made monthly in the form.
+                    StatusBanner(
+                        String(format: String(localized: "asset.rent.empty"), category.name),
+                        status: .info,
+                        action: {
+                            HapticManager.light()
+                            showingRentEntry = true
+                        }
+                    )
+                    .screenPadding()
+                }
                 if !history.isEmpty {
                     historySection(for: asset, history: history)
                 }
@@ -115,7 +154,8 @@ struct AssetDetailView: View {
             AssetEditView(
                 asset: asset,
                 loanAccounts: coordinator.transactionStore.accounts.filter { $0.loanInfo != nil },
-                baseCurrency: appSettings.baseCurrency
+                baseCurrency: appSettings.baseCurrency,
+                linkOptions: AssetLinkOptions.make(store: coordinator.transactionStore, assets: assetStore, excluding: asset.id)
             ) { updated in
                 Task { await assetStore.update(updated) }
             }
@@ -149,6 +189,22 @@ struct AssetDetailView: View {
                     await assetStore.sell(assetId: asset.id, price: amount, date: date, note: note)
                     if let price = asset.purchasePrice, amount > price { celebrations += 1 }
                 }
+            }
+        }
+        .navigationDestination(isPresented: $showingRentEntry) {
+            if let category = rentCategory(of: asset) {
+                TransactionAddModal(
+                    category: category.name,
+                    type: .income,
+                    currency: asset.currency,
+                    accounts: coordinator.accountsViewModel.accounts,
+                    transactionsViewModel: coordinator.transactionsViewModel,
+                    categoriesViewModel: coordinator.categoriesViewModel,
+                    accountsViewModel: coordinator.accountsViewModel,
+                    transactionStore: coordinator.transactionStore,
+                    onDismiss: { showingRentEntry = false }
+                )
+                .environment(timeFilterManager)
             }
         }
         .alert(String(localized: "asset.deleteTitle"), isPresented: $showingDelete) {
@@ -214,7 +270,12 @@ struct AssetDetailView: View {
 
     // MARK: - Info rows
 
-    private func infoRows(for asset: Asset, summary: AssetValuationMath.Summary) -> [InfoRowConfig] {
+    /// The category the asset's rent comes from, while it exists.
+    private func rentCategory(of asset: Asset) -> CustomCategory? {
+        asset.incomeLink.flatMap { coordinator.transactionStore.categoryById[$0.categoryId] }
+    }
+
+    private func infoRows(for asset: Asset, summary: AssetValuationMath.Summary, income: AssetValuationMath.IncomeSummary) -> [InfoRowConfig] {
         var rows: [InfoRowConfig] = [
             InfoRowConfig(icon: "square.grid.2x2", label: String(localized: "asset.kind"), value: AssetEditView.title(of: asset.kind))
         ]
@@ -257,6 +318,31 @@ struct AssetDetailView: View {
                 rows.append(InfoRowConfig(icon: "key", label: String(localized: "asset.equity"), amount: equity, currency: asset.currency))
             }
         }
+        if let rent = income.rentYear {
+            rows.append(InfoRowConfig(icon: "arrow.down.circle", label: String(localized: "asset.rentYear"), amount: rent, currency: asset.currency, iconColor: AppColors.income))
+        }
+        if let upkeep = income.upkeepYear {
+            rows.append(InfoRowConfig(icon: "wrench.and.screwdriver", label: String(localized: "asset.upkeepYear"), amount: upkeep, currency: asset.currency))
+        }
+        if let yield = income.yieldPercent {
+            rows.append(InfoRowConfig(
+                icon: "percent",
+                label: String(localized: "asset.yield"),
+                value: Self.percentText(yield / 100, fractionDigits: 1),
+                iconColor: yield < 0 ? AppColors.destructive : AppColors.income
+            ))
+        }
+        if let result = income.fullResult {
+            let direction = AssetCard.direction(of: result)
+            rows.append(InfoRowConfig(
+                icon: "sum",
+                label: String(localized: "asset.fullResult"),
+                amount: abs(result),
+                currency: asset.currency,
+                prefix: direction == .up ? "+" : direction == .down ? "\u{2212}" : "",
+                iconColor: direction == .down ? AppColors.destructive : AppColors.income
+            ))
+        }
         if let soldAt = asset.soldAt {
             rows.append(InfoRowConfig(
                 icon: "checkmark.seal",
@@ -268,9 +354,9 @@ struct AssetDetailView: View {
         return rows
     }
 
-    /// "50%" in the app's locale.
-    static func percentText(_ share: Double) -> String {
-        share.formatted(.percent.precision(.fractionLength(0)))
+    /// "50%" (or "8.6%" with one fraction digit) in the app's locale.
+    static func percentText(_ share: Double, fractionDigits: Int = 0) -> String {
+        share.formatted(.percent.precision(.fractionLength(fractionDigits)))
     }
 
     // MARK: - History

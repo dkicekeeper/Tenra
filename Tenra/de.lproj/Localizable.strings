@@ -1004,7 +1004,7 @@
 
 // Wealth card
 "insights.wealth" = "Kapital";
-"insights.wealth.title" = "Angespartes Kapital";
+"insights.wealth.title" = "Geld auf den Konten";
 "insights.wealth.subtitle" = "Gesamter Kontostand über alle Konten";
 "insights.wealth.accounts" = "Konten";
 "insights.wealthGrowth" = "Vermögensänderung";
@@ -2359,3 +2359,33 @@
 "asset.valuationHint" = "Was ist es jetzt wert?";
 "asset.saleHint" = "Für wie viel haben Sie verkauft?";
 "asset.chart.value" = "Wert";
+
+/* Assets, phase 2: rent, upkeep and net worth (docs/domains/assets.md) */
+"asset.rent" = "Miete";
+"asset.rent.hint" = "Einnahmen dieser Kategorie zählen als Miete des Vermögenswerts.";
+"asset.upkeep" = "Unterhalt";
+"asset.upkeep.hint" = "Ausgaben dieser Kategorie zählen als Unterhalt: Steuer, Gebühren, Reparaturen, Versicherung.";
+"asset.link.category" = "Kategorie";
+"asset.link.none" = "Keine";
+"asset.link.subcategory" = "Unterkategorie";
+"asset.link.wholeCategory" = "Ganze Kategorie";
+"asset.link.taken" = "Ein anderer Vermögenswert zählt diese Buchungen bereits. Wählen Sie eine Unterkategorie oder eine andere Kategorie.";
+"asset.rentYear" = "Miete, 12 Monate";
+"asset.upkeepYear" = "Unterhalt, 12 Monate";
+"asset.yield" = "Mietrendite";
+"asset.fullResult" = "Gesamtergebnis";
+"asset.rent.empty" = "In „%@“ gibt es noch keine Miete. Erfassen Sie die erste Zahlung und machen Sie sie monatlich.";
+"insights.netWorth.title" = "Nettovermögen";
+"insights.netWorth.subtitle" = "Geld, Vermögenswerte und Schulden";
+"insights.formula.netWorth.title" = "Nettovermögen";
+"insights.formula.netWorth.heroLabel" = "Nettovermögen";
+"insights.formula.netWorth.formulaHeader" = "Woraus es besteht";
+"insights.formula.netWorth.row.money" = "Geld auf den Konten";
+"insights.formula.netWorth.row.assets" = "Vermögenswerte";
+"insights.formula.netWorth.row.owedToMe" = "Man schuldet Ihnen";
+"insights.formula.netWorth.row.loans" = "Kredite";
+"insights.formula.netWorth.row.iOwe" = "Ihre Schulden";
+"insights.formula.netWorth.row.total" = "Nettovermögen";
+"insights.formula.netWorth.explainer" = "Alles, was Sie haben, abzüglich allem, was Sie schulden: Geld auf den Konten, Vermögenswerte zu Ihrem Anteil und was man Ihnen schuldet, abzüglich der Restkredite und Ihrer Schulden.";
+"insights.formula.netWorth.rec.withAssets" = "Aktualisieren Sie die Bewertungen Ihrer Vermögenswerte ab und zu, damit das Nettovermögen stimmt.";
+"insights.formula.netWorth.rec.addAssets" = "Fügen Sie Wohnung oder Auto unter „Finanzen“ hinzu, um Ihr ganzes Nettovermögen zu sehen.";

@@ -203,7 +203,7 @@ New file needed?
 | Deposits, DepositInfo, interest accrual, capitalization | [docs/domains/deposits.md](docs/domains/deposits.md) |
 | Loans, LoanInfo, LoanPaymentService, manual payments, linking | [docs/domains/loans.md](docs/domains/loans.md) |
 | Savings goals, personal debts (`GoalStore`, `DebtStore`, `Views/Goals`, `Views/Debts`, `MoneyEntrySheet`) | [docs/domains/goals-and-debts.md](docs/domains/goals-and-debts.md) |
-| Assets (`AssetStore`, `Services/Assets`, `Views/Assets`, `AssetEntity`), valuations, gain and growth, the sale | [docs/domains/assets.md](docs/domains/assets.md) |
+| Assets (`AssetStore`, `Services/Assets`, `Views/Assets`, `AssetEntity`), valuations, gain and growth, rent and upkeep, the sale, net worth (`NetWorthCalculator`) | [docs/domains/assets.md](docs/domains/assets.md) |
 | Recurring transactions, RecurringStore, series + occurrences | [docs/domains/recurring.md](docs/domains/recurring.md) |
 | Swift Charts (insight charts = DesignKit trend charts + `PeriodChartAdapters.swift`, scrollable, sparklines) | [docs/domains/charts.md](docs/domains/charts.md) |
 | CSV import/export round-trip rules | [docs/domains/csv.md](docs/domains/csv.md) |

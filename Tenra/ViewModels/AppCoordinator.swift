@@ -509,6 +509,30 @@ class AppCoordinator {
             )
         }
 
+        // An asset's rent and upkeep: the transactions of its linked category (and subcategory),
+        // from the category index.
+        assetStore.transactionsOfLink = { [weak self] link, type in
+            guard let self, let category = self.transactionStore.categoryById[link.categoryId] else { return [] }
+            let bucket = self.transactionStore.transactionsByCategoryName[category.name] ?? []
+            return bucket.filter { tx in
+                guard tx.type == type else { return false }
+                guard let subcategoryId = link.subcategoryId else { return true }
+                return self.transactionStore.subcategoryIdsByTransactionId[tx.id]?.contains(subcategoryId) == true
+            }
+        }
+        // Net worth counts the assets and the personal debts: Insights reads them when a pass
+        // starts, and recomputes when they change.
+        insightsViewModel.netWorthHoldings = { [weak self] in
+            guard let self else { return .empty }
+            return NetWorthCalculator.Holdings(
+                assets: self.assetStore.netWorthHoldings,
+                owedToMe: self.debtStore.netWorthHoldings(.owedToMe),
+                iOwe: self.debtStore.netWorthHoldings(.iOwe)
+            )
+        }
+        assetStore.didChange = { [weak self] in self?.insightsViewModel.invalidateAndRecompute() }
+        debtStore.didChange = { [weak self] in self?.insightsViewModel.invalidateAndRecompute() }
+
         // Inject TransactionStore into ViewModels
         transactionsViewModel.transactionStore = transactionStore
 

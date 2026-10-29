@@ -1004,7 +1004,7 @@
 
 // Wealth card
 "insights.wealth" = "Капитал";
-"insights.wealth.title" = "Накопленный капитал";
+"insights.wealth.title" = "Деньги на счетах";
 "insights.wealth.subtitle" = "Общий баланс всех счетов";
 "insights.wealth.accounts" = "Счета";
 "insights.wealthGrowth" = "Изменение капитала";
@@ -2359,3 +2359,33 @@
 "asset.valuationHint" = "Сколько стоит сейчас?";
 "asset.saleHint" = "За сколько продали?";
 "asset.chart.value" = "Стоимость";
+
+/* Assets, phase 2: rent, upkeep and net worth (docs/domains/assets.md) */
+"asset.rent" = "Аренда";
+"asset.rent.hint" = "Доходы этой категории считаются арендой актива.";
+"asset.upkeep" = "Содержание";
+"asset.upkeep.hint" = "Расходы этой категории считаются его содержанием: налог, взносы, ремонт, страховка.";
+"asset.link.category" = "Категория";
+"asset.link.none" = "Не выбрана";
+"asset.link.subcategory" = "Подкатегория";
+"asset.link.wholeCategory" = "Вся категория";
+"asset.link.taken" = "Эти операции уже считает другой актив. Выберите подкатегорию или другую категорию.";
+"asset.rentYear" = "Аренда за 12 мес.";
+"asset.upkeepYear" = "Содержание за 12 мес.";
+"asset.yield" = "Доходность аренды";
+"asset.fullResult" = "Полный результат";
+"asset.rent.empty" = "В «%@» пока нет аренды. Запишите первый платёж и сделайте его ежемесячным.";
+"insights.netWorth.title" = "Чистый капитал";
+"insights.netWorth.subtitle" = "Деньги, активы и долги";
+"insights.formula.netWorth.title" = "Чистый капитал";
+"insights.formula.netWorth.heroLabel" = "Чистый капитал";
+"insights.formula.netWorth.formulaHeader" = "Из чего складывается";
+"insights.formula.netWorth.row.money" = "Деньги на счетах";
+"insights.formula.netWorth.row.assets" = "Активы";
+"insights.formula.netWorth.row.owedToMe" = "Мне должны";
+"insights.formula.netWorth.row.loans" = "Кредиты";
+"insights.formula.netWorth.row.iOwe" = "Мои долги";
+"insights.formula.netWorth.row.total" = "Чистый капитал";
+"insights.formula.netWorth.explainer" = "Всё, что у вас есть, минус всё, что вы должны: деньги на счетах, активы по вашей доле и то, что должны вам, без остатка кредитов и ваших долгов.";
+"insights.formula.netWorth.rec.withAssets" = "Время от времени обновляйте оценку активов, чтобы капитал оставался честным.";
+"insights.formula.netWorth.rec.addAssets" = "Добавьте квартиру или машину в «Финансах», чтобы увидеть весь капитал.";

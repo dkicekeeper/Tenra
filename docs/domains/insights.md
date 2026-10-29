@@ -31,7 +31,7 @@ VoiceOver reads them as separate buttons.
 
 | Card | Destination |
 |---|---|
-| Available Balance | the `total_wealth` insight (per-account composition) under the card's own title, "Available balance" (`InsightDetailView(insight:currency:title:)`; the feed keeps "Accumulated capital"). Its total is computed from the SAME account filter as `availableBalance` (`!isLoan && includeInBalance`), so the figures agree; falls back to the overview before the first insights pass lands |
+| Available Balance | the `total_wealth` insight (per-account composition) under the card's own title, "Available balance" (`InsightDetailView(insight:currency:title:)`; the feed keeps "Money on accounts"). Its total is computed from the SAME account filter as `availableBalance` (`!isLoan && includeInBalance`), so the figures agree; falls back to the overview before the first insights pass lands |
 | Net Flow / Expenses / Income | `InsightsSummaryDetailView(focus:)` — `SummaryDetailFocus` picks the hero metric, the `PeriodChartSeries` drawn, the `PeriodListMetric` of the period list and the screen title |
 
 Cards also carry a `MiniSparkline` (through `InsightsStatTrend` in
@@ -54,6 +54,14 @@ actor, so the view builds an `Insight` of type `.dailyAllowance` with
 `.dailyAllowance(DailyAllowanceDetail)` itself and shows it with the feed's `InsightsCardView`
 and `InsightDetailView` (formula card, then `InsightAllowancePaymentsList`), never in the feed,
 the urgent strip or the signals.
+
+## Balances are in each account's currency
+
+`DataSnapshot.balanceFor` gives an account's balance in **its own** currency (BalanceCoordinator).
+A sum across accounts (available balance, money on accounts, net worth, the emergency fund, the
+projected balance, the health score's cushion, idle money) converts each one first through
+`InsightsService.baseBalance(of:balanceFor:baseCurrency:)` / `toBase(_:currency:baseCurrency:)`;
+a row of one account keeps its own currency.
 
 ## Money bucket classification (income vs expense)
 
@@ -223,7 +231,7 @@ All return lightweight value-type structs (`InMemoryMonthlyTotal`, `InMemoryCate
 
 ## Metric catalogue
 
-26 generated insight types. Windows come from `InsightGranularity.dateRange(firstTransactionDate:)`:
+27 generated insight types. Windows come from `InsightGranularity.dateRange(firstTransactionDate:)`:
 `.week` = the last 52 weeks (rolling), `.month` / `.quarter` / `.year` / `.allTime` = first
 transaction → today. "Bucket" = one period of the granularity (`currentPeriodKey`,
 `previousPeriodKey`); `.allTime` has a single bucket. All money is realized, in base currency,
@@ -253,7 +261,8 @@ others are recomputed per granularity.
 | `net_cashflow` · `.netCashFlow` | +CashFlow | Income − expenses of the current bucket; trend vs the average of all buckets | buckets (none for `.allTime`, see below) | positive > 0, critical < 0 | no |
 | `period_records` · `.bestMonth` | +CashFlow | Bucket with the highest net flow; the detail ranks the best 10 and the worst 10 (deficit buckets only) | all buckets (none for `.allTime`) | neutral | no |
 | `projected_balance` · `.projectedBalance` | +CashFlow | Balance of non-loan accounts included in balance + monthly recurring net of active series × period factor − average expenses of the last 3 buckets (a bucket is one period, so not scaled again); metric = the projected change | factor `.week` 7/30, `.quarter` 3, `.year` 12, `.month` 1 (none for `.allTime`) | positive if the projected balance ≥ 0, else critical | no |
-| `total_wealth` · `.totalWealth` | +Wealth | Σ balances of non-loan accounts included in balance; detail per account, card donut = top 6 + other | current state; trend arrow = sign of the current bucket's net flow | positive ≥ 0, critical < 0 | no |
+| `total_wealth` · `.totalWealth` (title "Money on accounts") | +Wealth | Σ balances of non-loan accounts included in balance, each in the base currency (`InsightsService.baseBalance`); detail per account in its own currency, card donut = top 6 + other | current state; trend arrow = sign of the current bucket's net flow | positive ≥ 0, critical < 0 | no |
+| `net_worth` · `.netWorth` | +Wealth | `NetWorthCalculator`: money (as `total_wealth`) + assets at their share + owed to the person − remaining principal of loans in the balance − what the person owes, all in the base currency ([assets.md](assets.md)); detail `.formulaBreakdown` (money always, the other parts when not zero), card `.proportionBar` of what the person has when ≥ 2 parts | current state | positive ≥ 0, critical < 0 | yes |
 | `wealth_growth` · `.wealthGrowth` | +Wealth | Metric = current bucket net flow, change % vs the previous bucket's net flow, shown when \|change\| > 1%; detail = cumulative balance (`cumulativeBalancePoints`) | buckets | positive if net flow > 0, else warning | no |
 | `accountDormancy` · `.accountDormancy` | +Wealth | Accounts included in balance, not deposits, balance > 0, last transaction > 30 days ago (`lastAccountDates`); metric = total idle balance; copy frames it as idle money / missed deposit yield | 30 days | neutral | yes |
 | `savings_rate` · `.savingsRate` | +Savings | (income − expenses) ÷ income of the last completed calendar month (salary often lands at month end, so a partial month would read as a deficit); needs income > 0 | last completed month, same value for every granularity | positive > 20%, warning ≥ 10%, critical < 10% | no |

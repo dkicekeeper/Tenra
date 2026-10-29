@@ -169,6 +169,91 @@ nonisolated enum AssetValuationMath {
         return Array(points.suffix(limit))
     }
 
+    // MARK: - Rent and upkeep
+
+    /// A transaction of an asset's rent or upkeep, in the asset's currency.
+    nonisolated struct DatedAmount: Equatable, Sendable {
+        var date: Date
+        var amount: Double
+    }
+
+    /// What an asset brings in and costs (phase 2 of the plan), in its currency. A figure is nil
+    /// when the asset has no link of its kind.
+    nonisolated struct IncomeSummary: Equatable {
+        /// Rent over the 12 months up to today (up to the sale for a sold asset).
+        var rentYear: Double?
+        /// Upkeep (tax, the building's fees, repairs) over the same 12 months.
+        var upkeepYear: Double?
+        /// (rent − upkeep) over 12 months as a percent of the value; needs a rent link and a value
+        /// above zero.
+        var yieldPercent: Double?
+        /// Every rent since the purchase (all of it without a purchase day).
+        var rentTotal: Double?
+        var upkeepTotal: Double?
+        /// The gain plus every rent minus every upkeep; needs a purchase price and a link.
+        var fullResult: Double?
+        /// Any rent recorded at all (none: the screen offers to record it).
+        var hasRent: Bool
+    }
+
+    static func income(
+        rent: [DatedAmount]?,
+        upkeep: [DatedAmount]?,
+        summary: Summary,
+        purchaseDate: Date?,
+        soldAt: Date?,
+        today: Date = Date(),
+        calendar: Calendar = .current
+    ) -> IncomeSummary {
+        let todayStart = calendar.startOfDay(for: today)
+        let end = soldAt.map { min(calendar.startOfDay(for: $0), todayStart) } ?? todayStart
+        let yearStart = calendar.date(byAdding: .year, value: -1, to: end) ?? end
+        let since = purchaseDate.map { calendar.startOfDay(for: $0) }
+
+        /// The amounts dated after `after` (when given), from `from` on (when given) and up to
+        /// `end`: realized ones only.
+        func sum(_ items: [DatedAmount]?, after: Date? = nil, from: Date? = nil) -> Double? {
+            guard let items else { return nil }
+            return items.reduce(0.0) { total, item in
+                let day = calendar.startOfDay(for: item.date)
+                guard day <= end,
+                      after.map({ day > $0 }) ?? true,
+                      from.map({ day >= $0 }) ?? true else { return total }
+                return total + item.amount
+            }
+        }
+
+        let rentYear = sum(rent, after: yearStart)
+        let upkeepYear = sum(upkeep, after: yearStart)
+        let rentTotal = sum(rent, from: since)
+        let upkeepTotal = sum(upkeep, from: since)
+        var yield: Double?
+        if let rentYear, summary.value > 0 {
+            yield = (rentYear - (upkeepYear ?? 0)) / summary.value * 100
+        }
+        var fullResult: Double?
+        if let gain = summary.gain, rentTotal != nil || upkeepTotal != nil {
+            fullResult = gain + (rentTotal ?? 0) - (upkeepTotal ?? 0)
+        }
+        return IncomeSummary(
+            rentYear: rentYear,
+            upkeepYear: upkeepYear,
+            yieldPercent: yield,
+            rentTotal: rentTotal,
+            upkeepTotal: upkeepTotal,
+            fullResult: fullResult,
+            hasRent: !(rent ?? []).isEmpty
+        )
+    }
+
+    /// Two links count the same transactions: one category, and either of them takes all of it
+    /// (no subcategory) or both the same subcategory. Two assets may not share them, else the
+    /// rent of two flats under one "Rent" counts twice.
+    static func overlaps(_ a: AssetCategoryLink, _ b: AssetCategoryLink) -> Bool {
+        a.categoryId == b.categoryId
+            && (a.subcategoryId == nil || b.subcategoryId == nil || a.subcategoryId == b.subcategoryId)
+    }
+
     /// Whole and part years between two days; nil when the end is before the start.
     static func years(from start: Date, to end: Date, calendar: Calendar = .current) -> Double? {
         let days = calendar.dateComponents([.day], from: calendar.startOfDay(for: start), to: calendar.startOfDay(for: end)).day ?? 0

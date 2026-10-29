@@ -1004,7 +1004,7 @@
 
 // Wealth card
 "insights.wealth" = "Capital";
-"insights.wealth.title" = "Capital acumulado";
+"insights.wealth.title" = "Dinero en las cuentas";
 "insights.wealth.subtitle" = "Saldo total de todas las cuentas";
 "insights.wealth.accounts" = "Cuentas";
 "insights.wealthGrowth" = "Cambio de patrimonio";
@@ -2359,3 +2359,33 @@
 "asset.valuationHint" = "¿Cuánto vale ahora?";
 "asset.saleHint" = "¿Por cuánto lo vendiste?";
 "asset.chart.value" = "Valor";
+
+/* Assets, phase 2: rent, upkeep and net worth (docs/domains/assets.md) */
+"asset.rent" = "Alquiler";
+"asset.rent.hint" = "Los ingresos de esta categoría cuentan como alquiler del activo.";
+"asset.upkeep" = "Mantenimiento";
+"asset.upkeep.hint" = "Los gastos de esta categoría cuentan como su mantenimiento: impuestos, cuotas, reparaciones, seguro.";
+"asset.link.category" = "Categoría";
+"asset.link.none" = "Ninguna";
+"asset.link.subcategory" = "Subcategoría";
+"asset.link.wholeCategory" = "Toda la categoría";
+"asset.link.taken" = "Otro activo ya cuenta estos movimientos. Elige una subcategoría u otra categoría.";
+"asset.rentYear" = "Alquiler, 12 meses";
+"asset.upkeepYear" = "Mantenimiento, 12 meses";
+"asset.yield" = "Rentabilidad del alquiler";
+"asset.fullResult" = "Resultado total";
+"asset.rent.empty" = "Aún no hay alquiler en «%@». Registra el primer pago y hazlo mensual.";
+"insights.netWorth.title" = "Patrimonio neto";
+"insights.netWorth.subtitle" = "Dinero, activos y deudas";
+"insights.formula.netWorth.title" = "Patrimonio neto";
+"insights.formula.netWorth.heroLabel" = "Patrimonio neto";
+"insights.formula.netWorth.formulaHeader" = "De qué se compone";
+"insights.formula.netWorth.row.money" = "Dinero en las cuentas";
+"insights.formula.netWorth.row.assets" = "Activos";
+"insights.formula.netWorth.row.owedToMe" = "Te deben";
+"insights.formula.netWorth.row.loans" = "Préstamos";
+"insights.formula.netWorth.row.iOwe" = "Tus deudas";
+"insights.formula.netWorth.row.total" = "Patrimonio neto";
+"insights.formula.netWorth.explainer" = "Todo lo que tienes menos todo lo que debes: dinero en las cuentas, activos según tu parte y lo que te deben, sin lo que queda de tus préstamos y tus deudas.";
+"insights.formula.netWorth.rec.withAssets" = "Actualiza de vez en cuando la valoración de tus activos para que el patrimonio sea real.";
+"insights.formula.netWorth.rec.addAssets" = "Añade tu vivienda o tu coche en Finanzas para ver todo tu patrimonio.";

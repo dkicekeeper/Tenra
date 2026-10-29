@@ -4,9 +4,11 @@
 //
 //  A new asset, or changes to one (docs/domains/assets.md): icon, name, what it is worth today
 //  and its currency in the hero; its kind; the purchase price and day (empty for an
-//  inheritance or a gift); the person's share and the loan it was bought with. A value changed
-//  here is a valuation of today (the sale price, once sold). Changing the currency moves the
-//  purchase price and the valuations at today's rate, or keeps the currency without one.
+//  inheritance or a gift); the person's share and the loan it was bought with; the categories of
+//  its rent and its upkeep, each with an optional subcategory, never the transactions another
+//  asset already counts. A value changed here is a valuation of today (the sale price, once
+//  sold). Changing the currency moves the purchase price and the valuations at today's rate, or
+//  keeps the currency without one.
 //
 
 import SwiftUI
@@ -16,6 +18,8 @@ struct AssetEditView: View {
     /// Loan accounts the asset can be linked to (a mortgage, a car loan).
     let loanAccounts: [Account]
     let baseCurrency: String
+    /// The categories rent and upkeep can come from, and the links other assets hold.
+    var linkOptions: AssetLinkOptions = .empty
     let onSave: (Asset) -> Void
 
     @Environment(\.dismiss) private var dismiss
@@ -35,6 +39,11 @@ struct AssetEditView: View {
     @State private var sharePercent = 100
     /// Empty: no loan.
     @State private var loanAccountId = ""
+    /// Empty: no link; a subcategory left empty takes the whole category.
+    @State private var incomeCategoryId = ""
+    @State private var incomeSubcategoryId = ""
+    @State private var expenseCategoryId = ""
+    @State private var expenseSubcategoryId = ""
 
     var body: some View {
         EditSheetContainer(
@@ -105,10 +114,35 @@ struct AssetEditView: View {
                             )
                         }
                     }
+
+                    if !linkOptions.incomeCategories.isEmpty {
+                        linkSection(
+                            header: String(localized: "asset.rent"),
+                            footer: String(localized: "asset.rent.hint"),
+                            icon: "arrow.down.circle",
+                            categories: linkOptions.incomeCategories,
+                            categoryId: $incomeCategoryId,
+                            subcategoryId: $incomeSubcategoryId,
+                            overlaps: incomeOverlaps
+                        )
+                    }
+                    if !linkOptions.expenseCategories.isEmpty {
+                        linkSection(
+                            header: String(localized: "asset.upkeep"),
+                            footer: String(localized: "asset.upkeep.hint"),
+                            icon: "wrench.and.screwdriver",
+                            categories: linkOptions.expenseCategories,
+                            categoryId: $expenseCategoryId,
+                            subcategoryId: $expenseSubcategoryId,
+                            overlaps: expenseOverlaps
+                        )
+                    }
                 }
                 .screenPadding()
                 .padding(.top, AppSpacing.md)
                 .animation(AppAnimation.smooth, value: purchasePrice != nil)
+                .animation(AppAnimation.smooth, value: incomeCategoryId)
+                .animation(AppAnimation.smooth, value: expenseCategoryId)
             }
         }
         .onAppear(perform: fill)
@@ -116,6 +150,48 @@ struct AssetEditView: View {
             // An icon the person did not pick follows the kind.
             if iconSource == nil || iconSource == old.defaultIcon {
                 iconSource = new.defaultIcon
+            }
+        }
+        // A subcategory belongs to its category: another category takes the whole of it.
+        .onChange(of: incomeCategoryId) {
+            if !linkOptions.has(subcategory: incomeSubcategoryId, in: incomeCategoryId) { incomeSubcategoryId = "" }
+        }
+        .onChange(of: expenseCategoryId) {
+            if !linkOptions.has(subcategory: expenseSubcategoryId, in: expenseCategoryId) { expenseSubcategoryId = "" }
+        }
+    }
+
+    /// A category and, when it has any, one of its subcategories; under them, what is wrong when
+    /// another asset already counts these transactions.
+    @ViewBuilder
+    private func linkSection(
+        header: String,
+        footer: String,
+        icon: String,
+        categories: [AssetLinkOptions.Item],
+        categoryId: Binding<String>,
+        subcategoryId: Binding<String>,
+        overlaps: Bool
+    ) -> some View {
+        VStack(alignment: .leading, spacing: AppSpacing.sm) {
+            FormSection(header: header, footer: footer) {
+                UniversalRow(
+                    String(localized: "asset.link.category"),
+                    icon: icon,
+                    accessory: .picker(categoryId, options: [(label: String(localized: "asset.link.none"), value: "")]
+                        + categories.map { (label: $0.name, value: $0.id) })
+                )
+                if let subcategories = linkOptions.subcategories[categoryId.wrappedValue], !subcategories.isEmpty {
+                    UniversalRow(
+                        String(localized: "asset.link.subcategory"),
+                        icon: "list.bullet.indent",
+                        accessory: .picker(subcategoryId, options: [(label: String(localized: "asset.link.wholeCategory"), value: "")]
+                            + subcategories.map { (label: $0.name, value: $0.id) })
+                    )
+                }
+            }
+            if overlaps {
+                InlineStatusText(message: String(localized: "asset.link.taken"), type: .error)
             }
         }
     }
@@ -132,6 +208,28 @@ struct AssetEditView: View {
 
     private var isValid: Bool {
         !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && (value != nil || purchasePrice != nil)
+            && !incomeOverlaps && !expenseOverlaps
+    }
+
+    private var incomeLink: AssetCategoryLink? {
+        Self.link(incomeCategoryId, incomeSubcategoryId)
+    }
+
+    private var expenseLink: AssetCategoryLink? {
+        Self.link(expenseCategoryId, expenseSubcategoryId)
+    }
+
+    private static func link(_ categoryId: String, _ subcategoryId: String) -> AssetCategoryLink? {
+        categoryId.isEmpty ? nil : AssetCategoryLink(categoryId: categoryId, subcategoryId: subcategoryId.isEmpty ? nil : subcategoryId)
+    }
+
+    /// Another asset counts these transactions already (AssetValuationMath.overlaps).
+    private var incomeOverlaps: Bool {
+        incomeLink.map { link in linkOptions.takenIncome.contains { AssetValuationMath.overlaps($0, link) } } ?? false
+    }
+
+    private var expenseOverlaps: Bool {
+        expenseLink.map { link in linkOptions.takenExpense.contains { AssetValuationMath.overlaps($0, link) } } ?? false
     }
 
     static func title(of kind: AssetKind) -> String {
@@ -163,6 +261,10 @@ struct AssetEditView: View {
         purchaseDate = asset.purchaseDate ?? Date()
         sharePercent = min(100, max(5, Int((asset.ownershipShare * 100).rounded())))
         loanAccountId = asset.linkedLoanAccountId ?? ""
+        incomeCategoryId = asset.incomeLink?.categoryId ?? ""
+        incomeSubcategoryId = asset.incomeLink?.subcategoryId ?? ""
+        expenseCategoryId = asset.expenseLink?.categoryId ?? ""
+        expenseSubcategoryId = asset.expenseLink?.subcategoryId ?? ""
     }
 
     // MARK: - Save
@@ -177,6 +279,8 @@ struct AssetEditView: View {
         result.iconSource = iconSource == kind.defaultIcon ? nil : iconSource
         result.ownershipShare = Double(sharePercent) / 100
         result.linkedLoanAccountId = loanAccountId.isEmpty ? nil : loanAccountId
+        result.incomeLink = incomeLink
+        result.expenseLink = expenseLink
 
         // Kept in the asset's currency: the purchase price and the valuations move to the new
         // one at today's rate, or the currency stays when there is no rate to move them at.
@@ -239,4 +343,48 @@ struct AssetEditView: View {
 
 #Preview("Asset Edit - New") {
     AssetEditView(asset: nil, loanAccounts: [], baseCurrency: "KZT", onSave: { _ in })
+}
+
+/// What the asset form offers for rent and upkeep: the income and expense categories, their
+/// subcategories, and the links the other assets hold (a link may not overlap one of them).
+struct AssetLinkOptions {
+    struct Item: Hashable {
+        let id: String
+        let name: String
+    }
+
+    var incomeCategories: [Item] = []
+    var expenseCategories: [Item] = []
+    /// By category id, in the category's own order.
+    var subcategories: [String: [Item]] = [:]
+    var takenIncome: [AssetCategoryLink] = []
+    var takenExpense: [AssetCategoryLink] = []
+
+    static let empty = AssetLinkOptions()
+
+    /// `subcategoryId` is one of the category's (an empty one, the whole category, always is).
+    func has(subcategory subcategoryId: String, in categoryId: String) -> Bool {
+        subcategoryId.isEmpty || subcategories[categoryId]?.contains { $0.id == subcategoryId } == true
+    }
+
+    static func make(store: TransactionStore, assets: AssetStore, excluding assetId: String?) -> AssetLinkOptions {
+        func items(_ type: TransactionType) -> [Item] {
+            store.categories.filter { $0.type == type }.map { Item(id: $0.id, name: $0.name) }
+        }
+        var subcategories: [String: [Item]] = [:]
+        for category in store.categories {
+            let list = (store.subcategoryIdsByCategoryId[category.id] ?? [])
+                .compactMap { store.subcategoryById[$0] }
+                .map { Item(id: $0.id, name: $0.name) }
+            if !list.isEmpty { subcategories[category.id] = list }
+        }
+        let taken = assets.takenLinks(excluding: assetId)
+        return AssetLinkOptions(
+            incomeCategories: items(.income),
+            expenseCategories: items(.expense),
+            subcategories: subcategories,
+            takenIncome: taken.income,
+            takenExpense: taken.expense
+        )
+    }
 }

@@ -1004,7 +1004,7 @@
 
 // Wealth card
 "insights.wealth" = "Varlık";
-"insights.wealth.title" = "Birikmiş Varlık";
+"insights.wealth.title" = "Hesaplardaki Para";
 "insights.wealth.subtitle" = "Tüm hesapların toplam bakiyesi";
 "insights.wealth.accounts" = "Hesaplar";
 "insights.wealthGrowth" = "Varlık Değişimi";
@@ -2359,3 +2359,33 @@
 "asset.valuationHint" = "Şimdi ne kadar ediyor?";
 "asset.saleHint" = "Kaça sattın?";
 "asset.chart.value" = "Değer";
+
+/* Assets, phase 2: rent, upkeep and net worth (docs/domains/assets.md) */
+"asset.rent" = "Kira";
+"asset.rent.hint" = "Bu kategorideki gelirler varlığın kirası sayılır.";
+"asset.upkeep" = "Bakım giderleri";
+"asset.upkeep.hint" = "Bu kategorideki giderler bakım gideri sayılır: vergi, aidat, onarım, sigorta.";
+"asset.link.category" = "Kategori";
+"asset.link.none" = "Seçilmedi";
+"asset.link.subcategory" = "Alt kategori";
+"asset.link.wholeCategory" = "Tüm kategori";
+"asset.link.taken" = "Bu işlemleri zaten başka bir varlık sayıyor. Bir alt kategori ya da başka bir kategori seç.";
+"asset.rentYear" = "Kira, 12 ay";
+"asset.upkeepYear" = "Bakım, 12 ay";
+"asset.yield" = "Kira getirisi";
+"asset.fullResult" = "Toplam sonuç";
+"asset.rent.empty" = "“%@” içinde henüz kira yok. İlk ödemeyi kaydet ve aylık yap.";
+"insights.netWorth.title" = "Net varlık";
+"insights.netWorth.subtitle" = "Para, varlıklar ve borçlar";
+"insights.formula.netWorth.title" = "Net varlık";
+"insights.formula.netWorth.heroLabel" = "Net varlık";
+"insights.formula.netWorth.formulaHeader" = "Nelerden oluşur";
+"insights.formula.netWorth.row.money" = "Hesaplardaki para";
+"insights.formula.netWorth.row.assets" = "Varlıklar";
+"insights.formula.netWorth.row.owedToMe" = "Sana borçlu olunan";
+"insights.formula.netWorth.row.loans" = "Krediler";
+"insights.formula.netWorth.row.iOwe" = "Borçların";
+"insights.formula.netWorth.row.total" = "Net varlık";
+"insights.formula.netWorth.explainer" = "Sahip olduğun her şeyden borçlu olduğun her şey düşülür: hesaplardaki para, payın kadar varlıklar ve sana borçlu olunanlar, kalan krediler ve borçların hariç.";
+"insights.formula.netWorth.rec.withAssets" = "Net varlık doğru kalsın diye varlıklarının değerini ara sıra güncelle.";
+"insights.formula.netWorth.rec.addAssets" = "Tüm net varlığını görmek için evini ya da arabanı Finans’a ekle.";

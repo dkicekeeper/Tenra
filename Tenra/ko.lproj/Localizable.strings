@@ -1004,7 +1004,7 @@
 
 // Wealth card
 "insights.wealth" = "자본";
-"insights.wealth.title" = "누적 자본";
+"insights.wealth.title" = "계좌의 돈";
 "insights.wealth.subtitle" = "전체 계좌의 총 잔액";
 "insights.wealth.accounts" = "계좌";
 "insights.wealthGrowth" = "자산 변화";
@@ -2359,3 +2359,33 @@
 "asset.valuationHint" = "지금 가치는 얼마인가요?";
 "asset.saleHint" = "얼마에 팔았나요?";
 "asset.chart.value" = "가치";
+
+/* Assets, phase 2: rent, upkeep and net worth (docs/domains/assets.md) */
+"asset.rent" = "임대 수입";
+"asset.rent.hint" = "이 카테고리의 수입을 자산의 임대 수입으로 셉니다.";
+"asset.upkeep" = "유지비";
+"asset.upkeep.hint" = "이 카테고리의 지출을 유지비로 셉니다: 세금, 관리비, 수리, 보험.";
+"asset.link.category" = "카테고리";
+"asset.link.none" = "선택 안 함";
+"asset.link.subcategory" = "하위 카테고리";
+"asset.link.wholeCategory" = "카테고리 전체";
+"asset.link.taken" = "이 거래는 이미 다른 자산이 세고 있어요. 하위 카테고리나 다른 카테고리를 고르세요.";
+"asset.rentYear" = "임대 수입(12개월)";
+"asset.upkeepYear" = "유지비(12개월)";
+"asset.yield" = "임대 수익률";
+"asset.fullResult" = "전체 결과";
+"asset.rent.empty" = "‘%@’에 아직 임대 수입이 없어요. 첫 입금을 기록하고 매월 반복으로 설정하세요.";
+"insights.netWorth.title" = "순자산";
+"insights.netWorth.subtitle" = "돈, 자산, 빚";
+"insights.formula.netWorth.title" = "순자산";
+"insights.formula.netWorth.heroLabel" = "순자산";
+"insights.formula.netWorth.formulaHeader" = "구성";
+"insights.formula.netWorth.row.money" = "계좌의 돈";
+"insights.formula.netWorth.row.assets" = "자산";
+"insights.formula.netWorth.row.owedToMe" = "받을 돈";
+"insights.formula.netWorth.row.loans" = "대출";
+"insights.formula.netWorth.row.iOwe" = "갚을 돈";
+"insights.formula.netWorth.row.total" = "순자산";
+"insights.formula.netWorth.explainer" = "가진 것에서 갚아야 할 것을 뺀 금액이에요: 계좌의 돈, 내 지분만큼의 자산, 받을 돈에서 남은 대출과 갚을 돈을 빼요.";
+"insights.formula.netWorth.rec.withAssets" = "순자산이 정확하도록 가끔 자산 가치를 업데이트하세요.";
+"insights.formula.netWorth.rec.addAssets" = "집이나 차를 ‘자산’ 탭에 추가하면 순자산 전체를 볼 수 있어요.";

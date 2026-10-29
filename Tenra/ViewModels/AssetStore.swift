@@ -34,6 +34,12 @@ final class AssetStore {
 
     /// A loan account's remaining principal; nil when the account is gone. Set by AppCoordinator.
     @ObservationIgnored var loanBalance: (String) -> AssetValuationMath.LoanBalance? = { _ in nil }
+    /// The transactions of a category link of one type (rent `.income`, upkeep `.expense`), from
+    /// TransactionStore's category index; none once the category is gone. Set by AppCoordinator.
+    @ObservationIgnored var transactionsOfLink: (AssetCategoryLink, TransactionType) -> [Transaction] = { _, _ in [] }
+    /// Called after the assets change (and once they are read): net worth is recomputed. Set by
+    /// AppCoordinator.
+    @ObservationIgnored var didChange: () -> Void = {}
 
     @ObservationIgnored private let repository: AssetRepository?
     @ObservationIgnored private var loading: Task<Void, Never>?
@@ -64,6 +70,7 @@ final class AssetStore {
         let task = Task { @MainActor in
             self.assets = await repository.all()
             self.isLoaded = true
+            self.didChange()
         }
         loading = task
         await task.value
@@ -131,6 +138,52 @@ final class AssetStore {
         }
     }
 
+    // MARK: - Rent and upkeep
+
+    /// The rent (`.income` of the income link) and the upkeep (`.expense` of the expense link),
+    /// newest first; nil for a kind without a link.
+    func linkedTransactions(of asset: Asset) -> (rent: [Transaction]?, upkeep: [Transaction]?) {
+        let rent = asset.incomeLink.map { transactionsOfLink($0, .income) }
+        let upkeep = asset.expenseLink.map { transactionsOfLink($0, .expense) }
+        return (rent?.sorted { $0.date > $1.date }, upkeep?.sorted { $0.date > $1.date })
+    }
+
+    func incomeSummary(for asset: Asset, today: Date = Date()) -> AssetValuationMath.IncomeSummary {
+        let linked = linkedTransactions(of: asset)
+        return AssetValuationMath.income(
+            rent: linked.rent.map { dated($0, in: asset.currency) },
+            upkeep: linked.upkeep.map { dated($0, in: asset.currency) },
+            summary: summary(for: asset, today: today),
+            purchaseDate: asset.purchaseDate,
+            soldAt: asset.soldAt,
+            today: today
+        )
+    }
+
+    /// The links the other assets hold, which a link of this one may not overlap
+    /// (`AssetValuationMath.overlaps`).
+    func takenLinks(excluding assetId: String?) -> (income: [AssetCategoryLink], expense: [AssetCategoryLink]) {
+        let others = assets.filter { $0.id != assetId }
+        return (others.compactMap(\.incomeLink), others.compactMap(\.expenseLink))
+    }
+
+    /// Transactions in the asset's currency, at the cached rates.
+    private func dated(_ transactions: [Transaction], in currency: String) -> [AssetValuationMath.DatedAmount] {
+        transactions.compactMap { tx in
+            guard let date = FastDateParser.date(from: tx.date) else { return nil }
+            return AssetValuationMath.DatedAmount(date: date, amount: convert(tx.amount, from: tx.currency, to: currency))
+        }
+    }
+
+    // MARK: - Net worth
+
+    /// The held assets counted in net worth, each at the person's share, in their own currency.
+    var netWorthHoldings: [NetWorthCalculator.Holding] {
+        held.filter(\.includeInNetWorth).map { asset in
+            NetWorthCalculator.Holding(amount: AssetValuationMath.summary(of: asset).ownedValue, currency: asset.currency)
+        }
+    }
+
     /// One asset's owned value in `currency` (the Finances card's shelf).
     func ownedValue(of asset: Asset, in currency: String) -> Double {
         convert(AssetValuationMath.summary(of: asset).ownedValue, from: asset.currency, to: currency)
@@ -148,6 +201,7 @@ final class AssetStore {
         asset.order = (assets.map(\.order).max() ?? -1) + 1
         assets.append(asset)
         await repository?.save(asset)
+        didChange()
     }
 
     /// Writes the asset over its earlier copy.
@@ -155,11 +209,13 @@ final class AssetStore {
         guard let index = assets.firstIndex(where: { $0.id == asset.id }) else { return }
         assets[index] = asset
         await repository?.save(asset)
+        didChange()
     }
 
     func delete(id: String) async {
         assets.removeAll { $0.id == id }
         await repository?.delete(id: id)
+        didChange()
     }
 
     /// The assets of one section in the order the person dragged them to (DesignKit 8.0.0's

@@ -2186,6 +2186,10 @@
 "debt.amount" = "금액";
 "debt.returned" = "돌려받은 금액";
 "debt.leftAmount" = "%@ 남음";
+"debt.overpay.title" = "남은 금액보다 많아요";
+"debt.overpay.message" = "남은 금액: %@";
+"debt.overpay.recordAll" = "%@ 전부 기록";
+"debt.overpay.onlyLeft" = "남은 %@만 기록";
 "debt.overdue" = "기한 지남";
 "debt.overdueSince" = "%@부터 기한 지남";
 "debt.settledOn" = "%@ 완료";

@@ -26,6 +26,8 @@ struct GoalDetailView: View {
     @State private var celebrations = 0
     /// Bumped by each contribution that does not reach the goal (`.sparkleBurst`).
     @State private var contributionSparkles = 0
+    /// Months left, what to put aside and overdue depend on the day: moved at midnight.
+    @State private var today = Date()
 
     private var appSettings: AppSettings { coordinator.transactionsViewModel.appSettings }
 
@@ -46,7 +48,9 @@ struct GoalDetailView: View {
 
     @ViewBuilder
     private func scaffold(for goal: SavingsGoal) -> some View {
-        let status = goalStore.status(for: goal)
+        // A goal in another currency converts at the cached rates: drawn again when they change.
+        let _ = coordinator.transactionStore.currencyRatesVersion
+        let status = goalStore.status(for: goal, today: today)
         let follows = goalStore.followsAccount(goal)
         EntityDetailScaffold(
             navigationTitle: goal.name,
@@ -152,6 +156,9 @@ struct GoalDetailView: View {
         // A linked account's balance can reach the target while the screen is open.
         .task(id: status.isReached) {
             await checkReached()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.significantTimeChangeNotification)) { _ in
+            today = Date()
         }
     }
 

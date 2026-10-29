@@ -223,6 +223,19 @@ struct LoanDetailView: View {
         }
     }
 
+    /// The accounts on the other leg of the loan's transactions (the banks its payments came
+    /// from). Read before a delete: only their balances change, so they are recalculated
+    /// instead of every account.
+    private func counterpartAccountIds(of loanId: String) -> Set<String> {
+        var ids = Set<String>()
+        for tx in transactionStore.transactionsByAccount[loanId] ?? [] {
+            if let id = tx.accountId { ids.insert(id) }
+            if let id = tx.targetAccountId { ids.insert(id) }
+        }
+        ids.remove(loanId)
+        return ids
+    }
+
     private func showPaymentError(_ message: String) {
         paymentError = message
         Task {
@@ -309,7 +322,7 @@ struct LoanDetailView: View {
                 account: account,
                 onSave: { updatedAccount in
                     loansViewModel.updateLoan(updatedAccount)
-                    transactionsViewModel.recalculateAccountBalances()
+                    transactionsViewModel.recalculateBalances(for: [updatedAccount.id])
                     showingEditView = false
                 }
             )
@@ -444,21 +457,23 @@ struct LoanDetailView: View {
         ) {
             Button(String(localized: "loan.deleteKeepPayments", defaultValue: "Delete, keep payments")) {
                 HapticManager.warning()
+                let payingAccounts = counterpartAccountIds(of: account.id)
                 Task {
                     await loansViewModel.deleteLoanPreservingPayments(
                         account,
                         transactionStore: transactionStore
                     )
-                    transactionsViewModel.recalculateAccountBalances()
+                    transactionsViewModel.recalculateBalances(for: payingAccounts)
                     dismiss()
                 }
             }
             Button(String(localized: "loan.deleteWithPayments", defaultValue: "Delete everything"), role: .destructive) {
                 HapticManager.warning()
+                let payingAccounts = counterpartAccountIds(of: account.id)
                 Task {
                     await transactionStore.deleteTransactions(forAccountId: account.id)
                     loansViewModel.deleteLoan(account)
-                    transactionsViewModel.recalculateAccountBalances()
+                    transactionsViewModel.recalculateBalances(for: payingAccounts)
                     dismiss()
                 }
             }

@@ -177,4 +177,13 @@ final class GoalStore {
             return false
         }
     }
+
+    /// Notes `reachedAt` on every goal, so a goal its linked account carried over the target
+    /// keeps its date without its screen being open. Runs when the goals are read and when the
+    /// app comes to the front; the goal's screen still celebrates one reached while it is open.
+    func refreshAllReached(now: Date = Date()) async {
+        for id in goals.map(\.id) {
+            await refreshReached(goalId: id, now: now)
+        }
+    }
 }

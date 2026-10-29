@@ -38,8 +38,8 @@ with the commit of every fix, are in
   1.7 shipped on 2026-10-24, the ads in Kazakhstan run since 2026-10-29. What is left: the
   Anthropic limit and the retention metrics ([promotion-plan.md](promotion-plan.md) §7), bank
   notifications part two ([plan-notification-capture.md](plan-notification-capture.md)), the
-  server before traffic (below). Next, by signal: net worth ([plan-assets.md](plan-assets.md),
-  1.8 in December), Ten on Apple's models when Anthropic spend nears the limit or RU and BY are
+  server before traffic (below). Next, by signal: net worth ([plan-assets.md](plan-assets.md):
+  phase 1, the assets themselves, built on 2026-10-29 for 1.8; rent, upkeep and net worth next), Ten on Apple's models when Anthropic spend nears the limit or RU and BY are
   wanted ([plan-assistant-ios27.md](plan-assistant-ios27.md)), investments once the ads show
   conversion, starting with a manual portfolio and crypto ([plan-investments.md](plan-investments.md)),
   the US after 10+ ratings there.

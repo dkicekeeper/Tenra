@@ -30,6 +30,7 @@ class AppCoordinator {
     /// Savings goals (free) and personal debts (Pro): their own CoreData rows (v15).
     @ObservationIgnored let goalStore: GoalStore
     @ObservationIgnored let debtStore: DebtStore
+    @ObservationIgnored let assetStore: AssetStore
     @ObservationIgnored let transactionsViewModel: TransactionsViewModel
     @ObservationIgnored let settingsViewModel: SettingsViewModel
     @ObservationIgnored let insightsViewModel: InsightsViewModel
@@ -406,6 +407,7 @@ class AppCoordinator {
         let keepsInStore = self.repository is CoreDataRepository
         self.goalStore = GoalStore(repository: keepsInStore ? GoalRepository() : nil)
         self.debtStore = DebtStore(repository: keepsInStore ? DebtRepository() : nil)
+        self.assetStore = AssetStore(repository: keepsInStore ? AssetRepository() : nil)
 
         // 7. Setup SettingsViewModel
         let storageService = SettingsStorageService()
@@ -485,6 +487,17 @@ class AppCoordinator {
             guard let self, let account = self.transactionStore.accounts.first(where: { $0.id == accountId }) else { return nil }
             return GoalStore.AccountBalance(
                 amount: self.balanceCoordinator.balances[accountId] ?? account.balance,
+                currency: account.currency
+            )
+        }
+
+        // An asset with a mortgage or a car loan reads what is left of it from the loan account.
+        assetStore.loanBalance = { [weak self] accountId in
+            guard let self,
+                  let account = self.transactionStore.accounts.first(where: { $0.id == accountId }),
+                  let loanInfo = account.loanInfo else { return nil }
+            return AssetValuationMath.LoanBalance(
+                amount: NSDecimalNumber(decimal: loanInfo.remainingPrincipal).doubleValue,
                 currency: account.currency
             )
         }
@@ -651,6 +664,7 @@ class AppCoordinator {
         Task { [weak self] in
             await self?.goalStore.load()
             await self?.debtStore.load()
+            await self?.assetStore.load()
             // Due debts and goals behind schedule, now that they are read.
             self?.refreshAssistantInbox()
         }

@@ -226,5 +226,19 @@
 			<string>진행 중 %lld건</string>
 		</dict>
 	</dict>
+	<key>finances.assets.count</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>other</key>
+			<string>자산 %lld개</string>
+		</dict>
+	</dict>
 </dict>
 </plist>

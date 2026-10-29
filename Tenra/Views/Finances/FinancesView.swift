@@ -2,9 +2,9 @@
 //  FinancesView.swift
 //  Tenra
 //
-//  Tab-level hub for managing financial entities: accounts, deposits, subscriptions,
-//  loans, goals, debts, categories, and subcategories. Each card navigates to the
-//  existing list/management view for that entity.
+//  Tab-level hub for managing financial entities: accounts, deposits, assets,
+//  subscriptions, loans, goals, debts, categories, and subcategories. Each card navigates
+//  to the existing list/management view for that entity.
 //
 
 import SwiftUI
@@ -14,6 +14,8 @@ import SwiftUI
 enum FinancesDestination: Hashable {
     case accounts
     case deposits
+    case assets
+    case assetDetail(String) // asset id
     case subscriptions
     case loans
     case loanDetail(String) // accountId
@@ -51,18 +53,20 @@ struct FinancesView: View {
                         .contentReveal(isReady: coordinator.isFastPathDone)
                     depositsCard
                         .contentReveal(isReady: coordinator.isFastPathDone, delay: 0.05)
+                    assetsCard
+                        .contentReveal(isReady: coordinator.isFullyInitialized && coordinator.assetStore.isLoaded, delay: 0.10)
                     subscriptionsCard
-                        .contentReveal(isReady: coordinator.isFullyInitialized, delay: 0.10)
-                    loansCard
                         .contentReveal(isReady: coordinator.isFullyInitialized, delay: 0.15)
+                    loansCard
+                        .contentReveal(isReady: coordinator.isFullyInitialized, delay: 0.20)
                     goalsCard
-                        .contentReveal(isReady: coordinator.isFullyInitialized && coordinator.goalStore.isLoaded, delay: 0.20)
+                        .contentReveal(isReady: coordinator.isFullyInitialized && coordinator.goalStore.isLoaded, delay: 0.25)
                     debtsCard
-                        .contentReveal(isReady: coordinator.isFullyInitialized && coordinator.debtStore.isLoaded, delay: 0.25)
+                        .contentReveal(isReady: coordinator.isFullyInitialized && coordinator.debtStore.isLoaded, delay: 0.30)
                     categoriesCard
-                        .contentReveal(isReady: coordinator.isFastPathDone, delay: 0.30)
-                    subcategoriesCard
                         .contentReveal(isReady: coordinator.isFastPathDone, delay: 0.35)
+                    subcategoriesCard
+                        .contentReveal(isReady: coordinator.isFastPathDone, delay: 0.40)
                 }
                 .padding(.vertical, AppSpacing.md)
             }
@@ -83,6 +87,10 @@ struct FinancesView: View {
                         depositsViewModel: coordinator.depositsViewModel,
                         transactionsViewModel: transactionsViewModel
                     )
+                case .assets:
+                    AssetsListView(assetStore: coordinator.assetStore)
+                case .assetDetail(let assetId):
+                    AssetDetailView(assetStore: coordinator.assetStore, assetId: assetId)
                 case .subscriptions:
                     SubscriptionsListView(
                         transactionStore: transactionStore,
@@ -186,6 +194,19 @@ struct FinancesView: View {
         }
         .buttonStyle(.bounce)
         .accessibilityIdentifier("finances.depositsCard")
+        .screenPadding()
+    }
+
+    private var assetsCard: some View {
+        NavigationLink(value: FinancesDestination.assets) {
+            AssetsCardView(
+                assetStore: coordinator.assetStore,
+                baseCurrency: transactionsViewModel.appSettings.baseCurrency,
+                ratesVersion: transactionStore.currencyRatesVersion
+            )
+        }
+        .buttonStyle(.bounce)
+        .accessibilityIdentifier("finances.assetsCard")
         .screenPadding()
     }
 

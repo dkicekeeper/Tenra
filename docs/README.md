@@ -34,7 +34,7 @@ this file is the full index.
 
 | File | Purpose |
 |------|---------|
-| [architecture.md](architecture.md) | MVVM + Coordinator, TransactionStore, BalanceCoordinator, Repository, CoreData v16, backups |
+| [architecture.md](architecture.md) | MVVM + Coordinator, TransactionStore, BalanceCoordinator, Repository, CoreData v17, backups |
 | [concurrency.md](concurrency.md) | Swift 6 concurrency, CoreData threading, `@Observable` rules, DataSnapshot |
 | [design-system.md](design-system.md) | Tenra on DesignKit: the bridge and hooks, what stays in Tenra, screen patterns, amount formatting, dates and category styling, effects in use (tokens and components: DesignKit's own docs) |
 | [gotchas.md](gotchas.md) | SwiftUI layout, performance hot paths, previews, ignorable console warnings |
@@ -45,6 +45,7 @@ this file is the full index.
 | File | Purpose |
 |------|---------|
 | [domains/accounts.md](domains/accounts.md) | Account, series and parsed-date indexes, AccountDetailView read contract, ranking |
+| [domains/assets.md](domains/assets.md) | Assets (homes, cars): storage (v17), value, gain, growth a year, share and loan, the sale, the Pro gate, screens |
 | [domains/assistant.md](domains/assistant.md) | Ten, the AI assistant: architecture, tools, reply blocks, threads and facts, "Ten writes", the server and its protocol, App Attest, limits, privacy, setup and eval |
 | [domains/categories.md](domains/categories.md) | Category, subcategory and budget aggregates, style cache, reorder |
 | [domains/charts.md](domains/charts.md) | Insight charts (DesignKit + `PeriodChartAdapters.swift`), scrolling, sparklines |
@@ -70,7 +71,7 @@ this file is the full index.
 | [backlog.md](backlog.md) | Open items, ideas not planned yet, decisions that stand |
 | [plan-assistant-ios27.md](plan-assistant-ios27.md) | Plan, not started: Ten on Apple's models (Private Cloud Compute, on device) behind a router, and Siri on iOS 27 |
 | [plan-notification-capture.md](plan-notification-capture.md) | Plan in flight: expenses and incomes from any bank's push notifications through iOS 27's notification trigger (`LogBankNotificationIntent`, the bank-agnostic `BankNotificationParser`, recorded through the Wallet path), own-account transfers and the setup guide: in 1.7, checked on the owner's phone, not yet in What's New; learned templates, "Unparsed" and the Apple model layer still ahead |
-| [plan-assets.md](plan-assets.md) | Plan, owner's decisions taken 2026-10-16, not started: assets (real estate, vehicles) with market valuations, rent and upkeep, and net worth |
+| [plan-assets.md](plan-assets.md) | Plan in flight, owner's decisions taken 2026-10-16: assets (real estate, vehicles) with market valuations, rent and upkeep, and net worth; phase 1 (assets, valuations, sale) built ([domains/assets.md](domains/assets.md)), phases 2 to 4 ahead |
 | [plan-investments.md](plan-investments.md) | Plan, owner's decisions taken 2026-10-16, not started: investment portfolios (KASE and US stocks, ETFs, crypto on exchanges and wallets), quote sources and their licences, read-only exchange keys, purchases in parts (trade journal, average cost, XIRR), what Ten may and may not say about investments |
 | [public/](public/) | The support site: privacy policy, terms of use, support (GitHub Pages) |
 

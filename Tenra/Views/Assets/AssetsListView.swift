@@ -127,7 +127,8 @@ struct AssetsListView: View {
                 if !held.isEmpty {
                     hero
                 }
-                VStack(spacing: AppSpacing.md) {
+                // Leading: the section titles start at the cards' edge.
+                VStack(alignment: .leading, spacing: AppSpacing.md) {
                     ForEach(AssetKind.Group.allCases, id: \.self) { group in
                         section(title(of: group), assets: assetStore.held(in: group), canReorder: true)
                     }

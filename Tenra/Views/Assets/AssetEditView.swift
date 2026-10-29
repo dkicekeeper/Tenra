@@ -61,7 +61,8 @@ struct AssetEditView: View {
                             .multilineTextAlignment(.center)
                     }
 
-                    FormSection(header: String(localized: "asset.kind")) {
+                    // The row names the kind: a header with the same word would repeat it.
+                    FormSection {
                         UniversalRow(
                             String(localized: "asset.kind"),
                             icon: "square.grid.2x2",

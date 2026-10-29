@@ -6,7 +6,8 @@
 //  with the share returned in the hero; "Repayment" and "Settle" while it is open, "Reopen"
 //  once settled; which way, the amount, what came back, the dates and the note; then the
 //  repayments, newest first, in a card of AmountRows (a long press deletes one, which breaks
-//  into dust). A repayment that covers the rest settles the debt, with confetti.
+//  into dust). A repayment that covers the rest settles the debt, with confetti; one above what
+//  is left asks whether to record all of it or only the rest.
 //
 
 import SwiftUI
@@ -23,6 +24,15 @@ struct DebtDetailView: View {
     @State private var showingDelete = false
     /// Bumped when a repayment settles the debt: one confetti burst each time.
     @State private var celebrations = 0
+    /// A repayment above what is left, waiting for the person's choice once its sheet is gone.
+    @State private var overpayment: PendingRepayment?
+    @State private var showingOverpayment = false
+
+    private struct PendingRepayment {
+        let amount: Double
+        let date: Date
+        let note: String?
+    }
 
     private var appSettings: AppSettings { coordinator.transactionsViewModel.appSettings }
 
@@ -121,7 +131,11 @@ struct DebtDetailView: View {
                 Task { await debtStore.update(updated) }
             }
         }
-        .sheet(isPresented: $showingRepayment) {
+        // The question waits for the sheet to close: a dialog presented while it is closing
+        // would not appear.
+        .sheet(isPresented: $showingRepayment, onDismiss: {
+            if overpayment != nil { showingOverpayment = true }
+        }) {
             MoneyEntrySheet(
                 title: debt.person,
                 icon: debt.iconSource,
@@ -130,16 +144,32 @@ struct DebtDetailView: View {
                 appSettings: appSettings,
                 suggestedAmount: debt.remaining
             ) { amount, date, note in
-                // Never more than what is left, as a receipt's repayment: the rest is not this debt.
-                let repaid = min(amount, debtStore.debt(id: debt.id)?.remaining ?? debt.remaining)
-                guard repaid > 0 else { return }
-                Task {
-                    await debtStore.addRepayment(DebtRepayment(amount: repaid, date: date, note: note), to: debt.id)
-                    if debtStore.debt(id: debt.id)?.isSettled == true {
-                        celebrations += 1
-                    }
+                let left = debtStore.debt(id: debt.id)?.remaining ?? debt.remaining
+                if amount > left + PersonalDebt.centTolerance {
+                    overpayment = PendingRepayment(amount: amount, date: date, note: note)
+                } else {
+                    recordRepayment(amount, date: date, note: note)
                 }
             }
+        }
+        .confirmationDialog(
+            String(localized: "debt.overpay.title"),
+            isPresented: $showingOverpayment,
+            titleVisibility: .visible,
+            presenting: overpayment
+        ) { pending in
+            Button(String(format: String(localized: "debt.overpay.recordAll"), amountText(pending.amount, debt.currency))) {
+                recordRepayment(pending.amount, date: pending.date, note: pending.note)
+            }
+            Button(String(format: String(localized: "debt.overpay.onlyLeft"), amountText(debt.remaining, debt.currency))) {
+                recordRepayment(debt.remaining, date: pending.date, note: pending.note)
+            }
+            Button(String(localized: "button.cancel"), role: .cancel) {}
+        } message: { _ in
+            Text(String(format: String(localized: "debt.overpay.message"), amountText(debt.remaining, debt.currency)))
+        }
+        .onChange(of: showingOverpayment) { _, showing in
+            if !showing { overpayment = nil }
         }
         .alert(String(localized: "debt.deleteTitle"), isPresented: $showingDelete) {
             Button(String(localized: "button.delete"), role: .destructive) {
@@ -226,6 +256,17 @@ struct DebtDetailView: View {
     }
 
     // MARK: - Helpers
+
+    /// Saves a repayment; one that covers the rest settles the debt, with confetti.
+    private func recordRepayment(_ amount: Double, date: Date, note: String?) {
+        guard amount > 0 else { return }
+        Task {
+            await debtStore.addRepayment(DebtRepayment(amount: amount, date: date, note: note), to: debtId)
+            if debtStore.debt(id: debtId)?.isSettled == true {
+                celebrations += 1
+            }
+        }
+    }
 
     private func amountText(_ amount: Double, _ currency: String) -> String {
         amountsHidden

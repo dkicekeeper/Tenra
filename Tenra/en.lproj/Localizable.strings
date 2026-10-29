@@ -2186,6 +2186,10 @@
 "debt.amount" = "Amount";
 "debt.returned" = "Returned";
 "debt.leftAmount" = "%@ left";
+"debt.overpay.title" = "More than what is left";
+"debt.overpay.message" = "%@ is left on this debt.";
+"debt.overpay.recordAll" = "Record all %@";
+"debt.overpay.onlyLeft" = "Only what is left, %@";
 "debt.overdue" = "Overdue";
 "debt.overdueSince" = "Overdue since %@";
 "debt.settledOn" = "Settled on %@";

@@ -2186,6 +2186,10 @@
 "debt.amount" = "Importo";
 "debt.returned" = "Restituito";
 "debt.leftAmount" = "Mancano %@";
+"debt.overpay.title" = "Più di quanto resta";
+"debt.overpay.message" = "Su questo debito restano %@.";
+"debt.overpay.recordAll" = "Registra tutti i %@";
+"debt.overpay.onlyLeft" = "Solo quanto resta, %@";
 "debt.overdue" = "Scaduto";
 "debt.overdueSince" = "Scaduto dal %@";
 "debt.settledOn" = "Saldato il %@";

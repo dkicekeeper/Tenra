@@ -2186,6 +2186,10 @@
 "debt.amount" = "Сома";
 "debt.returned" = "Қайтарылды";
 "debt.leftAmount" = "%@ қалды";
+"debt.overpay.title" = "Қалғаннан көп";
+"debt.overpay.message" = "Бұл қарыз бойынша %@ қалды.";
+"debt.overpay.recordAll" = "Барлық %@ жазу";
+"debt.overpay.onlyLeft" = "Тек қалғанын жазу, %@";
 "debt.overdue" = "Мерзімі өткен";
 "debt.overdueSince" = "Мерзімі өтті: %@";
 "debt.settledOn" = "Өтелді: %@";

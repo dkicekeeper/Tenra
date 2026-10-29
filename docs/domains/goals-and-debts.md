@@ -58,8 +58,10 @@ people and has no account.
   moved by `UIApplication.significantTimeChangeNotification`: months left, what to put aside
   and overdue follow a new day.
 - **Settling.** A repayment that covers what is left settles the debt on its date; deleting that
-  repayment opens it again. A repayment is never more than what is left: the debt screen's
-  "Repay" saves at most the rest, as a receipt does, and Ten's draft is checked again at Save.
+  repayment opens it again. "Repay" above what is left asks once its sheet has closed
+  (`DebtDetailView`, the dialog `debt.overpay.*`): record all of it (the debt settles with more
+  repaid than its amount) or only the rest; Cancel records nothing. A receipt's repayment and
+  Ten's draft take at most what is left (Ten's is checked again at Save).
   A due date is never before the debt's date (the picker starts there; Save moves an earlier
   one up to it). "Settle" by hand (returned outside the app, or the rest forgiven)
   and "Reopen" are the person's own; lowering the amount to what already came back settles it.

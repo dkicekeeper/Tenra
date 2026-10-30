@@ -81,4 +81,21 @@ struct InsightGranularityBucketTests {
         let label = InsightGranularity.week.currentBucketLabel(locale: Locale(identifier: "en_US"))
         #expect(!label.isEmpty)
     }
+
+    @Test("chart point — only the current bucket is unfinished, all time never (chartIsPartial)")
+    func currentBucketIsPartial() {
+        func point(_ granularity: InsightGranularity, _ range: (start: Date, end: Date)) -> PeriodDataPoint {
+            PeriodDataPoint(
+                id: "p", granularity: granularity, key: "p",
+                periodStart: range.start, periodEnd: range.end, label: "p",
+                income: 0, expenses: 0, cumulativeBalance: nil
+            )
+        }
+        for granularity in [InsightGranularity.week, .month, .quarter, .year] {
+            #expect(point(granularity, granularity.currentBucketRange()).chartIsPartial)
+            #expect(!point(granularity, granularity.previousBucketRange()).chartIsPartial)
+        }
+        // The all-time window also ends tomorrow, but it is one period: never "so far".
+        #expect(!point(.allTime, InsightGranularity.allTime.currentBucketRange()).chartIsPartial)
+    }
 }

@@ -1,13 +1,13 @@
 # Charts on DesignKit 8.3.0 and the "By day" insight
 
-Status (2026-10-29): in branch `claude/jolly-hopper-in3dwi`, on DesignKit 8.3.0
-(dkicekeeper/DesignKit#91, released). Version 1.8, with the assets of PR #105 (its branch
-`claude/assets-phase-2` sets the same 1.8, and the two merge in either order; whichever lands
-second sets the insights catalogue's count to 28). TestFlight: 1.8 build 59 (2026-10-30), from
-this branch, without the assets (build 58 is #105's, without the charts). When the branch merges, the What's New below
-goes into 1.8's `release-notes.md`, and this file moves to `archive/plans/`.
+Status (2026-10-30): in `main`, on DesignKit 8.3.0 (dkicekeeper/DesignKit#91), version 1.8, with
+the assets of PR #105 to come (its branch `claude/assets-phase-2` sets the same 1.8 and merges
+cleanly; when it lands, the insights catalogue's count becomes 28). TestFlight: 1.8 build 59
+(2026-10-30), without the assets (build 58 is #105's, without the charts). The What's New below
+goes into 1.8's `release-notes.md` once 1.7.1's notes move to the archive; then this file moves to
+`archive/plans/`.
 
-## What the branch does
+## What it does
 
 - DesignKit 8.3.0's charts: the current period selected in the middle of the window, marked as
   not over ("so far"), with the spending forecast and the same period a year ago; the banner

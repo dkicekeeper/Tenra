@@ -25,7 +25,9 @@ struct ScreenMockupTests {
 
     // In review: the assets section (docs/archive/plans/plan-assets.md, phases 1 to 3): the Finances card, the
     // list with its hero, an asset's screen and its form, a car losing value by its rule and a
-    // garage whose valuation is out of date. A new screen in review gets a `@Test` here that
+    // garage whose valuation is out of date; a merchant merged from two points of a brand, with a
+    // payment linked by hand, and the sheet that combines points (docs/plan-charts-by-day.md,
+    // after the device check). A new screen in review gets a `@Test` here that
     // calls `render(_:height:_:)`.
 
     // MARK: - Assets
@@ -140,6 +142,74 @@ struct ScreenMockupTests {
         try await render("asset-edit-car", height: 1100) {
             AssetEditView(asset: car, loanAccounts: [], baseCurrency: "KZT", onSave: { _ in })
         }
+    }
+
+    // MARK: - Merchants (the device check of 1.8 build 62)
+
+    /// Two points of one brand over two years, another shop, and a payment entered by hand
+    /// linked to the brand; the points merged (MerchantGroupStore).
+    private func demoMerchants() async throws -> TransactionStore {
+        let repo = UserDefaultsRepository(userDefaults: UserDefaults(suiteName: "mockups.merchants.\(UUID().uuidString)")!)
+        let balance = BalanceCoordinator(repository: repo)
+        let store = TransactionStore(repository: repo, balanceCoordinator: balance, recurringStore: RecurringStore(repository: repo))
+        store.accounts = [Account(id: "card", name: "Card", currency: "KZT", initialBalance: 2_000_000, balance: 2_000_000)]
+        store.rebuildAccountById()
+        await balance.registerAccounts(store.accounts)
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+        for month in 0..<20 {
+            guard let day = calendar.date(byAdding: .day, value: -month * 30 - 3, to: today) else { continue }
+            let date = DateFormatters.dateFormatter.string(from: day)
+            let rows = [
+                ("ZARA MEGA ALMATY", Double(18_000 + month * 700)),
+                ("ZARA DOSTYK PLAZA", Double(9_000 + (month % 4) * 2_500)),
+                ("GREENMART 12", 6_400.0)
+            ]
+            for (index, row) in rows.enumerated() {
+                _ = try await store.add(Transaction(
+                    id: "m\(month)-\(index)", date: date, description: row.0, amount: row.1,
+                    currency: "KZT", type: .expense, category: "", accountId: "card"
+                ))
+            }
+        }
+        _ = try await store.add(Transaction(
+            id: "manual-coat", date: DateFormatters.dateFormatter.string(from: today), description: "Coat",
+            amount: 54_000, currency: "KZT", type: .expense, category: "", accountId: "card"
+        ))
+        let groups = MerchantGroupStore.shared
+        groups.reset()
+        groups.merge(["ZARA DOSTYK PLAZA"], into: "ZARA MEGA ALMATY")
+        groups.link(transactionIds: ["manual-coat"], toMerchant: "ZARA MEGA ALMATY")
+        return store
+    }
+
+    @Test func merchantBrand() async throws {
+        let store = try await demoMerchants()
+        let coordinator = AppCoordinator()
+        try await render("merchant-brand", height: 1700) {
+            NavigationStack {
+                MerchantDetailView(
+                    merchant: "ZARA MEGA ALMATY",
+                    transactionsViewModel: coordinator.transactionsViewModel,
+                    categoriesViewModel: coordinator.categoriesViewModel,
+                    accountsViewModel: coordinator.accountsViewModel
+                )
+            }
+            .environment(coordinator)
+            .environment(store)
+            .environment(TimeFilterManager())
+        }
+        _ = store
+    }
+
+    @Test func merchantMerge() async throws {
+        let store = try await demoMerchants()
+        MerchantGroupStore.shared.reset()
+        try await render("merchant-merge") {
+            MerchantMergeView(merchant: "ZARA MEGA ALMATY")
+                .environment(store)
+        }
+        _ = store
     }
 
     // MARK: - Rendering

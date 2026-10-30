@@ -1,8 +1,9 @@
 # Charts on DesignKit 8.3.0 and the "By day" insight
 
-Status (2026-10-30): in `main`, on DesignKit 8.3.0 (dkicekeeper/DesignKit#91), version 1.8,
-together with the assets (PR #105, merged). TestFlight: 1.8 build 60 (2026-10-30) has both and
-waits on the owner's check on the phone. The What's New below
+Status (2026-10-30): in `main`, on DesignKit 8.3 (dkicekeeper/DesignKit#91), version 1.8,
+together with the assets (PR #105, #109, #110), "на сегодня" in Russian (#107) and the options off
+by default (#108). TestFlight: 1.8 build 62 (2026-10-30) has all of it and waits on the owner's
+check on the phone. The What's New below
 goes into 1.8's `release-notes.md` once 1.7.1's notes move to the archive; then this file moves to
 `archive/plans/`.
 
@@ -24,9 +25,11 @@ goes into 1.8's `release-notes.md` once 1.7.1's notes move to the archive; then 
 ## Device check
 
 In light and dark, Russian and English: the charts on Analytics (the current period in the
-middle, "so far", the options menu with everything off on a fresh install, then the forecast, a
-year ago and a ruler the chart scrolls under turned on), a category's 12 months with its budget line, and "By day" (the feed card's bars, the
-calendar, the weekday chart opening on the busiest day and its categories, what stands out).
+middle, "so far", in Russian «на сегодня»; the options menu with everything off until it is
+changed, then the forecast, a year ago and a ruler the chart scrolls under turned on), a
+category's 12 months with its budget line, and "By day" (the feed card's bars, the calendar, the
+weekday chart opening on the busiest day and its categories, what stands out). Everything off is
+from build 62 (the owner's call, 2026-10-30); build 60 opened with the forecast and a year ago on.
 
 ## What's New (draft, 13 storefront locales)
 

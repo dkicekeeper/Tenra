@@ -2397,6 +2397,16 @@
 "asset.sell" = "Продать";
 "asset.undoSale" = "Отменить продажу";
 "asset.valuationHint" = "Сколько стоит сейчас?";
+"asset.staleBadge" = "Устарела";
+"asset.estimatedFrom" = "≈ Расчёт, оценка от %@";
+"asset.stale.banner" = "Оценка от %@. Обновите её, чтобы капитал был точным.";
+"asset.chart.estimate" = "%@, расчёт";
+"asset.depreciation" = "Износ";
+"asset.depreciationRow" = "Дешевеет в год";
+"asset.depreciation.hint" = "После каждой оценки стоимость уменьшается на эту долю в год, пока вы не введёте новую. «Нет» оставляет последнюю оценку.";
+"asset.depreciation.off" = "Нет";
+"asset.depreciationValue" = "%@ в год";
+"assistant.notice.asset.stale" = "Оценка %1$@ от %2$@. Цены меняются: обновите её, чтобы капитал был точным.";
 "asset.saleHint" = "За сколько продали?";
 "asset.chart.value" = "Стоимость";
 

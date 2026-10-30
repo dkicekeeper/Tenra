@@ -5,8 +5,10 @@
 //  An asset in the assets list: adapter over DesignKit's HoldingCard (8.2.0). The value large,
 //  rolling up as the list opens; its change over the purchase price as a trend pill with the
 //  gain ("+46 000 000 ₸ since purchase"); the purchase and every valuation as the sparkline;
-//  when it was valued under the name, or when it was sold with a "Sold" badge. Without a
-//  purchase price there is no change line.
+//  when it was valued under the name ("≈ estimate" when its depreciation counts the value down
+//  since), or when it was sold with a "Sold" badge; an "Out of date" badge once the valuation
+//  is older than its kind allows (AssetValuationMath.isStale). Without a purchase price there is
+//  no change line.
 //
 
 import SwiftUI
@@ -30,6 +32,8 @@ struct AssetCard: View {
         ) {
             if asset.isSold {
                 Badge(String(localized: "asset.soldBadge"), color: AppColors.textSecondary)
+            } else if AssetValuationMath.isStale(asset) {
+                Badge(String(localized: "asset.staleBadge"), color: AppColors.warning)
             }
         }
     }
@@ -38,8 +42,17 @@ struct AssetCard: View {
         if let soldAt = asset.soldAt {
             return String(format: String(localized: "asset.soldOn"), DateFormatters.displayDateOmittingCurrentYear(soldAt))
         }
-        return summary.valuedOn.map {
-            String(format: String(localized: "asset.valuedOn"), DateFormatters.displayDateOmittingCurrentYear($0))
+        return Self.valuedLine(summary)
+    }
+
+    /// "Valued 16 Oct", or "≈ Estimate, valued 16 Oct" once its depreciation counts the value
+    /// down since.
+    static func valuedLine(_ summary: AssetValuationMath.Summary) -> String? {
+        summary.valuedOn.map {
+            String(
+                format: summary.isEstimate ? String(localized: "asset.estimatedFrom") : String(localized: "asset.valuedOn"),
+                DateFormatters.displayDateOmittingCurrentYear($0)
+            )
         }
     }
 

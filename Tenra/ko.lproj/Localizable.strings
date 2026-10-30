@@ -2397,6 +2397,16 @@
 "asset.sell" = "판매";
 "asset.undoSale" = "판매 취소";
 "asset.valuationHint" = "지금 가치는 얼마인가요?";
+"asset.staleBadge" = "오래됨";
+"asset.estimatedFrom" = "≈ 추정, %@ 평가 기준";
+"asset.stale.banner" = "%@ 평가예요. 순자산이 정확하도록 업데이트하세요.";
+"asset.chart.estimate" = "%@, 추정";
+"asset.depreciation" = "감가";
+"asset.depreciationRow" = "연간 감가";
+"asset.depreciation.hint" = "평가 후 새 평가를 입력할 때까지 매년 이 비율만큼 가치가 줄어요. 끄면 마지막 평가를 유지해요.";
+"asset.depreciation.off" = "끔";
+"asset.depreciationValue" = "연 %@";
+"assistant.notice.asset.stale" = "%2$@ 평가 %1$@. 가격은 변해요. 순자산이 정확하도록 가치를 업데이트하세요.";
 "asset.saleHint" = "얼마에 팔았나요?";
 "asset.chart.value" = "가치";
 

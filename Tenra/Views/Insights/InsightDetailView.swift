@@ -384,6 +384,21 @@ struct InsightDetailView<CategoryDestination: View>: View {
         case .weekdayPattern(let detail):
             // The weekday chart's selection drives the category list: one view.
             SpendingByDaySection(detail: detail, currency: currency)
+        case .netWorth(let detail):
+            // Net worth at the end of each period (edge to edge, as the period charts), then
+            // its parts today.
+            VStack(alignment: .leading, spacing: AppSpacing.xl) {
+                if detail.points.count >= 2 {
+                    ChartSwitcher(
+                        dataPoints: detail.points,
+                        series: .wealth,
+                        granularity: detail.points.first?.granularity ?? .month,
+                        currency: currency
+                    )
+                }
+                InsightFormulaCard(model: detail.formula, showsHero: false)
+                    .screenPadding()
+            }
         case nil:
             EmptyView()
         }
@@ -431,6 +446,9 @@ struct InsightDetailView<CategoryDestination: View>: View {
             }
         case .weekdayPattern:
             // Rendered with its chart in chartSection (SpendingByDaySection).
+            EmptyView()
+        case .netWorth:
+            // Its chart and formula are in chartSection.
             EmptyView()
         case nil:
             EmptyView()

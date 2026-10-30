@@ -323,6 +323,17 @@ enum InsightDetailData: Hashable {
     case formulaBreakdown(InsightFormulaModel)   // Header + hero + formula rows + recommendation
     case dailyAllowance(DailyAllowanceDetail)   // "For today": the formula, then each payment set aside
     case weekdayPattern(WeekdayPatternDetail)   // "By day": heatmap, weekdays, their categories, patterns
+    case netWorth(NetWorthDetail)               // Net worth: its chart over the granularity, then the formula
+}
+
+// MARK: - Net worth
+
+/// Net worth's detail (`net_worth`, InsightsService+Wealth): the formula of its parts today and
+/// net worth at the end of each period of the granularity, in `cumulativeBalance` (the wealth
+/// chart's series), for the chart above it.
+struct NetWorthDetail: Hashable {
+    let formula: InsightFormulaModel
+    let points: [PeriodDataPoint]
 }
 
 // MARK: - By day

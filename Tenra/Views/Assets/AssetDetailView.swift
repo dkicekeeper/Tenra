@@ -10,8 +10,10 @@
 //  person's share, the linked loan and their own money in it, the rent and upkeep of the last 12
 //  months, the yield and the full result. Then the valuations, newest first (a long press deletes
 //  one, which breaks into dust), and the rent and upkeep transactions by day; with a rent
-//  category and no rent yet, a banner opens the add form in it. A valuation above the value
-//  bursts sparkles over the hero; a sale above the purchase price celebrates.
+//  category and no rent yet, a banner opens the add form in it. A valuation older than its kind
+//  allows puts a banner on top that opens "Update value"; with a depreciation rule the value is
+//  an estimate ("≈"), and the chart ends on it today. A valuation above the value bursts
+//  sparkles over the hero; a sale above the purchase price celebrates.
 //
 
 import SwiftUI
@@ -70,6 +72,7 @@ struct AssetDetailView: View {
         let linked = assetStore.linkedTransactions(of: asset)
         let linkedTransactions = ((linked.rent ?? []) + (linked.upkeep ?? [])).sorted { $0.date > $1.date }
         let history = AssetValuationMath.history(of: asset)
+        let isStale = AssetValuationMath.isStale(asset, today: today)
         EntityDetailScaffold(
             navigationTitle: asset.name,
             navigationAmount: summary.value,
@@ -115,6 +118,21 @@ struct AssetDetailView: View {
                 hero(for: asset, summary: summary, history: history)
             },
             customSections: {
+                if isStale {
+                    // The value was set too long ago: one tap to a new valuation.
+                    StatusBanner(
+                        String(
+                            format: String(localized: "asset.stale.banner"),
+                            DateFormatters.displayDateOmittingCurrentYear(AssetValuationMath.lastValuedOn(asset))
+                        ),
+                        status: .warning,
+                        action: {
+                            HapticManager.light()
+                            showingValuation = true
+                        }
+                    )
+                    .screenPadding()
+                }
                 if let category = rentCategory(of: asset), !income.hasRent, !asset.isSold {
                     // A rent category without rent: the first payment, made monthly in the form.
                     StatusBanner(
@@ -242,9 +260,10 @@ struct AssetDetailView: View {
             // A valuation above the value: a burst of sparkles over it (DesignKit).
             .sparkleBurst(trigger: valuationSparkles, tint: AppColors.income)
 
-            if history.count >= 2 {
+            let points = chartPoints(history: history, summary: summary)
+            if points.count >= 2 {
                 HeroSparkline(
-                    dataPoints: AssetChartPoints.points(history.map { AssetValuationMath.DatedValue(date: $0.date, value: $0.value) }),
+                    dataPoints: AssetChartPoints.points(points, estimateLast: summary.isEstimate),
                     series: AssetChartPoints.series(color: chartColor(summary)),
                     valueFormat: .currency(asset.currency),
                     entranceDelay: AssetChartPoints.entranceDelay
@@ -253,13 +272,20 @@ struct AssetDetailView: View {
         }
     }
 
+    /// The purchase and every valuation; with a depreciation rule, today's estimate after them.
+    private func chartPoints(history: [AssetValuation], summary: AssetValuationMath.Summary) -> [AssetValuationMath.DatedValue] {
+        var points = history.map { AssetValuationMath.DatedValue(date: $0.date, value: $0.value) }
+        if summary.isEstimate {
+            points.append(AssetValuationMath.DatedValue(date: today, value: summary.value))
+        }
+        return points
+    }
+
     private func subtitle(for asset: Asset, summary: AssetValuationMath.Summary) -> String? {
         if let soldAt = asset.soldAt {
             return String(format: String(localized: "asset.soldOn"), DateFormatters.displayDateOmittingCurrentYear(soldAt))
         }
-        return summary.valuedOn.map {
-            String(format: String(localized: "asset.valuedOn"), DateFormatters.displayDateOmittingCurrentYear($0))
-        }
+        return AssetCard.valuedLine(summary)
     }
 
     /// The line follows the gain: green up, red down, the accent without a purchase price.
@@ -302,6 +328,14 @@ struct AssetDetailView: View {
                 label: String(localized: "asset.annualGrowth"),
                 value: TrendBadge.format(growth),
                 iconColor: growth < 0 ? AppColors.destructive : AppColors.income
+            ))
+        }
+        if let rate = AssetValuationMath.depreciationRate(of: asset), !asset.isSold {
+            rows.append(InfoRowConfig(
+                icon: "chart.line.downtrend.xyaxis",
+                label: String(localized: "asset.depreciation"),
+                value: String(format: String(localized: "asset.depreciationValue"), Self.percentText(rate)),
+                iconColor: AppColors.textSecondary
             ))
         }
         if asset.ownershipShare < 1 {

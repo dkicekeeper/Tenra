@@ -5,14 +5,17 @@
 //  Ten writes first (docs/domains/assistant.md §6): what the app already notices becomes a
 //  message from the assistant. A critical or warning insight (the same kinds that may push,
 //  InsightSignalKind), last week's summary once a week, a subscription charged tomorrow, a
-//  personal debt due tomorrow, and a savings goal fallen behind its schedule (once a month).
+//  personal debt due tomorrow, a savings goal fallen behind its schedule (once a month), and an
+//  asset whose valuation is out of date (once a half-year; its button opens the valuation, not
+//  Ten, who does not see assets yet).
 //  Messages wait in this inbox until the person goes through them or closes them on Home ("Ten
 //  writes", AssistantNoticesSection; never in the chat). Going through one is a question like
 //  any other, so it spends a free answer (docs/domains/assistant.md §11: messages are free to read, the analysis is
 //  not).
 //
 //  Each message has a key that never posts twice (an insight's id or signal key, the week, the
-//  series and its charge day, the debt and its due day, the goal and the month). New insight messages are capped per day, so a bad week reads as
+//  series and its charge day, the debt and its due day, the goal and the month, the asset and the
+//  half-year). New insight messages are capped per day, so a bad week reads as
 //  one or two notes, not a wall. The inbox lives in UserDefaults: small, and only this device's.
 //
 
@@ -31,6 +34,8 @@ struct AssistantNotice: Codable, Equatable, Identifiable, Sendable {
         case goal
         /// Auto-capture not set up yet: its action opens the Wallet guide, not Ten.
         case setup
+        /// An asset's valuation out of date: its action opens a new valuation, not Ten.
+        case asset
     }
 
     enum Mood: String, Codable, Sendable {
@@ -256,6 +261,35 @@ extension AssistantNotices {
     /// Entries before the setup message.
     static let setupAfterEntries = 5
 
+    /// Held assets whose valuation is out of date (AssetValuationMath.isStale): once a half-year
+    /// each, until a new valuation.
+    static func staleAssets(
+        _ assets: [Asset],
+        summary: (Asset) -> AssetValuationMath.Summary,
+        now: Date,
+        calendar: Calendar = .current
+    ) -> [AssistantNotice] {
+        let year = calendar.component(.year, from: now)
+        let half = calendar.component(.month, from: now) <= 6 ? 1 : 2
+        return assets.filter { AssetValuationMath.isStale($0, today: now, calendar: calendar) }.map { asset in
+            let value = summary(asset)
+            let day = DateFormatters.displayDateOmittingCurrentYear(AssetValuationMath.lastValuedOn(asset))
+            let format = String(localized: "assistant.notice.asset.stale")
+            return AssistantNotice(
+                id: "asset:\(asset.id):\(year)-H\(half)",
+                kind: .asset,
+                title: asset.name,
+                body: String(format: format, Formatting.formatCurrencySmart(value.value, currency: asset.currency), day),
+                hiddenBody: String(format: format, Formatting.hiddenAmount(currency: asset.currency), day),
+                mood: .idle,
+                question: "",
+                insightId: nil,
+                subjectId: asset.id,
+                createdAt: now
+            )
+        }
+    }
+
     /// A goal younger than this is never behind.
     static let goalGraceDays: Double = 30
     /// How far below the time gone the saved share must fall.
@@ -272,6 +306,8 @@ extension AssistantNotices {
         var goals: Set<String>
         /// An automation has recorded a payment: the setup message has done its job.
         var capturing = false
+        /// The held assets whose valuation is still out of date.
+        var staleAssets: Set<String> = []
 
         func contains(_ notice: AssistantNotice) -> Bool {
             switch notice.kind {
@@ -282,6 +318,7 @@ extension AssistantNotices {
             case .debt: return notice.subjectId.map(debts.contains) ?? true
             case .goal: return notice.subjectId.map(goals.contains) ?? true
             case .setup: return !capturing
+            case .asset: return notice.subjectId.map(staleAssets.contains) ?? true
             case .signal, .digest: return true
             }
         }

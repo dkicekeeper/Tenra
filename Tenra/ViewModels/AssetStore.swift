@@ -184,6 +184,19 @@ final class AssetStore {
         }
     }
 
+    /// Every asset counted in net worth, held or sold, as it stood over time: net worth's
+    /// chart.
+    var netWorthTimelines: [AssetValuationMath.Timeline] {
+        assets.filter(\.includeInNetWorth).map { AssetValuationMath.timeline(of: $0) }
+    }
+
+    // MARK: - Out of date
+
+    /// The held assets whose value was last set too long ago (AssetValuationMath.isStale).
+    func staleAssets(today: Date = Date()) -> [Asset] {
+        held.filter { AssetValuationMath.isStale($0, today: today) }
+    }
+
     /// One asset's owned value in `currency` (the Finances card's shelf).
     func ownedValue(of asset: Asset, in currency: String) -> Double {
         convert(AssetValuationMath.summary(of: asset).ownedValue, from: asset.currency, to: currency)

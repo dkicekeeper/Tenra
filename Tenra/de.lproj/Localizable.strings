@@ -2397,6 +2397,16 @@
 "asset.sell" = "Verkaufen";
 "asset.undoSale" = "Verkauf zurücknehmen";
 "asset.valuationHint" = "Was ist es jetzt wert?";
+"asset.staleBadge" = "Veraltet";
+"asset.estimatedFrom" = "≈ Schätzung, bewertet am %@";
+"asset.stale.banner" = "Der Wert ist vom %@. Aktualisieren Sie ihn, damit Ihr Nettovermögen stimmt.";
+"asset.chart.estimate" = "%@, Schätzung";
+"asset.depreciation" = "Wertverlust";
+"asset.depreciationRow" = "Verlust pro Jahr";
+"asset.depreciation.hint" = "Nach jeder Bewertung sinkt der Wert jedes Jahr um diesen Anteil, bis Sie eine neue eingeben. „Aus“ behält die letzte Bewertung.";
+"asset.depreciation.off" = "Aus";
+"asset.depreciationValue" = "%@ pro Jahr";
+"assistant.notice.asset.stale" = "Bewertet mit %1$@ am %2$@. Preise ändern sich: Aktualisieren Sie den Wert, damit Ihr Nettovermögen stimmt.";
 "asset.saleHint" = "Für wie viel haben Sie verkauft?";
 "asset.chart.value" = "Wert";
 

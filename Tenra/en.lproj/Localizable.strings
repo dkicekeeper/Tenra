@@ -2397,6 +2397,16 @@
 "asset.sell" = "Sell";
 "asset.undoSale" = "Undo sale";
 "asset.valuationHint" = "What is it worth now?";
+"asset.staleBadge" = "Out of date";
+"asset.estimatedFrom" = "≈ Estimate, valued %@";
+"asset.stale.banner" = "The value is from %@. Update it to keep your net worth accurate.";
+"asset.chart.estimate" = "%@, estimate";
+"asset.depreciation" = "Depreciation";
+"asset.depreciationRow" = "Value lost a year";
+"asset.depreciation.hint" = "After each valuation, the value goes down by this share every year until you enter a new one. Off keeps the last valuation.";
+"asset.depreciation.off" = "Off";
+"asset.depreciationValue" = "%@ a year";
+"assistant.notice.asset.stale" = "Valued at %1$@ on %2$@. Prices change: update the value to keep your net worth accurate.";
 "asset.saleHint" = "What did you sell it for?";
 "asset.chart.value" = "Value";
 

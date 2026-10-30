@@ -2397,6 +2397,16 @@
 "asset.sell" = "売却";
 "asset.undoSale" = "売却を取り消す";
 "asset.valuationHint" = "今の価値は？";
+"asset.staleBadge" = "古い評価";
+"asset.estimatedFrom" = "≈ 推計、%@時点の評価から";
+"asset.stale.banner" = "%@時点の評価です。純資産を正確に保つため更新しましょう。";
+"asset.chart.estimate" = "%@、推計";
+"asset.depreciation" = "減価";
+"asset.depreciationRow" = "年間の減価";
+"asset.depreciation.hint" = "評価のあと、新しい評価を入力するまで毎年この割合で価値が下がります。オフなら最後の評価のままです。";
+"asset.depreciation.off" = "オフ";
+"asset.depreciationValue" = "年%@";
+"assistant.notice.asset.stale" = "%2$@時点の評価は%1$@です。価格は変わります。純資産を正確に保つため評価を更新しましょう。";
 "asset.saleHint" = "いくらで売りましたか？";
 "asset.chart.value" = "価値";
 

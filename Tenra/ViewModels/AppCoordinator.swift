@@ -278,8 +278,9 @@ class AppCoordinator {
     }
 
     /// Ten writes first about the subscriptions charged tomorrow, the debts due tomorrow, the
-    /// goals behind their schedule and auto-capture not set up (AssistantInbox); insights and
-    /// the weekly summary post from the insights recompute.
+    /// goals behind their schedule, the assets whose valuation is out of date and auto-capture
+    /// not set up (AssistantInbox); insights and the weekly summary post from the insights
+    /// recompute.
     func refreshAssistantInbox(now: Date = Date()) {
         guard AssistantAvailability.isAvailable else { return }
         observeStoreResetForAssistant()
@@ -294,6 +295,7 @@ class AppCoordinator {
         )
         candidates += AssistantNotices.debtsDue(debtStore.debts, now: now)
         candidates += AssistantNotices.goalsBehind(goalStore.goals, saved: { [goalStore] in goalStore.saved(for: $0) }, now: now)
+        candidates += AssistantNotices.staleAssets(assetStore.held, summary: { [assetStore] in assetStore.summary(for: $0, today: now) }, now: now)
         if let nudge = AssistantNotices.setupNudge(
             entries: transactionStore.transactionsCount,
             capturing: WalletCaptureStore.shared.hasEverCaptured,
@@ -308,12 +310,13 @@ class AppCoordinator {
     /// What Ten's messages may still talk about (AssistantNotices.Subjects); nil until every
     /// store has read its data, when an empty list would mean "not read yet".
     var assistantNoticeSubjects: AssistantNotices.Subjects? {
-        guard isFullyInitialized, goalStore.isLoaded, debtStore.isLoaded else { return nil }
+        guard isFullyInitialized, goalStore.isLoaded, debtStore.isLoaded, assetStore.isLoaded else { return nil }
         return AssistantNotices.Subjects(
             subscriptions: Set(transactionStore.activeSubscriptions.map(\.id)),
             debts: Set(debtStore.debts.filter { !$0.isSettled }.map(\.id)),
             goals: Set(goalStore.goals.map(\.id)),
-            capturing: WalletCaptureStore.shared.hasEverCaptured
+            capturing: WalletCaptureStore.shared.hasEverCaptured,
+            staleAssets: Set(assetStore.staleAssets().map(\.id))
         )
     }
 
@@ -527,7 +530,9 @@ class AppCoordinator {
             return NetWorthCalculator.Holdings(
                 assets: self.assetStore.netWorthHoldings,
                 owedToMe: self.debtStore.netWorthHoldings(.owedToMe),
-                iOwe: self.debtStore.netWorthHoldings(.iOwe)
+                iOwe: self.debtStore.netWorthHoldings(.iOwe),
+                timelines: self.assetStore.netWorthTimelines,
+                debts: self.debtStore.debts
             )
         }
         assetStore.didChange = { [weak self] in self?.insightsViewModel.invalidateAndRecompute() }

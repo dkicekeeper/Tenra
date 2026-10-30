@@ -7,7 +7,8 @@
 //  sold asset); two assets may not count the same transactions; net worth is money plus assets
 //  plus what others owe, less the loans and what the person owes, every part in the base
 //  currency, a paid-off loan and an account out of the balance left out; and the assets'
-//  holdings take the share and leave the sold ones and the ones kept out of net worth.
+//  holdings take the share and leave the sold ones and the ones kept out of net worth. Over time
+//  (phase 3), each period's end counts the assets, the debts and the loans as they stood then.
 //
 
 import Foundation
@@ -104,12 +105,18 @@ struct NetWorthTests {
 
     // MARK: - Net worth
 
-    private static func loan(_ id: String, remaining: Decimal, currency: String = "KZT", includeInBalance: Bool = true) -> Account {
+    private static func loan(
+        _ id: String,
+        remaining: Decimal,
+        currency: String = "KZT",
+        includeInBalance: Bool = true,
+        startDate: String = "2024-01-01"
+    ) -> Account {
         let info = LoanInfo(
             bankName: "B", loanType: .annuity,
             originalPrincipal: 30_000_000, remainingPrincipal: remaining,
             interestRateAnnual: 12, termMonths: 120,
-            startDate: "2024-01-01", paymentDay: 1
+            startDate: startDate, paymentDay: 1
         )
         return Account(id: id, name: id, currency: currency, loanInfo: info, initialBalance: 0, balance: 0, includeInBalance: includeInBalance)
     }
@@ -196,5 +203,58 @@ struct NetWorthTests {
         await store.addValuation(AssetValuation(date: Self.day(2026, 10, 30), value: 71_000_000), to: "flat")
         await store.delete(id: "flat")
         #expect(changes == 3)
+    }
+
+    // MARK: - Over time
+
+    @Test func eachPeriodsEndCountsWhatStoodThen() {
+        let today = Self.day(2026, 10, 29)
+        var owedToMe = PersonalDebt(id: "lent", direction: .owedToMe, person: "A", amount: 100_000, currency: "KZT", date: Self.day(2026, 9, 15))
+        owedToMe.repayments = [DebtRepayment(id: "r", amount: 40_000, date: Self.day(2026, 10, 10), note: nil)]
+        let iOwe = PersonalDebt(id: "borrowed", direction: .iOwe, person: "B", amount: 50_000, currency: "KZT", date: Self.day(2026, 10, 5))
+        let holdings = NetWorthCalculator.Holdings(
+            assets: [], owedToMe: [], iOwe: [],
+            timelines: [AssetValuationMath.timeline(of: Self.flat, calendar: Self.calendar)],
+            debts: [owedToMe, iOwe]
+        )
+        let values = NetWorthCalculator.history(
+            // September, and October (not over yet).
+            periodEnds: [Self.day(2026, 10, 1), Self.day(2026, 11, 1)],
+            money: [1_000_000, 2_000_000],
+            accounts: [Self.loan("mortgage", remaining: 20_000_000, startDate: "2026-10-20")],
+            holdings: holdings,
+            baseCurrency: "KZT",
+            today: today,
+            calendar: Self.calendar,
+            convert: Self.convert
+        )
+        // September: 1M + the flat at its purchase price + 100 000 lent; the loan not taken yet.
+        #expect(values.first == Double(1_000_000 + 24_000_000 + 100_000))
+        // Today: 2M + 70M + 60 000 still lent − 20M left of the loan − 50 000 borrowed.
+        #expect(values.last == Double(2_000_000 + 70_000_000 + 60_000 - 20_000_000 - 50_000))
+    }
+
+    @Test func aPastLoanStandsBetweenWhatIsLeftTodayAndWhatWasTaken() {
+        let values = NetWorthCalculator.history(
+            periodEnds: [Self.day(2025, 7, 1)],
+            money: [0],
+            accounts: [Self.loan("mortgage", remaining: 20_000_000)],
+            holdings: .empty,
+            baseCurrency: "KZT",
+            today: Self.day(2026, 10, 29),
+            calendar: Self.calendar,
+            convert: Self.convert
+        )
+        let left = -(values.first ?? 0)
+        #expect(left >= 20_000_000)
+        #expect(left <= 30_000_000)
+    }
+
+    @Test func aDebtCountsFromItsDayUntilItIsSettled() {
+        var debt = PersonalDebt(direction: .owedToMe, person: "A", amount: 100_000, currency: "KZT", date: Self.day(2026, 9, 15))
+        debt.settledAt = Self.day(2026, 10, 20)
+        #expect(NetWorthCalculator.debtLeft(debt, on: Self.day(2026, 9, 14), calendar: Self.calendar) == 0)
+        #expect(NetWorthCalculator.debtLeft(debt, on: Self.day(2026, 10, 1), calendar: Self.calendar) == 100_000)
+        #expect(NetWorthCalculator.debtLeft(debt, on: Self.day(2026, 10, 20), calendar: Self.calendar) == 0)
     }
 }

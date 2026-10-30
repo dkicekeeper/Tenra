@@ -12,7 +12,7 @@ decisions: [plan-assets.md](../plan-assets.md).
 
 | Type | File | What it is |
 |---|---|---|
-| `Asset` | `Models/Asset.swift` | name, `kind`, icon, currency, optional purchase price and day, `valuations`, `ownershipShare`, optional `linkedLoanAccountId`, `incomeLink` / `expenseLink` (`AssetCategoryLink`: a category id, never a name, and an optional subcategory id), `includeInNetWorth`, `soldAt`, `order`; and, kept for later phases, `depreciationPerYear`, `note` |
+| `Asset` | `Models/Asset.swift` | name, `kind`, icon, currency, optional purchase price and day, `valuations`, `depreciationPerYear` (0.15 for 15% a year; nil, the default, keeps the last valuation), `ownershipShare`, optional `linkedLoanAccountId`, `incomeLink` / `expenseLink` (`AssetCategoryLink`: a category id, never a name, and an optional subcategory id), `includeInNetWorth`, `soldAt`, `order`; and, kept for later, `note` |
 | `AssetKind` | same | apartment, house, land, commercial (the list's real estate), vehicle (transport), other; the default icon of each |
 | `AssetValuation` | same | a day, a value in the asset's currency, a source (`purchase`, `manual`, `assistant`, `sale`) and an optional note ("listings on krisha.kz") |
 
@@ -40,6 +40,18 @@ with `CurrencyConverter.convertSync`, the amount itself as the cold-cache fallba
 
 - **Value**: the latest valuation by day (of two on one day, the later added), else the purchase
   price; once sold, the sale price. The day of that figure is shown next to it ("Valued 16 Oct").
+- **Depreciation** (off by default, the person sets it for transport and other things in the form;
+  homes and land keep their last valuation): from the latest point (a valuation, else the
+  purchase), `value × (1 − rate)^years`. The figure is an estimate, shown "≈ Estimate, valued
+  16 Oct"; the asset's chart ends on it today ("30 Oct, estimate"), and so does the list's total
+  when an asset depreciates. A new valuation is the new base. A sold asset keeps its sale price.
+  `AssetValuationMath.estimate` over a `Timeline` (the dated points without the sale, the rate,
+  the sale day, the share, the currency) gives the value on any day: none before the first point
+  or from the sale on, an asset without a dated point at its value throughout.
+- **Out of date** (`AssetValuationMath.isStale`): a held asset whose value was last set (the
+  latest valuation, else the purchase, else when it was added) more than six months ago for real
+  estate and transport, twelve for the rest. Its card shows an "Out of date" badge, its screen a
+  banner that opens "Update value", and Ten writes once a half-year (below).
 - **Gain**: value − purchase price, and as a percent of it; none without a purchase price (an
   inheritance, a gift). For a sold asset it is the result of the sale.
 - **Growth a year**: `(value / price)^(1 / years) − 1`, only once a year has passed since the
@@ -70,6 +82,13 @@ with `CurrencyConverter.convertSync`, the amount itself as the cold-cache fallba
   section ([insights.md](insights.md) §Metric catalogue): `InsightsViewModel.netWorthHoldings`
   reads the assets and debts on the main actor when a pass starts, and `AssetStore.didChange` /
   `DebtStore.didChange` recompute the insights when they change (or load).
+- **Net worth over time** (`NetWorthCalculator.history`, the insight's chart): at the end of each
+  period of the granularity, the money's running balance (`cumulativeBalancePoints`, as the
+  wealth chart) + each asset's `Timeline` value on that day + what was owed either way then (a
+  debt from its day, less its repayments up to then, nothing once settled) − each loan in the
+  balance as its schedule (`generateAmortizationSchedule`) left it, never less than is left today
+  and nothing before it began. A period not over yet holds today's figure. The holdings carry
+  the timelines of every asset counted in net worth, sold ones too, and every debt.
 - **Sale**: "Sell" asks the price and the day, adds the `.sale` valuation (a second sale replaces
   it) and sets `soldAt`; the asset leaves the totals for the Sold section. No transaction is made:
   the money comes in as the person records it. "Undo sale", or deleting the sale's valuation,
@@ -87,16 +106,17 @@ with `CurrencyConverter.convertSync`, the amount itself as the cold-cache fallba
 | Screen | File |
 |---|---|
 | Finances card | `Views/Components/Cards/AssetsCardView.swift`, right after Deposits: the total in `RedactableAmount` (hidden with the other amounts, a skeleton until the store loads), the count, the held assets on `PackedCircleIcons(style: .shelf)` sized by owned value |
-| List rows | `AssetCard`, an adapter over DesignKit's `HoldingCard` (8.2.0): the value rolling up (`isLive`), the gain as a `TrendBadge` pill with "+46 000 000 ₸ since purchase", the purchase and the valuations as the sparkline in the gain's colour, the valuation or sale day under the name, a "Sold" badge |
+| List rows | `AssetCard`, an adapter over DesignKit's `HoldingCard` (8.2.0): the value rolling up (`isLive`), the gain as a `TrendBadge` pill with "+46 000 000 ₸ since purchase", the purchase and the valuations as the sparkline in the gain's colour, the valuation or sale day under the name ("≈ Estimate, valued …" with depreciation), a "Sold" badge, or an "Out of date" one in the warning colour |
 | List | `Views/Assets/AssetsListView.swift`: the hero on `.heroBackground` (green while the assets gained, the accent otherwise) with the total, the gain and `HeroSparkline` of `totalHistory`; the cards rise over its end (`.padding(.top, -AppSpacing.xxl)`, `.heroScrollEdge()`), in sections real estate, transport, other, sold (`CardList(.stack)`, a drag reorders within a section, the sold ones by sale day), each card `.scrollReveal()`; three `HoldingCardSkeleton`s until the store loads, `MascotEmptyState` when there are none |
-| Detail | `AssetDetailView` on `EntityDetailScaffold`: `HeroSection` (icon, value, the valuation or sale day, the gain pill, the value in the base currency for a foreign one) with `HeroSparkline` of the history under it, drawing in after the push; "Update value" and "Sell" (or "Undo sale"); info rows (kind, purchase price and day, gain or result, growth a year, the share, loan left and own money, rent and upkeep over 12 months, yield, full result, sale day); with a rent category and no rent yet, a `StatusBanner` that opens the add form in that category (the person makes it monthly there); the valuations newest first in a card of `HistoryEntryRow` (a long press deletes one, which leaves with `DissolveTransition`; the purchase is changed in Edit); the rent and upkeep transactions by day (`GroupedTransactionList`). A valuation above the value plays `.sparkleBurst` over the hero; a sale above the purchase price `.celebration(playsHaptic: false)`. It reads `transactions`, `categoriesMutationVersion` and `subcategoriesMutationVersion` so a transaction or a category change redraws it |
-| Edit | `AssetEditView`: hero with icon, name, the value today and the currency; kind (an icon the person did not pick follows it); purchase price and day; share (5% steps) and the loan; rent and upkeep, each a category and, when it has any, a subcategory (`AssetLinkOptions`) |
+| Detail | `AssetDetailView` on `EntityDetailScaffold`: `HeroSection` (icon, value, the valuation or sale day, the gain pill, the value in the base currency for a foreign one) with `HeroSparkline` of the history under it (and today's estimate with depreciation), drawing in after the push; "Update value" and "Sell" (or "Undo sale"); info rows (kind, purchase price and day, gain or result, growth a year, depreciation a year, the share, loan left and own money, rent and upkeep over 12 months, yield, full result, sale day); when out of date, a warning `StatusBanner` "The value is from …" that opens "Update value"; with a rent category and no rent yet, a `StatusBanner` that opens the add form in that category (the person makes it monthly there); the valuations newest first in a card of `HistoryEntryRow` (a long press deletes one, which leaves with `DissolveTransition`; the purchase is changed in Edit); the rent and upkeep transactions by day (`GroupedTransactionList`). A valuation above the value plays `.sparkleBurst` over the hero; a sale above the purchase price `.celebration(playsHaptic: false)`. It reads `transactions`, `categoriesMutationVersion` and `subcategoriesMutationVersion` so a transaction or a category change redraws it |
+| Edit | `AssetEditView`: hero with icon, name, the value today (the estimate with depreciation) and the currency; kind (an icon the person did not pick follows it); purchase price and day; share (5% steps) and the loan; for transport and other things, depreciation a year (a stepper, 0 is "Off", up to 50%; a real-estate kind saves none); rent and upkeep, each a category and, when it has any, a subcategory (`AssetLinkOptions`) |
+| Ten writes | `AssistantNotices.staleAssets` ([assistant.md](assistant.md) §6): once a half-year per out-of-date asset (`asset:<id>:<year>-H<1/2>`), "Valued at 70 000 000 ₸ on 16 Apr…"; its button is "Update value" and opens the valuation sheet on Home (no answer spent, Ten does not see assets yet); it leaves once the asset is valued, sold or deleted (`Subjects.staleAssets`) |
 | Money in | `MoneyEntrySheet` (DesignKit's `AmountEntrySheet`): a valuation or the sale, the current value filled in |
 
 Navigation goes through `FinancesDestination` (`.assets`, `.assetDetail(id)`).
 
 ## Not yet
 
-Stale valuations, depreciation and the net worth chart (phase 3), Ten's tools and drafts
-(phase 4): [plan-assets.md](../plan-assets.md) §9. Ten does not see assets yet, so their screens
-have no "Ask Ten".
+Ten's tools and drafts (phase 4): [plan-assets.md](../plan-assets.md) §9. Ten does not see
+assets yet, so their screens have no "Ask Ten" and the out-of-date message opens the valuation
+instead of a chat.

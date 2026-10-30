@@ -208,7 +208,7 @@ final class MerchantGroupStore {
     }
 
     /// The brand's points go back to being merchants of their own.
-    func dissolve(groupId: String) {
+    func split(groupId: String) {
         guard groups.contains(where: { $0.id == groupId }) else { return }
         groups.removeAll { $0.id == groupId }
         persist()

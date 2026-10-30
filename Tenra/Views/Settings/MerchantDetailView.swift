@@ -186,7 +186,7 @@ struct MerchantDetailView: View {
                 guard let group else { return }
                 HapticManager.warning()
                 point = nil
-                groups.dissolve(groupId: group.id)
+                groups.split(groupId: group.id)
             }
             Button(String(localized: "button.cancel"), role: .cancel) {}
         } message: {

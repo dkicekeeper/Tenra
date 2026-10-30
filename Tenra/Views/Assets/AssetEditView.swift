@@ -224,7 +224,7 @@ struct AssetEditView: View {
     private var value: Double? { Self.amount(valueText) }
     private var purchasePrice: Double? { Self.amount(purchaseText) }
 
-    /// Homes and land keep their last valuation (plan-assets.md §4); a car or a thing may lose
+    /// Homes and land keep their last valuation (archive/plans/plan-assets.md §4); a car or a thing may lose
     /// value by a rule.
     private var hasDepreciation: Bool { kind.group != .realEstate }
 

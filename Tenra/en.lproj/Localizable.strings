@@ -2247,6 +2247,9 @@
 
 /* Ten and goals and debts */
 "assistant.step.plans" = "Checking goals and debts…";
+"assistant.step.assets" = "Checking assets…";
+"assistant.topic.asset.worth" = "How much is “%@” worth now?";
+"assistant.topic.asset.payoff" = "Does “%@” pay off?";
 "assistant.notice.debt.owedToMe" = "%@ is due back tomorrow";
 "assistant.notice.debt.iOwe" = "Tomorrow you are due to pay back %@";
 "assistant.notice.ask.debt" = "Go through the debt with %@";

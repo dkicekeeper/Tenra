@@ -4,6 +4,7 @@
 
 import {
   ACCOUNTS,
+  ASSETS,
   BASE_CURRENCY,
   BUDGETS,
   CATEGORIES,
@@ -656,6 +657,174 @@ function draftDebtRepayment(input: Input) {
   };
 }
 
+// Assets and net worth, as FinanceToolkit+Assets.swift does: AssetValuationMath's gain, growth a
+// year (once a year has passed, over 365.25-day years), out of date after six months for homes
+// and cars, a year for the rest; NetWorthCalculator's lines. New assets need Pro (the eval's
+// user has it); a valuation from an area is multiplied here, never by the model.
+const pct = (n: number) => Math.round(n * 10) / 10;
+
+function monthsBefore(date: string, months: number): string {
+  const [y, m, d] = date.split("-").map(Number) as [number, number, number];
+  const total = y * 12 + (m - 1) - months;
+  return `${Math.floor(total / 12)}-${String((total % 12) + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+}
+
+function assetRow(a: (typeof ASSETS)[number]) {
+  const gain = a.purchasePrice === null ? null : a.value - a.purchasePrice;
+  const years = a.purchaseDate ? daysBetween(a.purchaseDate, TODAY) / 365.25 : 0;
+  const growth = a.purchasePrice && years >= 1 ? (Math.pow(a.value / a.purchasePrice, 1 / years) - 1) * 100 : null;
+  const outOfDate = a.valuedOn < monthsBefore(TODAY, a.kind === "other" ? 12 : 6);
+  return {
+    id: a.id,
+    name: a.name[caseLocale],
+    kind: a.kind,
+    currency: a.currency,
+    value: a.value,
+    value_base: round(toBase(a.value, a.currency)),
+    valued_on: a.valuedOn,
+    is_estimate: false,
+    out_of_date: outOfDate,
+    purchase_price: a.purchasePrice,
+    purchase_date: a.purchaseDate,
+    gain,
+    gain_percent: gain !== null && a.purchasePrice ? pct((gain / a.purchasePrice) * 100) : null,
+    annual_growth_percent: growth === null ? null : pct(growth),
+    depreciation_percent_a_year: null,
+    share_percent: Math.round(a.share * 100),
+    owned_value: round(a.value * a.share),
+    owned_value_base: round(toBase(a.value * a.share, a.currency)),
+    loan_left: null,
+    own_money_in_it: null,
+    rent_last_12_months: a.rentYear,
+    upkeep_last_12_months: a.upkeepYear,
+    rental_yield_percent: a.rentYear === null ? null : pct(((a.rentYear - (a.upkeepYear ?? 0)) / a.value) * 100),
+    full_result: gain !== null && (a.rentTotal !== null || a.upkeepTotal !== null) ? gain + (a.rentTotal ?? 0) - (a.upkeepTotal ?? 0) : null,
+    counted_in_net_worth: true,
+    sold: false,
+    sold_on: null,
+  };
+}
+
+function getAssets() {
+  const assets = ASSETS.map(assetRow);
+  const gain = ASSETS.reduce((n, a) => (a.purchasePrice === null ? n : n + toBase((a.value - a.purchasePrice) * a.share, a.currency)), 0);
+  return {
+    assets,
+    total_base: round(assets.reduce((n, a) => n + a.owned_value_base, 0)),
+    gain_base: round(gain),
+    currency: BASE_CURRENCY,
+    missing_rates: [],
+  };
+}
+
+const NET_WORTH_LABELS: Record<"ru" | "en", Record<string, string>> = {
+  ru: { money: "Деньги на счетах", assets: "Активы", owed_to_me: "Вам должны", loans: "Кредиты", i_owe: "Ваши долги" },
+  en: { money: "Money on accounts", assets: "Assets", owed_to_me: "Owed to you", loans: "Loans", i_owe: "Your debts" },
+};
+
+function getNetWorth() {
+  const accounts = getAccounts().accounts;
+  const money = round(accounts.filter((a) => a.kind !== "loan").reduce((n, a) => n + a.balance_base, 0));
+  const loans = round(-accounts.filter((a) => a.kind === "loan").reduce((n, a) => n + a.balance_base, 0));
+  const assets = round(ASSETS.reduce((n, a) => n + toBase(a.value * a.share, a.currency), 0));
+  const left = (direction: string) => round(DEBTS.filter((d) => d.direction === direction).reduce((n, d) => n + toBase(d.amount - d.repaid, d.currency), 0));
+  const owedToMe = left("owed_to_me");
+  const iOwe = left("i_owe");
+  const parts: [string, number][] = [["money", money], ["assets", assets], ["owed_to_me", owedToMe], ["loans", loans], ["i_owe", iOwe]];
+  const subtracted = new Set(["loans", "i_owe"]);
+  const lines = parts
+    .filter(([key, total]) => key === "money" || total > 0)
+    .map(([key, total]) => ({ key, label: NET_WORTH_LABELS[caseLocale][key] ?? key, total, subtracted: subtracted.has(key) }));
+  return {
+    currency: BASE_CURRENCY,
+    net_worth: round(money + assets + owedToMe - loans - iOwe),
+    money,
+    assets,
+    owed_to_me: owedToMe,
+    loans,
+    i_owe: iOwe,
+    lines,
+    history: [],
+    history_note: "The months are not computed yet. Show the lines, not a chart.",
+    missing_rates: [],
+  };
+}
+
+const ASSET_KINDS = ["apartment", "house", "land", "commercial", "vehicle", "other"];
+
+function draftAsset(input: Input) {
+  const name = (str(input, "name", true) ?? "").trim();
+  if (!name) throw new ToolInputError("name is required.");
+  const kind = str(input, "kind", true)!;
+  if (!ASSET_KINDS.includes(kind)) throw new ToolInputError(`kind must be one of ${ASSET_KINDS.join(", ")}.`);
+  const price = input.purchase_price === null || input.purchase_price === undefined ? null : positive(input, "purchase_price");
+  const value = input.value === null || input.value === undefined ? null : positive(input, "value");
+  if (price === null && value === null) {
+    throw new ToolInputError("Give value (what it is worth now) or purchase_price, or both. If the user said neither, ask them in one sentence instead of drafting.");
+  }
+  const date = dateArg(input, "purchase_date") ?? null;
+  if (date && price === null) throw new ToolInputError("purchase_date goes with purchase_price.");
+  if (date && date > TODAY) throw new ToolInputError("purchase_date cannot be in the future.");
+  const share = typeof input.share_percent === "number" ? input.share_percent : 100;
+  if (!(share > 0 && share <= 100)) throw new ToolInputError("share_percent must be above 0 and at most 100.");
+  const loanRef = str(input, "loan_account");
+  const loan = loanRef ? ACCOUNTS.find((a) => a.kind === "loan" && (a.id === loanRef || a.name.toLowerCase() === loanRef.toLowerCase())) : undefined;
+  if (loanRef && !loan) throw new ToolInputError(`Unknown loan account ${loanRef}. Use a loan account id from <app_context>.`);
+  const now = value ?? price!;
+  const gain = price === null ? null : now - price;
+  const years = date ? daysBetween(date, TODAY) / 365.25 : 0;
+  return {
+    draft_id: `draft_${++draftSeq}`,
+    name,
+    kind,
+    currency: str(input, "currency")?.toUpperCase() || BASE_CURRENCY,
+    value: now,
+    purchase_price: price,
+    purchase_date: date,
+    gain,
+    gain_percent: gain !== null && price ? pct((gain / price) * 100) : null,
+    annual_growth_percent: price && years >= 1 ? pct((Math.pow(now / price, 1 / years) - 1) * 100) : null,
+    share_percent: Math.round(share),
+    loan_account_id: loan?.id ?? null,
+    saved: false,
+  };
+}
+
+function draftAssetValuation(input: Input) {
+  const ref = (str(input, "asset", true) ?? "").trim();
+  const asset = ASSETS.find((a) => a.id === ref || a.name.ru.toLowerCase() === ref.toLowerCase() || a.name.en.toLowerCase() === ref.toLowerCase());
+  if (!asset) throw new ToolInputError(`Unknown asset ${ref}. Use an asset id from <app_context>.`);
+  let value: number;
+  let area: number | null = null;
+  let unit: number | null = null;
+  if (input.value !== null && input.value !== undefined) {
+    value = round(positive(input, "value"));
+  } else if (input.area !== null && input.area !== undefined && input.price_per_unit !== null && input.price_per_unit !== undefined) {
+    area = positive(input, "area");
+    unit = positive(input, "price_per_unit");
+    value = round(area * unit);
+  } else {
+    throw new ToolInputError("Give value, or area and price_per_unit (for example square metres and the price of one in listings). If the user has not said, ask them.");
+  }
+  const change = value - asset.value;
+  return {
+    draft_id: `draft_${++draftSeq}`,
+    asset_id: asset.id,
+    name: asset.name[caseLocale],
+    currency: asset.currency,
+    value,
+    area,
+    price_per_unit: unit,
+    date: pastOrToday(input, "date"),
+    previous_value: asset.value,
+    change: round(change),
+    change_percent: pct((change / asset.value) * 100),
+    gain_after: asset.purchasePrice === null ? null : round(value - asset.purchasePrice),
+    note: str(input, "note") ?? null,
+    saved: false,
+  };
+}
+
 // The app's rates: tenge per unit (FinanceToolkit.convertCurrency over CurrencyRateStore).
 const RATES: Record<string, number> = { KZT: 1, USD: USD_RATE };
 
@@ -692,6 +861,10 @@ const HANDLERS: Record<string, (input: Input) => unknown> = {
   draft_goal_contribution: draftGoalContribution,
   draft_debt: draftDebt,
   draft_debt_repayment: draftDebtRepayment,
+  get_assets: getAssets,
+  get_net_worth: getNetWorth,
+  draft_asset: draftAsset,
+  draft_asset_valuation: draftAssetValuation,
   convert_currency: convertCurrency,
 };
 
@@ -702,4 +875,4 @@ export function executeTool(name: string, input: Input): unknown {
 }
 
 // Direct access for ground truths in cases.
-export const simulate = { spendingSummary, comparePeriods, getAccounts, getBudgets, listRecurring, forecastBalance, simulateLoan, projectSavings, getGoals, getDebts, convertCurrency };
+export const simulate = { spendingSummary, comparePeriods, getAccounts, getBudgets, listRecurring, forecastBalance, simulateLoan, projectSavings, getGoals, getDebts, getAssets, getNetWorth, convertCurrency };

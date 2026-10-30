@@ -416,7 +416,7 @@ extension FinanceToolkit {
     }
 
     /// A date the model gave, today or earlier; none is now.
-    private func pastOrToday(_ raw: String?, field: String) throws -> Date {
+    func pastOrToday(_ raw: String?, field: String) throws -> Date {
         guard let raw, !raw.isEmpty else { return now() }
         guard let date = FastDateParser.date(from: raw) else { throw FinanceToolError(message: "\(field) must be YYYY-MM-DD.") }
         guard date <= now() else { throw FinanceToolError(message: "\(field) cannot be in the future.") }

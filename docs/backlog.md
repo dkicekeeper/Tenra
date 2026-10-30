@@ -35,9 +35,7 @@ with the commit of every fix, are in
   1.7 shipped on 2026-10-24, the ads in Kazakhstan run since 2026-10-29. What is left: the
   Anthropic limit and the retention metrics ([promotion-plan.md](promotion-plan.md) §7), bank
   notifications part two ([plan-notification-capture.md](plan-notification-capture.md)), the
-  server before traffic (below). Next, by signal: net worth ([plan-assets.md](plan-assets.md):
-  phases 1 to 3, the assets, rent and upkeep, net worth and its chart, out-of-date valuations
-  and depreciation, built on 2026-10-29 and 30 for 1.8; Ten's asset tools next), Ten on Apple's models when Anthropic spend nears the limit or RU and BY are
+  server before traffic (below). Next, by signal: Ten on Apple's models when Anthropic spend nears the limit or RU and BY are
   wanted ([plan-assistant-ios27.md](plan-assistant-ios27.md)), investments once the ads show
   conversion, starting with a manual portfolio and crypto ([plan-investments.md](plan-investments.md)),
   the US after 10+ ratings there.
@@ -85,6 +83,13 @@ Found by the docs audit of 2026-10-12, not verified on device yet:
   `LogTransactionIntent`).
 
 ## Ideas, not planned yet
+
+- **Assets, later** (the assets plan is done: [archive/plans/plan-assets.md](archive/plans/plan-assets.md)
+  §9, phase 5): purchase and repair transactions tied to an asset ("an investment in it": the
+  purchase price from them, analytics spending "without asset purchases" in their own metrics
+  only, totals stay on `summaryContribution`, rule #11); the yield in dollars and after
+  inflation; assets in the CSV export; housing price indexes as a hint to a valuation; "Open
+  Assets" as a destination of Ten's open block.
 
 - **Statement import:** a one-tap "align the balance to the statement" after the closing-balance
   check (today it only shows the difference).

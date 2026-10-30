@@ -10,9 +10,9 @@
 //  transfer fields of `TransactionConversion` for transfers, `CategoriesViewModel.setBudget`
 //  for budgets, `SubscriptionCreationService.create` for subscriptions and regular payments,
 //  `AgentMemory.apply` for a fact to remember, GoalStore and DebtStore for a goal, money put
-//  towards it, a debt and a repayment), and Undo takes back what was saved: deletes the
-//  transactions or the series with what it generated, puts the previous budget or fact back,
-//  deletes the goal, the debt or the entry.
+//  towards it, a debt and a repayment, AssetStore for an asset and its valuation), and Undo
+//  takes back what was saved: deletes the transactions or the series with what it generated,
+//  puts the previous budget or fact back, deletes the goal, the debt, the asset or the entry.
 //
 //  Before Save the person can change an income or an expense on the card (the voice
 //  confirmation form, AgentDraftEditor); the next question tells the model what the draft
@@ -42,6 +42,10 @@ enum AgentDraftOperation: Equatable {
     case debt(PersonalDebt)
     /// Money back on a debt (DebtStore).
     case debtRepayment(debtId: String, DebtRepayment)
+    /// A new asset (AssetStore; Tenra Pro).
+    case asset(Asset)
+    /// What an asset is worth on a day (AssetStore).
+    case assetValuation(assetId: String, AssetValuation)
 }
 
 /// A subscription or a regular payment, as the series it will become (it starts on its next
@@ -87,14 +91,18 @@ enum AgentSavedRecord: Equatable {
     /// A debt id.
     case debt(String)
     case debtRepayment(debtId: String, repaymentId: String)
+    /// An asset id.
+    case asset(String)
+    case assetValuation(assetId: String, valuationId: String)
 }
 
 enum AgentDraftError: Error {
     /// The category was deleted between the draft and Save.
     case categoryGone
-    /// The goal or the debt was deleted between the draft and Save, or there is nowhere to keep it.
+    /// The goal, the debt or the asset was deleted between the draft and Save, or there is
+    /// nowhere to keep it.
     case planGone
-    /// A new debt needs Tenra Pro, and it ended between the draft and Save.
+    /// A new debt or asset needs Tenra Pro, and it ended between the draft and Save.
     case needsPro
     /// The repayment is more than what is left on the debt: another one was saved after the draft.
     case overRepayment
@@ -221,6 +229,7 @@ extension AgentDraftBook.Writer {
         memory: AgentMemory = .shared,
         goals: GoalStore? = nil,
         debts: DebtStore? = nil,
+        assets: AssetStore? = nil,
         isPro: @escaping () -> Bool = { true }
     ) -> Self {
         Self(
@@ -237,8 +246,8 @@ extension AgentDraftBook.Writer {
                     return .series(recurring.series.id)
                 case .fact(let fact):
                     return .fact(try await memory.apply(fact))
-                case .goal, .goalContribution, .debt, .debtRepayment:
-                    return try await Self.savePlan(operation, goals: goals, debts: debts, isPro: isPro)
+                case .goal, .goalContribution, .debt, .debtRepayment, .asset, .assetValuation:
+                    return try await Self.savePlan(operation, goals: goals, debts: debts, assets: assets, isPro: isPro)
                 case .transfer(let transfer):
                     return .transaction(try await store.add(Transaction(
                         id: "",
@@ -266,8 +275,8 @@ extension AgentDraftBook.Writer {
                     try await store.deleteSeries(id: id, deleteTransactions: true)
                 case .fact(let change):
                     await memory.revert(change)
-                case .goal, .goalContribution, .debt, .debtRepayment:
-                    await Self.undoPlan(record, goals: goals, debts: debts)
+                case .goal, .goalContribution, .debt, .debtRepayment, .asset, .assetValuation:
+                    await Self.undoPlan(record, goals: goals, debts: debts, assets: assets)
                 case .budget(let budget):
                     guard let category = store.categoryById[budget.categoryId] else { return }
                     if let previous = budget.previousAmount {
@@ -282,14 +291,16 @@ extension AgentDraftBook.Writer {
 }
 
 extension AgentDraftBook.Writer {
-    /// Saves a goal, money towards it, a debt or a repayment through GoalStore and DebtStore.
-    /// What the draft tools checked is checked again here, since time passes before Save: a
-    /// new debt still needs Tenra Pro, and a repayment still fits in what is left (two drafts
-    /// for the same debt, or a repayment added by hand since).
+    /// Saves a goal, money towards it, a debt, a repayment, an asset or its valuation through
+    /// GoalStore, DebtStore and AssetStore. What the draft tools checked is checked again here,
+    /// since time passes before Save: a new debt or asset still needs Tenra Pro, and a repayment
+    /// still fits in what is left (two drafts for the same debt, or a repayment added by hand
+    /// since).
     static func savePlan(
         _ operation: AgentDraftOperation,
         goals: GoalStore?,
         debts: DebtStore?,
+        assets: AssetStore? = nil,
         isPro: () -> Bool = { true }
     ) async throws -> AgentSavedRecord {
         switch operation {
@@ -313,13 +324,22 @@ extension AgentDraftBook.Writer {
             }
             await debts.addRepayment(repayment, to: debtId)
             return .debtRepayment(debtId: debtId, repaymentId: repayment.id)
+        case .asset(let asset):
+            guard let assets else { throw AgentDraftError.planGone }
+            guard isPro() else { throw AgentDraftError.needsPro }
+            await assets.add(asset)
+            return .asset(asset.id)
+        case .assetValuation(let assetId, let valuation):
+            guard let assets, assets.asset(id: assetId) != nil else { throw AgentDraftError.planGone }
+            await assets.addValuation(valuation, to: assetId)
+            return .assetValuation(assetId: assetId, valuationId: valuation.id)
         default:
             throw AgentDraftError.planGone
         }
     }
 
-    /// Takes back what `savePlan` wrote: deletes the goal, the debt or the entry.
-    static func undoPlan(_ record: AgentSavedRecord, goals: GoalStore?, debts: DebtStore?) async {
+    /// Takes back what `savePlan` wrote: deletes the goal, the debt, the asset or the entry.
+    static func undoPlan(_ record: AgentSavedRecord, goals: GoalStore?, debts: DebtStore?, assets: AssetStore? = nil) async {
         switch record {
         case .goal(let id):
             await goals?.delete(id: id)
@@ -329,6 +349,10 @@ extension AgentDraftBook.Writer {
             await debts?.delete(id: id)
         case .debtRepayment(let debtId, let repaymentId):
             await debts?.deleteRepayment(id: repaymentId, from: debtId)
+        case .asset(let id):
+            await assets?.delete(id: id)
+        case .assetValuation(let assetId, let valuationId):
+            await assets?.deleteValuation(id: valuationId, from: assetId)
         default:
             break
         }

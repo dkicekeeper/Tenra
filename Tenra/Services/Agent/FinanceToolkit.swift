@@ -18,7 +18,8 @@
 //  `draft_transactions`, `draft_budget` and `draft_recurring` file drafts (AgentDraftBook)
 //  that the person saves on the confirm card; `draft_fact` files a fact to remember, change or
 //  forget (AgentMemory) the same way. Savings goals and personal debts have their own read and
-//  draft tools (FinanceToolkit+Plans.swift).
+//  draft tools (FinanceToolkit+Plans.swift), and so do the assets and net worth
+//  (FinanceToolkit+Assets.swift).
 //
 
 import Foundation
@@ -26,12 +27,13 @@ import Foundation
 final class FinanceToolkit: AgentToolExecuting {
     // Internal (not private) where FinanceToolkit+Plans.swift reads them.
     let store: TransactionStore
-    private weak var insights: InsightsViewModel?
+    weak var insights: InsightsViewModel?
     let drafts: AgentDraftBook?
     private let memory: AgentMemory?
     let goals: GoalStore?
     let debts: DebtStore?
-    /// Debts are Tenra Pro: `draft_debt` asks before filing one.
+    let assets: AssetStore?
+    /// Debts and assets are Tenra Pro: `draft_debt` and `draft_asset` ask before filing one.
     let isPro: () -> Bool
     private let learned: VoiceLearningStore
     private let suggestAccount: ((String) -> String?)?
@@ -46,9 +48,9 @@ final class FinanceToolkit: AgentToolExecuting {
     ///     "not available".
     ///   - memory: the facts `draft_fact` checks a new one against; without it remembering
     ///     answers "not available".
-    ///   - goals, debts: the savings goals and personal debts; without them their tools answer
-    ///     "not available".
-    ///   - isPro: whether the person has Tenra Pro (new debts need it).
+    ///   - goals, debts, assets: the savings goals, personal debts and assets; without them
+    ///     their tools answer "not available".
+    ///   - isPro: whether the person has Tenra Pro (new debts and assets need it).
     ///   - learned: the accounts the person confirmed per category in the voice flow.
     ///   - suggestAccount: the account the history suggests for a category (by name), as the
     ///     add-expense screen ranks them.
@@ -60,6 +62,7 @@ final class FinanceToolkit: AgentToolExecuting {
         memory: AgentMemory? = nil,
         goals: GoalStore? = nil,
         debts: DebtStore? = nil,
+        assets: AssetStore? = nil,
         isPro: @escaping () -> Bool = { true },
         learned: VoiceLearningStore? = nil,
         suggestAccount: ((String) -> String?)? = nil,
@@ -73,6 +76,7 @@ final class FinanceToolkit: AgentToolExecuting {
         self.memory = memory
         self.goals = goals
         self.debts = debts
+        self.assets = assets
         self.isPro = isPro
         self.learned = learned ?? .shared
         self.suggestAccount = suggestAccount
@@ -108,6 +112,10 @@ final class FinanceToolkit: AgentToolExecuting {
             case "draft_goal_contribution": return try await draftGoalContribution(input)
             case "draft_debt": return try await draftDebt(input)
             case "draft_debt_repayment": return try await draftDebtRepayment(input)
+            case "get_assets": return try await assetsResult()
+            case "get_net_worth": return try await netWorthResult()
+            case "draft_asset": return try await draftAsset(input)
+            case "draft_asset_valuation": return try await draftAssetValuation(input)
             case _ where Self.laterPhaseTools.contains(name):
                 return .failure(Self.notYet(name))
             default:
@@ -1354,6 +1362,8 @@ final class FinanceToolkit: AgentToolExecuting {
             ]
         case .goal, .goalContribution, .debt, .debtRepayment:
             return describePlan(operation)
+        case .asset, .assetValuation:
+            return describeAsset(operation)
         }
     }
 }

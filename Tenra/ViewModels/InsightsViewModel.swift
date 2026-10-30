@@ -672,6 +672,12 @@ final class InsightsViewModel {
     /// Views with explicit `.animation(_:value:)` modifiers (e.g. ContentRevealModifier's
     /// opacity transition) override this transaction for their specific tracked value — their
     /// animations fire normally. Only background implicit transitions are suppressed.
+    /// An insight as the last pass computed it for a granularity, shown or not (Ten's
+    /// `get_net_worth` reads net worth's months).
+    func precomputedInsight(id: String, granularity: InsightGranularity) -> Insight? {
+        precomputedInsights[granularity]?.first { $0.id == id }
+    }
+
     private func applyPrecomputed(for granularity: InsightGranularity) {
         // Don't apply a granularity that isn't computed yet — that would flash empty cards
         // (or leave the previous granularity's data in place). Keep showing loading; the

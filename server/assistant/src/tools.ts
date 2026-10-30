@@ -178,6 +178,18 @@ const readTools: Tool[] = [
     input_schema: object({}),
   },
   {
+    name: "get_assets",
+    description:
+      "What the user owns (Finances, Assets): homes, land, cars and other things, the held ones and the latest sold. Each with its value now (the latest valuation, or the purchase price; is_estimate when a yearly depreciation the user set counts it down), valued_on and out_of_date (a valuation older than six months for homes and cars, a year for other things), the purchase price and date, the gain and gain_percent since the purchase, annual_growth_percent, share_percent and owned_value (owned_value_base in the base currency), loan_left and own_money_in_it with a linked loan, rent_last_12_months, upkeep_last_12_months, rental_yield_percent ((rent minus upkeep) over the value) and full_result (the gain plus all rent minus all upkeep since the purchase). Plus total_base, what the held assets counted in net worth come to, and gain_base.",
+    input_schema: object({}),
+  },
+  {
+    name: "get_net_worth",
+    description:
+      "Net worth, computed on the phone as the app's net worth insight: money on the accounts plus the assets at the user's share plus what others owe them, minus what is left of the loans and what they owe, all in the base currency. Fields net_worth, money, assets, owed_to_me, loans and i_owe for metrics; lines (key, label, total, subtracted) for a chart of its parts; history, net worth at the end of each of the last months, for a line chart when it is not empty.",
+    input_schema: object({}),
+  },
+  {
     name: "convert_currency",
     description:
       "Converts an amount from one currency to another (the base currency by default) at the exchange rates the app converts everything with, computed on the phone. Returns the converted amount (path converted), the rate for one unit (path rate) and the day the app last updated its rates (rates_date). It is the app's reference rate for the day, the same for every user, not a bank's buy or sell rate. Use for 'what is the dollar rate' (convert 1 from USD) or 'how much is 100 euros in tenge'.",
@@ -194,7 +206,7 @@ const readTools: Tool[] = [
 
 // The API compiles every strict schema into one grammar and refuses a request whose strict
 // tools have more than 16 parameters with a union type (a nullable is one), failing every
-// turn: the goal and debt drafts are not strict, their optional fields simply left out
+// turn: the goal, debt and asset drafts are not strict, their optional fields simply left out
 // (tools.test.ts holds the count).
 const draftTools: Tool[] = [
   {
@@ -313,6 +325,40 @@ const draftTools: Tool[] = [
         note: { type: "string" },
       },
       ["debt"],
+    ),
+  },
+  {
+    name: "draft_asset",
+    description:
+      "Prepares something the user owns for them to confirm: a flat, a house, land, a commercial property, a car or another thing. Nothing is saved. value is what it is worth now (kept as a valuation of today); purchase_price and purchase_date are what they paid and when, if they know. Give at least one of value and purchase_price. share_percent is their share when they own it with someone (100 by default); loan_account is a loan account id from <app_context> it was bought with. currency defaults to the base currency. Assets are Tenra Pro: without it the tool says so.",
+    input_schema: object(
+      {
+        name: { type: "string", description: "What it is, short, in the user's language" },
+        kind: { type: "string", enum: ["apartment", "house", "land", "commercial", "vehicle", "other"] },
+        currency: { type: "string" },
+        value: { type: "number", description: "What it is worth now" },
+        purchase_price: { type: "number" },
+        purchase_date: date,
+        share_percent: { type: "number", description: "1 to 100" },
+        loan_account: { type: "string" },
+      },
+      ["name", "kind"],
+    ),
+  },
+  {
+    name: "draft_asset_valuation",
+    description:
+      "Prepares what an asset is worth now (or on a past date), in its currency, for the user to confirm. Nothing is saved. asset is an asset id from <app_context>. Give value, or area and price_per_unit (for example the square metres and the price of one in listings the user found): the phone multiplies them. note says where the figure comes from. Returns the new value, the previous one and the change.",
+    input_schema: object(
+      {
+        asset: { type: "string" },
+        value: { type: "number" },
+        area: { type: "number", description: "Square metres, or another unit the price is for" },
+        price_per_unit: { type: "number" },
+        date,
+        note: { type: "string", description: "Where the figure comes from, in the user's language" },
+      },
+      ["asset"],
     ),
   },
 ];

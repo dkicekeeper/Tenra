@@ -4,8 +4,10 @@
 //
 //  The `<app_context>` block that opens a thread: today's date, locale, base currency, the
 //  user's accounts and categories with their ids, so tool inputs can name them, the facts the
-//  assistant remembers (AgentMemory), with their ids for `draft_fact`, and the savings goals
-//  and open personal debts by id and name (amounts come from get_goals / get_debts). The
+//  assistant remembers (AgentMemory), with their ids for `draft_fact`, the savings goals, the
+//  open personal debts and the held assets by id and name (amounts come from get_goals /
+//  get_debts / get_assets). The assets line is there even without assets ("none"): it tells the
+//  model this version of the app has them (older versions send no such line). The
 //  format matches the eval fixture (server/assistant/eval/fixture.ts, `appContext`). It
 //  carries no balances or amounts: figures only ever come from tools.
 //
@@ -46,6 +48,15 @@ nonisolated struct AgentContextSnapshot: Sendable, Equatable {
         let currency: String
     }
 
+    /// An asset (named apart from the app's Asset, which this snapshot's extension also uses).
+    struct OwnedAsset: Sendable, Equatable {
+        let id: String
+        let name: String
+        /// AssetKind's raw value: apartment, house, land, commercial, vehicle, other.
+        let kind: String
+        let currency: String
+    }
+
     let today: Date
     let timeZone: TimeZone
     let locale: String
@@ -56,6 +67,8 @@ nonisolated struct AgentContextSnapshot: Sendable, Equatable {
     var goals: [Goal] = []
     /// Open debts only.
     var debts: [Debt] = []
+    /// Held assets only.
+    var assets: [OwnedAsset] = []
 }
 
 nonisolated enum AgentContextBuilder {
@@ -75,6 +88,7 @@ nonisolated enum AgentContextBuilder {
         let facts = snapshot.facts.map { "\($0.id) \"\(clean($0.text))\"" }.joined(separator: "; ")
         let goals = snapshot.goals.map { "\($0.id) \"\(clean($0.name))\" (\($0.currency))" }.joined(separator: "; ")
         let debts = snapshot.debts.map { "\($0.id) \"\(clean($0.person))\" (\($0.direction), \($0.currency))" }.joined(separator: "; ")
+        let assets = snapshot.assets.map { "\($0.id) \"\(clean($0.name))\" (\($0.kind), \($0.currency))" }.joined(separator: "; ")
 
         var lines = [
             "<app_context>",
@@ -84,6 +98,8 @@ nonisolated enum AgentContextBuilder {
             "accounts: \(accounts)",
             "expense categories: \(expense)",
             "income categories: \(income)",
+            // Always there: "none" tells the model this version of the app has assets.
+            "assets: \(assets.isEmpty ? "none" : assets)",
         ]
         // Without facts the line is left out, as before there was a memory.
         if !facts.isEmpty { lines.append("facts you remember about the user: \(facts)") }

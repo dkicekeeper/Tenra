@@ -335,6 +335,62 @@ export const CASES: EvalCase[] = [
     ],
   },
   {
+    id: "ru-asset-new",
+    locale: "ru",
+    prompt: "У меня есть дача, купил в 2015 году за 6 миллионов, сейчас стоит около 15",
+    checks: [
+      {
+        kind: "toolArgs",
+        tool: "draft_asset",
+        match: (i) =>
+          (i.kind === "house" || i.kind === "land") &&
+          i.purchase_price === 6_000_000 &&
+          i.value === 15_000_000 &&
+          String(i.purchase_date ?? "").startsWith("2015"),
+        label: "country house drafted with its price and value",
+      },
+      { kind: "block", type: "confirm" },
+      { kind: "notCalled", tools: ["draft_fact"] },
+    ],
+  },
+  {
+    id: "ru-asset-valuation",
+    locale: "ru",
+    prompt: "Квартира на Абая теперь стоит 72 миллиона",
+    checks: [
+      { kind: "toolArgs", tool: "draft_asset_valuation", match: (i) => i.asset === "asset_flat" && i.value === 72_000_000, label: "new value of the flat" },
+      { kind: "block", type: "confirm" },
+      { kind: "notCalled", tools: ["draft_asset"] },
+    ],
+  },
+  {
+    id: "ru-asset-worth-asks",
+    locale: "ru",
+    prompt: "Сколько сейчас может стоить моя квартира на Абая?",
+    checks: [
+      // No market prices: it asks for the area and listings, never values the flat itself.
+      { kind: "notCalled", tools: ["draft_asset_valuation", "draft_asset"] },
+    ],
+  },
+  {
+    id: "ru-net-worth",
+    locale: "ru",
+    prompt: "Какой у меня чистый капитал?",
+    checks: [
+      { kind: "called", anyOf: ["get_net_worth"] },
+      { kind: "metricFrom", tool: "get_net_worth", pathEnds: "net_worth", label: "net worth from get_net_worth" },
+    ],
+  },
+  {
+    id: "en-rental-yield",
+    locale: "en",
+    prompt: "What rental yield does my flat on Abay give?",
+    checks: [
+      { kind: "called", anyOf: ["get_assets"] },
+      { kind: "metricFrom", tool: "get_assets", pathEnds: "rental_yield_percent", label: "yield from get_assets" },
+    ],
+  },
+  {
     id: "ru-search-merchant",
     locale: "ru",
     prompt: "Покажи все траты в Starbucks за октябрь",

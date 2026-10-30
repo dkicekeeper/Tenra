@@ -152,12 +152,14 @@ class AppCoordinator {
         let memory = AgentMemory.shared
         let goals = goalStore
         let debts = debtStore
+        let assets = assetStore
         let drafts = AgentDraftBook(writer: .app(
             store: store,
             categoriesViewModel: categoriesViewModel,
             memory: memory,
             goals: goals,
             debts: debts,
+            assets: assets,
             isPro: { PremiumManager.shared.isPro }
         ))
         let toolkit = FinanceToolkit(
@@ -167,6 +169,7 @@ class AppCoordinator {
             memory: memory,
             goals: goals,
             debts: debts,
+            assets: assets,
             isPro: { PremiumManager.shared.isPro },
             suggestAccount: { category in accounts.suggestedAccount(forCategory: category, transactions: store.transactions)?.id }
         )
@@ -194,7 +197,10 @@ class AppCoordinator {
                 await memory.load()
                 await goals.load()
                 await debts.load()
-                return AgentContextBuilder.text(for: AgentContextSnapshot(store: store, facts: memory.facts, goals: goals.goals, debts: debts.debts))
+                await assets.load()
+                return AgentContextBuilder.text(for: AgentContextSnapshot(
+                    store: store, facts: memory.facts, goals: goals.goals, debts: debts.debts, assets: assets.held
+                ))
             },
             access: AssistantViewModel.Access(
                 isPro: { PremiumManager.shared.isPro },

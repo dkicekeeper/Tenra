@@ -258,5 +258,21 @@
 			<string>%lld debiti aperti</string>
 		</dict>
 	</dict>
+	<key>finances.assets.count</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld bene</string>
+			<key>other</key>
+			<string>%lld beni</string>
+		</dict>
+	</dict>
 </dict>
 </plist>

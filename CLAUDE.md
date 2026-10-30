@@ -78,12 +78,12 @@ xcrun swiftc -enable-bare-slash-regex -default-isolation MainActor -o /tmp/run m
 
 ## Project Overview
 
-Tenra is a native iOS finance management application built with SwiftUI and CoreData. Tracks accounts, transactions, budgets, deposits, loans, recurring payments, savings goals and personal debts.
+Tenra is a native iOS finance management application built with SwiftUI and CoreData. Tracks accounts, transactions, budgets, deposits, loans, recurring payments, savings goals, personal debts and assets.
 
 **Tech Stack:**
 - SwiftUI (iOS 26+ with Liquid Glass adoption)
 - Swift 5.0 (project setting), targeting Swift 6 patterns; `SWIFT_STRICT_CONCURRENCY = minimal`; `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor`
-- CoreData for persistence (v16 schema)
+- CoreData for persistence (v17 schema)
 - Observation framework (@Observable)
 - MVVM + Coordinator architecture
 
@@ -112,6 +112,7 @@ Tenra/
 │   ├── Deposits/        # Deposit views
 │   ├── Goals/           # Savings goal views
 │   ├── Debts/           # Personal debt views
+│   ├── Assets/          # Asset (home, car) views
 │   ├── Settings/        # Settings views
 │   ├── VoiceInput/      # Voice input views
 │   ├── CSV/             # CSV views
@@ -158,6 +159,7 @@ New file needed?
 │  ├─ Recurring? → Services/Recurring/
 │  ├─ Loans? → Services/Loans/
 │  ├─ Savings goals / personal debts? → Services/Goals/, Services/Debts/
+│  ├─ Assets? → Services/Assets/
 │  ├─ App Intents / Siri? → Services/Intents/
 │  ├─ Caching? → Services/Cache/
 │  ├─ Settings? → Services/Settings/
@@ -186,7 +188,7 @@ New file needed?
 
 | Working on... | Read first |
 |---|---|
-| AppCoordinator, TransactionStore role, BalanceCoordinator, Repository pattern, CoreData v16 model | [docs/architecture.md](docs/architecture.md) |
+| AppCoordinator, TransactionStore role, BalanceCoordinator, Repository pattern, CoreData v17 model | [docs/architecture.md](docs/architecture.md) |
 | `@Observable`, `Task`, `MainActor`, `nonisolated`, CoreData threading, `Sendable` | [docs/concurrency.md](docs/concurrency.md) |
 | `Views/Components/**`, a new screen or sheet, DesignKit in Tenra (bridge, adapters, screen patterns), amount formatting, dates and category styling, animations and effects | [docs/design-system.md](docs/design-system.md); tokens and components themselves: DesignKit's `docs/design-system.md` |
 | `Services/Insights/**` (operational guide) | [docs/domains/insights.md](docs/domains/insights.md) |
@@ -201,6 +203,7 @@ New file needed?
 | Deposits, DepositInfo, interest accrual, capitalization | [docs/domains/deposits.md](docs/domains/deposits.md) |
 | Loans, LoanInfo, LoanPaymentService, manual payments, linking | [docs/domains/loans.md](docs/domains/loans.md) |
 | Savings goals, personal debts (`GoalStore`, `DebtStore`, `Views/Goals`, `Views/Debts`, `MoneyEntrySheet`) | [docs/domains/goals-and-debts.md](docs/domains/goals-and-debts.md) |
+| Assets (`AssetStore`, `Services/Assets`, `Views/Assets`, `AssetEntity`), valuations, gain and growth, rent and upkeep, the sale, net worth (`NetWorthCalculator`) | [docs/domains/assets.md](docs/domains/assets.md) |
 | Recurring transactions, RecurringStore, series + occurrences | [docs/domains/recurring.md](docs/domains/recurring.md) |
 | Swift Charts (insight charts = DesignKit trend charts + `PeriodChartAdapters.swift`, scrollable, sparklines) | [docs/domains/charts.md](docs/domains/charts.md) |
 | CSV import/export round-trip rules | [docs/domains/csv.md](docs/domains/csv.md) |
@@ -290,7 +293,7 @@ On iOS 26 `.swipeActions` silently no-ops outside a `List` (e.g. `LazyVStack`, `
 - **Paywall shows RevenueCatUI only when there is something to sell**: `PaywallSheet` first awaits `PremiumManager.checkOfferings()` (`OfferingsAvailability`, plain values); otherwise it shows a localized "temporarily unavailable" state with a retry (RevenueCatUI's own error alert closes the sheet: the 3-month "opens then closes" bug, RevenueCat error 23). A restore closes the sheet only when `applyPaywallResult(_:)` says `pro` is active, else "nothing to restore". Settings → About → Diagnostics shows whether the App Store returns products (launch health check).
 - **Offer codes** (promo codes): free users redeem them in Settings → "Redeem code", above About ([SettingsPurchaseSection](Tenra/Views/Settings/SettingsPurchaseSection.swift), StoreKit's `offerCodeRedemption` sheet, so the view imports StoreKit, never RevenueCat); `PremiumManager.syncAfterOfferCodeRedemption()` syncs with RevenueCat when the sheet closes. Codes are created in App Store Connect → the subscription → Offer Codes; one-off grants without a code: Actions → RevenueCat (`revenuecat.yml`, `grant`) or the RevenueCat dashboard → customer → grant entitlement.
 - **Subscription status display**: read `PremiumManager.proStatus` (`ProStatus`: plan, renewal date, `willRenew`, `managementURL`) — never import RevenueCat for status. Settings is a page of Home's stack (the gear) topped by the self-contained [SettingsProHero](Tenra/Views/Settings/SettingsProHero.swift): the crown on `AuroraBackground` with one button, "Get Tenra Pro" opening the paywall (free), "Manage Subscription" (subscriber) or the "Free forever" badge (Founding User). What Pro includes is the RevenueCat paywall's to list (configured in its dashboard); restore and redeem are rows of `SettingsPurchaseSection` for free users.
-- **Gated**: 4th account (AccountsManagementView, incl. convert-to-deposit path), voice, PDF/CSV import (OCR tab + SettingsView), deposits, loans, personal debts (adding one; kept debts stay open), Ten past its free allowance ([domains/assistant.md](docs/domains/assistant.md) §11). **Deliberately free — do NOT gate**: Insights (aha-moment that sells Pro; soft paywall with 3-show/14-day cap lives in AnalyticsTab), CSV **export** (user data must always be exportable), savings goals (owner's decision, 2026-10-14), Apple Pay auto-capture and merchants (owner's decision, 2026-10-19), bank notification capture (2026-10-22).
+- **Gated**: 4th account (AccountsManagementView, incl. convert-to-deposit path), voice, PDF/CSV import (OCR tab + SettingsView), deposits, loans, personal debts (adding one; kept debts stay open), assets (adding one; kept assets stay open, [domains/assets.md](docs/domains/assets.md)), Ten past its free allowance ([domains/assistant.md](docs/domains/assistant.md) §11). **Deliberately free — do NOT gate**: Insights (aha-moment that sells Pro; soft paywall with 3-show/14-day cap lives in AnalyticsTab), CSV **export** (user data must always be exportable), savings goals (owner's decision, 2026-10-14), Apple Pay auto-capture and merchants (owner's decision, 2026-10-19), bank notification capture (2026-10-22).
 - **Grandfathering** ([FoundingUserPolicy](Tenra/Services/Premium/FoundingUserPolicy.swift)): Founding User = onboarded before the first Pro-build launch on this device (decided once in `configure()`), OR the App Store's signed `AppTransaction.originalPurchaseDate` (production only; TestFlight/sandbox dates are placeholders) is before `PremiumConfig.foundingUserDownloadCutoff`, so the status survives a reinstall or a new phone. `isFounder` is stored + observable and NEVER revoked (only `markFounder` writes it, only `true`). Build numbers can't identify pre-Pro downloads: they restart at 1 per marketing version. Product IDs / entitlement `pro` / offering `default` / free limits live in [PremiumConfig](Tenra/Services/Premium/PremiumConfig.swift) — must match ASC + RevenueCat dashboard exactly.
 - **Local testing**: Edit Scheme → Options → StoreKit Configuration → `Tenra/Tenra.storekit` (sandbox purchases, no ASC needed). The unit-test host, UI tests and `-ScreenshotDemo` never configure RevenueCat (`PremiumManager.isAutomatedRun`, DEBUG only), else every fresh Simulator counts as a new customer in the charts; a new UI test passes `-NoRevenueCat` in its launch arguments. Paywall content/design is configured in the RevenueCat dashboard (incl. required Terms/Privacy footer links — App Review 3.1.2(c)), not in code.
 - The model, the prices and what Pro sells: [docs/promotion-plan.md](docs/promotion-plan.md) §2.
@@ -299,7 +302,7 @@ On iOS 26 `.swipeActions` silently no-ops outside a `List` (e.g. `LazyVStack`, `
 
 ⚠️ **The Xcode project uses file-system-synchronized groups (`PBXFileSystemSynchronizedRootGroup`).** Adding, deleting, or renaming files (`.swift`, `.stringsdict`, etc.) needs NO `project.pbxproj` edits — just create/`rm` on disk and they're auto-included in the target. (Verified: deleted a view + added `.stringsdict` files, both picked up by the build.)
 
-Schema version-bump checklist (currently v16) lives in the `/coredata-schema-bump` skill ([.claude/skills/coredata-schema-bump/SKILL.md](.claude/skills/coredata-schema-bump/SKILL.md)) — invoke it before touching `Tenra.xcdatamodeld`.
+Schema version-bump checklist (currently v17) lives in the `/coredata-schema-bump` skill ([.claude/skills/coredata-schema-bump/SKILL.md](.claude/skills/coredata-schema-bump/SKILL.md)) — invoke it before touching `Tenra.xcdatamodeld`.
 
 ## Testing
 

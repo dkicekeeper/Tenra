@@ -110,7 +110,7 @@ Saves with the same operation name run one at a time; none is dropped.
 
 ## CoreData Schema
 
-**Current version**: v16 (lightweight migration only; the bump checklist is the `/coredata-schema-bump` skill).
+**Current version**: v17 (lightweight migration only; the bump checklist is the `/coredata-schema-bump` skill).
 
 | Version | Changes |
 |---------|---------|
@@ -125,6 +125,7 @@ Saves with the same operation name run one at a time; none is dropped.
 | v14 | `AgentFactEntity` (the facts the assistant remembers, `byCreatedAtIndex`; `AgentFactStore` under `AgentMemory`, [domains/assistant.md](domains/assistant.md) §5) |
 | v15 | `GoalEntity`, `DebtEntity` (savings goals and personal debts, history as JSON; `GoalRepository` / `DebtRepository` under `GoalStore` / `DebtStore`, [domains/goals-and-debts.md](domains/goals-and-debts.md)) |
 | v16 | `DebtEntity.order`, `RecurringSeriesEntity.order` (optional: the person's place for a debt and a subscription in their lists, DesignKit 8's drag to reorder) |
+| v17 | `AssetEntity` (assets: valuations and category links as JSON; `AssetRepository` under `AssetStore`, [domains/assets.md](domains/assets.md)) |
 
 `CategoryAggregateEntity` and `AccountAggregateEntity` hold the persisted aggregate tables that the next launch warm-starts from (see [domains/categories.md](domains/categories.md)). `MonthlyAggregateEntity` remains in the model but nothing reads or writes it.
 

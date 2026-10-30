@@ -1,8 +1,7 @@
 # Charts on DesignKit 8.3.0 and the "By day" insight
 
-Status (2026-10-30): in `main`, on DesignKit 8.3.0 (dkicekeeper/DesignKit#91), version 1.8, with
-the assets of PR #105 to come (its branch `claude/assets-phase-2` sets the same 1.8 and merges
-cleanly; when it lands, the insights catalogue's count becomes 28). TestFlight: 1.8 build 59
+Status (2026-10-30): in `main`, on DesignKit 8.3.0 (dkicekeeper/DesignKit#91), version 1.8;
+PR #105 (assets) has main merged in and goes into the same 1.8. TestFlight: 1.8 build 59
 (2026-10-30), without the assets (build 58 is #105's, without the charts). The What's New below
 goes into 1.8's `release-notes.md` once 1.7.1's notes move to the archive; then this file moves to
 `archive/plans/`.

@@ -30,6 +30,7 @@ class AppCoordinator {
     /// Savings goals (free) and personal debts (Pro): their own CoreData rows (v15).
     @ObservationIgnored let goalStore: GoalStore
     @ObservationIgnored let debtStore: DebtStore
+    @ObservationIgnored let assetStore: AssetStore
     @ObservationIgnored let transactionsViewModel: TransactionsViewModel
     @ObservationIgnored let settingsViewModel: SettingsViewModel
     @ObservationIgnored let insightsViewModel: InsightsViewModel
@@ -413,6 +414,7 @@ class AppCoordinator {
         let keepsInStore = self.repository is CoreDataRepository
         self.goalStore = GoalStore(repository: keepsInStore ? GoalRepository() : nil)
         self.debtStore = DebtStore(repository: keepsInStore ? DebtRepository() : nil)
+        self.assetStore = AssetStore(repository: keepsInStore ? AssetRepository() : nil)
 
         // 7. Setup SettingsViewModel
         let storageService = SettingsStorageService()
@@ -495,6 +497,41 @@ class AppCoordinator {
                 currency: account.currency
             )
         }
+
+        // An asset with a mortgage or a car loan reads what is left of it from the loan account.
+        assetStore.loanBalance = { [weak self] accountId in
+            guard let self,
+                  let account = self.transactionStore.accounts.first(where: { $0.id == accountId }),
+                  let loanInfo = account.loanInfo else { return nil }
+            return AssetValuationMath.LoanBalance(
+                amount: NSDecimalNumber(decimal: loanInfo.remainingPrincipal).doubleValue,
+                currency: account.currency
+            )
+        }
+
+        // An asset's rent and upkeep: the transactions of its linked category (and subcategory),
+        // from the category index.
+        assetStore.transactionsOfLink = { [weak self] link, type in
+            guard let self, let category = self.transactionStore.categoryById[link.categoryId] else { return [] }
+            let bucket = self.transactionStore.transactionsByCategoryName[category.name] ?? []
+            return bucket.filter { tx in
+                guard tx.type == type else { return false }
+                guard let subcategoryId = link.subcategoryId else { return true }
+                return self.transactionStore.subcategoryIdsByTransactionId[tx.id]?.contains(subcategoryId) == true
+            }
+        }
+        // Net worth counts the assets and the personal debts: Insights reads them when a pass
+        // starts, and recomputes when they change.
+        insightsViewModel.netWorthHoldings = { [weak self] in
+            guard let self else { return .empty }
+            return NetWorthCalculator.Holdings(
+                assets: self.assetStore.netWorthHoldings,
+                owedToMe: self.debtStore.netWorthHoldings(.owedToMe),
+                iOwe: self.debtStore.netWorthHoldings(.iOwe)
+            )
+        }
+        assetStore.didChange = { [weak self] in self?.insightsViewModel.invalidateAndRecompute() }
+        debtStore.didChange = { [weak self] in self?.insightsViewModel.invalidateAndRecompute() }
 
         // Inject TransactionStore into ViewModels
         transactionsViewModel.transactionStore = transactionStore
@@ -658,6 +695,7 @@ class AppCoordinator {
         Task { [weak self] in
             await self?.goalStore.load()
             await self?.debtStore.load()
+            await self?.assetStore.load()
             // Goals a linked balance carried over the target while their screen was closed.
             await self?.goalStore.refreshAllReached()
             // Due debts and goals behind schedule, now that they are read.

@@ -146,6 +146,7 @@ enum InsightType: String, Hashable {
     case topMerchant               // where the current bucket's money went, by merchant
     case averageCheckGrowth        // a merchant's average check, 90 days against the 90 before
     case dailyAllowance            // "For today": a day's money until the next income (DailyAllowance)
+    case netWorth                  // money + assets + owed to me − loans − I owe (NetWorthCalculator)
 }
 
 // MARK: - Insight Metric
@@ -204,7 +205,7 @@ extension InsightType {
         case .topSpendingCategory, .topMerchant, .incomeGrowth, .incomeSourceBreakdown,
              .netCashFlow, .bestMonth, .projectedBalance, .accountActivity,
              .totalWealth, .wealthGrowth, .savingsRate, .emergencyFund,
-             .subcategoryBreakdown, .dailyAllowance:
+             .subcategoryBreakdown, .dailyAllowance, .netWorth:
             return false
         }
     }

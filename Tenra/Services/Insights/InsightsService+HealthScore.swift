@@ -95,7 +95,7 @@ extension InsightsService {
 
         // --- Component 4: Emergency Fund (weight 0.15) ---
         // Loans are liabilities — exclude them from the asset side.
-        let totalBalance = accounts.filter { !$0.isLoan && $0.includeInBalance }.reduce(0.0) { $0 + balanceFor($1.id) }
+        let totalBalance = accounts.filter { !$0.isLoan && $0.includeInBalance }.reduce(0.0) { $0 + Self.baseBalance(of: $1, balanceFor: balanceFor, baseCurrency: baseCurrency) }
             + balanceAdjustment
         // Use preAggregated O(M) lookup when available; fall back to O(N) scan
         let last3Months: [InMemoryMonthlyTotal]

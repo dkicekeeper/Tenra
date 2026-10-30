@@ -97,6 +97,9 @@ final class InsightsViewModel {
     /// from `applyPrecomputed` so its numeric-roll animation fires at reveal time
     /// alongside the bucket totals (setting it earlier rolled while still hidden).
     @ObservationIgnored private var pendingAvailableBalance: Double = 0
+    /// Net worth's parts kept outside the accounts (assets at the person's share, open personal
+    /// debts), read on the main actor when a pass starts. Set by AppCoordinator.
+    @ObservationIgnored var netWorthHoldings: () -> NetWorthCalculator.Holdings = { .empty }
     /// Financial Health Score (computed once per recompute cycle, using .month granularity data)
     private(set) var healthScore: FinancialHealthScore? = nil
 
@@ -418,16 +421,21 @@ final class InsightsViewModel {
         // Total spendable balance (non-loan, included-in-balance accounts) — period-independent.
         // Stored as pending and published from applyPrecomputed so the numeric-roll animation
         // fires at reveal time alongside the bucket totals (not while still hidden by contentReveal).
+        // Each balance in the base currency (InsightsService.baseBalance), as the wealth card.
+        let balanceOf: (String) -> Double = { balanceSnapshot[$0] ?? 0 }
         self.pendingAvailableBalance = accountsSnapshot
             .filter { !$0.isLoan && $0.includeInBalance }
-            .reduce(0.0) { $0 + (balanceSnapshot[$1.id] ?? 0) }
+            .reduce(0.0) { total, account in
+                total + InsightsService.baseBalance(of: account, balanceFor: balanceOf, baseCurrency: currency)
+            }
         // Bundle all snapshots into DataSnapshot for nonisolated computation
         let snapshot = InsightsService.DataSnapshot(
             transactions: allTransactions,
             categories: categoriesSnapshot,
             recurringSeries: recurringSnapshot,
             accounts: accountsSnapshot,
-            balanceFor: { [balanceSnapshot] id in balanceSnapshot[id] ?? 0 }
+            balanceFor: { [balanceSnapshot] id in balanceSnapshot[id] ?? 0 },
+            netWorthHoldings: netWorthHoldings()
         )
 
         recomputeTask = Task.detached(priority: .userInitiated) { [weak self] in

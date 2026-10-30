@@ -494,6 +494,9 @@ nonisolated final class InsightsService {
             if let dormancy = generateAccountDormancy(allTransactions: allTransactions, baseCurrency: baseCurrency, balanceFor: snapshot.balanceFor, preAggregated: preAggregated, accounts: snapshot.accounts) {
                 insights.append(dormancy)
             }
+            if let netWorth = generateNetWorth(snapshot: snapshot, baseCurrency: baseCurrency) {
+                insights.append(netWorth)
+            }
             insights.append(contentsOf: generateSubscriptionPriceIncreases(
                 recurringSeries: snapshot.recurringSeries,
                 categories: snapshot.categories,
@@ -594,7 +597,8 @@ nonisolated final class InsightsService {
         "emergency_fund",
         "spending_forecast",
         "year_over_year",
-        "check_growth"
+        "check_growth",
+        "net_worth"
     ]).union(budgetInsightIDs)
 
     /// Ids `generateBudgetInsights` emits. Shared: each budget's spent covers the budget's
@@ -827,6 +831,23 @@ nonisolated final class InsightsService {
         let recurringSeries: [RecurringSeries]
         let accounts: [Account]
         let balanceFor: @Sendable (String) -> Double
+        /// Net worth's parts kept outside the accounts (assets, personal debts), read on the
+        /// main actor (`InsightsViewModel.netWorthHoldings`).
+        var netWorthHoldings: NetWorthCalculator.Holdings = .empty
+    }
+
+    /// An amount in `currency` in the base currency, at the cached rates; a cold cache leaves it
+    /// as it is.
+    nonisolated static func toBase(_ amount: Double, currency: String, baseCurrency: String) -> Double {
+        guard currency != baseCurrency else { return amount }
+        return CurrencyConverter.convertSync(amount: amount, from: currency, to: baseCurrency) ?? amount
+    }
+
+    /// An account's balance in the base currency. `DataSnapshot.balanceFor` gives each account's
+    /// balance in its own currency (BalanceCoordinator), so a sum across accounts converts each
+    /// one first: a dollar account would otherwise add its dollars to tenge.
+    nonisolated static func baseBalance(of account: Account, balanceFor: (String) -> Double, baseCurrency: String) -> Double {
+        toBase(balanceFor(account.id), currency: account.currency, baseCurrency: baseCurrency)
     }
 
     // MARK: - In-Memory Aggregate Helpers

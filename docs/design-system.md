@@ -101,7 +101,7 @@ decision, 2026-10). `Tenra/Views/Components/` keeps two kinds of views:
 
 | Folder | Adapters (→ DesignKit component) | Screen parts |
 |---|---|---|
-| `Cards` | `AccountCard` → `BalanceCard`, `CategoryChip` → `ProgressRingTile`, `CategoryGradientBackground` → `AuroraBackground`, `HealthScoreCardView` → `ScoreCard`, `HealthScoreHeroCard` → `ScoreGaugeCard`, `HealthScoreWeightingCard` → `WeightBreakdownCard`, `HealthComponentCard` → `TargetProgressCard`, `InsightFormulaCard` → `CalculationCard`, `InsightsCardView` → `MetricCard`, `InsightsTotalsCard` → `TotalsCard`, `LoanCard` / `GoalCard` / `DebtCard` → `PayoffProgressCard`, `SavingsRateHeroCard` / `LargeTransactionHeroCard` / `BudgetHeadroomHeroCard` → `ScoreGaugeCard`, `PeriodComparisonCard` → `ComparisonCard`, `SubscriptionCard` → `RecurringPaymentCard`, `TransactionCardView` → `TransactionRow`, `TransactionsSummaryCard` → `CashFlowCard` | `TransactionCard` (tap → edit, swipe, context menu), `HistoryTransactionsList`, the Finances cards (`AccountsCardView`, `DepositsCardView`, `SubscriptionsCardView`, `LoansCardView`, `GoalsCardView`, `DebtsCardView`, `CategoriesCardView`, `SubcategoriesCardView`) |
+| `Cards` | `AccountCard` → `BalanceCard`, `CategoryChip` → `ProgressRingTile`, `CategoryGradientBackground` → `AuroraBackground`, `HealthScoreCardView` → `ScoreCard`, `HealthScoreHeroCard` → `ScoreGaugeCard`, `HealthScoreWeightingCard` → `WeightBreakdownCard`, `HealthComponentCard` → `TargetProgressCard`, `InsightFormulaCard` → `CalculationCard`, `InsightsCardView` → `MetricCard`, `InsightsTotalsCard` → `TotalsCard`, `LoanCard` / `GoalCard` / `DebtCard` → `PayoffProgressCard`, `AssetCard` → `HoldingCard` (8.2.0), `SavingsRateHeroCard` / `LargeTransactionHeroCard` / `BudgetHeadroomHeroCard` → `ScoreGaugeCard`, `PeriodComparisonCard` → `ComparisonCard`, `SubscriptionCard` → `RecurringPaymentCard`, `TransactionCardView` → `TransactionRow`, `TransactionsSummaryCard` → `CashFlowCard` | `TransactionCard` (tap → edit, swipe, context menu), `HistoryTransactionsList`, the Finances cards (`AccountsCardView`, `DepositsCardView`, `AssetsCardView`, `SubscriptionsCardView`, `LoansCardView`, `GoalsCardView`, `DebtsCardView`, `CategoriesCardView`, `SubcategoriesCardView`) |
 | `Charts` | `PeriodChartAdapters` (`PeriodDataPoint: ChartPoint`, `PeriodChartSeries` → `ChartSeries`) | |
 | `EntityDetail` | | `EntityDetailScaffold` |
 | `Feedback` | `AnimatedTranscriptionText` → `StreamingText`, `InsightTrendBadge` → `TrendBadge`, `LoanTypeBadge` / `LoanMonthStatusBadge` → `Badge`, `StatusIndicatorBadge` (status mapping) | `RatingSurveyView`, `ExportActivityView` |
@@ -217,7 +217,7 @@ on a debt (only a note and a date) is `MoneyEntrySheet`, an adapter over DesignK
 ### Entity detail
 
 `AccountDetailView`, `CategoryDetailView`, `SubscriptionDetailView`, `DepositDetailView`,
-`LoanDetailView`, `GoalDetailView`, `DebtDetailView`, all through `EntityDetailScaffold`:
+`LoanDetailView`, `GoalDetailView`, `DebtDetailView`, `AssetDetailView`, all through `EntityDetailScaffold`:
 
 ```
 ScrollView
@@ -257,6 +257,11 @@ dragging and adds; no swipe actions.
   reached), `PersonalDebt.order` and `RecurringSeries.order` (CoreData v16; nil keeps the list's
   own order, the soonest due first for debts). Goals and debts show three
   `PayoffProgressCardSkeleton`s until their store loads, replaced through `.skeletonReveal` (§7).
+- **Assets** (`AssetsListView`): a hero on `.heroBackground` with the total, its gain and its
+  worth over time (`HeroSparkline`), the screen's title inline, `.heroScrollEdge()` on the scroll
+  view; under it `CardList(.stack)` sections of `AssetCard` (DesignKit's `HoldingCard`, 8.2.0)
+  rising over the colour's end (`.padding(.top, -AppSpacing.xxl)`). Order: `Asset.order` within
+  a section, the sold ones by sale day. Three `HoldingCardSkeleton`s until the store loads.
 - **Subcategories** (`SubcategoriesManagementView`): `CardList(.section)`, every subcategory a
   row of one glass card (`SubcategoryManagementRow`, `ItemRow(style: .large, titleFont:
   AppTypography.h4)` with its usage in a `MetaLine`, which pads itself in the section since
@@ -529,6 +534,7 @@ Where each DesignKit effect is used in Tenra, so a new screen reuses the pattern
 | Entity detail | `.scrollHero()` on the hero (from `EntityDetailScaffold`), `.heroAccentGlow` on the screen | every detail screen; the glow's colour comes from the hero icon |
 | Voice screen | `EdgeGlow`, `VoiceWave(style: .orb)` stop button, `.thinkingShimmer`, `StreamingText`, `.cascadeIn`, `.borderBeam` on the live card, a one-time `.spotlight` | [domains/voice.md](domains/voice.md) |
 | Loan detail | `.celebration` on the false → true edge of `isPaidOffLoan`, with the banner and the haptic | the moment only, never the state |
+| Assets | the list's hero on `.heroBackground(AppColors.income)` while the assets gained (the accent otherwise) with `HeroSparkline` of their worth over time; `HoldingCard(isLive: true)` rolling the values up and `.scrollReveal()` on each card; on an asset's screen `HeroSparkline` of its valuations under the hero, `.sparkleBurst` for a valuation above the value, `.celebration(playsHaptic: false)` for a sale above the purchase price | a still background under the glass, as Home's; the charts wait for the push (`entranceDelay` 0.3 s) |
 | Goal reached, debt settled | `.celebration(trigger:, playsHaptic: false)` when a contribution, an edit or the account's balance reaches the target, or a repayment covers the rest | the money sheet has already played the success haptic |
 | Detail histories (`GroupedTransactionList`, a goal's contributions, a debt's repayments), voice cards | `.dissolve` removal, opacity insertion | for deleting something the person owned, not every disappearance |
 | One-time hints | `.spotlight` + `FeatureTourState` | points at content the person can see, not at system chrome (tab bar, toolbar) |

@@ -73,6 +73,7 @@ this file is the full index.
 | [plan-notification-capture.md](plan-notification-capture.md) | Plan in flight: expenses and incomes from any bank's push notifications through iOS 27's notification trigger (`LogBankNotificationIntent`, the bank-agnostic `BankNotificationParser`, recorded through the Wallet path), own-account transfers and the setup guide: in 1.7, checked on the owner's phone, not yet in What's New; learned templates, "Unparsed" and the Apple model layer still ahead |
 | [plan-assets.md](plan-assets.md) | Plan in flight, owner's decisions taken 2026-10-16: assets (real estate, vehicles) with market valuations, rent and upkeep, and net worth; phases 1 (assets, valuations, sale) and 2 (rent, upkeep, net worth) built ([domains/assets.md](domains/assets.md)), phases 3 and 4 ahead |
 | [plan-investments.md](plan-investments.md) | Plan, owner's decisions taken 2026-10-16, not started: investment portfolios (KASE and US stocks, ETFs, crypto on exchanges and wallets), quote sources and their licences, read-only exchange keys, purchases in parts (trade journal, average cost, XIRR), what Ten may and may not say about investments |
+| [plan-charts-by-day.md](plan-charts-by-day.md) | Work in flight: DesignKit 8.3.0's charts in Tenra (options menu, a year ago, the spending forecast, the category's 12 months) and the "By day" insight, in `main` for 1.8; its What's New draft until 1.7.1 ships |
 | [public/](public/) | The support site: privacy policy, terms of use, support (GitHub Pages) |
 
 ## Archive

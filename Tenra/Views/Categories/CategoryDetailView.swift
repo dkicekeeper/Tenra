@@ -36,6 +36,8 @@ struct CategoryDetailView: View {
     /// Pre-built account lookup. Refreshed only when accounts mutate
     /// (via `accountsMutationVersion`), not on every body re-eval.
     @State private var accountsById: [String: Account] = [:]
+    /// The last 12 months for the chart, computed off the main actor.
+    @State private var months: [CategoryMonthHistory.Month] = []
 
     @Environment(\.dismiss) private var dismiss
     @Environment(TimeFilterManager.self) private var timeFilterManager
@@ -82,6 +84,13 @@ struct CategoryDetailView: View {
         // O(1) lookup via maintained index — no full-array scan.
         let bucket = transactionStore.transactionsByCategoryName[name] ?? []
         cachedTransactions = bucket.sorted { $0.date > $1.date }
+
+        let mine = cachedTransactions
+        let isIncome = liveCategory.type == .income
+        let baseCurrency = transactionsViewModel.appSettings.baseCurrency
+        months = await Task.detached(priority: .userInitiated) {
+            CategoryMonthHistory.months(of: mine, income: isIncome, baseCurrency: baseCurrency)
+        }.value
 
         let range = timeFilterManager.currentFilter.dateRange()
         aggregates = CategoryAggregatesCalculator.compute(
@@ -136,6 +145,7 @@ struct CategoryDetailView: View {
                     progress: budgetProgress()
                 )
             },
+            customSections: { monthlyChart(baseCurrency: baseCurrency) },
             toolbarMenu: { toolbarMenu }
         )
         .heroAccentGlow(icon: liveCategory.iconSource, tint: .monochrome(liveCategory.color))
@@ -207,6 +217,62 @@ struct CategoryDetailView: View {
         .task(id: transactionStore.accountsMutationVersion) {
             accountsById = Dictionary(uniqueKeysWithValues: transactionStore.accounts.map { ($0.id, $0) })
         }
+    }
+
+    // MARK: - Monthly chart
+
+    private enum ChartKey {
+        static let total = "total"
+        static let yearAgo = "yearAgo"
+        static let forecast = "forecast"
+    }
+
+    /// The last 12 months as bars (DesignKit 8.3.0): this month fading towards its forecast,
+    /// the same month a year ago behind each bar, a monthly budget as a line that turns the
+    /// bars past it orange. The person's chart options (`ChartOptionsHost`) add the average and
+    /// the highs and lows, or hide the forecast and the year ago. None until a month has money.
+    @ViewBuilder
+    private func monthlyChart(baseCurrency: String) -> some View {
+        if months.contains(where: { $0.total > 0 }) {
+            let category = liveCategory
+            let title = String(localized: "merchant.detail.byMonth")
+            let series: ChartSeries<ChartValuePoint> = .keyed(
+                ChartKey.total, name: title, coloring: .solid(category.color), baseline: .zero,
+                better: category.type == .income ? .higher : .lower,
+                projectedKey: ChartKey.forecast, comparisonKey: ChartKey.yearAgo
+            )
+            let points: [ChartValuePoint] = months.map { month in
+                var values = [ChartKey.total: month.total]
+                if let yearAgo = month.yearAgo { values[ChartKey.yearAgo] = yearAgo }
+                if let forecast = month.forecast { values[ChartKey.forecast] = forecast }
+                return ChartValuePoint(
+                    label: month.key,
+                    axisLabel: PeriodAxisLabel.month(month.start),
+                    title: month.start.formatted(.dateTime.month(.wide).year()),
+                    isPartial: month.isCurrent,
+                    values: values
+                )
+            }
+            VStack(alignment: .leading, spacing: AppSpacing.sm) {
+                SectionHeader(title)
+                    .screenPadding()
+                // Charts bleed to the screen edges (docs/domains/charts.md).
+                BarChart(
+                    dataPoints: points,
+                    series: series,
+                    valueFormat: .currency(baseCurrency),
+                    referenceLines: monthlyBudgetLine
+                )
+            }
+        }
+    }
+
+    /// A monthly budget across the chart: the bars past it turn orange.
+    private var monthlyBudgetLine: [ChartReferenceLine] {
+        guard liveCategory.type != .income, liveCategory.budgetPeriod == .monthly,
+              let budget = liveCategory.budgetAmount, budget > 0 else { return [] }
+        return [.value(budget, label: String(localized: "category.detail.budget", defaultValue: "Budget"),
+                       color: AppColors.warning, aboveColor: AppColors.warning)]
     }
 
     // MARK: - Delete

@@ -211,29 +211,23 @@ struct MerchantDetailView: View {
 
     private static let chartSeriesId = "spent"
 
-    /// "ЯНВ", with "'25" outside the current year, as the period charts label months
-    /// (PeriodAxisLabel.compact).
-    private static func axisLabel(for start: Date) -> String {
-        let calendar = Calendar.current
-        let month = String(start.formatted(.dateTime.month(.abbreviated)).uppercased().prefix(3))
-        let year = calendar.component(.year, from: start)
-        guard year != calendar.component(.year, from: Date()) else { return month }
-        return month + "'" + String(format: "%02d", year % 100)
-    }
-
     /// The last 12 months as bars, a tap shows a month's amount. None until something was spent.
+    /// This month is not over: its bar fades and reads "so far". Less spent is better, so a
+    /// month's change reads green when it fell.
     @ViewBuilder
     private func monthlyChart(baseCurrency: String) -> some View {
         if summary.months.contains(where: { $0.spent > 0 }) {
             let title = String(localized: "merchant.detail.byMonth")
             let series: ChartSeries<ChartValuePoint> = .keyed(
-                Self.chartSeriesId, name: title, coloring: .solid(AppColors.accent), baseline: .zero
+                Self.chartSeriesId, name: title, coloring: .solid(AppColors.accent), baseline: .zero, better: .lower
             )
+            let thisMonth = summary.months.last?.key
             let points: [ChartValuePoint] = summary.months.map { month in
                 ChartValuePoint(
                     label: month.key,
-                    axisLabel: Self.axisLabel(for: month.start),
+                    axisLabel: PeriodAxisLabel.month(month.start),
                     title: month.start.formatted(.dateTime.month(.wide).year()),
+                    isPartial: month.key == thisMonth,
                     values: [Self.chartSeriesId: month.spent]
                 )
             }

@@ -2025,7 +2025,7 @@
 "chart.today" = "Сегодня";
 "chart.empty.title" = "Пока нет данных";
 "chart.empty.message" = "Добавьте данные, чтобы увидеть график.";
-"chart.partial" = "пока";
+"chart.partial" = "на сегодня";
 "chart.style" = "Тип графика";
 "chart.zoomIn" = "Приблизить";
 "chart.zoomOut" = "Отдалить";

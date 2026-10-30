@@ -3,7 +3,8 @@
 Status (2026-10-29): in branch `claude/jolly-hopper-in3dwi`, on DesignKit 8.3.0
 (dkicekeeper/DesignKit#91, released). Version 1.8, with the assets of PR #105 (its branch
 `claude/assets-phase-2` sets the same 1.8, and the two merge in either order; whichever lands
-second sets the insights catalogue's count to 28). When the branch merges, the What's New below
+second sets the insights catalogue's count to 28). TestFlight: 1.8 build 59 (2026-10-30), from
+this branch, without the assets (build 58 is #105's, without the charts). When the branch merges, the What's New below
 goes into 1.8's `release-notes.md`, and this file moves to `archive/plans/`.
 
 ## What the branch does

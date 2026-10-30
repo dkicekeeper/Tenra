@@ -42,7 +42,8 @@ with `CurrencyConverter.convertSync`, the amount itself as the cold-cache fallba
   price; once sold, the sale price. The day of that figure is shown next to it ("Valued 16 Oct").
 - **Depreciation** (off by default, the person sets it for transport and other things in the form;
   homes and land keep their last valuation): from the latest point (a valuation, else the
-  purchase), `value × (1 − rate)^years`. The figure is an estimate, shown "≈ Estimate, valued
+  purchase), `value × (1 − rate)^years`, rounded to whole units of the asset's currency (an
+  estimate has no cents). The figure is an estimate, shown "≈ Estimate, valued
   16 Oct"; the asset's chart ends on it today ("30 Oct, estimate"), and so does the list's total
   when an asset depreciates. A new valuation is the new base. A sold asset keeps its sale price.
   `AssetValuationMath.estimate` over a `Timeline` (the dated points without the sale, the rate,

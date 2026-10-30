@@ -2,8 +2,11 @@
 //  CategoryMonthHistory.swift
 //  Tenra
 //
-//  A category's last 12 calendar months for its screen's chart (CategoryDetailView), each
-//  with the same month a year before and, for this month, where it is heading.
+//  A category's last 24 calendar months for its screen's chart (CategoryDetailView), each
+//  with the same month a year before and, for this month, where it is heading. A merchant's
+//  screen (MerchantHistory) uses it too. Two years, not one: a series longer than the chart's
+//  12-month window opens with this month in the middle (DesignKit 8.3), one that fits it
+//  ended against the screen's edge.
 //
 //  Money goes through SummaryCalculator (red flag #11: `summaryContribution`, future
 //  operations left out, a rate snapshot for the base currency), as MerchantHistory does.
@@ -13,8 +16,10 @@
 import Foundation
 
 nonisolated enum CategoryMonthHistory {
-    /// Months the chart shows, this one last.
-    static let monthsShown = 12
+    /// Months the chart holds, this one last: twice its window, so it opens centred.
+    static let monthsShown = 24
+    /// How far back "a year ago" reaches.
+    private static let yearLength = 12
 
     struct Month: Sendable, Equatable {
         /// "yyyy-MM"
@@ -42,9 +47,9 @@ nonisolated enum CategoryMonthHistory {
         guard let monthStart = calendar.dateInterval(of: .month, for: now)?.start else { return [] }
         let firstDate = transactions.lazy.compactMap { FastDateParser.date(from: $0.date) }.min()
 
-        // 24 months: the 12 shown and the 12 before them, for "a year ago".
+        // The months shown and the 12 before them, for "a year ago".
         var totals: [(key: String, start: Date, end: Date, total: Double)] = []
-        for offset in stride(from: monthsShown * 2 - 1, through: 0, by: -1) {
+        for offset in stride(from: monthsShown + yearLength - 1, through: 0, by: -1) {
             guard let start = calendar.date(byAdding: .month, value: -offset, to: monthStart),
                   let end = calendar.date(byAdding: .month, value: 1, to: start) else { continue }
             let summary = SummaryCalculator.compute(
@@ -55,13 +60,13 @@ nonisolated enum CategoryMonthHistory {
             let key = String(format: "%04d-%02d", parts.year ?? 0, parts.month ?? 0)
             totals.append((key, start, end, income ? summary.totalIncome : summary.totalExpenses))
         }
-        guard totals.count == monthsShown * 2 else { return [] }
+        guard totals.count == monthsShown + yearLength else { return [] }
 
-        return (monthsShown..<totals.count).map { i in
+        return (yearLength..<totals.count).map { i in
             let month = totals[i]
             let isCurrent = i == totals.count - 1
             // A month before the first operation had nothing to compare with.
-            let before = totals[i - monthsShown]
+            let before = totals[i - yearLength]
             let yearAgo = firstDate.map { before.end > $0 } == true ? before.total : nil
             var forecast: Double?
             if isCurrent, !income {

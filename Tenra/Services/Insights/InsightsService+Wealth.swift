@@ -280,14 +280,17 @@ extension InsightsService {
         // What the person has, as a bar: money (the accent), assets (green), what others owe.
         let owned = result.lines.filter { !$0.kind.isLiability && $0.amount > 0 }
         let ownedTotal = owned.reduce(0) { $0 + $1.amount }
-        let segments = owned.map { line in
-            DonutSlice(
+        let segments = owned.map { line -> DonutSlice in
+            // The key goes in whole: interpolated into a LocalizationValue, the kind would
+            // become a `%@` argument of a key that does not exist, and the raw key showed.
+            let labelKey = "insights.formula.netWorth.row.\(line.kind.rawValue)"
+            return DonutSlice(
                 id: line.kind.rawValue,
                 amount: line.amount,
                 color: line.kind == .assets ? AppColors.income
                     : line.kind == .owedToMe ? AppColors.transfer
                     : AppColors.accent,
-                label: String(localized: String.LocalizationValue("insights.formula.netWorth.row.\(line.kind.rawValue)")),
+                label: String(localized: String.LocalizationValue(labelKey)),
                 percentage: ownedTotal > 0 ? line.amount / ownedTotal * 100 : 0
             )
         }

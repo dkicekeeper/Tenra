@@ -518,15 +518,16 @@ class AppCoordinator {
             )
         }
 
-        // An asset's rent and upkeep: the transactions of its linked category (and subcategory),
-        // from the category index.
+        // An asset's rent and upkeep: the transactions of its linked category (and any of its
+        // subcategories), from the category index.
         assetStore.transactionsOfLink = { [weak self] link, type in
             guard let self, let category = self.transactionStore.categoryById[link.categoryId] else { return [] }
             let bucket = self.transactionStore.transactionsByCategoryName[category.name] ?? []
             return bucket.filter { tx in
                 guard tx.type == type else { return false }
-                guard let subcategoryId = link.subcategoryId else { return true }
-                return self.transactionStore.subcategoryIdsByTransactionId[tx.id]?.contains(subcategoryId) == true
+                guard !link.isWholeCategory else { return true }
+                guard let linked = self.transactionStore.subcategoryIdsByTransactionId[tx.id] else { return false }
+                return link.subcategoryIds.contains { linked.contains($0) }
             }
         }
         // Net worth counts the assets and the personal debts: Insights reads them when a pass
@@ -543,6 +544,9 @@ class AppCoordinator {
         }
         assetStore.didChange = { [weak self] in self?.insightsViewModel.invalidateAndRecompute() }
         debtStore.didChange = { [weak self] in self?.insightsViewModel.invalidateAndRecompute() }
+        // The top merchant counts the person's brands and linked operations.
+        insightsViewModel.merchantBrands = { MerchantGroupStore.shared.brands }
+        MerchantGroupStore.shared.didChange = { [weak self] in self?.insightsViewModel.invalidateAndRecompute() }
 
         // Inject TransactionStore into ViewModels
         transactionsViewModel.transactionStore = transactionStore

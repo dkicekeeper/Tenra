@@ -22,7 +22,9 @@ with the commit of every fix, are in
   ALMATY KZ" are two merchants (name, logo choice, merchant screen totals, subscription runs).
   Keying on the clean name (`MerchantName.displayName`, normalized) needs a migration of the stored
   keys in `MerchantCategoryMemory`, `MerchantLogoStore`, `WalletCaptureStore` and the candidate
-  dismissals. Decide whether it is worth it.
+  dismissals. Decide whether it is worth it. Since 2026-10-30 the person can merge such keys by
+  hand on the merchant's screen ("Combine points", `MerchantGroupStore`), which covers the
+  merchant screen and the top merchant, not the logo, the name or the category memory per key.
 - **Legacy converted deposits (DP1).** A read-only DEBUG diagnostic lists deposits converted
   before the `conversionTimestamp` fix (Settings → Experiments, `LegacyDepositDiagnostics`).
   Recovery waits for real data.

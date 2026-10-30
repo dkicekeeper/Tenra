@@ -155,17 +155,26 @@ struct InsightDetailView<CategoryDestination: View>: View {
     }
 
     /// The tone's colour goes behind the header only with a hero visual on it, and never on a
-    /// screen with an `OrbChart` (the owner's rules, 2026-10). Header alone, the colour ended
-    /// right under it with the full chart half on its fade (cash flow, income growth, the
-    /// daily average, wealth change, the budget lists).
+    /// screen with an `OrbChart` or with a hero visual in colours of its own, the proportion
+    /// bar of the monthly recurring payments and of net worth (the owner's rules, 2026-10).
+    /// Header alone, the colour ended right under it with the full chart half on its fade
+    /// (cash flow, income growth, the daily average, wealth change, the budget lists).
     private var showsHeroColour: Bool {
-        hasHeroVisual && !showsOrbChart
+        hasHeroVisual && !showsOrbChart && !hasColouredHeroVisual
+    }
+
+    /// The hero visual draws its parts in their own colours: on the tone's colour they fought it.
+    private var hasColouredHeroVisual: Bool {
+        if case .proportionBar = insight.cardVisual { return true }
+        return false
     }
 
     /// `heroChartSection` draws something.
     private var hasHeroVisual: Bool {
         switch insight.cardVisual {
-        case .halfGauge, .barPair, .milestoneGauge, .sparkline, .proportionBar:
+        case .sparkline:
+            return insight.type != .bestMonth
+        case .halfGauge, .barPair, .milestoneGauge, .proportionBar:
             return true
         case .ring, .budgetBars, .donut, .weekdayBars, nil:
             return false
@@ -290,15 +299,19 @@ struct InsightDetailView<CategoryDestination: View>: View {
             .screenPadding()
         case .sparkline(let points, let series, let projectedValue, let markExtremes):
             // Interactive Swift Charts hero (tap selection + banner) with the
-            // projection tail / extreme markers the mini draws.
-            HeroSparkline(
-                dataPoints: points,
-                series: series,
-                projectedValue: projectedValue,
-                markExtremes: markExtremes,
-                currency: currency,
-                entranceDelay: Self.heroEntranceDelay
-            )
+            // projection tail / extreme markers the mini draws. Not for the period records:
+            // their whole history in one hero piled the axis up, their chart scrolls in
+            // chartSection instead.
+            if insight.type != .bestMonth {
+                HeroSparkline(
+                    dataPoints: points,
+                    series: series,
+                    projectedValue: projectedValue,
+                    markExtremes: markExtremes,
+                    currency: currency,
+                    entranceDelay: Self.heroEntranceDelay
+                )
+            }
         case .proportionBar(let segments):
             // Interactive composition hero: animated stacked bar + tappable
             // legend (name / share / amount per segment).
@@ -332,9 +345,20 @@ struct InsightDetailView<CategoryDestination: View>: View {
             // padding here, otherwise the visible plot area is offset from the
             // screen left edge and the first datapoint appears clipped.
             let gran = points.first?.granularity ?? .month
-            if insight.type == .bestMonth || insight.type == .monthOverMonthChange {
-                // No full trend chart here: period records show ranked Top-10
-                // lists instead, and MoM already leads with the HeroBarPair —
+            if insight.type == .bestMonth {
+                // The period records: every period of the history as bars that scroll, open
+                // on the current one, with the best and the worst marked (the ranked lists
+                // under it name them). The whole history in a hero piled the axis up.
+                ChartSwitcher(
+                    dataPoints: points,
+                    series: .cashFlow,
+                    granularity: gran,
+                    currency: currency,
+                    initialStyle: .bar
+                )
+                .chartShowsRecords()
+            } else if insight.type == .monthOverMonthChange {
+                // No full trend chart here: MoM already leads with the HeroBarPair —
                 // a second (trend) chart under it duplicated the message.
                 EmptyView()
             } else {

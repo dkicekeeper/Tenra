@@ -387,7 +387,8 @@ nonisolated final class InsightsService {
             periodPoints: periodPoints,
             txDateMap: dateMap,
             baseCurrency: baseCurrency,
-            categories: snapshot.categories
+            categories: snapshot.categories,
+            brands: snapshot.merchantBrands
         ) {
             insights.append(topMerchant)
         }
@@ -835,6 +836,9 @@ nonisolated final class InsightsService {
         /// Net worth's parts kept outside the accounts (assets, personal debts), read on the
         /// main actor (`InsightsViewModel.netWorthHoldings`).
         var netWorthHoldings: NetWorthCalculator.Holdings = .empty
+        /// The points merged into brands and the operations linked to a merchant by hand
+        /// (MerchantGroupStore), for the top merchant.
+        var merchantBrands: MerchantBrands = .none
     }
 
     /// An amount in `currency` in the base currency, at the cached rates; a cold cache leaves it

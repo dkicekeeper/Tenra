@@ -344,11 +344,11 @@ nonisolated enum AssetValuationMath {
     }
 
     /// Two links count the same transactions: one category, and either of them takes all of it
-    /// (no subcategory) or both the same subcategory. Two assets may not share them, else the
-    /// rent of two flats under one "Rent" counts twice.
+    /// (no subcategory) or both take a subcategory in common. Two assets may not share them,
+    /// else the rent of two flats under one "Rent" counts twice.
     static func overlaps(_ a: AssetCategoryLink, _ b: AssetCategoryLink) -> Bool {
         a.categoryId == b.categoryId
-            && (a.subcategoryId == nil || b.subcategoryId == nil || a.subcategoryId == b.subcategoryId)
+            && (a.isWholeCategory || b.isWholeCategory || !Set(a.subcategoryIds).isDisjoint(with: b.subcategoryIds))
     }
 
     /// Whole and part years between two days; nil when the end is before the start.

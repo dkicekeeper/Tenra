@@ -511,14 +511,17 @@ extension InsightsService {
     /// category's name ("Groceries" in Groceries) names no merchant and is left out. Loan
     /// payments name no shop either, but count in the total the share is of, as the top
     /// category's does (the bucket's realized expenses). The detail lists the top 10, each
-    /// in the colour and icon of the category used most there.
+    /// in the colour and icon of the category used most there. Points merged into a brand
+    /// count as the brand, under its name, and an operation linked to a merchant by hand as
+    /// that merchant's (`brands`, MerchantGroupStore).
     nonisolated func generateTopMerchant(
         transactions: [Transaction],
         granularity: InsightGranularity,
         periodPoints: [PeriodDataPoint],
         txDateMap: [String: Date]?,
         baseCurrency: String,
-        categories: [CustomCategory]
+        categories: [CustomCategory],
+        brands: MerchantBrands = .none
     ) -> Insight? {
         let currentKey = granularity.currentPeriodKey
         let range: (start: Date, end: Date)? = granularity == .allTime
@@ -543,13 +546,14 @@ extension InsightsService {
             bucketTotal += amount
             guard tx.type == .expense else { continue }
 
-            let key: String
+            let described: String
             if let cached = keyByDescription[tx.description] {
-                key = cached
+                described = cached
             } else {
-                key = CategorySuggestionService.normalizedMerchant(tx.description)
-                keyByDescription[tx.description] = key
+                described = CategorySuggestionService.normalizedMerchant(tx.description)
+                keyByDescription[tx.description] = described
             }
+            let key = brands.isEmpty ? described : brands.merchant(of: tx, described: described)
             guard key.count >= CategorySuggestionService.minimumMerchantLength,
                   key != CategorySuggestionService.normalizedMerchant(tx.category) else { continue }
 
@@ -583,7 +587,7 @@ extension InsightsService {
             let synthetic = InsightsService.syntheticCategoryStyle(for: usual)
             return CategoryBreakdownItem(
                 id: entry.key,
-                categoryName: MerchantName.displayName(entry.value.latestDescription),
+                categoryName: brands.brandName(entry.key) ?? MerchantName.displayName(entry.value.latestDescription),
                 amount: entry.value.total,
                 percentage: periodTotal > 0 ? (entry.value.total / periodTotal) * 100 : 0,
                 color: category.map { Color(hex: $0.colorHex) } ?? synthetic?.color ?? AppColors.accent,
@@ -1070,8 +1074,9 @@ extension InsightsService {
 
     // MARK: - By day
 
-    /// Weeks "By day" reads: enough of each weekday for an average, recent enough to be a habit.
-    nonisolated static let byDayWeeks = 16
+    /// Weeks "By day" reads: a year (the owner's call, 2026-10-30), so every season and every
+    /// third of each month weigh in, not only the last few months.
+    nonisolated static let byDayWeeks = 52
     /// Everyday expenses its window needs, and the days of history.
     nonisolated static let byDayMinimumExpenses = 20
     nonisolated static let byDayMinimumDays = 28
@@ -1082,7 +1087,7 @@ extension InsightsService {
     /// "By day" (the owner's request, 2026-10): on which weekdays the everyday spending
     /// happens, in which categories, and what stands out. Everyday = realized `.expense`
     /// transactions that are not a recurring charge (rent, subscriptions; loan payments are not
-    /// `.expense`) and not a one-off at least 4× the window's average expense. The last 16
+    /// `.expense`) and not a one-off at least 4× the window's average expense. The last 52
     /// weeks up to today, from the first transaction when the history is shorter; a weekday's
     /// average = its total ÷ how many of it the window had. The same for every granularity
     /// (shared). Card `.weekdayBars`, detail `.weekdayPattern`.

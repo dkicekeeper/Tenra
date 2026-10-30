@@ -100,6 +100,9 @@ final class InsightsViewModel {
     /// Net worth's parts kept outside the accounts (assets at the person's share, open personal
     /// debts), read on the main actor when a pass starts. Set by AppCoordinator.
     @ObservationIgnored var netWorthHoldings: () -> NetWorthCalculator.Holdings = { .empty }
+    /// The person's merchant brands and linked operations (MerchantGroupStore), read on the
+    /// main actor when a pass starts. Set by AppCoordinator, which recomputes when they change.
+    @ObservationIgnored var merchantBrands: () -> MerchantBrands = { .none }
     /// Financial Health Score (computed once per recompute cycle, using .month granularity data)
     private(set) var healthScore: FinancialHealthScore? = nil
 
@@ -435,7 +438,8 @@ final class InsightsViewModel {
             recurringSeries: recurringSnapshot,
             accounts: accountsSnapshot,
             balanceFor: { [balanceSnapshot] id in balanceSnapshot[id] ?? 0 },
-            netWorthHoldings: netWorthHoldings()
+            netWorthHoldings: netWorthHoldings(),
+            merchantBrands: merchantBrands()
         )
 
         recomputeTask = Task.detached(priority: .userInitiated) { [weak self] in

@@ -336,14 +336,39 @@ A confirmed payment's notification leaves Notification Center (`removeDelivered`
 
 **A merchant's screen** (`MerchantDetailView`, from the Wallet merchants list and from the
 storefront button in `TransactionEditView` of a transaction whose merchant is remembered or has a
-logo or a given name, so a transfer to a person gets none; Edit in its menu opens
-`MerchantCategoryEditView`, also for a merchant the memory does not hold yet, starting from its
+logo or a given name, of a brand's point, or of a payment linked to a merchant (it opens that
+merchant), so a transfer to a person gets none; Edit in its menu opens
+`MerchantCategoryEditView` (its category and subcategory carousels without headers; for a brand's
+point the name is the brand's), also for a merchant the memory does not hold yet, starting from its
 usual expense category, which the save remembers): `EntityDetailScaffold` with the merchant's logo and name, spent
 in the selected period, visits, average check, last visit, usual category, this month, this year,
-total, the last 12 months as DesignKit's `BarChart` (`ChartValuePoint`, shown once something was
-spent), and every transaction of the merchant whatever recorded it. `MerchantHistory.summary` sweeps the history off
-the main actor through `SummaryCalculator`, keyed on `mutationVersion`, rates, base currency, the
-filter and the day. Pinned by `MerchantHistoryTests`.
+total, its months as DesignKit's `BarChart` by the category screen's rules (`ChartValuePoint`
+from `CategoryMonthHistory`: 24 months, so it opens on this month in the middle, this month as
+not over with its forecast and the same month a year ago from the chart's menu; shown once
+something was spent), and every transaction of the merchant whatever recorded it.
+`MerchantHistory.summary(of:)` sweeps the history off
+the main actor through `SummaryCalculator`, keyed on the points and links counted,
+`mutationVersion`, rates, base currency, the filter and the day. Pinned by `MerchantHistoryTests`.
+
+**Brands and linked payments** (`MerchantGroupStore`, `Services/Categories/`, `@Observable`, one
+`UserDefaults` blob under `merchant.groups.v1`, the owner's requests 2026-10-30):
+
+- Points of one brand the bank names apart ("ZARA MEGA", "ZARA DOSTYK PLAZA") merge into one
+  merchant: "Combine points" in the merchant's menu (`MerchantMergeView`: the history's other
+  merchants, those that start with the same word first, system search, several at once; the sweep
+  is `MerchantDirectory.entries`, off the main actor). Brands any of them belong to merge whole.
+  The brand's screen counts every point; chips under the hero ("All points", then each point
+  without the words they share) show one; the menu separates the picked point or splits them all.
+  Its name is the person's (the edit sheet's name field) or the words every point starts with
+  (`sharedLeadingWords`: "Zara").
+- "Link payments" (`LinkPaymentsView`, `.merchant` options: no amount filter, nothing picked)
+  links any expense or income the screen does not count to the merchant (the point picked, else
+  the screen's): it counts as that merchant's whatever its description says
+  (`Selection.merchant(of:)`), and a link glyph on its row unlinks it.
+- Insights' top merchant counts a brand as one merchant under its name and a linked payment as its
+  merchant's (`MerchantBrands` in `DataSnapshot`; a change recomputes Insights through
+  `didChange`, wired by `AppCoordinator`).
+- Pinned by `MerchantHistoryTests` (a brand, a point, a linked payment, the shared name).
 
 **Wallet cards** (`WalletCardsView`): `CardAccountMemory.cards`, the account picked with
 a `UniversalRow` with `.picker` (`config: .settings`), swipe to forget.

@@ -136,10 +136,12 @@ extension FinanceToolkit {
 
         let lines: [JSONValue] = result.lines
             .filter { $0.kind == .money || $0.amount > 0 }
-            .map { line in
-                [
+            .map { line -> JSONValue in
+                // The key in whole (an interpolated LocalizationValue looks up `row.%@`).
+                let labelKey = "insights.formula.netWorth.row.\(line.kind.rawValue)"
+                return [
                     "key": .string(Self.wire(line.kind)),
-                    "label": .string(String(localized: String.LocalizationValue("insights.formula.netWorth.row.\(line.kind.rawValue)"))),
+                    "label": .string(String(localized: String.LocalizationValue(labelKey))),
                     "total": .number(FinanceToolkitCompute.round2(line.amount)),
                     "subtracted": .bool(line.kind.isLiability),
                 ]

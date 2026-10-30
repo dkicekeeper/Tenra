@@ -2,7 +2,7 @@
 //  SpendingByDayInsightTests.swift
 //  TenraTests
 //
-//  Pins `generateSpendingByDay` ("By day"): each weekday's average over the last 16 weeks,
+//  Pins `generateSpendingByDay` ("By day"): each weekday's average over the last 52 weeks,
 //  subscriptions and one-offs far above the usual expense left out, the busiest weekday as the
 //  metric, and what stands out (weekends, a category on its weekday).
 //
@@ -18,7 +18,7 @@ struct SpendingByDayInsightTests {
 
     /// Wednesday 28 October 2026, noon.
     private let now = FastDateParser.date(from: "2026-10-28")!.addingTimeInterval(12 * 3600)
-    private let longAgo = FastDateParser.date(from: "2026-01-01")!
+    private let longAgo = FastDateParser.date(from: "2025-01-01")!
 
     // Returns the store too: it must be retained for the service's lifetime (CLAUDE.md).
     private static func makeService() -> (InsightsService, TransactionStore) {
@@ -44,12 +44,12 @@ struct SpendingByDayInsightTests {
         )
     }
 
-    /// Every day of the last 16 weeks: 5 000 at restaurants on Saturdays, 1 000 on food the
-    /// other days.
+    /// Every day of the window (the last 52 weeks): 5 000 at restaurants on Saturdays, 1 000 on
+    /// food the other days.
     private func everyday() -> [Transaction] {
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: now)
-        return (0..<112).compactMap { back in
+        return (0..<(InsightsService.byDayWeeks * 7)).compactMap { back in
             guard let day = calendar.date(byAdding: .day, value: -back, to: today) else { return nil }
             return calendar.component(.weekday, from: day) == 7
                 ? tx(day, 5_000, category: "Restaurants")

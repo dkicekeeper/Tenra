@@ -36,7 +36,7 @@ struct CategoryDetailView: View {
     /// Pre-built account lookup. Refreshed only when accounts mutate
     /// (via `accountsMutationVersion`), not on every body re-eval.
     @State private var accountsById: [String: Account] = [:]
-    /// The last 12 months for the chart, computed off the main actor.
+    /// The last 24 months for the chart (CategoryMonthHistory), computed off the main actor.
     @State private var months: [CategoryMonthHistory.Month] = []
 
     @Environment(\.dismiss) private var dismiss
@@ -227,7 +227,8 @@ struct CategoryDetailView: View {
         static let forecast = "forecast"
     }
 
-    /// The last 12 months as bars (DesignKit 8.3.0): this month fading towards its forecast,
+    /// The last 24 months as bars (DesignKit 8.3.0), so the chart opens with this month in the
+    /// middle of its 12-month window: this month fading towards its forecast,
     /// the same month a year ago behind each bar, a monthly budget as a line that turns the
     /// bars past it orange. The person's chart options (`ChartOptionsHost`) add the average and
     /// the highs and lows, or hide the forecast and the year ago. None until a month has money.

@@ -226,8 +226,9 @@ nonisolated enum AssetValuationMath {
     }
 
     /// The value on `day`: the latest point up to it, less the depreciation for the years since
-    /// (`value × (1 − rate)^years`). nil before the first point (not owned yet) and from the sale
-    /// on; an asset without a dated point is worth its value throughout.
+    /// (`value × (1 − rate)^years`, in whole units of its currency: an estimate has no cents).
+    /// nil before the first point (not owned yet) and from the sale on; an asset without a dated
+    /// point is worth its value throughout.
     static func estimate(_ timeline: Timeline, on day: Date, calendar: Calendar = .current) -> Estimate? {
         let start = calendar.startOfDay(for: day)
         if let soldAt = timeline.soldAt, start >= soldAt { return nil }
@@ -239,7 +240,7 @@ nonisolated enum AssetValuationMath {
               let span = years(from: base.date, to: start, calendar: calendar), span > 0 else {
             return Estimate(value: base.value, basedOn: base.date, isEstimate: false)
         }
-        return Estimate(value: base.value * pow(1 - rate, span), basedOn: base.date, isEstimate: true)
+        return Estimate(value: (base.value * pow(1 - rate, span)).rounded(), basedOn: base.date, isEstimate: true)
     }
 
     // MARK: - Out of date (phase 3)

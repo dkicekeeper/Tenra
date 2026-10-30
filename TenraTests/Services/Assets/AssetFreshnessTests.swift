@@ -43,6 +43,7 @@ struct AssetFreshnessTests {
         let summary = AssetValuationMath.summary(of: Self.car, today: Self.day(2026, 1, 1), calendar: Self.calendar)
         let expected = 9_000_000 * pow(0.85, 365 / AssetValuationMath.daysPerYear)
         #expect(abs(summary.value - expected) < 1)
+        #expect(summary.value == summary.value.rounded())
         #expect(summary.isEstimate)
         #expect(summary.valuedOn == Self.day(2025, 1, 1))
         #expect(abs((summary.gain ?? 0) - (expected - 10_000_000)) < 1)

@@ -41,7 +41,7 @@ with the commit of every fix, are in
   the US after 10+ ratings there.
 - **Ten and Kazakhstan's personal data law** (the founder, decision D7 of the ads plan): a short
   legal opinion on Ten under the Law on Personal Data (art. 12-2) and the AI law before the ad
-  budget grows; it does not block $10 a day.
+  budget grows; it does not block $10 a day. Postponed by the founder on 2026-10-30.
 
 Found by the design-system audit of 2026-10-15 (everything since 1.5):
 - **Logic in `Views/Assistant`:** `AppStreak`, `AssistantChatter` and `AssistantDaydreams`

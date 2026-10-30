@@ -1,8 +1,8 @@
 # Charts on DesignKit 8.3.0 and the "By day" insight
 
-Status (2026-10-30): in `main`, on DesignKit 8.3.0 (dkicekeeper/DesignKit#91), version 1.8;
-PR #105 (assets) has main merged in and goes into the same 1.8. TestFlight: 1.8 build 59
-(2026-10-30), without the assets (build 58 is #105's, without the charts). The What's New below
+Status (2026-10-30): in `main`, on DesignKit 8.3.0 (dkicekeeper/DesignKit#91), version 1.8,
+together with the assets (PR #105, merged). TestFlight: 1.8 build 60 (2026-10-30) has both and
+waits on the owner's check on the phone. The What's New below
 goes into 1.8's `release-notes.md` once 1.7.1's notes move to the archive; then this file moves to
 `archive/plans/`.
 

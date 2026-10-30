@@ -45,6 +45,8 @@ struct MerchantDetailView: View {
     @State private var showingMerge = false
     @State private var showingLink = false
     @State private var showingSplitConfirmation = false
+    /// The linked operation whose glyph was tapped: the dialog offers to unlink it.
+    @State private var unlinking: String?
     /// Settings → "Merchant logos" (on by default), as on the merchant's transaction rows.
     @AppStorage(MerchantLogoStore.enabledKey) private var showsMerchantLogos = true
 
@@ -190,6 +192,19 @@ struct MerchantDetailView: View {
         } message: {
             Text(String(localized: "merchant.points.splitMessage"))
         }
+        .confirmationDialog(
+            String(localized: "merchant.link.linked"),
+            isPresented: Binding(get: { unlinking != nil }, set: { if !$0 { unlinking = nil } }),
+            titleVisibility: .visible
+        ) {
+            Button(String(localized: "merchant.link.unlink"), role: .destructive) {
+                guard let id = unlinking else { return }
+                HapticManager.selection()
+                groups.unlink(transactionId: id)
+                unlinking = nil
+            }
+            Button(String(localized: "button.cancel"), role: .cancel) {}
+        }
         .task(id: refreshKey) {
             await refresh()
         }
@@ -258,21 +273,18 @@ struct MerchantDetailView: View {
 
     // MARK: - Linked operations
 
-    /// An operation linked to the merchant by hand: a link glyph whose menu unlinks it.
+    /// An operation linked to the merchant by hand: a link glyph that asks to unlink it.
     @ViewBuilder
     private func linkedMark(_ tx: Transaction) -> some View {
         if groups.linkedMerchant(forTransactionId: tx.id) != nil {
-            Menu {
-                Button(role: .destructive) {
-                    HapticManager.selection()
-                    groups.unlink(transactionId: tx.id)
-                } label: {
-                    Label(String(localized: "merchant.link.unlink"), systemImage: "xmark.circle")
-                }
+            Button {
+                unlinking = tx.id
             } label: {
                 Icon("link", size: AppIconSize.sm, tint: .monochrome(AppColors.textSecondary))
             }
+            .buttonStyle(.plain)
             .accessibilityLabel(String(localized: "merchant.link.linked"))
+            .accessibilityHint(String(localized: "merchant.link.unlink"))
         }
     }
 

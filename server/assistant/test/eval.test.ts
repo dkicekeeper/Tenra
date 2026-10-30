@@ -34,6 +34,25 @@ describe("eval fixture and simulator", () => {
     expect(f.daily_allowance).toBe(Math.floor(f.free_amount / 13));
   });
 
+  it("serves assets and net worth as the app computes them", () => {
+    resetDrafts("ru");
+    const { assets, total_base } = simulate.getAssets();
+    const flat = assets.find((a) => a.id === "asset_flat")!;
+    expect(flat.gain).toBe(46_000_000);
+    expect(flat.rental_yield_percent).toBe(8.3);
+    expect(flat.out_of_date).toBe(false);
+    expect(assets.find((a) => a.id === "asset_car")!.out_of_date).toBe(true);
+    expect(total_base).toBe(82_600_000);
+
+    const worth = simulate.getNetWorth();
+    expect(worth.net_worth).toBe(worth.money + worth.assets + worth.owed_to_me - worth.loans - worth.i_owe);
+    expect(worth.lines.map((l) => l.key)).toEqual(["money", "assets", "owed_to_me", "loans", "i_owe"]);
+
+    const valued = executeTool("draft_asset_valuation", { asset: "asset_flat", area: 52, price_per_unit: 1_400_000 }) as Record<string, unknown>;
+    expect(valued.value).toBe(72_800_000);
+    expect(() => executeTool("draft_asset", { name: "Дача", kind: "house" })).toThrow("value");
+  });
+
   it("every case has at least one specific check", () => {
     for (const c of CASES) expect(c.checks.length, c.id).toBeGreaterThan(0);
   });

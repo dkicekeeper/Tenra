@@ -2247,6 +2247,9 @@
 
 /* Ten and goals and debts */
 "assistant.step.plans" = "目標と貸し借りを確認しています…";
+"assistant.step.assets" = "資産を確認しています…";
+"assistant.topic.asset.worth" = "「%@」は今いくら？";
+"assistant.topic.asset.payoff" = "「%@」は元が取れていますか？";
 "assistant.notice.debt.owedToMe" = "明日が%@の返済期限です";
 "assistant.notice.debt.iOwe" = "明日、%@を返す期限です";
 "assistant.notice.ask.debt" = "%@との貸し借りを確認して";

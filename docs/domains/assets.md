@@ -5,8 +5,8 @@ own CoreData row (v17), a card in Finances, list, detail and edit screens. It ne
 account balance or a transaction: a flat bought in 2018 stays an expense, and the asset lives
 next to it with its own purchase price and valuations; its rent and upkeep are the transactions
 of the categories it is linked to. Adding an asset is Tenra Pro. Net worth (money, assets and
-debts) is a free insight. The plan, its later phases (stale valuations, Ten) and the owner's
-decisions: [plan-assets.md](../plan-assets.md).
+debts) is a free insight. The plan, its ideas for later and the owner's decisions:
+[archive/plans/plan-assets.md](../archive/plans/plan-assets.md).
 
 ## Model
 
@@ -111,13 +111,20 @@ with `CurrencyConverter.convertSync`, the amount itself as the cold-cache fallba
 | List | `Views/Assets/AssetsListView.swift`: the hero on `.heroBackground` (green while the assets gained, the accent otherwise) with the total, the gain and `HeroSparkline` of `totalHistory`; the cards rise over its end (`.padding(.top, -AppSpacing.xxl)`, `.heroScrollEdge()`), in sections real estate, transport, other, sold (`CardList(.stack)`, a drag reorders within a section, the sold ones by sale day), each card `.scrollReveal()`; three `HoldingCardSkeleton`s until the store loads, `MascotEmptyState` when there are none |
 | Detail | `AssetDetailView` on `EntityDetailScaffold`: `HeroSection` (icon, value, the valuation or sale day, the gain pill, the value in the base currency for a foreign one) with `HeroSparkline` of the history under it (and today's estimate with depreciation), drawing in after the push; "Update value" and "Sell" (or "Undo sale"); info rows (kind, purchase price and day, gain or result, growth a year, depreciation a year, the share, loan left and own money, rent and upkeep over 12 months, yield, full result, sale day); when out of date, a warning `StatusBanner` "The value is from …" that opens "Update value"; with a rent category and no rent yet, a `StatusBanner` that opens the add form in that category (the person makes it monthly there); the valuations newest first in a card of `HistoryEntryRow` (a long press deletes one, which leaves with `DissolveTransition`; the purchase is changed in Edit); the rent and upkeep transactions by day (`GroupedTransactionList`). A valuation above the value plays `.sparkleBurst` over the hero; a sale above the purchase price `.celebration(playsHaptic: false)`. It reads `transactions`, `categoriesMutationVersion` and `subcategoriesMutationVersion` so a transaction or a category change redraws it |
 | Edit | `AssetEditView`: hero with icon, name, the value today (the estimate with depreciation) and the currency; kind (an icon the person did not pick follows it); purchase price and day; share (5% steps) and the loan; for transport and other things, depreciation a year (a stepper, 0 is "Off", up to 50%; a real-estate kind saves none); rent and upkeep, each a category and, when it has any, a subcategory (`AssetLinkOptions`) |
-| Ten writes | `AssistantNotices.staleAssets` ([assistant.md](assistant.md) §6): once a half-year per out-of-date asset (`asset:<id>:<year>-H<1/2>`), "Valued at 70 000 000 ₸ on 16 Apr…"; its button is "Update value" and opens the valuation sheet on Home (no answer spent, Ten does not see assets yet); it leaves once the asset is valued, sold or deleted (`Subjects.staleAssets`) |
+| Ten writes | `AssistantNotices.staleAssets` ([assistant.md](assistant.md) §6): once a half-year per out-of-date asset (`asset:<id>:<year>-H<1/2>`), "Valued at 70 000 000 ₸ on 16 Apr…"; its button is "Update value" and opens the valuation sheet on Home (no answer spent); it leaves once the asset is valued, sold or deleted (`Subjects.staleAssets`) |
 | Money in | `MoneyEntrySheet` (DesignKit's `AmountEntrySheet`): a valuation or the sale, the current value filled in |
 
 Navigation goes through `FinancesDestination` (`.assets`, `.assetDetail(id)`).
 
-## Not yet
+## Ten
 
-Ten's tools and drafts (phase 4): [plan-assets.md](../plan-assets.md) §9. Ten does not see
-assets yet, so their screens have no "Ask Ten" and the out-of-date message opens the valuation
-instead of a chat.
+Ten reads and drafts assets (phase 4, [assistant.md](assistant.md) §3,
+`FinanceToolkit+Assets.swift`): `<app_context>` lists the held assets by id, name and kind
+(`assets: none` without any); `get_assets` gives every figure above for each asset, the total
+and the gain in the base currency; `get_net_worth` gives net worth's parts and its last 12 months
+(the monthly net worth insight's points, when computed). `draft_asset` (Pro) files a new asset,
+its value now as a valuation of today; `draft_asset_valuation` a value, or an area times a price
+per unit from listings, multiplied on the phone. Both are `source: .assistant`, saved and undone
+through `AssetStore` on the confirm card. "Ask Ten" is in an asset's "…" menu ("How much is it
+worth now?", "Does it pay off?"). The out-of-date message keeps its button to the valuation
+sheet: the quickest way to a new value.

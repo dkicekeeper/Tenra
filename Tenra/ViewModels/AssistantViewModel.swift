@@ -618,6 +618,8 @@ enum AssistantStep: Equatable {
     case insights
     /// Savings goals and personal debts.
     case plans
+    /// Assets and net worth.
+    case assets
     /// Forecasts and what-ifs: the balance, a loan, savings; a currency conversion.
     case calculating
     case composing
@@ -632,6 +634,7 @@ enum AssistantStep: Equatable {
         case "list_recurring": self = .recurring
         case "get_insights": self = .insights
         case "get_goals", "get_debts": self = .plans
+        case "get_assets", "get_net_worth": self = .assets
         case "forecast_balance", "simulate_loan", "project_savings", "convert_currency": self = .calculating
         case AgentProtocol.renderReplyTool: self = .composing
         default: self = .understanding
@@ -649,6 +652,7 @@ enum AssistantStep: Equatable {
         case .recurring: String(localized: "assistant.step.recurring")
         case .insights: String(localized: "assistant.step.insights")
         case .plans: String(localized: "assistant.step.plans")
+        case .assets: String(localized: "assistant.step.assets")
         case .calculating: String(localized: "assistant.step.calculating")
         case .composing: String(localized: "assistant.step.composing")
         }

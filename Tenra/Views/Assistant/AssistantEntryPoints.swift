@@ -3,7 +3,7 @@
 //  Tenra
 //
 //  Asking Ten from where the question comes up (docs/domains/assistant.md §7, context entry
-//  points): an account, a category, an insight, the history, a goal, a debt, For today. The screen names its topic
+//  points): an account, a category, an insight, the history, a goal, a debt, an asset, For today. The screen names its topic
 //  (`AppCoordinator.ask(about:)`), the assistant opens over the tabs with ready-made questions
 //  about it in place of its general ones; nothing is sent before the person picks one or types.
 //  The entries show only where the assistant works (`AssistantAvailability`).
@@ -36,6 +36,7 @@ enum AssistantTopic: Equatable, Sendable {
     case history
     case goal(name: String)
     case debt(person: String, owedToMe: Bool)
+    case asset(name: String)
     /// "For today" (its insight screen, InsightDetailView).
     case allowance
 
@@ -76,6 +77,11 @@ enum AssistantTopic: Equatable, Sendable {
         case .debt(let person, let owedToMe):
             let status = String(format: String(localized: "assistant.topic.debt.status"), person)
             return owedToMe ? [status] : [status, String(format: String(localized: "assistant.topic.debt.plan"), person)]
+        case .asset(let name):
+            return [
+                String(format: String(localized: "assistant.topic.asset.worth"), name),
+                String(format: String(localized: "assistant.topic.asset.payoff"), name),
+            ]
         case .allowance:
             return [
                 String(localized: "assistant.topic.allowance.enough"),

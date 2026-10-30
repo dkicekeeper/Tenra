@@ -2247,6 +2247,9 @@
 
 /* Ten and goals and debts */
 "assistant.step.plans" = "목표와 빌린 돈을 확인하는 중…";
+"assistant.step.assets" = "자산을 확인하는 중…";
+"assistant.topic.asset.worth" = "“%@”은 지금 얼마야?";
+"assistant.topic.asset.payoff" = "“%@”은 수익이 나고 있어?";
 "assistant.notice.debt.owedToMe" = "내일 %@ 돌려받는 날이에요";
 "assistant.notice.debt.iOwe" = "내일 %@ 갚는 날이에요";
 "assistant.notice.ask.debt" = "%@ 관련 기록을 정리해 줘";

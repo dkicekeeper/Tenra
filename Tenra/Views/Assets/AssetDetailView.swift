@@ -150,6 +150,7 @@ struct AssetDetailView: View {
                 }
             },
             toolbarMenu: {
+                AskAssistantMenuItem(topic: .asset(name: asset.name))
                 Button {
                     HapticManager.selection()
                     showingEdit = true

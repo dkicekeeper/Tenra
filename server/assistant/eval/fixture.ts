@@ -200,6 +200,38 @@ export const DEBTS: Debt[] = [
   { id: "debt_mom", direction: "i_owe", person: { ru: "Мама", en: "Mom" }, amount: 100_000, repaid: 0, currency: "KZT", date: "2026-09-10", dueDate: null },
 ];
 
+// Assets (AssetStore on the phone): a flat that grew and is rented out, and a car whose value
+// was set in March, so it is out of date. Rent and upkeep are what the flat's linked categories
+// hold, over the last 12 months and since the purchase.
+export interface Asset {
+  id: string;
+  name: Record<"ru" | "en", string>;
+  kind: "apartment" | "house" | "land" | "commercial" | "vehicle" | "other";
+  currency: "KZT" | "USD";
+  purchasePrice: number | null;
+  purchaseDate: string | null;
+  value: number;
+  valuedOn: string;
+  share: number;
+  rentYear: number | null;
+  upkeepYear: number | null;
+  rentTotal: number | null;
+  upkeepTotal: number | null;
+}
+
+export const ASSETS: Asset[] = [
+  {
+    id: "asset_flat", name: { ru: "Квартира на Абая", en: "Flat on Abay" }, kind: "apartment", currency: "KZT",
+    purchasePrice: 24_000_000, purchaseDate: "2018-10-29", value: 70_000_000, valuedOn: "2026-10-16", share: 1,
+    rentYear: 6_000_000, upkeepYear: 200_000, rentTotal: 30_000_000, upkeepTotal: 1_100_000,
+  },
+  {
+    id: "asset_car", name: { ru: "Toyota Camry", en: "Toyota Camry" }, kind: "vehicle", currency: "KZT",
+    purchasePrice: 15_000_000, purchaseDate: "2024-03-01", value: 12_600_000, valuedOn: "2026-03-02", share: 1,
+    rentYear: null, upkeepYear: null, rentTotal: null, upkeepTotal: null,
+  },
+];
+
 export function appContext(locale: "ru" | "en"): string {
   const accounts = ACCOUNTS.map((a) => `${a.id} "${a.name}" (${a.currency}, ${a.kind})`).join("; ");
   const expense = CATEGORIES.filter((c) => c.type === "expense").map((c) => `${c.id} "${c.name}"`).join("; ");
@@ -207,6 +239,7 @@ export function appContext(locale: "ru" | "en"): string {
   const facts = FACTS[locale].map((f) => `${f.id} "${f.text}"`).join("; ");
   const goals = GOALS.map((g) => `${g.id} "${g.name[locale]}" (${g.currency})`).join("; ");
   const debts = DEBTS.map((d) => `${d.id} "${d.person[locale]}" (${d.direction}, ${d.currency})`).join("; ");
+  const assets = ASSETS.map((a) => `${a.id} "${a.name[locale]}" (${a.kind}, ${a.currency})`).join("; ");
   return [
     "<app_context>",
     `today: ${TODAY} (Wednesday)`,
@@ -215,6 +248,7 @@ export function appContext(locale: "ru" | "en"): string {
     `accounts: ${accounts}`,
     `expense categories: ${expense}`,
     `income categories: ${income}`,
+    `assets: ${assets}`,
     `facts you remember about the user: ${facts}`,
     `savings goals: ${goals}`,
     `open debts: ${debts}`,

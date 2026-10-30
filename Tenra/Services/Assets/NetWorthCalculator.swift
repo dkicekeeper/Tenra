@@ -2,7 +2,7 @@
 //  NetWorthCalculator.swift
 //  Tenra
 //
-//  Net worth (docs/domains/assets.md, plan-assets.md §5): money on the accounts, plus the assets
+//  Net worth (docs/domains/assets.md, archive/plans/plan-assets.md §5): money on the accounts, plus the assets
 //  at the person's share, plus what others owe them, minus what is left of the loans, minus what
 //  they owe. Every part converts to the base currency (CurrencyConverter.convertSync, the amount
 //  itself as the cold-cache fallback). Pure and nonisolated: the Insights pass runs it off the

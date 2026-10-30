@@ -434,7 +434,8 @@ private struct AssistantForecastCard: View {
 /// A draft to save (docs/domains/assistant.md §1, "do"): its operations as they will look in the history (a budget
 /// as its new limit next to the old one, a subscription as its name, frequency and first
 /// charge, a fact to remember as its text, a goal as its name and target, a debt as who and
-/// how much, money towards a goal or back on a debt as the amount), what Tenra guessed, Save;
+/// how much, money towards a goal or back on a debt as the amount, an asset as its name and
+/// value, a valuation as the asset and the day), what Tenra guessed, Save;
 /// once saved, Undo. Nothing is written before Save. Until then a tap on an income or an
 /// expense opens it in the voice confirmation form (AgentDraftEditor).
 private struct AssistantDraftCard: View {
@@ -500,6 +501,10 @@ private struct AssistantDraftCard: View {
                     debtRow(debt)
                 } else if case .debtRepayment(let debtId, let repayment) = operation {
                     repaymentRow(debtId: debtId, repayment)
+                } else if case .asset(let asset) = operation {
+                    assetRow(asset)
+                } else if case .assetValuation(let assetId, let valuation) = operation {
+                    valuationRow(assetId: assetId, valuation)
                 }
             }
             if state == .pending {
@@ -691,6 +696,35 @@ private struct AssistantDraftCard: View {
         )
     }
 
+    /// A new asset: its name and kind, what it is worth (or what it cost).
+    private func assetRow(_ asset: Asset) -> some View {
+        let summary = AssetValuationMath.summary(of: asset)
+        return UniversalRow(
+            "\(asset.name) · \(AssetEditView.title(of: asset.kind))",
+            icon: Self.symbol(of: asset.kind),
+            config: .info,
+            accessory: .amount(summary.value, currency: asset.currency)
+        )
+    }
+
+    /// A valuation: the asset and the day, the value.
+    private func valuationRow(assetId: String, _ valuation: AssetValuation) -> some View {
+        let asset = coordinator.assetStore.asset(id: assetId)
+        let day = DateFormatters.displayDateOmittingCurrentYear(valuation.date)
+        return UniversalRow(
+            "\(asset?.name ?? "") · \(day)",
+            icon: "chart.line.uptrend.xyaxis",
+            config: .info,
+            accessory: .amount(valuation.value, currency: asset?.currency ?? "")
+        )
+    }
+
+    /// The kind's own symbol, for a row that takes a symbol's name.
+    private static func symbol(of kind: AssetKind) -> String {
+        if case .sfSymbol(let name) = kind.defaultIcon { return name }
+        return "shippingbox"
+    }
+
     private static func periodName(_ period: CustomCategory.BudgetPeriod) -> String {
         switch period {
         case .weekly: String(localized: "budget.weekly")
@@ -723,7 +757,7 @@ private struct AssistantDraftCard: View {
     /// recurring payment, a fact, a goal or a debt, which have rows of their own.
     private static func preview(_ operation: AgentDraftOperation, id: String) -> Transaction? {
         switch operation {
-        case .budget, .recurring, .fact, .goal, .goalContribution, .debt, .debtRepayment:
+        case .budget, .recurring, .fact, .goal, .goalContribution, .debt, .debtRepayment, .asset, .assetValuation:
             return nil
         case .single(let draft):
             return Transaction(

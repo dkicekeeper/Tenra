@@ -23,7 +23,7 @@ struct ScreenMockupTests {
         URL(fileURLWithPath: ProcessInfo.processInfo.environment["MOCKUP_DIR"] ?? NSTemporaryDirectory())
     }
 
-    // In review: the assets section (docs/plan-assets.md, phases 1 to 3): the Finances card, the
+    // In review: the assets section (docs/archive/plans/plan-assets.md, phases 1 to 3): the Finances card, the
     // list with its hero, an asset's screen and its form, a car losing value by its rule and a
     // garage whose valuation is out of date. A new screen in review gets a `@Test` here that
     // calls `render(_:height:_:)`.

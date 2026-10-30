@@ -4,14 +4,21 @@
 //
 //  The <app_context> snapshot from the app's own state: today, the app's language, the base
 //  currency, the accounts and categories the model may name by id, the remembered facts, the
-//  savings goals and the open personal debts.
+//  savings goals, the open personal debts and the held assets.
 //
 
 import Foundation
 
 extension AgentContextSnapshot {
     @MainActor
-    init(store: TransactionStore, facts: [AgentFact] = [], goals: [SavingsGoal] = [], debts: [PersonalDebt] = [], now: Date = Date()) {
+    init(
+        store: TransactionStore,
+        facts: [AgentFact] = [],
+        goals: [SavingsGoal] = [],
+        debts: [PersonalDebt] = [],
+        assets: [Asset] = [],
+        now: Date = Date()
+    ) {
         self.init(
             today: now,
             timeZone: .current,
@@ -32,7 +39,8 @@ extension AgentContextSnapshot {
             goals: goals.map { Goal(id: $0.id, name: $0.name, currency: $0.currency) },
             debts: debts.filter { !$0.isSettled }.map {
                 Debt(id: $0.id, person: $0.person, direction: FinanceToolkit.wire($0.direction), currency: $0.currency)
-            }
+            },
+            assets: assets.filter { !$0.isSold }.map { OwnedAsset(id: $0.id, name: $0.name, kind: $0.kind.rawValue, currency: $0.currency) }
         )
     }
 }

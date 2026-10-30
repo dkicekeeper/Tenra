@@ -28,7 +28,7 @@ assistant is that tab's page (`AssistantTab`); elsewhere (Simulator, Mac, no App
 "Voice | Import". iOS 26+.
 
 **Entry points** (`AssistantEntryPoints`): the tab; "Ask Ten" in the "…" menu of an account,
-category, goal and debt, and as a button with Ten's glyph in an insight, History and For today
+category, goal, debt and asset, and as a button with Ten's glyph in an insight, History and For today
 on Analytics (the
 assistant opens with questions about that object, nothing is sent until one is chosen); "Go through
 it" on a Home notice; a PDF or CSV opened in Tenra from another app.
@@ -81,8 +81,8 @@ database, only the results of the tools it asked for.
 
 | Group | Tools | Built on |
 |---|---|---|
-| Read | `get_spending_summary`, `compare_periods`, `search_transactions`, `get_accounts`, `get_budgets`, `list_recurring`, `get_insights` (+ health score), `get_goals`, `get_debts`, `convert_currency` | `SummaryCalculator` / `TransactionType.summaryContribution`, `TransactionQueryService`, `BalanceCoordinator`, `CategoryBudgetService.budgetProgress`, `InsightsService`, `SpendingQueryService` |
-| Draft | `draft_transactions`, `draft_budget`, `draft_recurring`, `draft_goal`, `draft_goal_contribution`, `draft_debt`, `draft_debt_repayment`, `draft_fact` | `TransactionDraftService.makeDraft` → `commit`, `CategoriesViewModel.setBudget`, `SubscriptionCreationService` + `linkSubcategoriesToTransaction` (red flag 5), `GoalStore`, `DebtStore`, `AgentMemory` |
+| Read | `get_spending_summary`, `compare_periods`, `search_transactions`, `get_accounts`, `get_budgets`, `list_recurring`, `get_insights` (+ health score), `get_goals`, `get_debts`, `get_assets`, `get_net_worth`, `convert_currency` | `SummaryCalculator` / `TransactionType.summaryContribution`, `TransactionQueryService`, `BalanceCoordinator`, `CategoryBudgetService.budgetProgress`, `InsightsService`, `SpendingQueryService`, `AssetValuationMath` through `AssetStore`, `NetWorthCalculator` (and the net worth insight's months) |
+| Draft | `draft_transactions`, `draft_budget`, `draft_recurring`, `draft_goal`, `draft_goal_contribution`, `draft_debt`, `draft_debt_repayment`, `draft_asset`, `draft_asset_valuation`, `draft_fact` | `TransactionDraftService.makeDraft` → `commit`, `CategoriesViewModel.setBudget`, `SubscriptionCreationService` + `linkSubcategoriesToTransaction` (red flag 5), `GoalStore`, `DebtStore`, `AssetStore`, `AgentMemory` |
 | Plan | `forecast_balance` (a daily limit until a date, what-ifs), `simulate_loan` (refinancing, early repayment, an extra payment each month), `project_savings` | the Forecasting insight, `RecurringStore`, `LoanInfo` + `LoanWhatIf`, `SavingsProjection` |
 
 Rules:
@@ -96,7 +96,10 @@ Rules:
   screen's path (Undo deletes the series and what it created). An expense or income is edited on
   the card before saving: the voice form opens, `makeDraft` parses it again (`AgentDraftEditor`),
   `AgentDraftBook.replace` swaps it, and the next question tells the model in `<draft_status>`.
-  `draft_debt` is Pro (without Pro Ten offers a fact instead).
+  `draft_debt` and `draft_asset` are Pro (without Pro Ten offers a fact instead); valuing an asset
+  already kept is not. `draft_asset_valuation` takes a value, or an area and a price per unit from
+  listings that the phone multiplies (Ten knows no market prices and does no arithmetic); its
+  valuation is `source: .assistant`, as `draft_asset`'s value of today.
 - A result carries a `Decimal`, a currency and entity ids, **never** a formatted amount.
 - **Other currencies** are converted to the base one with the app's rates: `_base` fields
   (`amount_base`, `balance_base`, `monthly_base`, `saved_base`, `remaining_base`) and every total.
@@ -287,7 +290,9 @@ The app runs the agent loop, because the tools run on the phone: one server call
 - The model does not see `tool_use` ids, so blocks do not reference them: the phone puts a
   `result_id` (`r1`, `r2`… per thread) into every successful result, and a block's `source` is it.
 - The first message of a thread carries `<app_context>`: today's date, locale, base currency,
-  accounts and categories with ids, the facts (format: `eval/fixture.ts`, `appContext`). A new one
+  accounts and categories with ids, the held assets with ids (always a line, "none" when empty: it
+  tells the prompt this app version has assets, and an older one, with no line, gets no asset
+  tools), the facts, the goals and open debts (format: `eval/fixture.ts`, `appContext`). A new one
   is sent when the date or the lists change.
 - Errors before the stream: 400 `invalid`, 401 `user`, 401 `attest` (with `reason`), 429 `quota`
   or `busy`, 451 `region_unavailable` (the app shows `assistant.error.region`), 502
@@ -376,7 +381,8 @@ spending, no em dashes, in all 11 languages.
 - **Pro for a person on the server**: the server sees only RevenueCat, so a Founding User (kept on
   the phone) needs `pro` granted there (Actions → RevenueCat → `grant`).
 - **Eval** (`server/assistant/eval/`): a synthetic user (`fixture.ts`; never real statements), a
-  tool simulator, 45 cases in Russian and English (`cases.ts`), checks: the right tool, figures
+  tool simulator, 49 cases in Russian and English (`cases.ts`; assets: `ru-asset-new`,
+  `ru-asset-valuation`, `ru-asset-worth-asks`, `ru-net-worth`, `en-rental-yield`), checks: the right tool, figures
   only by reference, no amounts in text, a draft instead of "saved", the language, prompt
   injection in a note, `blocks_decode`, `no_refusal`, `noPick`. A prompt change bumps
   `PROMPT_VERSION` and runs the eval before the deploy.
@@ -386,7 +392,7 @@ spending, no em dashes, in all 11 languages.
 - App: `TenraTests/Services/Agent/`: `AgentProtocolTests` (the wire format), `AgentConversationTests`,
   `AgentReplyDataTests` (figures by reference), `AgentDraftTests`, `AgentFastPathTests`,
   `AgentMemoryTests`, `AgentAttachmentTests`, and the tools over fixtures (`AgentCurrencyToolsTests`,
-  `AgentForecastTests`, `AgentPlanningTests`).
+  `AgentForecastTests`, `AgentPlanningTests`, `PlanToolsTests`, `AssetToolsTests`).
 - Server: `npm test` in `server/assistant/` (`test/`: `index`, `quota`, `entitlement`, `claude`,
   `appattest` on a synthetic chain, `tools` for the schemas, `eval` for the grader).
 - Not testable here: the real App Attest flow, streaming on a device, Ten's animation; checked on

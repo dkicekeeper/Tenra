@@ -3,9 +3,9 @@
 Status (2026-10-30): in `main`, on DesignKit 8.3 (dkicekeeper/DesignKit#91), version 1.8,
 together with the assets (PR #105, #109, #110), "на сегодня" in Russian (#107) and the options off
 by default (#108). TestFlight: 1.8 build 62 (2026-10-30) has all of it; the owner's check on the
-phone found the 15 points of "After the device check" below, fixed on the branch
-`claude/nifty-fermi-dwycat` (Tenra) with DesignKit 8.4.0 (its branch of the same name, a PR to
-merge before Tenra's DesignKit update picks it up). The What's New below
+phone found the 15 points of "After the device check" below, fixed in #113 with DesignKit 8.4.0
+(dkicekeeper/DesignKit#95), both in `main` since 2026-10-30; 1.8 build 63 (2026-10-30) has them
+and waits on the owner's check on the phone. The What's New below
 goes into 1.8's `release-notes.md` once 1.7.1's notes move to the archive; then this file moves to
 `archive/plans/`.
 
@@ -53,7 +53,7 @@ The owner's list from build 62, each point and what changed:
 14. An asset's rent and upkeep take several subcategories (`AssetCategoryLink.subcategoryIds`).
 15. On the assets' coloured hero the selected value is in the text's colour (DesignKit 8.4.0).
 
-Device check after the DesignKit update: the points above on the phone, in light and dark.
+Device check on build 63: the points above on the phone, in light and dark.
 
 ## Device check
 

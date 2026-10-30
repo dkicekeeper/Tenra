@@ -338,7 +338,7 @@ const draftTools: Tool[] = [
         currency: { type: "string" },
         value: { type: "number", description: "What it is worth now" },
         purchase_price: { type: "number" },
-        purchase_date: date,
+        purchase_date: { ...date, description: "YYYY-MM-DD; only a year or a month given: its first day (in 2015 is 2015-01-01)" },
         share_percent: { type: "number", description: "1 to 100" },
         loan_account: { type: "string" },
       },

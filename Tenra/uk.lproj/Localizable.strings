@@ -2397,6 +2397,16 @@
 "asset.sell" = "Продати";
 "asset.undoSale" = "Скасувати продаж";
 "asset.valuationHint" = "Скільки коштує зараз?";
+"asset.staleBadge" = "Застаріла";
+"asset.estimatedFrom" = "≈ Розрахунок, оцінка від %@";
+"asset.stale.banner" = "Оцінка від %@. Оновіть її, щоб капітал був точним.";
+"asset.chart.estimate" = "%@, розрахунок";
+"asset.depreciation" = "Знос";
+"asset.depreciationRow" = "Дешевшає на рік";
+"asset.depreciation.hint" = "Після кожної оцінки вартість зменшується на цю частку щороку, доки ви не введете нову. «Ні» залишає останню оцінку.";
+"asset.depreciation.off" = "Ні";
+"asset.depreciationValue" = "%@ на рік";
+"assistant.notice.asset.stale" = "Оцінка %1$@ від %2$@. Ціни змінюються: оновіть її, щоб капітал був точним.";
 "asset.saleHint" = "За скільки продали?";
 "asset.chart.value" = "Вартість";
 

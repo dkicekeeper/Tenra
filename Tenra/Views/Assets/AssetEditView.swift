@@ -6,8 +6,9 @@
 //  and its currency in the hero; its kind; the purchase price and day (empty for an
 //  inheritance or a gift); the person's share and the loan it was bought with; the categories of
 //  its rent and its upkeep, each with an optional subcategory, never the transactions another
-//  asset already counts. A value changed here is a valuation of today (the sale price, once
-//  sold). Changing the currency moves the purchase price and the valuations at today's rate, or
+//  asset already counts; for transport and other things, the depreciation a year (off by
+//  default: the person sets it). A value changed here is a valuation of today (the sale price,
+//  once sold). Changing the currency moves the purchase price and the valuations at today's rate, or
 //  keeps the currency without one.
 //
 
@@ -37,6 +38,8 @@ struct AssetEditView: View {
     @State private var purchaseDate = Date()
     /// 5…100.
     @State private var sharePercent = 100
+    /// 0 (off)…50; only for transport and other things.
+    @State private var depreciationPercent = 0
     /// Empty: no loan.
     @State private var loanAccountId = ""
     /// Empty: no link; a subcategory left empty takes the whole category.
@@ -116,6 +119,19 @@ struct AssetEditView: View {
                         }
                     }
 
+                    if hasDepreciation {
+                        FormSection(
+                            header: String(localized: "asset.depreciation"),
+                            footer: String(localized: "asset.depreciation.hint")
+                        ) {
+                            UniversalRow(
+                                String(localized: "asset.depreciationRow"),
+                                icon: "chart.line.downtrend.xyaxis",
+                                accessory: .stepper($depreciationPercent, in: 0...50, step: 1, format: Self.depreciationText)
+                            )
+                        }
+                    }
+
                     if !linkOptions.incomeCategories.isEmpty {
                         linkSection(
                             header: String(localized: "asset.rent"),
@@ -142,6 +158,7 @@ struct AssetEditView: View {
                 .screenPadding()
                 .padding(.top, AppSpacing.md)
                 .animation(AppAnimation.smooth, value: purchasePrice != nil)
+                .animation(AppAnimation.smooth, value: hasDepreciation)
                 .animation(AppAnimation.smooth, value: incomeCategoryId)
                 .animation(AppAnimation.smooth, value: expenseCategoryId)
             }
@@ -207,6 +224,17 @@ struct AssetEditView: View {
     private var value: Double? { Self.amount(valueText) }
     private var purchasePrice: Double? { Self.amount(purchaseText) }
 
+    /// Homes and land keep their last valuation (plan-assets.md §4); a car or a thing may lose
+    /// value by a rule.
+    private var hasDepreciation: Bool { kind.group != .realEstate }
+
+    /// "Off", or "15% a year".
+    private static func depreciationText(_ percent: Int) -> String {
+        percent == 0
+            ? String(localized: "asset.depreciation.off")
+            : String(format: String(localized: "asset.depreciationValue"), AssetDetailView.percentText(Double(percent) / 100))
+    }
+
     private var isValid: Bool {
         !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && (value != nil || purchasePrice != nil)
             && !incomeOverlaps && !expenseOverlaps
@@ -252,8 +280,9 @@ struct AssetEditView: View {
         name = asset.name
         kind = asset.kind
         iconSource = asset.displayIcon
-        if let current = AssetValuationMath.currentValue(of: asset) {
-            valueText = AmountInputFormatting.bindingString(for: current)
+        // What it is worth today: the depreciation estimate, when it has a rule.
+        if AssetValuationMath.currentValue(of: asset) != nil {
+            valueText = AmountInputFormatting.bindingString(for: AssetValuationMath.summary(of: asset).value)
         }
         initialValueText = valueText
         currency = asset.currency
@@ -261,6 +290,7 @@ struct AssetEditView: View {
         initialPurchaseText = purchaseText
         purchaseDate = asset.purchaseDate ?? Date()
         sharePercent = min(100, max(5, Int((asset.ownershipShare * 100).rounded())))
+        depreciationPercent = min(50, max(0, Int(((asset.depreciationPerYear ?? 0) * 100).rounded())))
         loanAccountId = asset.linkedLoanAccountId ?? ""
         incomeCategoryId = asset.incomeLink?.categoryId ?? ""
         incomeSubcategoryId = asset.incomeLink?.subcategoryId ?? ""
@@ -279,6 +309,7 @@ struct AssetEditView: View {
         // The kind's own icon is not kept: it follows the kind.
         result.iconSource = iconSource == kind.defaultIcon ? nil : iconSource
         result.ownershipShare = Double(sharePercent) / 100
+        result.depreciationPerYear = hasDepreciation && depreciationPercent > 0 ? Double(depreciationPercent) / 100 : nil
         result.linkedLoanAccountId = loanAccountId.isEmpty ? nil : loanAccountId
         result.incomeLink = incomeLink
         result.expenseLink = expenseLink

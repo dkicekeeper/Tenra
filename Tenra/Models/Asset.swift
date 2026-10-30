@@ -86,8 +86,8 @@ nonisolated struct Asset: Equatable, Hashable, Identifiable {
     var purchasePrice: Double?
     /// Oldest first; the last one is the current value.
     var valuations: [AssetValuation]
-    /// A share of the value lost each year between valuations (a car); nil keeps the last
-    /// valuation. Kept, not used yet (phase 3 of the plan).
+    /// A share of the value lost each year after the latest valuation (a car: 0.15); nil keeps
+    /// the last valuation. A new valuation is the new base (AssetValuationMath.estimate).
     var depreciationPerYear: Double?
     /// 1 for a whole asset; 0.5 for a house owned with a spouse. Net worth counts the share.
     var ownershipShare: Double

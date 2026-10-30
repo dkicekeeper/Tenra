@@ -445,6 +445,10 @@ nonisolated final class InsightsService {
             accountTransactionCounts: preAggregated?.accountTransactionCounts,
             accounts: snapshot.accounts
         ))
+        // Net worth: the same figure in every granularity, its chart over this one's periods.
+        if let netWorth = generateNetWorth(snapshot: snapshot, baseCurrency: baseCurrency, granularity: granularity, periodPoints: periodPoints) {
+            insights.append(netWorth)
+        }
 
         // SavingsRate now uses the last completed calendar month (see generateSavingsInsights) —
         // granularity-independent. EmergencyFund is shared.
@@ -493,9 +497,6 @@ nonisolated final class InsightsService {
             }
             if let dormancy = generateAccountDormancy(allTransactions: allTransactions, baseCurrency: baseCurrency, balanceFor: snapshot.balanceFor, preAggregated: preAggregated, accounts: snapshot.accounts) {
                 insights.append(dormancy)
-            }
-            if let netWorth = generateNetWorth(snapshot: snapshot, baseCurrency: baseCurrency) {
-                insights.append(netWorth)
             }
             insights.append(contentsOf: generateSubscriptionPriceIncreases(
                 recurringSeries: snapshot.recurringSeries,
@@ -597,8 +598,8 @@ nonisolated final class InsightsService {
         "emergency_fund",
         "spending_forecast",
         "year_over_year",
-        "check_growth",
-        "net_worth"
+        "check_growth"
+        // "net_worth" — granularity-dependent since its chart (assets phase 3)
     ]).union(budgetInsightIDs)
 
     /// Ids `generateBudgetInsights` emits. Shared: each budget's spent covers the budget's

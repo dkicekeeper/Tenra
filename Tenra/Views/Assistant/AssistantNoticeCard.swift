@@ -26,11 +26,10 @@ struct AssistantNoticeCard: View {
         NoticeCard(
             title: notice.title,
             message: amountsHidden ? (notice.hiddenBody ?? notice.body) : notice.body,
-            // The setup message opens the Wallet guide; the rest ask Ten.
-            actionTitle: notice.kind == .setup
-                ? String(localized: "home.autoCapture.action")
-                : String(localized: "assistant.notice.goThrough"),
-            actionSystemImage: notice.kind == .setup ? "wave.3.right" : "sparkles",
+            // The setup message opens the Wallet guide, an asset's a new valuation; the rest ask
+            // Ten.
+            actionTitle: actionTitle,
+            actionSystemImage: actionSystemImage,
             action: onAsk,
             hideLabel: String(localized: "assistant.notice.hide"),
             onHide: onHide
@@ -54,12 +53,14 @@ struct AssistantNoticeCard: View {
 
 /// "Ten writes" on Home: the newest message Ten wrote that is not read, and how many wait
 /// behind it. "Go through it" opens the assistant's tab, which asks the message's question
-/// (AppCoordinator.goThrough); "Hide" shows the next one. Nothing where the assistant does not
-/// run.
+/// (AppCoordinator.goThrough); the setup message opens the Wallet guide and an asset's the
+/// valuation sheet instead. "Hide" shows the next one. Nothing where the assistant does not run.
 struct AssistantNoticesSection: View {
     @Environment(AppCoordinator.self) private var coordinator
     private let inbox = AssistantInbox.shared
     @State private var showingWalletGuide = false
+    /// The asset an out-of-date message asked to value.
+    @State private var valuingAsset: Asset?
 
     var body: some View {
         // A message about a subscription, a debt or a goal deleted since is not shown; the next
@@ -79,6 +80,21 @@ struct AssistantNoticesSection: View {
         .sheet(isPresented: $showingWalletGuide) {
             NavigationStack { WalletSetupGuideView() }
         }
+        .sheet(item: $valuingAsset) { asset in
+            let assetStore = coordinator.assetStore
+            MoneyEntrySheet(
+                title: asset.name,
+                icon: asset.displayIcon,
+                subtitle: String(localized: "asset.valuationHint"),
+                currency: asset.currency,
+                appSettings: coordinator.transactionsViewModel.appSettings,
+                suggestedAmount: assetStore.summary(for: asset).value
+            ) { amount, date, note in
+                Task {
+                    await assetStore.addValuation(AssetValuation(date: date, value: amount, source: .manual, note: note), to: asset.id)
+                }
+            }
+        }
     }
 
     private func section(notice: AssistantNotice, count: Int) -> some View {
@@ -92,6 +108,9 @@ struct AssistantNoticesSection: View {
                     if notice.kind == .setup {
                         inbox.markRead(notice.id)
                         showingWalletGuide = true
+                    } else if notice.kind == .asset {
+                        inbox.markRead(notice.id)
+                        valuingAsset = notice.subjectId.flatMap(coordinator.assetStore.asset(id:))
                     } else {
                         coordinator.goThrough(notice)
                     }
@@ -103,6 +122,24 @@ struct AssistantNoticesSection: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .screenPadding()
+    }
+}
+
+extension AssistantNoticeCard {
+    private var actionTitle: String {
+        switch notice.kind {
+        case .setup: String(localized: "home.autoCapture.action")
+        case .asset: String(localized: "asset.updateValue")
+        default: String(localized: "assistant.notice.goThrough")
+        }
+    }
+
+    private var actionSystemImage: String {
+        switch notice.kind {
+        case .setup: "wave.3.right"
+        case .asset: "chart.line.uptrend.xyaxis"
+        default: "sparkles"
+        }
     }
 }
 

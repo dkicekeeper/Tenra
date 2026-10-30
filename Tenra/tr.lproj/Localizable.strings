@@ -2397,6 +2397,16 @@
 "asset.sell" = "Sat";
 "asset.undoSale" = "Satışı geri al";
 "asset.valuationHint" = "Şimdi ne kadar ediyor?";
+"asset.staleBadge" = "Eski";
+"asset.estimatedFrom" = "≈ Tahmin, değerleme: %@";
+"asset.stale.banner" = "Değer %@ tarihli. Net varlığın doğru olsun diye güncelle.";
+"asset.chart.estimate" = "%@, tahmin";
+"asset.depreciation" = "Değer kaybı";
+"asset.depreciationRow" = "Yıllık kayıp";
+"asset.depreciation.hint" = "Her değerlemeden sonra değer, yenisini girene kadar her yıl bu oranda düşer. Kapalı, son değerlemeyi tutar.";
+"asset.depreciation.off" = "Kapalı";
+"asset.depreciationValue" = "Yılda %@";
+"assistant.notice.asset.stale" = "Değerleme: %1$@, %2$@. Fiyatlar değişir: net varlığın doğru olsun diye değeri güncelle.";
 "asset.saleHint" = "Kaça sattın?";
 "asset.chart.value" = "Değer";
 

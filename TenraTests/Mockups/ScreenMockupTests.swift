@@ -23,9 +23,10 @@ struct ScreenMockupTests {
         URL(fileURLWithPath: ProcessInfo.processInfo.environment["MOCKUP_DIR"] ?? NSTemporaryDirectory())
     }
 
-    // In review: the assets section (docs/plan-assets.md, phase 1): the Finances card, the
-    // list with its hero, an asset's screen and its form. A new screen in review gets a `@Test`
-    // here that calls `render(_:height:_:)`.
+    // In review: the assets section (docs/plan-assets.md, phases 1 to 3): the Finances card, the
+    // list with its hero, an asset's screen and its form, a car losing value by its rule and a
+    // garage whose valuation is out of date. A new screen in review gets a `@Test` here that
+    // calls `render(_:height:_:)`.
 
     // MARK: - Assets
 
@@ -33,8 +34,8 @@ struct ScreenMockupTests {
         Calendar.current.date(from: DateComponents(year: year, month: month, day: day)) ?? Date()
     }
 
-    /// A flat that grew, a car that lost value, a garage without a purchase price, a sold
-    /// country house: every look of a card.
+    /// A flat that grew, a car that loses 15% a year, a garage without a purchase price valued
+    /// in March (out of date), a sold country house: every look of a card.
     private func demoAssets() async -> AssetStore {
         let store = AssetStore(repository: nil)
         await store.add(Asset(
@@ -49,7 +50,8 @@ struct ScreenMockupTests {
         await store.add(Asset(
             id: "car", name: "Toyota Camry", kind: .vehicle, currency: "KZT",
             purchaseDate: Self.day(2024, 3, 1), purchasePrice: 15_000_000,
-            valuations: [AssetValuation(date: Self.day(2026, 9, 2), value: 12_600_000)]
+            valuations: [AssetValuation(date: Self.day(2026, 9, 2), value: 12_600_000)],
+            depreciationPerYear: 0.15
         ))
         await store.add(Asset(
             id: "garage", name: "Garage", kind: .commercial, currency: "KZT",
@@ -88,6 +90,32 @@ struct ScreenMockupTests {
         }
     }
 
+    @Test func assetDetailCar() async throws {
+        let store = await demoAssets()
+        let coordinator = AppCoordinator()
+        try await render("asset-detail-car", height: 1300) {
+            NavigationStack {
+                AssetDetailView(assetStore: store, assetId: "car")
+            }
+            .environment(coordinator)
+            .environment(coordinator.transactionStore)
+            .environment(TimeFilterManager())
+        }
+    }
+
+    @Test func assetDetailOutOfDate() async throws {
+        let store = await demoAssets()
+        let coordinator = AppCoordinator()
+        try await render("asset-detail-garage", height: 1100) {
+            NavigationStack {
+                AssetDetailView(assetStore: store, assetId: "garage")
+            }
+            .environment(coordinator)
+            .environment(coordinator.transactionStore)
+            .environment(TimeFilterManager())
+        }
+    }
+
     @Test func assetsCard() async throws {
         let store = await demoAssets()
         try await render("assets-card", height: 300) {
@@ -103,6 +131,14 @@ struct ScreenMockupTests {
         let flat = try #require(store.asset(id: "flat"))
         try await render("asset-edit") {
             AssetEditView(asset: flat, loanAccounts: [], baseCurrency: "KZT", onSave: { _ in })
+        }
+    }
+
+    @Test func assetEditCar() async throws {
+        let store = await demoAssets()
+        let car = try #require(store.asset(id: "car"))
+        try await render("asset-edit-car", height: 1100) {
+            AssetEditView(asset: car, loanAccounts: [], baseCurrency: "KZT", onSave: { _ in })
         }
     }
 

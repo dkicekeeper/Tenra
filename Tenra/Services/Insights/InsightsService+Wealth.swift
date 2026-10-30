@@ -230,8 +230,16 @@ extension InsightsService {
     /// Net worth (NetWorthCalculator): money on the accounts, the assets at the person's share and
     /// what others owe them, less what is left of the loans and what they owe, in the base
     /// currency. Free, like all of Insights: without assets it still counts the money, the debts
-    /// and the loans. The same for every granularity (a state, not a period).
-    nonisolated func generateNetWorth(snapshot: DataSnapshot, baseCurrency: String) -> Insight? {
+    /// and the loans. The figure is the same for every granularity (a state, not a period); its
+    /// chart is net worth at the end of each of the granularity's periods
+    /// (`NetWorthCalculator.history`), the last one today's figure, and the trend its change from
+    /// the period before.
+    nonisolated func generateNetWorth(
+        snapshot: DataSnapshot,
+        baseCurrency: String,
+        granularity: InsightGranularity,
+        periodPoints: [PeriodDataPoint]
+    ) -> Insight? {
         guard !snapshot.accounts.isEmpty else { return nil }
         let result = NetWorthCalculator.compute(
             accounts: snapshot.accounts,
@@ -240,6 +248,8 @@ extension InsightsService {
             baseCurrency: baseCurrency
         )
         let severity: InsightSeverity = result.total >= 0 ? .positive : .critical
+        let points = Self.netWorthPoints(periodPoints, result: result, snapshot: snapshot, baseCurrency: baseCurrency)
+        let trend = Self.netWorthTrend(points, granularity: granularity)
         let rows: [InsightFormulaRow] = result.lines.compactMap { line in
             // Money always; the other parts once there is something in them.
             guard line.kind == .money || line.amount > 0 else { return nil }
@@ -292,11 +302,59 @@ extension InsightsService {
                 currency: baseCurrency,
                 unit: nil
             ),
-            trend: nil,
+            trend: trend,
             severity: severity,
             category: .wealth,
-            detailData: .formulaBreakdown(model),
+            detailData: .netWorth(NetWorthDetail(formula: model, points: points)),
             cardVisual: segments.count >= 2 ? .proportionBar(segments) : nil
+        )
+    }
+
+    /// Net worth at the end of each period, in `cumulativeBalance`; the period not over yet holds
+    /// today's figure, so the chart ends on the metric.
+    nonisolated static func netWorthPoints(
+        _ periodPoints: [PeriodDataPoint],
+        result: NetWorthCalculator.Result,
+        snapshot: DataSnapshot,
+        baseCurrency: String,
+        today: Date = Date()
+    ) -> [PeriodDataPoint] {
+        guard !periodPoints.isEmpty else { return [] }
+        let money = cumulativeBalancePoints(periodPoints, endingBalance: result.amount(.money)).map { $0.cumulativeBalance ?? 0 }
+        let values = NetWorthCalculator.history(
+            periodEnds: periodPoints.map(\.periodEnd),
+            money: money,
+            accounts: snapshot.accounts,
+            holdings: snapshot.netWorthHoldings,
+            baseCurrency: baseCurrency,
+            today: today
+        )
+        return zip(periodPoints, values).map { point, value in
+            PeriodDataPoint(
+                id: point.id,
+                granularity: point.granularity,
+                key: point.key,
+                periodStart: point.periodStart,
+                periodEnd: point.periodEnd,
+                label: point.label,
+                income: point.income,
+                expenses: point.expenses,
+                cumulativeBalance: point.periodEnd > today ? result.total : value
+            )
+        }
+    }
+
+    /// The change from the period before the current one; nil without both, or from zero.
+    nonisolated static func netWorthTrend(_ points: [PeriodDataPoint], granularity: InsightGranularity) -> InsightTrend? {
+        guard let index = points.lastIndex(where: { $0.key == granularity.currentPeriodKey }), index > 0,
+              let current = points[index].cumulativeBalance,
+              let previous = points[index - 1].cumulativeBalance else { return nil }
+        let change = current - previous
+        return InsightTrend(
+            direction: change > 0.5 ? .up : (change < -0.5 ? .down : .flat),
+            changePercent: previous != 0 ? change / abs(previous) * 100 : nil,
+            changeAbsolute: change,
+            comparisonPeriod: granularity.comparisonPeriodName
         )
     }
 }

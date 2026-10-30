@@ -198,8 +198,10 @@ enum AgentBlock {                // AgentReply.swift; source = a tool result's r
 
 `AssistantInbox` turns what the app already notices into notices ([insights.md](insights.md)
 §Signal notifications): critical and warning insights of the pushed kinds (at most two new a day),
-last week's summary once a week, subscriptions charging tomorrow, a debt due tomorrow and a goal
-behind its schedule (once a month). Each has a key and never repeats. They show only on Home
+last week's summary once a week, subscriptions charging tomorrow, a debt due tomorrow, a goal
+behind its schedule (once a month) and an asset whose valuation is out of date (once a half-year,
+[assets.md](assets.md); its button is "Update value" and opens the valuation sheet on Home, no
+action spent, until Ten sees assets). Each has a key and never repeats. They show only on Home
 (`AssistantNoticesSection`, under the accounts): the newest unread one with Ten in its mood and the
 count of the rest; "Go through it" opens the assistant with a question and a `<notice>` block (one
 free action), "Hide" shows the next. Works without notification permission. A push of an insight
@@ -211,9 +213,9 @@ up" and opens the Wallet guide instead of asking Ten (no action spent), and it l
 automation records a payment (`Subjects.capturing`).
 
 A notice keeps a copy of its text with the amounts as dots (`hiddenBody`), shown while "hide
-amounts" is on. A notice about a subscription, a debt or a goal leaves with it: the Home section
+amounts" is on. A notice about a subscription, a debt, a goal or an asset leaves with it: the Home section
 shows only notices whose subject is still there (`AssistantNotices.Subjects`: active
-subscriptions, open debts, goals, read once every store has loaded), and
+subscriptions, open debts, goals, assets still out of date, read once every store has loaded), and
 `refreshAssistantInbox` drops the rest for good (their keys stay posted).
 
 ## 7. The tab, the chat, voice and attachments

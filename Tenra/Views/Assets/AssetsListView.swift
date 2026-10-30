@@ -174,7 +174,7 @@ struct AssetsListView: View {
 
             if history.count >= 2 {
                 HeroSparkline(
-                    dataPoints: AssetChartPoints.points(history),
+                    dataPoints: AssetChartPoints.points(history, estimateLast: endsOnEstimate(history)),
                     series: AssetChartPoints.series(color: AppColors.income),
                     valueFormat: .currency(baseCurrency),
                     entranceDelay: AssetChartPoints.entranceDelay
@@ -182,6 +182,13 @@ struct AssetsListView: View {
             }
         }
         .heroBackground(heroColor(gain: totals.gain))
+    }
+
+    /// The total's last point is today's, added for an asset that loses value by its rule
+    /// (AssetValuationMath.totalHistory): an estimate.
+    private func endsOnEstimate(_ history: [AssetValuationMath.DatedValue]) -> Bool {
+        guard let last = history.last, Calendar.current.isDateInToday(last.date) else { return false }
+        return assetStore.held.contains { AssetValuationMath.depreciationRate(of: $0) != nil }
     }
 
     /// Green while the assets gained, the accent otherwise.
@@ -251,18 +258,21 @@ struct AssetsListView: View {
 
 /// The valuation charts' points (the list's hero and an asset's screen): DesignKit's
 /// `ChartValuePoint`, a label per point, the month and year on the axis, the day in the
-/// selection banner.
+/// selection banner ("30 Oct, estimate" for a depreciation estimate at the end).
 enum AssetChartPoints {
     static let key = "value"
     /// The charts draw in once the push has settled.
     static let entranceDelay = 0.3
 
-    static func points(_ values: [AssetValuationMath.DatedValue]) -> [ChartValuePoint] {
+    static func points(_ values: [AssetValuationMath.DatedValue], estimateLast: Bool = false) -> [ChartValuePoint] {
         values.enumerated().map { index, point in
-            ChartValuePoint(
+            let day = DateFormatters.displayDateOmittingCurrentYear(point.date)
+            return ChartValuePoint(
                 label: "p\(index)",
                 axisLabel: point.date.formatted(.dateTime.month(.abbreviated).year(.twoDigits)),
-                title: DateFormatters.displayDateOmittingCurrentYear(point.date),
+                title: estimateLast && index == values.count - 1
+                    ? String(format: String(localized: "asset.chart.estimate"), day)
+                    : day,
                 values: [key: point.value]
             )
         }

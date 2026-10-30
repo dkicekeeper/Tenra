@@ -2397,6 +2397,16 @@
 "asset.sell" = "Сату";
 "asset.undoSale" = "Сатуды болдырмау";
 "asset.valuationHint" = "Қазір қанша тұрады?";
+"asset.staleBadge" = "Ескірген";
+"asset.estimatedFrom" = "≈ Есеп, бағалау: %@";
+"asset.stale.banner" = "Бағалау: %@. Капитал дәл болуы үшін оны жаңартыңыз.";
+"asset.chart.estimate" = "%@, есеп";
+"asset.depreciation" = "Тозу";
+"asset.depreciationRow" = "Жылдық арзандау";
+"asset.depreciation.hint" = "Әр бағалаудан кейін құн жаңасын енгізгенше жыл сайын осы үлеске азаяды. «Жоқ» соңғы бағалауды қалдырады.";
+"asset.depreciation.off" = "Жоқ";
+"asset.depreciationValue" = "Жылына %@";
+"assistant.notice.asset.stale" = "Бағалау: %1$@, %2$@. Бағалар өзгереді: капитал дәл болуы үшін оны жаңартыңыз.";
 "asset.saleHint" = "Қаншаға саттыңыз?";
 "asset.chart.value" = "Құны";
 

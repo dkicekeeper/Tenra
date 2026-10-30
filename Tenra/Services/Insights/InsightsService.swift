@@ -506,6 +506,15 @@ nonisolated final class InsightsService {
             if let checkGrowth = generateAverageCheckGrowth(baseCurrency: baseCurrency, transactions: allTransactions, txDateMap: dateMap) {
                 insights.append(checkGrowth)
             }
+            if let byDay = generateSpendingByDay(
+                baseCurrency: baseCurrency,
+                transactions: allTransactions,
+                categories: snapshot.categories,
+                firstTransactionDate: preAggregated?.firstDate ?? firstTransactionDate,
+                txDateMap: dateMap
+            ) {
+                insights.append(byDay)
+            }
         } else {
             // Merge pre-computed shared insights (the budget ones already sit in their slot above)
             insights.append(contentsOf: sharedInsights!.filter { !Self.budgetInsightIDs.contains($0.id) })
@@ -578,6 +587,7 @@ nonisolated final class InsightsService {
     /// These are computed once on the first granularity and reused for all subsequent ones.
     private static let sharedInsightIDs: Set<String> = Set([
         "spending_spike",
+        "spending_by_day",
         // "subscription_growth" — now granularity-dependent (lookback scales)
         // "balance_runway" — merged into emergency_fund (audit 2026-07)
         "accountDormancy",

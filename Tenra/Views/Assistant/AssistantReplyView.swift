@@ -189,6 +189,7 @@ private struct AssistantChartCard: View {
                 label: group.id,
                 axisLabel: axisLabel(group),
                 title: periodLabel(group),
+                isPartial: isUnfinished(group),
                 values: [Self.seriesId: group.value]
             )
         }
@@ -203,6 +204,21 @@ private struct AssistantChartCard: View {
             coloring: signed ? .signed(positive: AppColors.income, negative: AppColors.destructive) : .solid(AppColors.accent),
             baseline: signed ? .signed : .zero
         )
+    }
+
+    /// This month or this week ("2026-10", a week's Monday): not over, so its bar fades and
+    /// the banner says "so far".
+    private func isUnfinished(_ group: AgentReplyData.ChartGroup) -> Bool {
+        let calendar = Calendar.current
+        let now = Date()
+        if group.id.count == 7, let month = FastDateParser.date(from: group.id + "-01") {
+            return calendar.isDate(month, equalTo: now, toGranularity: .month)
+        }
+        if let monday = FastDateParser.date(from: group.id),
+           let end = calendar.date(byAdding: .day, value: 7, to: monday) {
+            return monday <= now && now < end
+        }
+        return false
     }
 
     /// "2026-10" → "Oct"; a week's Monday → "13.10" (the locale's order).

@@ -82,8 +82,6 @@ Found by the docs audit of 2026-10-12, not verified on device yet:
   still name removed things (`principalBalance` in `DepositsViewModel` and `DepositDetailView`,
   aggregate services in `TransactionCacheManager`, the "no Other category" case in
   `LogTransactionIntent`).
-- **DesignKit's docs/charts.md** repeats stale lines (`seriesKey`, the `.dual` banner, "~9
-  switches", `ChartAxisLabelMapCache`): a DesignKit PR.
 
 ## Ideas, not planned yet
 

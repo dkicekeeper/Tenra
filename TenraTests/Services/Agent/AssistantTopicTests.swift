@@ -21,6 +21,7 @@ struct AssistantTopicTests {
         .goal(name: "Машина"),
         .debt(person: "Асхат", owedToMe: true),
         .debt(person: "Мама", owedToMe: false),
+        .asset(name: "Квартира"),
     ])
     func aTopicAsksAboutWhatItNames(_ topic: AssistantTopic) {
         let name: String
@@ -31,6 +32,7 @@ struct AssistantTopicTests {
         case .history, .allowance: name = ""
         case .goal(let value): name = value
         case .debt(let value, _): name = value
+        case .asset(let value): name = value
         }
         #expect(!topic.questions.isEmpty)
         #expect(topic.questions.allSatisfy { $0.contains(name) })

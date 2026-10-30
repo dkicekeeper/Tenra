@@ -30,7 +30,7 @@ maps Tenra's model onto DesignKit's generic `ChartPoint` / `ChartSeries`:
   the rest of it at the average of the last three finished periods. The `spending_forecast` insight
   also adds the subscriptions still due this month, so the two can differ by those.
 - **Chart options** (`ChartOptionsHost`, `.chartOptionsHost()` on `MainTabView`): DesignKit's
-  `ChartDisplayOptions` in `@AppStorage("charts.displayOptions")` (default: forecast and a year ago)
+  `ChartDisplayOptions` in `@AppStorage("charts.displayOptions")` (default: all off)
   handed to every chart through `.chartDisplayOptions`. Each `ChartSwitcher` shows them in a menu by
   its zoom: the average line, highs and lows, the forecast, a year ago, a ruler the chart scrolls
   under. A change applies to every chart of the app, standalone `BarChart`s included.

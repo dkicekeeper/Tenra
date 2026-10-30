@@ -376,9 +376,9 @@ extension HeroSparkline where Point == PeriodDataPoint {
 /// The person's chart options (DesignKit's `ChartDisplayOptions`: the average line, highs and
 /// lows, the forecast, a year ago, a ruler the chart scrolls under), kept in `UserDefaults` and
 /// handed to every chart of the app: the menu by a chart's zoom changes them for all of them.
-/// Applied once, on `MainTabView`.
+/// All off until the person turns one on (the owner's call). Applied once, on `MainTabView`.
 private struct ChartOptionsHost: ViewModifier {
-    @AppStorage("charts.displayOptions") private var options = ChartDisplayOptions.standard
+    @AppStorage("charts.displayOptions") private var options: ChartDisplayOptions = []
 
     func body(content: Content) -> some View {
         content.chartDisplayOptions($options)

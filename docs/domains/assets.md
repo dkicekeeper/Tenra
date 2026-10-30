@@ -68,13 +68,15 @@ with `CurrencyConverter.convertSync`, the amount itself as the cold-cache fallba
   asset counted from its first point at its latest value up to that day, the latest 24 points.
 - **Rent and upkeep**: the `.income` transactions of the income link and the `.expense` ones of
   the expense link (`AssetStore.transactionsOfLink`, wired by `AppCoordinator` to
-  `TransactionStore`'s category index, filtered by the subcategory's transaction links), each in
+  `TransactionStore`'s category index, filtered by the transaction links of its subcategories:
+  any of `AssetCategoryLink.subcategoryIds`, none for the whole category; a link saved with one
+  `subcategoryId` before 2026-10-30 reads as a list of one, and a link is written with both), each in
   the asset's currency. Realized only: up to today, up to the sale for a sold asset. Over the 12
   months before that day, the rent, the upkeep and the yield, (rent − upkeep) ÷ value; since the
   purchase, the full result, gain + every rent − every upkeep (`AssetValuationMath.income`). A
   link whose category is gone reads as empty.
 - **No double counting**: two assets' links overlap when they share a category and either takes
-  the whole of it or both take the same subcategory (`AssetValuationMath.overlaps`); the form
+  the whole of it or they take a subcategory in common (`AssetValuationMath.overlaps`); the form
   refuses one that overlaps another asset's (`InlineStatusText`, Save off).
 - **Net worth** (`NetWorthCalculator`, `Services/Assets/`): money (accounts that are not loans,
   in the balance) + assets (held, `includeInNetWorth`, at their share) + what others owe −
@@ -110,7 +112,7 @@ with `CurrencyConverter.convertSync`, the amount itself as the cold-cache fallba
 | List rows | `AssetCard`, an adapter over DesignKit's `HoldingCard` (8.2.0): the value rolling up (`isLive`), the gain as a `TrendBadge` pill with "+46 000 000 ₸ since purchase", the purchase and the valuations as the sparkline in the gain's colour, the valuation or sale day under the name ("≈ Estimate, valued …" with depreciation), a "Sold" badge, or an "Out of date" one in the warning colour |
 | List | `Views/Assets/AssetsListView.swift`: the hero on `.heroBackground` (green while the assets gained, the accent otherwise) with the total, the gain and `HeroSparkline` of `totalHistory`; the cards rise over its end (`.padding(.top, -AppSpacing.xxl)`, `.heroScrollEdge()`), in sections real estate, transport, other, sold (`CardList(.stack)`, a drag reorders within a section, the sold ones by sale day), each card `.scrollReveal()`; three `HoldingCardSkeleton`s until the store loads, `MascotEmptyState` when there are none |
 | Detail | `AssetDetailView` on `EntityDetailScaffold`: `HeroSection` (icon, value, the valuation or sale day, the gain pill, the value in the base currency for a foreign one) with `HeroSparkline` of the history under it (and today's estimate with depreciation), drawing in after the push; "Update value" and "Sell" (or "Undo sale"); info rows (kind, purchase price and day, gain or result, growth a year, depreciation a year, the share, loan left and own money, rent and upkeep over 12 months, yield, full result, sale day); when out of date, a warning `StatusBanner` "The value is from …" that opens "Update value"; with a rent category and no rent yet, a `StatusBanner` that opens the add form in that category (the person makes it monthly there); the valuations newest first in a card of `HistoryEntryRow` (a long press deletes one, which leaves with `DissolveTransition`; the purchase is changed in Edit); the rent and upkeep transactions by day (`GroupedTransactionList`). A valuation above the value plays `.sparkleBurst` over the hero; a sale above the purchase price `.celebration(playsHaptic: false)`. It reads `transactions`, `categoriesMutationVersion` and `subcategoriesMutationVersion` so a transaction or a category change redraws it |
-| Edit | `AssetEditView`: hero with icon, name, the value today (the estimate with depreciation) and the currency; kind (an icon the person did not pick follows it); purchase price and day; share (5% steps) and the loan; for transport and other things, depreciation a year (a stepper, 0 is "Off", up to 50%; a real-estate kind saves none); rent and upkeep, each a category and, when it has any, a subcategory (`AssetLinkOptions`) |
+| Edit | `AssetEditView`: hero with icon, name, the value today (the estimate with depreciation) and the currency; kind (an icon the person did not pick follows it); purchase price and day; share (5% steps) and the loan; for transport and other things, depreciation a year (a stepper, 0 is "Off", up to 50%; a real-estate kind saves none); rent and upkeep, each a category and, when it has any, its subcategories as chips, several at once (`ChipPicker`, "Whole category" while none is picked; `AssetLinkOptions`) |
 | Ten writes | `AssistantNotices.staleAssets` ([assistant.md](assistant.md) §6): once a half-year per out-of-date asset (`asset:<id>:<year>-H<1/2>`), "Valued at 70 000 000 ₸ on 16 Apr…"; its button is "Update value" and opens the valuation sheet on Home (no answer spent); it leaves once the asset is valued, sold or deleted (`Subjects.staleAssets`) |
 | Money in | `MoneyEntrySheet` (DesignKit's `AmountEntrySheet`): a valuation or the sale, the current value filled in |
 

@@ -8,6 +8,8 @@
 //  (MerchantDetailView) is remembered on save. On top, the merchant's name and logo (MerchantLogoStore):
 //  a name the user types replaces the bank's text in its transaction rows, an icon
 //  they pick replaces the logo Tenra found, and "Show logo" off keeps the category icon. "Forget" drops all of it.
+//  For a point of a brand (MerchantGroupStore) the name is the brand's. The category and the
+//  subcategories are the carousels alone, without headers (the owner's call, 2026-10-30).
 //
 
 import SwiftUI
@@ -32,8 +34,10 @@ struct MerchantCategoryEditView: View {
     /// What the hero showed when the sheet opened: only a change is saved.
     private let initialName: String
     private let initialIcon: IconSource?
-    /// The name Tenra makes from the bank's text (MerchantName).
+    /// The name Tenra makes from the bank's text (MerchantName), or a brand's shared words.
     private let automaticName: String
+    /// The brand the merchant is a point of: the name field names the brand.
+    private let groupId: String?
 
     init(
         merchant: MerchantCategoryMemory.Merchant,
@@ -51,8 +55,20 @@ struct MerchantCategoryEditView: View {
         _selectedSubcategoryIds = State(initialValue: Set(current == nil ? [] : merchant.subcategoryIds ?? []))
 
         let store = MerchantLogoStore.shared
-        let automatic = MerchantName.displayName(merchant.displayName)
-        let startName = store.customName(forDescription: merchant.displayName) ?? automatic
+        let groups = MerchantGroupStore.shared
+        let group = groups.group(forMerchant: merchant.displayName)
+        let automatic: String
+        let startName: String
+        if var unnamed = group {
+            let typed = unnamed.name
+            unnamed.name = nil
+            automatic = groups.displayName(of: unnamed)
+            startName = typed ?? automatic
+        } else {
+            automatic = MerchantName.displayName(merchant.displayName)
+            startName = store.customName(forDescription: merchant.displayName) ?? automatic
+        }
+        groupId = group?.id
         let startIcon = store.iconSource(forDescription: merchant.displayName)
         automaticName = automatic
         initialName = startName
@@ -146,40 +162,28 @@ struct MerchantCategoryEditView: View {
 
     // MARK: - Sections
 
+    /// The categories' carousel, as on the transaction form.
     private var categorySection: some View {
-        VStack(alignment: .leading, spacing: AppSpacing.sm) {
-            SectionHeader(String(localized: "transactionForm.category"))
-                .screenPadding()
-
-            CategorySelectorView(
-                categories: expenseCategories.map(\.name),
-                type: .expense,
-                customCategories: categoriesViewModel.customCategories,
-                selectedCategory: $selectedCategory
-            )
-        }
+        CategorySelectorView(
+            categories: expenseCategories.map(\.name),
+            type: .expense,
+            customCategories: categoriesViewModel.customCategories,
+            selectedCategory: $selectedCategory
+        )
     }
 
+    /// The chosen category's subcategories as chips; nothing until a category is chosen.
+    @ViewBuilder
     private var subcategorySection: some View {
-        VStack(alignment: .leading, spacing: AppSpacing.xs) {
-            SectionHeader(String(localized: "loan.subcategoryHeader"))
-                .screenPadding()
-
-            if selectedCategoryId != nil {
-                SubcategorySelectorView(
-                    categoriesViewModel: categoriesViewModel,
-                    categoryId: selectedCategoryId,
-                    selectedSubcategoryIds: $selectedSubcategoryIds,
-                    onSearchTap: {
-                        withAnimation(AppAnimation.snappy) { showingSubcategorySearch = true }
-                    }
-                )
-            } else {
-                Text(String(localized: "loan.subcategoryEmpty"))
-                    .font(AppTypography.bodySmall)
-                    .foregroundStyle(AppColors.textSecondary)
-                    .screenPadding()
-            }
+        if selectedCategoryId != nil {
+            SubcategorySelectorView(
+                categoriesViewModel: categoriesViewModel,
+                categoryId: selectedCategoryId,
+                selectedSubcategoryIds: $selectedSubcategoryIds,
+                onSearchTap: {
+                    withAnimation(AppAnimation.snappy) { showingSubcategorySearch = true }
+                }
+            )
         }
     }
 
@@ -210,7 +214,12 @@ struct MerchantCategoryEditView: View {
         if name != initialName {
             // Back to Tenra's own name when cleared or typed as it was.
             let typed = name.trimmingCharacters(in: .whitespacesAndNewlines)
-            store.setCustomName(typed == automaticName ? nil : typed, forMerchant: merchant.displayName)
+            let custom = typed == automaticName ? nil : typed
+            if let groupId {
+                MerchantGroupStore.shared.rename(groupId: groupId, to: custom)
+            } else {
+                store.setCustomName(custom, forMerchant: merchant.displayName)
+            }
         }
         HapticManager.success()
         dismiss()

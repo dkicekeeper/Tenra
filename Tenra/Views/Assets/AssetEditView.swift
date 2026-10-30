@@ -44,9 +44,9 @@ struct AssetEditView: View {
     @State private var loanAccountId = ""
     /// Empty: no link; a subcategory left empty takes the whole category.
     @State private var incomeCategoryId = ""
-    @State private var incomeSubcategoryId = ""
+    @State private var incomeSubcategoryIds: Set<String> = []
     @State private var expenseCategoryId = ""
-    @State private var expenseSubcategoryId = ""
+    @State private var expenseSubcategoryIds: Set<String> = []
 
     var body: some View {
         EditSheetContainer(
@@ -139,7 +139,7 @@ struct AssetEditView: View {
                             icon: "arrow.down.circle",
                             categories: linkOptions.incomeCategories,
                             categoryId: $incomeCategoryId,
-                            subcategoryId: $incomeSubcategoryId,
+                            subcategoryIds: $incomeSubcategoryIds,
                             overlaps: incomeOverlaps
                         )
                     }
@@ -150,7 +150,7 @@ struct AssetEditView: View {
                             icon: "wrench.and.screwdriver",
                             categories: linkOptions.expenseCategories,
                             categoryId: $expenseCategoryId,
-                            subcategoryId: $expenseSubcategoryId,
+                            subcategoryIds: $expenseSubcategoryIds,
                             overlaps: expenseOverlaps
                         )
                     }
@@ -170,17 +170,18 @@ struct AssetEditView: View {
                 iconSource = new.defaultIcon
             }
         }
-        // A subcategory belongs to its category: another category takes the whole of it.
+        // A subcategory belongs to its category: another category keeps only its own.
         .onChange(of: incomeCategoryId) {
-            if !linkOptions.has(subcategory: incomeSubcategoryId, in: incomeCategoryId) { incomeSubcategoryId = "" }
+            incomeSubcategoryIds = incomeSubcategoryIds.filter { linkOptions.has(subcategory: $0, in: incomeCategoryId) }
         }
         .onChange(of: expenseCategoryId) {
-            if !linkOptions.has(subcategory: expenseSubcategoryId, in: expenseCategoryId) { expenseSubcategoryId = "" }
+            expenseSubcategoryIds = expenseSubcategoryIds.filter { linkOptions.has(subcategory: $0, in: expenseCategoryId) }
         }
     }
 
-    /// A category and, when it has any, one of its subcategories; under them, what is wrong when
-    /// another asset already counts these transactions.
+    /// A category and, when it has any, its subcategories as chips, several at once ("Whole
+    /// category" while none is picked); under them, what is wrong when another asset already
+    /// counts these transactions.
     @ViewBuilder
     private func linkSection(
         header: String,
@@ -188,7 +189,7 @@ struct AssetEditView: View {
         icon: String,
         categories: [AssetLinkOptions.Item],
         categoryId: Binding<String>,
-        subcategoryId: Binding<String>,
+        subcategoryIds: Binding<Set<String>>,
         overlaps: Bool
     ) -> some View {
         VStack(alignment: .leading, spacing: AppSpacing.sm) {
@@ -200,12 +201,16 @@ struct AssetEditView: View {
                         + categories.map { (label: $0.name, value: $0.id) })
                 )
                 if let subcategories = linkOptions.subcategories[categoryId.wrappedValue], !subcategories.isEmpty {
-                    UniversalRow(
+                    let names = Dictionary(subcategories.map { ($0.id, $0.name) }, uniquingKeysWith: { first, _ in first })
+                    ChipPicker(
                         String(localized: "asset.link.subcategory"),
-                        icon: "list.bullet.indent",
-                        accessory: .picker(subcategoryId, options: [(label: String(localized: "asset.link.wholeCategory"), value: "")]
-                            + subcategories.map { (label: $0.name, value: $0.id) })
-                    )
+                        options: subcategories.map(\.id),
+                        selection: subcategoryIds,
+                        allTitle: String(localized: "asset.link.wholeCategory"),
+                        inset: AppSpacing.lg
+                    ) { id in
+                        names[id] ?? id
+                    }
                 }
             }
             if overlaps {
@@ -241,15 +246,16 @@ struct AssetEditView: View {
     }
 
     private var incomeLink: AssetCategoryLink? {
-        Self.link(incomeCategoryId, incomeSubcategoryId)
+        Self.link(incomeCategoryId, incomeSubcategoryIds)
     }
 
     private var expenseLink: AssetCategoryLink? {
-        Self.link(expenseCategoryId, expenseSubcategoryId)
+        Self.link(expenseCategoryId, expenseSubcategoryIds)
     }
 
-    private static func link(_ categoryId: String, _ subcategoryId: String) -> AssetCategoryLink? {
-        categoryId.isEmpty ? nil : AssetCategoryLink(categoryId: categoryId, subcategoryId: subcategoryId.isEmpty ? nil : subcategoryId)
+    /// The subcategories sorted: the same pick saves the same link.
+    private static func link(_ categoryId: String, _ subcategoryIds: Set<String>) -> AssetCategoryLink? {
+        categoryId.isEmpty ? nil : AssetCategoryLink(categoryId: categoryId, subcategoryIds: subcategoryIds.sorted())
     }
 
     /// Another asset counts these transactions already (AssetValuationMath.overlaps).
@@ -293,9 +299,9 @@ struct AssetEditView: View {
         depreciationPercent = min(50, max(0, Int(((asset.depreciationPerYear ?? 0) * 100).rounded())))
         loanAccountId = asset.linkedLoanAccountId ?? ""
         incomeCategoryId = asset.incomeLink?.categoryId ?? ""
-        incomeSubcategoryId = asset.incomeLink?.subcategoryId ?? ""
+        incomeSubcategoryIds = Set(asset.incomeLink?.subcategoryIds ?? [])
         expenseCategoryId = asset.expenseLink?.categoryId ?? ""
-        expenseSubcategoryId = asset.expenseLink?.subcategoryId ?? ""
+        expenseSubcategoryIds = Set(asset.expenseLink?.subcategoryIds ?? [])
     }
 
     // MARK: - Save
@@ -394,9 +400,9 @@ struct AssetLinkOptions {
 
     static let empty = AssetLinkOptions()
 
-    /// `subcategoryId` is one of the category's (an empty one, the whole category, always is).
+    /// `subcategoryId` is one of the category's.
     func has(subcategory subcategoryId: String, in categoryId: String) -> Bool {
-        subcategoryId.isEmpty || subcategories[categoryId]?.contains { $0.id == subcategoryId } == true
+        subcategories[categoryId]?.contains { $0.id == subcategoryId } == true
     }
 
     static func make(store: TransactionStore, assets: AssetStore, excluding assetId: String?) -> AssetLinkOptions {

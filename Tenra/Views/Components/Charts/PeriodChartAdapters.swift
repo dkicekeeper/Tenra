@@ -385,10 +385,28 @@ private struct ChartOptionsHost: ViewModifier {
     }
 }
 
+/// The person's chart options with the highs and lows always on: the period records, whose
+/// best and worst periods are the message. The other options stay the person's.
+private struct ChartRecordsHost: ViewModifier {
+    @AppStorage("charts.displayOptions") private var options: ChartDisplayOptions = []
+
+    func body(content: Content) -> some View {
+        content.chartDisplayOptions(Binding(
+            get: { options.union(.records) },
+            set: { options = $0 }
+        ))
+    }
+}
+
 extension View {
     /// Every chart below follows the person's chart options (`ChartOptionsHost`).
     func chartOptionsHost() -> some View {
         modifier(ChartOptionsHost())
+    }
+
+    /// The charts below mark their highs and lows whatever the options say (`ChartRecordsHost`).
+    func chartShowsRecords() -> some View {
+        modifier(ChartRecordsHost())
     }
 }
 

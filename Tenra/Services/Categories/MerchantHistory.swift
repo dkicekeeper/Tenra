@@ -3,9 +3,15 @@
 //  Tenra
 //
 //  One merchant's transactions and figures for its screen (MerchantDetailView): the
-//  selected period, this month and this year, the last 12 months for its chart, from every
-//  expense and income whose description is that merchant
-//  (`CategorySuggestionService.normalizedMerchant`), whatever recorded it.
+//  selected period, this month and this year, its months for the chart, from every expense
+//  and income whose description is that merchant (`CategorySuggestionService.normalizedMerchant`),
+//  whatever recorded it. A brand's points count together, and operations linked to the
+//  merchant by hand count whatever their description says (MerchantGroupStore.Selection).
+//
+//  The chart's months are the category screen's (CategoryMonthHistory): the same month a
+//  year ago and this month's forecast, and two years of them, so the chart opens with this
+//  month in the middle (DesignKit centres the current period of a series longer than its
+//  window).
 //
 //  Money goes through SummaryCalculator (red flag #11: `summaryContribution`, future
 //  operations left out, a rate snapshot for the base currency). Pure and
@@ -18,15 +24,7 @@ import Foundation
 nonisolated enum MerchantHistory {
 
     /// Months the screen's chart shows, this one last.
-    static let monthsShown = 12
-
-    /// What was spent at the merchant in one calendar month.
-    struct MonthTotal: Sendable, Equatable {
-        /// "yyyy-MM"
-        let key: String
-        let start: Date
-        let spent: Double
-    }
+    static let monthsShown = CategoryMonthHistory.monthsShown
 
     struct Summary: Sendable, Equatable {
         /// The merchant's expenses and income, newest first.
@@ -41,8 +39,9 @@ nonisolated enum MerchantHistory {
         var usualCategory: String?
         var spentThisMonth: Double
         var spentThisYear: Double
-        /// The last `monthsShown` calendar months, oldest first.
-        var months: [MonthTotal]
+        /// The last `monthsShown` calendar months, oldest first, with a year ago and this
+        /// month's forecast.
+        var months: [CategoryMonthHistory.Month]
 
         static let empty = Summary(
             transactions: [], spentInPeriod: 0, visitsInPeriod: 0,
@@ -62,12 +61,32 @@ nonisolated enum MerchantHistory {
         baseCurrency: String,
         now: Date = Date()
     ) -> Summary {
-        guard merchant.count >= CategorySuggestionService.minimumMerchantLength else { return .empty }
+        summary(
+            of: MerchantGroupStore.Selection(merchants: [merchant], links: [:]),
+            in: transactions,
+            periodStart: periodStart,
+            periodEnd: periodEnd,
+            baseCurrency: baseCurrency,
+            now: now
+        )
+    }
+
+    /// The figures of several points at once (a brand) and of the operations linked to them.
+    static func summary(
+        of selection: MerchantGroupStore.Selection,
+        in transactions: [Transaction],
+        periodStart: Date,
+        periodEnd: Date,
+        baseCurrency: String,
+        now: Date = Date()
+    ) -> Summary {
+        let merchants = selection.merchants.filter { $0.count >= CategorySuggestionService.minimumMerchantLength }
+        guard !merchants.isEmpty else { return .empty }
+        let counted = MerchantGroupStore.Selection(merchants: merchants, links: selection.links)
 
         let mine = transactions
             .filter { tx in
-                (tx.type == .expense || tx.type == .income)
-                    && CategorySuggestionService.normalizedMerchant(tx.description) == merchant
+                (tx.type == .expense || tx.type == .income) && counted.contains(tx)
             }
             .sorted { ($0.date, $0.createdAt, $0.id) > ($1.date, $1.createdAt, $1.id) }
 
@@ -98,23 +117,14 @@ nonisolated enum MerchantHistory {
             .key
 
         let calendar = Calendar.current
-        let spent: (Date, Date) -> Double = { start, end in
+        let months = CategoryMonthHistory.months(of: mine, income: false, baseCurrency: baseCurrency, now: now)
+        let year = calendar.dateInterval(of: .year, for: now)
+        let spentThisYear = year.map { interval in
             SummaryCalculator.compute(
-                transactions: mine, filterStart: start, filterEnd: end,
+                transactions: mine, filterStart: interval.start, filterEnd: interval.end,
                 baseCurrency: baseCurrency, now: now
             ).totalExpenses
-        }
-        let monthStart = calendar.dateInterval(of: .month, for: now)?.start ?? today
-        var months: [MonthTotal] = []
-        for offset in stride(from: monthsShown - 1, through: 0, by: -1) {
-            guard let start = calendar.date(byAdding: .month, value: -offset, to: monthStart),
-                  let end = calendar.date(byAdding: .month, value: 1, to: start) else { continue }
-            let parts = calendar.dateComponents([.year, .month], from: start)
-            let key = String(format: "%04d-%02d", parts.year ?? 0, parts.month ?? 0)
-            months.append(MonthTotal(key: key, start: start, spent: spent(start, end)))
-        }
-        let year = calendar.dateInterval(of: .year, for: now)
-        let spentThisYear = year.map { spent($0.start, $0.end) } ?? 0
+        } ?? 0
 
         return Summary(
             transactions: mine,
@@ -124,7 +134,7 @@ nonisolated enum MerchantHistory {
             visitsAllTime: visitsAllTime,
             lastVisit: lastVisit,
             usualCategory: usualCategory,
-            spentThisMonth: months.last?.spent ?? 0,
+            spentThisMonth: months.last?.total ?? 0,
             spentThisYear: spentThisYear,
             months: months
         )

@@ -49,6 +49,13 @@ struct LinkPaymentsView: View {
             defaultAmountMode: .all,
             autoSelectOnInitialLoad: false
         )
+        /// Operations entered by hand, linked to a merchant (MerchantDetailView): a merchant
+        /// has no amount to match, and the person picks each one.
+        static let merchant = Options(
+            showAmountModeFilter: false,
+            defaultAmountMode: .all,
+            autoSelectOnInitialLoad: false
+        )
     }
 
     // MARK: - Inputs

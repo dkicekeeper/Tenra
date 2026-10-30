@@ -51,16 +51,18 @@ struct MerchantHistoryTests {
         )
     }
 
-    @Test("This month, this year and the last 12 months, future operations left out")
+    @Test("This month, this year and the last 24 months, future operations left out")
     func months() {
         let summary = summary()
         #expect(summary.spentThisMonth == 10_000)
         #expect(summary.spentThisYear == 20_000)
         #expect(summary.months.count == MerchantHistory.monthsShown)
-        #expect(summary.months.first?.key == "2025-11")
+        #expect(MerchantHistory.monthsShown == 24)
+        #expect(summary.months.first?.key == "2024-11")
         #expect(summary.months.suffix(2).map(\.key) == ["2026-09", "2026-10"])
-        #expect(summary.months.suffix(2).map(\.spent) == [10_000, 10_000])
-        #expect(summary.months.dropLast(2).allSatisfy { $0.spent == 0 })
+        #expect(summary.months.suffix(2).map(\.total) == [10_000, 10_000])
+        #expect(summary.months.dropLast(2).allSatisfy { $0.total == 0 })
+        #expect(summary.months.last?.isCurrent == true)
     }
 
     @Test("Every description of the merchant counts; other merchants and transfers don't")
@@ -82,6 +84,46 @@ struct MerchantHistoryTests {
         let result = summary()
         #expect(result.lastVisit == "2026-10-20")
         #expect(result.usualCategory == "Продукты")
+    }
+
+    @Test("A brand counts its points together; a point alone counts only itself")
+    func brand() {
+        let points = history + [
+            tx("t8", "2026-10-10", 3_000, "ZARA MEGA"),
+            tx("t9", "2026-10-11", 5_000, "ZARA DOSTYK PLAZA")
+        ]
+        let brand = MerchantGroupStore.Selection(merchants: ["zara mega", "zara dostyk plaza"], links: [:])
+        let whole = MerchantHistory.summary(
+            of: brand, in: points, periodStart: october.0, periodEnd: october.1, baseCurrency: "KZT", now: now
+        )
+        #expect(whole.transactions.map(\.id) == ["t9", "t8"])
+        #expect(whole.spentInPeriod == 8_000)
+        let mega = MerchantHistory.summary(
+            of: MerchantGroupStore.Selection(merchants: ["zara mega"], links: [:]),
+            in: points, periodStart: october.0, periodEnd: october.1, baseCurrency: "KZT", now: now
+        )
+        #expect(mega.transactions.map(\.id) == ["t8"])
+        #expect(mega.spentInPeriod == 3_000)
+    }
+
+    @Test("An operation linked by hand counts as the merchant's, whatever its description")
+    func linked() {
+        let points = history + [tx("t10", "2026-10-12", 2_500, "Молоко")]
+        let selection = MerchantGroupStore.Selection(merchants: ["greenmart"], links: ["t10": "greenmart", "t1": "corner bakery"])
+        let result = MerchantHistory.summary(
+            of: selection, in: points, periodStart: october.0, periodEnd: october.1, baseCurrency: "KZT", now: now
+        )
+        // t1 is linked to another merchant: no longer GreenMart's.
+        #expect(result.transactions.map(\.id) == ["t5", "t4", "t2", "t10", "t3"])
+        #expect(result.spentInPeriod == 8_500)
+    }
+
+    @Test("The words a brand's points start with name it")
+    func sharedName() {
+        #expect(MerchantGroupStore.sharedLeadingWords(of: ["ZARA MEGA ALMATY", "ZARA DOSTYK PLAZA"]) == "ZARA")
+        #expect(MerchantGroupStore.sharedLeadingWords(of: ["Coffee Boom 12", "COFFEE BOOM ESENTAI"]) == "Coffee Boom")
+        #expect(MerchantGroupStore.sharedLeadingWords(of: ["MAGNUM", "SMALL"]) == nil)
+        #expect(MerchantGroupStore.sharedLeadingWords(of: ["ZARA"]) == nil)
     }
 
     @Test("A merchant too short to name anything has no history")

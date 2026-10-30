@@ -270,13 +270,14 @@ struct TransactionEditView: View {
                 }
             }
             // The merchant's screen: every payment there. For a remembered Wallet merchant, or
-            // one with a logo or a given name (a brand, not a person paid by transfer).
+            // one with a logo or a given name (a brand, not a person paid by transfer), a point
+            // of a brand, or the merchant an operation entered by hand was linked to.
             if coordinator.transaction.type == .expense || coordinator.transaction.type == .income,
-               hasMerchantScreen(coordinator.transaction.description) {
+               let screenMerchant = merchantScreen(of: coordinator.transaction) {
                 ToolbarItem(placement: .topBarTrailing) {
                     NavigationLink {
                         MerchantDetailView(
-                            merchant: coordinator.transaction.description,
+                            merchant: screenMerchant,
                             transactionsViewModel: coordinator.transactionsViewModel,
                             categoriesViewModel: coordinator.categoriesViewModel,
                             accountsViewModel: coordinator.accountsViewModel
@@ -300,13 +301,23 @@ struct TransactionEditView: View {
         }
     }
 
-    /// A merchant worth a screen: remembered by the Wallet automation, or one with a logo or
-    /// a name the user gave it. A transfer to a person has neither.
+    /// The merchant whose screen the transaction opens: the one it was linked to by hand, else
+    /// its description when that is a merchant worth a screen.
+    private func merchantScreen(of transaction: Transaction) -> String? {
+        if let linked = MerchantGroupStore.shared.linkedMerchant(forTransactionId: transaction.id) {
+            return linked
+        }
+        return hasMerchantScreen(transaction.description) ? transaction.description : nil
+    }
+
+    /// A merchant worth a screen: remembered by the Wallet automation, one with a logo or
+    /// a name the user gave it, or a point of a brand. A transfer to a person has none of these.
     private func hasMerchantScreen(_ description: String) -> Bool {
         let logos = MerchantLogoStore.shared
         return MerchantCategoryMemory.shared.merchant(forDescription: description) != nil
             || logos.iconSource(forDescription: description) != nil
             || logos.customName(forDescription: description) != nil
+            || MerchantGroupStore.shared.group(forMerchant: description) != nil
     }
 
     private var recurringMenuButton: some View {

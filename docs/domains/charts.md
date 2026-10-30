@@ -49,15 +49,19 @@ Call sites:
   net flow.
 - `InsightDetailView.chartSection` (`.periodTrend`): `ChartSwitcher` with the series matching the
   insight, default style `.line`.
-- `MerchantDetailView.monthlyChart` and `CategoryDetailView.monthlyChart`: the last 12 months as a
-  `BarChart` of `ChartValuePoint`s (`PeriodAxisLabel.month`), this month as not over. The category's
-  (`CategoryMonthHistory`, off the main actor, 24 months for the year ago) adds the same month a year
-  ago, this month's forecast for an expense category and a monthly budget as a line the bars past it
-  turn orange at.
+- `MerchantDetailView.monthlyChart` and `CategoryDetailView.monthlyChart`: the last 24 months as a
+  `BarChart` of `ChartValuePoint`s (`PeriodAxisLabel.month`), this month as not over; twice the
+  12-month window, so the chart opens with this month in the middle (a series that fits the window
+  is shown whole, ending at the screen's edge). Both from `CategoryMonthHistory` (off the main
+  actor, 36 months for the year ago): the same month a year ago, this month's forecast for
+  expenses; the category's adds a monthly budget as a line the bars past it turn orange at.
+- `InsightDetailView` for the period records (`.bestMonth`): `ChartSwitcher(series: .cashFlow,
+  initialStyle: .bar)` over every period, highs and lows always on (`.chartShowsRecords()`, the
+  person's other options kept), in place of a hero of the whole history, whose axis piled up.
 - `AssistantReplyView`'s timeline: this month or week as not over.
-- `SpendingByDaySection` ("By day"): `CalendarHeatmap` of the window's days and a `BarChart` of the
-  weekdays with the average line, opening on the busiest (`selection:`), which picks the categories
-  listed under it.
+- `SpendingByDaySection` ("By day"): `CalendarHeatmap` of the window's days (52 weeks) and a
+  `BarChart` of the weekdays with the average line, opening on the busiest (`selection:`), which
+  picks the categories listed under it.
 
 Scrollable charts bleed to the screen edges: no horizontal padding on the chart's parent, padding goes on
 the neighbouring header and list.

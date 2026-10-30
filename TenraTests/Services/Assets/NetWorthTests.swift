@@ -103,6 +103,26 @@ struct NetWorthTests {
         #expect(!AssetValuationMath.overlaps(whole, AssetCategoryLink(categoryId: "other")))
     }
 
+    @Test func severalSubcategoriesOverlapOnAnyOneInCommon() {
+        let taxAndRepairs = AssetCategoryLink(categoryId: "home", subcategoryIds: ["tax", "repairs"])
+        let repairs = AssetCategoryLink(categoryId: "home", subcategoryId: "repairs")
+        let fees = AssetCategoryLink(categoryId: "home", subcategoryIds: ["fees", "insurance"])
+        #expect(AssetValuationMath.overlaps(taxAndRepairs, repairs))
+        #expect(!AssetValuationMath.overlaps(taxAndRepairs, fees))
+        #expect(AssetValuationMath.overlaps(fees, AssetCategoryLink(categoryId: "home")))
+    }
+
+    @Test func aLinkSavedWithOneSubcategoryReadsAsAListOfOne() throws {
+        let old = Data(#"{"categoryId":"rent","subcategoryId":"flat"}"#.utf8)
+        let decoded = try JSONDecoder().decode(AssetCategoryLink.self, from: old)
+        #expect(decoded == AssetCategoryLink(categoryId: "rent", subcategoryIds: ["flat"]))
+        let whole = try JSONDecoder().decode(AssetCategoryLink.self, from: Data(#"{"categoryId":"rent"}"#.utf8))
+        #expect(whole.isWholeCategory)
+        let several = AssetCategoryLink(categoryId: "home", subcategoryIds: ["repairs", "tax"])
+        let roundTrip = try JSONDecoder().decode(AssetCategoryLink.self, from: JSONEncoder().encode(several))
+        #expect(roundTrip == several)
+    }
+
     // MARK: - Net worth
 
     private static func loan(

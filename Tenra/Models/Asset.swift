@@ -67,12 +67,51 @@ nonisolated struct AssetValuation: Codable, Equatable, Hashable, Identifiable, S
     }
 }
 
-/// A category (and optionally one of its subcategories) whose transactions belong to an asset:
+/// A category (and optionally some of its subcategories) whose transactions belong to an asset:
 /// its rent, its upkeep. By id: categories are renamed. Read from phase 2 of the plan.
 nonisolated struct AssetCategoryLink: Codable, Equatable, Hashable, Sendable {
     var categoryId: String
-    /// So two flats under one "Rent" category are not counted twice.
-    var subcategoryId: String?
+    /// The subcategories whose transactions count, any of them; empty: the whole category. So
+    /// two flats under one "Rent" category are not counted twice, and one flat's upkeep can be
+    /// its tax and its repairs (several since 2026-10-30, the owner's request).
+    var subcategoryIds: [String]
+
+    init(categoryId: String, subcategoryIds: [String] = []) {
+        self.categoryId = categoryId
+        self.subcategoryIds = subcategoryIds
+    }
+
+    /// One subcategory or the whole category.
+    init(categoryId: String, subcategoryId: String?) {
+        self.init(categoryId: categoryId, subcategoryIds: subcategoryId.map { [$0] } ?? [])
+    }
+
+    /// The whole category: no subcategory picked.
+    var isWholeCategory: Bool { subcategoryIds.isEmpty }
+
+    private enum CodingKeys: String, CodingKey {
+        case categoryId, subcategoryIds
+        /// One subcategory, as links were saved before several could be picked.
+        case subcategoryId
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        categoryId = try container.decode(String.self, forKey: .categoryId)
+        if let ids = try container.decodeIfPresent([String].self, forKey: .subcategoryIds) {
+            subcategoryIds = ids
+        } else {
+            subcategoryIds = try container.decodeIfPresent(String.self, forKey: .subcategoryId).map { [$0] } ?? []
+        }
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(categoryId, forKey: .categoryId)
+        try container.encode(subcategoryIds, forKey: .subcategoryIds)
+        // An older version of the app reads the first one rather than the whole category.
+        try container.encodeIfPresent(subcategoryIds.first, forKey: .subcategoryId)
+    }
 }
 
 nonisolated struct Asset: Equatable, Hashable, Identifiable {

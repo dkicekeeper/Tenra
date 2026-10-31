@@ -1868,6 +1868,7 @@
 "merchant.merge.confirm" = "Біріктіру";
 "merchant.merge.suggested" = "Аты бірдей";
 "merchant.merge.others" = "Басқа сатушылар";
+"merchant.merge.picked" = "Таңдалғандар";
 "merchant.merge.footer" = "Нүктелер бір сатушы болады: оның экранында барлық төлемдері көрінеді, ал атауының астындағы чиптер әр нүктені бөлек көрсетеді.";
 "merchant.merge.operations" = "Төлемдер: %d";
 "merchant.merge.emptyTitle" = "Басқа сатушылар жоқ";

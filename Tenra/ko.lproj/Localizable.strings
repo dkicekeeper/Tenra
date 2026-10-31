@@ -1868,6 +1868,7 @@
 "merchant.merge.confirm" = "합치기";
 "merchant.merge.suggested" = "같은 이름";
 "merchant.merge.others" = "다른 가맹점";
+"merchant.merge.picked" = "선택됨";
 "merchant.merge.footer" = "지점들이 하나의 가맹점이 됩니다. 화면에 모든 결제가 표시되고, 이름 아래의 칩으로 지점별로 볼 수 있습니다.";
 "merchant.merge.operations" = "결제 %d건";
 "merchant.merge.emptyTitle" = "다른 가맹점이 없습니다";

@@ -1868,6 +1868,7 @@
 "merchant.merge.confirm" = "Unir";
 "merchant.merge.suggested" = "Mismo nombre";
 "merchant.merge.others" = "Otros comercios";
+"merchant.merge.picked" = "Seleccionados";
 "merchant.merge.footer" = "Los puntos de venta pasan a ser un comercio: su pantalla muestra todos sus pagos y los chips bajo el nombre muestran cada punto por separado.";
 "merchant.merge.operations" = "Pagos: %d";
 "merchant.merge.emptyTitle" = "No hay otros comercios";

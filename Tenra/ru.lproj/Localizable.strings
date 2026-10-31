@@ -1868,6 +1868,7 @@
 "merchant.merge.confirm" = "Объединить";
 "merchant.merge.suggested" = "С тем же названием";
 "merchant.merge.others" = "Другие продавцы";
+"merchant.merge.picked" = "Выбрано";
 "merchant.merge.footer" = "Точки станут одним продавцом: в его экране будут все их платежи, а чипсы под названием покажут каждую точку отдельно.";
 "merchant.merge.operations" = "Платежей: %d";
 "merchant.merge.emptyTitle" = "Других продавцов нет";

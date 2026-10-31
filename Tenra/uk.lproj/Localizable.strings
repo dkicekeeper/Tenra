@@ -1869,6 +1869,13 @@
 "merchant.merge.suggested" = "З тією ж назвою";
 "merchant.merge.others" = "Інші продавці";
 "merchant.merge.picked" = "Вибрано";
+"transaction.merchant" = "Продавець";
+"transaction.merchant.none" = "Не вибрано";
+"merchant.picker.add" = "Додати «%@»";
+"merchant.picker.clear" = "Без продавця";
+"merchant.picker.footer" = "Платіж рахуватиметься в продавця: на його екрані та в аналітиці. Опис не змінюється.";
+"merchant.picker.emptyTitle" = "Продавців поки немає";
+"merchant.picker.emptyMessage" = "Введіть назву продавця в пошуку, щоб додати його.";
 "merchant.merge.footer" = "Точки стануть одним продавцем: на його екрані будуть усі їхні платежі, а чипси під назвою покажуть кожну точку окремо.";
 "merchant.merge.operations" = "Платежів: %d";
 "merchant.merge.emptyTitle" = "Інших продавців немає";

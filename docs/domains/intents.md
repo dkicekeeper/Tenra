@@ -367,7 +367,23 @@ the main actor through `SummaryCalculator`, keyed on the points and links counte
 - "Link payments" (`LinkPaymentsView`, `.merchant` options: no amount filter, nothing picked)
   links any expense or income the screen does not count to the merchant (the point picked, else
   the screen's): it counts as that merchant's whatever its description says
-  (`Selection.merchant(of:)`), and a link glyph on its row unlinks it.
+  (`Selection.merchant(of:)`), and a link glyph on its row unlinks it. Its category and
+  subcategory filters and its search read the subcategories linked to a payment (a taxi ride
+  entered by hand under Transport → Taxi is found by "Taxi").
+- **Merchant in the transaction forms** (the owner's request, 2026-10-31: a payment entered by hand
+  had a merchant only through its description): `TransactionEditView` and `TransactionAddModal`
+  have a "Merchant" row (`TransactionMerchantRow`) for an expense or income, above the
+  description. It shows the payment's link, else the merchant its description names when that is
+  one worth a screen (`TransactionMerchant.describedMerchant`: remembered, a logo, a given name, a
+  brand's point), else "None", and opens `MerchantPickerView`: the history's merchants
+  (`MerchantDirectory.entries` off the main actor, plus the names linked by hand), the ones worth a
+  screen first, then by payments; the system search over the bank's text, the given name and the
+  brand's; a name nobody has yet is added as typed; "No merchant" removes a link. The form saves a
+  link (`TransactionMerchant.setLink`), only when the row changed, and none when the description
+  names that merchant itself; the description is never rewritten (the owner asked whether to
+  rename it: it stays a free note, the bank's text for an import). An added series links the
+  occurrences it creates, not those generated later. The storefront button opens the same merchant
+  (`TransactionMerchant.merchant(of:)`).
 - Insights' top merchant counts a brand as one merchant under its name and a linked payment as its
   merchant's (`MerchantBrands` in `DataSnapshot`; a change recomputes Insights through
   `didChange`, wired by `AppCoordinator`).

@@ -23,6 +23,8 @@ struct EditTransactionFormData {
     var selectedDate: Date
     var selectedCurrency: String
     var recurring: RecurringOption
+    /// The merchant the payment is linked to by hand (`TransactionMerchantRow`); nil: none.
+    var linkedMerchant: String?
 
     // UI-only state
     var showingSubcategorySearch: Bool = false
@@ -60,6 +62,9 @@ final class TransactionEditCoordinator {
     // MARK: - Original Transaction
 
     let transaction: Transaction
+
+    /// The link the transaction had when the form opened: only a changed one is saved.
+    @ObservationIgnored private let initialLinkedMerchant: String?
 
     // MARK: - State
 
@@ -165,6 +170,8 @@ final class TransactionEditCoordinator {
         // Load linked subcategories
         let linkedSubcategories = categoriesViewModel.getSubcategoriesForTransaction(transaction.id)
         let linkedSubcategoryIds = Set(linkedSubcategories.map { $0.id })
+        let linkedMerchant = MerchantGroupStore.shared.linkedMerchant(forTransactionId: transaction.id)
+        self.initialLinkedMerchant = linkedMerchant
 
         self.formData = EditTransactionFormData(
             amountText: AmountInputFormatting.bindingString(for: transaction.amount),
@@ -175,7 +182,8 @@ final class TransactionEditCoordinator {
             selectedTargetAccountId: transaction.targetAccountId,
             selectedDate: parsedDate,
             selectedCurrency: transaction.currency,
-            recurring: initialRecurring
+            recurring: initialRecurring,
+            linkedMerchant: linkedMerchant
         )
     }
 
@@ -339,6 +347,15 @@ final class TransactionEditCoordinator {
                 transactionId: transaction.id,
                 subcategoryIds: Array(formData.selectedSubcategoryIds)
             )
+
+            // The merchant picked in the form (the description stays as typed): a link, or none
+            // when the description names that merchant itself.
+            if formData.linkedMerchant != initialLinkedMerchant {
+                TransactionMerchant.setLink(
+                    formData.linkedMerchant.flatMap { TransactionMerchant.link(for: $0, description: updatedTransaction.description) },
+                    for: [transaction.id]
+                )
+            }
 
             // An Apple Pay payment the Wallet action recorded: what the save changed (and
             // a guessed category not reviewed yet) becomes the choice for its merchant and

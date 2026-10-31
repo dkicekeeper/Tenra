@@ -1869,6 +1869,13 @@
 "merchant.merge.suggested" = "Mesmo nome";
 "merchant.merge.others" = "Outros estabelecimentos";
 "merchant.merge.picked" = "Selecionados";
+"transaction.merchant" = "Estabelecimento";
+"transaction.merchant.none" = "Nenhum";
+"merchant.picker.add" = "Adicionar “%@”";
+"merchant.picker.clear" = "Sem estabelecimento";
+"merchant.picker.footer" = "O pagamento conta para o estabelecimento, na tela dele e nas análises. A descrição continua como está.";
+"merchant.picker.emptyTitle" = "Ainda não há estabelecimentos";
+"merchant.picker.emptyMessage" = "Digite o nome de um estabelecimento na busca para adicioná-lo.";
 "merchant.merge.footer" = "As unidades viram um só estabelecimento: a tela dele mostra todos os pagamentos, e os chips sob o nome mostram cada unidade separadamente.";
 "merchant.merge.operations" = "Pagamentos: %d";
 "merchant.merge.emptyTitle" = "Nenhum outro estabelecimento";

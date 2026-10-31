@@ -155,7 +155,7 @@ Both return `Transaction?` for the caller to persist, nil for a future date: a p
 
 ## Link-Payments UI
 
-Existing transactions are linked to a loan, a subscription or a deposit through one shared view, `LinkPaymentsView` (`Views/Components/LinkPayments/LinkPaymentsView.swift`): filters, sheets, search, caches, background scan, haptics. Wrappers: `LoanLinkPaymentsView` (`Options.loan`), `SubscriptionLinkPaymentsView` (`Options.subscription`), `DepositLinkInterestView` (`Options.deposit`).
+Existing transactions are linked to a loan, a subscription, a deposit or a merchant through one shared view, `LinkPaymentsView` (`Views/Components/LinkPayments/LinkPaymentsView.swift`): filters, sheets, search, caches, background scan, haptics. Wrappers: `LoanLinkPaymentsView` (`Options.loan`), `SubscriptionLinkPaymentsView` (`Options.subscription`), `DepositLinkInterestView` (`Options.deposit`), the merchant screen's "Link payments" (`Options.merchant`). A transaction's subcategories for the subcategory filter and the search are the linked ones (`TransactionStore.subcategoryIdsByTransactionId`) plus the legacy `Transaction.subcategory`: the legacy field alone is empty for anything tagged in a form or by the import.
 
 ⚠️ **Don't duplicate the state machine**: wrap `LinkPaymentsView` with a `findCandidates` and a `performLink` `@Sendable` closure.
 

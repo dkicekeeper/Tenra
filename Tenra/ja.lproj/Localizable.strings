@@ -1869,6 +1869,13 @@
 "merchant.merge.suggested" = "同じ名前";
 "merchant.merge.others" = "ほかの店舗";
 "merchant.merge.picked" = "選択済み";
+"transaction.merchant" = "店舗";
+"transaction.merchant.none" = "なし";
+"merchant.picker.add" = "「%@」を追加";
+"merchant.picker.clear" = "店舗なし";
+"merchant.picker.footer" = "この支払いは店舗の画面と分析でその店舗に数えられます。説明はそのままです。";
+"merchant.picker.emptyTitle" = "店舗はまだありません";
+"merchant.picker.emptyMessage" = "検索に店舗名を入力すると追加できます。";
 "merchant.merge.footer" = "店舗がひとつにまとまります。画面にすべての支払いが表示され、名前の下のチップで店舗ごとに見られます。";
 "merchant.merge.operations" = "支払い：%d件";
 "merchant.merge.emptyTitle" = "ほかの店舗はありません";

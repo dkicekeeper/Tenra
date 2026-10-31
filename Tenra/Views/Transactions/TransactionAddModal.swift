@@ -203,6 +203,14 @@ struct TransactionAddModal: View {
                     )
                 }
 
+                // A payment entered by hand gets its merchant without a description.
+                if coordinator.formData.type == .expense || coordinator.formData.type == .income {
+                    TransactionMerchantRow(
+                        linkedMerchant: $bindableCoordinator.formData.linkedMerchant,
+                        description: coordinator.formData.description
+                    )
+                }
+
                 FormTextField(
                     text: $bindableCoordinator.formData.description,
                     placeholder: String(localized: "quickAdd.descriptionPlaceholder"),

@@ -1869,6 +1869,13 @@
 "merchant.merge.suggested" = "Gleicher Name";
 "merchant.merge.others" = "Andere Händler";
 "merchant.merge.picked" = "Ausgewählt";
+"transaction.merchant" = "Händler";
+"transaction.merchant.none" = "Keiner";
+"merchant.picker.add" = "„%@“ hinzufügen";
+"merchant.picker.clear" = "Kein Händler";
+"merchant.picker.footer" = "Die Zahlung zählt beim Händler, auf seinem Bildschirm und in den Analysen. Die Beschreibung bleibt, wie sie ist.";
+"merchant.picker.emptyTitle" = "Noch keine Händler";
+"merchant.picker.emptyMessage" = "Gib den Namen eines Händlers in der Suche ein, um ihn hinzuzufügen.";
 "merchant.merge.footer" = "Die Filialen werden ein Händler: Sein Bildschirm zeigt alle ihre Zahlungen, und die Chips unter dem Namen zeigen jede Filiale einzeln.";
 "merchant.merge.operations" = "Zahlungen: %d";
 "merchant.merge.emptyTitle" = "Keine anderen Händler";

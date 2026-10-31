@@ -1868,6 +1868,7 @@
 "merchant.merge.confirm" = "Juntar";
 "merchant.merge.suggested" = "Mesmo nome";
 "merchant.merge.others" = "Outros estabelecimentos";
+"merchant.merge.picked" = "Selecionados";
 "merchant.merge.footer" = "As unidades viram um só estabelecimento: a tela dele mostra todos os pagamentos, e os chips sob o nome mostram cada unidade separadamente.";
 "merchant.merge.operations" = "Pagamentos: %d";
 "merchant.merge.emptyTitle" = "Nenhum outro estabelecimento";

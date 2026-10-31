@@ -1868,6 +1868,7 @@
 "merchant.merge.confirm" = "まとめる";
 "merchant.merge.suggested" = "同じ名前";
 "merchant.merge.others" = "ほかの店舗";
+"merchant.merge.picked" = "選択済み";
 "merchant.merge.footer" = "店舗がひとつにまとまります。画面にすべての支払いが表示され、名前の下のチップで店舗ごとに見られます。";
 "merchant.merge.operations" = "支払い：%d件";
 "merchant.merge.emptyTitle" = "ほかの店舗はありません";

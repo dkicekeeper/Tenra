@@ -1868,6 +1868,7 @@
 "merchant.merge.confirm" = "Regrouper";
 "merchant.merge.suggested" = "Même nom";
 "merchant.merge.others" = "Autres commerçants";
+"merchant.merge.picked" = "Sélectionnés";
 "merchant.merge.footer" = "Les points de vente deviennent un seul commerçant : son écran montre tous leurs paiements, et les puces sous son nom montrent chaque point à part.";
 "merchant.merge.operations" = "Paiements : %d";
 "merchant.merge.emptyTitle" = "Aucun autre commerçant";

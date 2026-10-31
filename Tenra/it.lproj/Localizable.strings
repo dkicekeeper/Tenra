@@ -1868,6 +1868,7 @@
 "merchant.merge.confirm" = "Unisci";
 "merchant.merge.suggested" = "Stesso nome";
 "merchant.merge.others" = "Altri esercenti";
+"merchant.merge.picked" = "Selezionati";
 "merchant.merge.footer" = "I punti vendita diventano un solo esercente: la sua schermata mostra tutti i loro pagamenti e i chip sotto il nome mostrano ogni punto a parte.";
 "merchant.merge.operations" = "Pagamenti: %d";
 "merchant.merge.emptyTitle" = "Nessun altro esercente";

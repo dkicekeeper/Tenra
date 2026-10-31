@@ -1868,6 +1868,7 @@
 "merchant.merge.confirm" = "Zusammenführen";
 "merchant.merge.suggested" = "Gleicher Name";
 "merchant.merge.others" = "Andere Händler";
+"merchant.merge.picked" = "Ausgewählt";
 "merchant.merge.footer" = "Die Filialen werden ein Händler: Sein Bildschirm zeigt alle ihre Zahlungen, und die Chips unter dem Namen zeigen jede Filiale einzeln.";
 "merchant.merge.operations" = "Zahlungen: %d";
 "merchant.merge.emptyTitle" = "Keine anderen Händler";

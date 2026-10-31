@@ -53,7 +53,18 @@ The owner's list from build 62, each point and what changed:
 14. An asset's rent and upkeep take several subcategories (`AssetCategoryLink.subcategoryIds`).
 15. On the assets' coloured hero the selected value is in the text's colour (DesignKit 8.4.0).
 
-Device check on build 63: the points above on the phone, in light and dark.
+Device check on build 63: the points above on the phone, in light and dark. The owner's
+second look (2026-10-31) found four more, fixed for the next build:
+
+1. The keyboard hides on a tap off a text field, everywhere (`KeyboardDismissal`,
+   [design-system.md](design-system.md) §5 "The keyboard").
+2. The ruler option: 8.4.0 drew the selection over the plot at the ruler, so it rode with the
+   ruler, off the line and the bar; DesignKit 8.4.1 selects the period on the chart once the
+   scroll rests.
+3. "Combine points" finds a merchant by the name the person gave it and by its brand's name, and
+   keeps the ones picked on top.
+4. Its rows are the Wallet merchants list's (`UniversalRow`, `SelectionIndicator`): the form
+   row with a hint under the title was too tall.
 
 ## Device check
 

@@ -473,6 +473,18 @@ result). Used in `TransactionAddModal`, `TransactionEditView`, `AccountActionVie
   `externalFocus: $descriptionFocused` to the field, shows the keypad only
   `if !descriptionFocused`, and sets it to `false` from `AmountInputView(onCalculatorTap:)`.
 
+### The keyboard
+
+A tap off a text field hides the keyboard on every screen and sheet (`KeyboardDismissal`,
+`Utils/`, installed on each window by `AppDelegate`): one window tap recognizer that never takes
+the tap from the view under it. It leaves the keyboard up when the tap lands in a text field or
+text view, when it moves the focus to another field (it decides 0.1 s later, after the tapped
+view's own action), and in a zone marked `.keepsKeyboardOnTap()`: `AmountInputView` (its amount
+is a button over a hidden field) and Ten's composer (`AssistantComposerBar`: send, attach, the
+microphone). A new control that focuses a field itself, or sends what a field holds, gets the
+modifier. Nothing to add per screen otherwise; `scrollDismissesKeyboard` stays where a list
+scrolls under a field.
+
 ---
 
 ## 6. Dates, categories, transaction colours

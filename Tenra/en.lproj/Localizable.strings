@@ -1868,6 +1868,7 @@
 "merchant.merge.confirm" = "Combine";
 "merchant.merge.suggested" = "Same name";
 "merchant.merge.others" = "Other merchants";
+"merchant.merge.picked" = "Selected";
 "merchant.merge.footer" = "The points become one merchant: its screen shows all their payments, and the chips under its name show each point on its own.";
 "merchant.merge.operations" = "Payments: %d";
 "merchant.merge.emptyTitle" = "No other merchants";

@@ -46,6 +46,8 @@ struct AmountInputView: View {
         )
         .quickAccessCurrencySheet(isPresented: $showingCustomize, appSettings: appSettings,
                                   accountCurrencies: accountCurrencies)
+        // The amount is a button that focuses its hidden field: a tap on it keeps the keyboard.
+        .keepsKeyboardOnTap()
     }
 }
 

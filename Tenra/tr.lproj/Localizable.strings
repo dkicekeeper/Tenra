@@ -1868,6 +1868,7 @@
 "merchant.merge.confirm" = "Birleştir";
 "merchant.merge.suggested" = "Aynı ad";
 "merchant.merge.others" = "Diğer işyerleri";
+"merchant.merge.picked" = "Seçilenler";
 "merchant.merge.footer" = "Şubeler tek bir işyeri olur: ekranında tüm ödemeleri görünür, adın altındaki çipler her şubeyi ayrı gösterir.";
 "merchant.merge.operations" = "Ödeme: %d";
 "merchant.merge.emptyTitle" = "Başka işyeri yok";

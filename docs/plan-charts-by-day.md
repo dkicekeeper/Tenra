@@ -6,7 +6,9 @@ by default (#108). TestFlight: 1.8 build 62 (2026-10-30) has all of it; the owne
 phone found the 15 points of "After the device check" below, fixed in #113 with DesignKit 8.4.0
 (dkicekeeper/DesignKit#95), both in `main` since 2026-10-30, in 1.8 build 63 (2026-10-30). The
 owner's second look on build 63 found four more, fixed in #115 with DesignKit 8.4.1
-(dkicekeeper/DesignKit#96), both in `main` since 2026-10-31; 1.8 build 64 (2026-10-31) has them
+(dkicekeeper/DesignKit#96), both in `main` since 2026-10-31, in 1.8 build 64 (2026-10-31). The
+third look on build 64 found three more, fixed in #117 with DesignKit 8.4.2
+(dkicekeeper/DesignKit#97), both in `main` since 2026-10-31; 1.8 build 65 (2026-10-31) has them
 and waits on the owner's check on the phone. The What's New below
 goes into 1.8's `release-notes.md` once 1.7.1's notes move to the archive; then this file moves to
 `archive/plans/`.
@@ -68,7 +70,8 @@ second look (2026-10-31) found four more, fixed in #115 and DesignKit 8.4.1 (bui
 4. Its rows are the Wallet merchants list's (`UniversalRow`, `SelectionIndicator`): the form
    row with a hint under the title was too tall.
 
-Device check on build 64: the owner's third look (2026-10-31) found three more:
+Device check on build 64: the owner's third look (2026-10-31) found three more, fixed in #117
+and DesignKit 8.4.2 (build 65):
 
 1. The ruler option on a bar chart selected the month before the one under the ruler after a
    scroll. A probe on the simulator showed the snap centres every bar under the ruler; at rest

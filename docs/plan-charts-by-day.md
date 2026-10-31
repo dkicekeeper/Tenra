@@ -1,10 +1,12 @@
 # Charts on DesignKit 8.3.0 and the "By day" insight
 
-Status (2026-10-30): in `main`, on DesignKit 8.3 (dkicekeeper/DesignKit#91), version 1.8,
+Status (2026-10-31): in `main`, on DesignKit 8.3 (dkicekeeper/DesignKit#91), version 1.8,
 together with the assets (PR #105, #109, #110), "на сегодня" in Russian (#107) and the options off
 by default (#108). TestFlight: 1.8 build 62 (2026-10-30) has all of it; the owner's check on the
 phone found the 15 points of "After the device check" below, fixed in #113 with DesignKit 8.4.0
-(dkicekeeper/DesignKit#95), both in `main` since 2026-10-30; 1.8 build 63 (2026-10-30) has them
+(dkicekeeper/DesignKit#95), both in `main` since 2026-10-30, in 1.8 build 63 (2026-10-30). The
+owner's second look on build 63 found four more, fixed in #115 with DesignKit 8.4.1
+(dkicekeeper/DesignKit#96), both in `main` since 2026-10-31; 1.8 build 64 (2026-10-31) has them
 and waits on the owner's check on the phone. The What's New below
 goes into 1.8's `release-notes.md` once 1.7.1's notes move to the archive; then this file moves to
 `archive/plans/`.
@@ -54,7 +56,7 @@ The owner's list from build 62, each point and what changed:
 15. On the assets' coloured hero the selected value is in the text's colour (DesignKit 8.4.0).
 
 Device check on build 63: the points above on the phone, in light and dark. The owner's
-second look (2026-10-31) found four more, fixed for the next build:
+second look (2026-10-31) found four more, fixed in #115 and DesignKit 8.4.1 (build 64):
 
 1. The keyboard hides on a tap off a text field, everywhere (`KeyboardDismissal`,
    [design-system.md](design-system.md) §5 "The keyboard").

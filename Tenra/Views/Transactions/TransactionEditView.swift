@@ -161,7 +161,15 @@ struct TransactionEditView: View {
                             )
                         }
 
-                        // 4. Description
+                        // 4. Merchant: a payment entered by hand gets one without a description.
+                        if coordinator.transaction.type == .expense || coordinator.transaction.type == .income {
+                            TransactionMerchantRow(
+                                linkedMerchant: $bindableCoordinator.formData.linkedMerchant,
+                                description: coordinator.formData.descriptionText
+                            )
+                        }
+
+                        // 5. Description
                         FormTextField(
                             text: $bindableCoordinator.formData.descriptionText,
                             placeholder: String(localized: "transactionForm.descriptionPlaceholder"),
@@ -302,22 +310,9 @@ struct TransactionEditView: View {
     }
 
     /// The merchant whose screen the transaction opens: the one it was linked to by hand, else
-    /// its description when that is a merchant worth a screen.
+    /// its description when that is a merchant worth a screen (`TransactionMerchant`).
     private func merchantScreen(of transaction: Transaction) -> String? {
-        if let linked = MerchantGroupStore.shared.linkedMerchant(forTransactionId: transaction.id) {
-            return linked
-        }
-        return hasMerchantScreen(transaction.description) ? transaction.description : nil
-    }
-
-    /// A merchant worth a screen: remembered by the Wallet automation, one with a logo or
-    /// a name the user gave it, or a point of a brand. A transfer to a person has none of these.
-    private func hasMerchantScreen(_ description: String) -> Bool {
-        let logos = MerchantLogoStore.shared
-        return MerchantCategoryMemory.shared.merchant(forDescription: description) != nil
-            || logos.iconSource(forDescription: description) != nil
-            || logos.customName(forDescription: description) != nil
-            || MerchantGroupStore.shared.group(forMerchant: description) != nil
+        TransactionMerchant.merchant(of: transaction)
     }
 
     private var recurringMenuButton: some View {

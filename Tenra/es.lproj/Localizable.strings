@@ -1869,6 +1869,13 @@
 "merchant.merge.suggested" = "Mismo nombre";
 "merchant.merge.others" = "Otros comercios";
 "merchant.merge.picked" = "Seleccionados";
+"transaction.merchant" = "Comercio";
+"transaction.merchant.none" = "Ninguno";
+"merchant.picker.add" = "Añadir «%@»";
+"merchant.picker.clear" = "Sin comercio";
+"merchant.picker.footer" = "El pago cuenta para el comercio, en su pantalla y en los análisis. La descripción no cambia.";
+"merchant.picker.emptyTitle" = "Aún no hay comercios";
+"merchant.picker.emptyMessage" = "Escribe el nombre de un comercio en la búsqueda para añadirlo.";
 "merchant.merge.footer" = "Los puntos de venta pasan a ser un comercio: su pantalla muestra todos sus pagos y los chips bajo el nombre muestran cada punto por separado.";
 "merchant.merge.operations" = "Pagos: %d";
 "merchant.merge.emptyTitle" = "No hay otros comercios";

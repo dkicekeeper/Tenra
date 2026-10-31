@@ -1869,6 +1869,13 @@
 "merchant.merge.suggested" = "Аты бірдей";
 "merchant.merge.others" = "Басқа сатушылар";
 "merchant.merge.picked" = "Таңдалғандар";
+"transaction.merchant" = "Сатушы";
+"transaction.merchant.none" = "Таңдалмаған";
+"merchant.picker.add" = "«%@» қосу";
+"merchant.picker.clear" = "Сатушысыз";
+"merchant.picker.footer" = "Төлем сатушыда есептеледі: оның экранында және аналитикада. Сипаттама өзгермейді.";
+"merchant.picker.emptyTitle" = "Әзірге сатушылар жоқ";
+"merchant.picker.emptyMessage" = "Қосу үшін іздеуге сатушының атауын енгізіңіз.";
 "merchant.merge.footer" = "Нүктелер бір сатушы болады: оның экранында барлық төлемдері көрінеді, ал атауының астындағы чиптер әр нүктені бөлек көрсетеді.";
 "merchant.merge.operations" = "Төлемдер: %d";
 "merchant.merge.emptyTitle" = "Басқа сатушылар жоқ";

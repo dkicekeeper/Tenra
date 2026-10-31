@@ -1869,6 +1869,13 @@
 "merchant.merge.suggested" = "Stesso nome";
 "merchant.merge.others" = "Altri esercenti";
 "merchant.merge.picked" = "Selezionati";
+"transaction.merchant" = "Esercente";
+"transaction.merchant.none" = "Nessuno";
+"merchant.picker.add" = "Aggiungi «%@»";
+"merchant.picker.clear" = "Nessun esercente";
+"merchant.picker.footer" = "Il pagamento conta per l'esercente, nella sua schermata e nelle analisi. La descrizione resta com'è.";
+"merchant.picker.emptyTitle" = "Ancora nessun esercente";
+"merchant.picker.emptyMessage" = "Scrivi il nome di un esercente nella ricerca per aggiungerlo.";
 "merchant.merge.footer" = "I punti vendita diventano un solo esercente: la sua schermata mostra tutti i loro pagamenti e i chip sotto il nome mostrano ogni punto a parte.";
 "merchant.merge.operations" = "Pagamenti: %d";
 "merchant.merge.emptyTitle" = "Nessun altro esercente";

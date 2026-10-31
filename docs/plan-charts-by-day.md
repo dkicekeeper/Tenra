@@ -68,6 +68,19 @@ second look (2026-10-31) found four more, fixed in #115 and DesignKit 8.4.1 (bui
 4. Its rows are the Wallet merchants list's (`UniversalRow`, `SelectionIndicator`): the form
    row with a hint under the title was too tall.
 
+Device check on build 64: the owner's third look (2026-10-31) found three more:
+
+1. The ruler option on a bar chart selected the month before the one under the ruler after a
+   scroll. A probe on the simulator showed the snap centres every bar under the ruler; at rest
+   Swift Charts reports the period before it. DesignKit 8.4.2 takes the snap's target instead,
+   in bar and line charts.
+2. A payment entered by hand had a merchant only through its description: the transaction forms
+   have a "Merchant" row (`TransactionMerchantRow`, `MerchantPickerView`) that links it; the
+   description stays a free note ([domains/intents.md](domains/intents.md) §6).
+3. Old payments entered by hand could not be found to link to a merchant: "Link payments" filtered
+   and searched only the legacy subcategory field, so Transport → Taxi found nothing; it reads the
+   linked subcategories now.
+
 ## Device check
 
 In light and dark, Russian and English: the charts on Analytics (the current period in the

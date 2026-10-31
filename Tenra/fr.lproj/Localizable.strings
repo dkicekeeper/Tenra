@@ -1869,6 +1869,13 @@
 "merchant.merge.suggested" = "Même nom";
 "merchant.merge.others" = "Autres commerçants";
 "merchant.merge.picked" = "Sélectionnés";
+"transaction.merchant" = "Commerçant";
+"transaction.merchant.none" = "Aucun";
+"merchant.picker.add" = "Ajouter « %@ »";
+"merchant.picker.clear" = "Aucun commerçant";
+"merchant.picker.footer" = "Le paiement compte pour le commerçant, sur son écran et dans les analyses. La description reste telle quelle.";
+"merchant.picker.emptyTitle" = "Pas encore de commerçants";
+"merchant.picker.emptyMessage" = "Saisissez le nom d'un commerçant dans la recherche pour l'ajouter.";
 "merchant.merge.footer" = "Les points de vente deviennent un seul commerçant : son écran montre tous leurs paiements, et les puces sous son nom montrent chaque point à part.";
 "merchant.merge.operations" = "Paiements : %d";
 "merchant.merge.emptyTitle" = "Aucun autre commerçant";

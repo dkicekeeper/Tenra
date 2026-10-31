@@ -7,7 +7,7 @@
 //  ("ZARA MEGA", "ZARA DOSTYK PLAZA"). The ones picked stay on top, then those that start with
 //  the same words, then the rest; the system search finds a merchant by the bank's text, by the
 //  name the person gave it and by its brand's name. Rows as in Settings → Wallet → Merchants
-//  (`UniversalRow` with the name and a line under it, DesignKit's `SelectionIndicator`). The
+//  (`MerchantChoiceRow`: the name and a line under it, DesignKit's `SelectionIndicator`). The
 //  history is swept once, off the main actor (red flag #9).
 //
 
@@ -19,9 +19,6 @@ struct MerchantMergeView: View {
 
     @Environment(TransactionStore.self) private var transactionStore
     @Environment(\.dismiss) private var dismiss
-    /// Settings → "Merchant logos" (on by default), as on the merchant's transaction rows.
-    @AppStorage(MerchantLogoStore.enabledKey) private var showsMerchantLogos = true
-
     @State private var candidates: [Candidate] = []
     @State private var hasLoaded = false
     /// The merchants picked, in the order they were picked.
@@ -136,35 +133,17 @@ struct MerchantMergeView: View {
         }
     }
 
-    /// The merchant's logo, its name and how many payments, and whether it is picked: the row of
-    /// the Wallet merchants list (MerchantCategoriesView).
+    /// The row of the Wallet merchants list (`MerchantChoiceRow`).
     private func row(_ candidate: Candidate) -> some View {
-        let isPicked = picked.contains(candidate.id)
-        return Button {
+        MerchantChoiceRow(
+            merchant: candidate.name,
+            title: title(of: candidate),
+            count: candidate.count,
+            isSelected: picked.contains(candidate.id)
+        ) {
             toggle(candidate.id)
-        } label: {
-            UniversalRow(leadingIcon: icon(for: candidate)) {
-                VStack(alignment: .leading, spacing: AppSpacing.xxs) {
-                    Text(title(of: candidate))
-                        .font(AppTypography.h4)
-                        .fontWeight(.medium)
-                        .foregroundStyle(AppColors.textPrimary)
-                        .lineLimit(1)
-                    Text(String(format: String(localized: "merchant.merge.operations"), candidate.count))
-                        .font(AppTypography.bodySmall)
-                        .foregroundStyle(AppColors.textSecondary)
-                }
-            } trailing: {
-                SelectionIndicator(isSelected: isPicked)
-            }
         }
-        .buttonStyle(.plain)
-        .contentShape(Rectangle())
-        .accessibilityElement(children: .combine)
-        .accessibilityAddTraits(isPicked ? .isSelected : [])
         .accessibilityIdentifier("merchantMerge.row.\(candidate.id)")
-        // The button keeps the row's divider inset to itself: the 44 pt tile and its space.
-        .rowDividerInset(AppIconSize.Tile.sm + AppSpacing.md)
     }
 
     private func toggle(_ id: String) {
@@ -176,24 +155,6 @@ struct MerchantMergeView: View {
                 picked.append(id)
             }
         }
-    }
-
-    /// The merchant's logo when it has one (and logos are on), else a shop on a pale plate.
-    private func icon(for candidate: Candidate) -> IconConfig {
-        if showsMerchantLogos, let logo = MerchantLogoStore.shared.iconSource(forDescription: candidate.name) {
-            return .custom(
-                source: logo,
-                style: .circle(size: AppIconSize.Tile.sm, tint: .original, backgroundColor: AppColors.Status.neutralPale)
-            )
-        }
-        return .custom(
-            source: .sfSymbol("storefront"),
-            style: .circle(
-                size: AppIconSize.Tile.sm,
-                tint: .monochrome(AppColors.textSecondary),
-                backgroundColor: AppColors.Status.neutralPale
-            )
-        )
     }
 
     // MARK: - Loading

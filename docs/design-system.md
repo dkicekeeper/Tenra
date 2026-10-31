@@ -111,7 +111,7 @@ decision, 2026-10). `Tenra/Views/Components/` keeps two kinds of views:
 | `Icons` | `IconPickerView` → `IconPicker` | |
 | `Input` | `AccountRadioButton` → `SelectableBalanceCard`, `AmountInputView` → `CurrencyAmountInput`, `CurrencySelectorView` → `CurrencyPickerMenu`, `SubscriptionCalendarView` → `MonthCalendar` | the filter sheets, the selectors, carousels and grids that load data, `HomeBackgroundPicker`, the import sheets |
 | `LinkPayments` | | `LinkPaymentsView` |
-| `Rows` | `AccountRow` / `CategoryRow` / `CategoryBreakdownRow` → `AmountRow`, `AmortizationScheduleRow` → `ScheduleRow`, `BudgetProgressRow` → `LimitProgressCard`, `HistoryEntryRow` → `AmountRow`, `MenuOptions.swift` (the menu options of `RecurringFrequency`, `RecurringOption`, `LoanType`, `ReminderOption` for `UniversalRow(accessory: .menu)`; `MenuPickerRow` domain inits before DesignKit 7.0.0) | `PeriodBreakdownRow` |
+| `Rows` | `AccountRow` / `CategoryRow` / `CategoryBreakdownRow` → `AmountRow`, `AmortizationScheduleRow` → `ScheduleRow`, `BudgetProgressRow` → `LimitProgressCard`, `HistoryEntryRow` → `AmountRow`, `MenuOptions.swift` (the menu options of `RecurringFrequency`, `RecurringOption`, `LoanType`, `ReminderOption` for `UniversalRow(accessory: .menu)`; `MenuPickerRow` domain inits before DesignKit 7.0.0) | `PeriodBreakdownRow`, `MerchantChoiceRow` (a merchant to pick: its logo, name and payments, `SelectionIndicator`; "Combine points" and the form's merchant picker), `TransactionMerchantRow` (the transaction forms' "Merchant", [domains/intents.md](domains/intents.md) §6) |
 
 Each file's header comment names what it adapts. Tenra keeps its screens over its own models by
 choice: filter sheets, home sections, transaction lists, entity detail screens, the lock screen,

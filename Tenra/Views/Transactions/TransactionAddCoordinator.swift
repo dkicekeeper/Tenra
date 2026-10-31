@@ -138,14 +138,20 @@ final class TransactionAddCoordinator {
 
         // Step 3: Handle recurring series if enabled
         if case .frequency = formData.recurring {
+            let createdSeriesId: String?
             do {
-                try await createRecurringSeriesWithSubcategories()
+                createdSeriesId = try await createRecurringSeriesWithSubcategories()
             } catch {
                 return ValidationResult(isValid: false, errors: [.custom(error.localizedDescription)])
             }
             // The generator creates occurrences for ALL dates (past, today, future).
             // Never fall through to add a separate individual transaction — it would
             // duplicate today's generated occurrence (which already carries a recurring badge).
+            if formData.linkedMerchant != nil, let createdSeriesId {
+                linkMerchant(toTransactionIds: transactionStore.transactions
+                    .filter { $0.recurringSeriesId == createdSeriesId }
+                    .map(\.id))
+            }
             RatingPromptService.shared.recordTransactionAdded()
             return .valid
         }
@@ -164,6 +170,7 @@ final class TransactionAddCoordinator {
         if !formData.subcategoryIds.isEmpty {
             linkSubcategories(toTransactionIds: [createdTransaction.id])
         }
+        linkMerchant(toTransactionIds: [createdTransaction.id])
 
         RatingPromptService.shared.recordTransactionAdded()
         return .valid
@@ -171,11 +178,20 @@ final class TransactionAddCoordinator {
 
     // MARK: - Private Methods
 
+    /// The merchant picked in the form, unless the description names it itself
+    /// (`TransactionMerchant`). Occurrences a series generates later are not linked.
+    private func linkMerchant(toTransactionIds transactionIds: [String]) {
+        guard let merchant = formData.linkedMerchant, !transactionIds.isEmpty,
+              let link = TransactionMerchant.link(for: merchant, description: formData.description) else { return }
+        TransactionMerchant.setLink(link, for: transactionIds)
+    }
+
     /// Creates a recurring series and links any selected subcategories to ALL generated transactions.
     /// Uses `await transactionStore.createSeries()` directly so that generated transactions
     /// are already in the store when we call `linkSubcategories(toTransactionIds:)`.
-    private func createRecurringSeriesWithSubcategories() async throws {
-        guard case .frequency(let freq) = formData.recurring else { return }
+    @discardableResult
+    private func createRecurringSeriesWithSubcategories() async throws -> String? {
+        guard case .frequency(let freq) = formData.recurring else { return nil }
 
         let series = RecurringSeries(
             amount: formData.parsedAmount!,
@@ -194,7 +210,7 @@ final class TransactionAddCoordinator {
         try await transactionStore.createSeries(series)
 
         // Link selected subcategories to every generated transaction
-        guard !formData.subcategoryIds.isEmpty else { return }
+        guard !formData.subcategoryIds.isEmpty else { return series.id }
 
         let generatedTransactions = transactionStore.transactions.filter {
             $0.recurringSeriesId == series.id
@@ -202,6 +218,7 @@ final class TransactionAddCoordinator {
         // One batch for every occurrence: one link-table write and one usage-stats rebuild,
         // not one per occurrence (seconds for a back-dated series).
         linkSubcategories(toTransactionIds: generatedTransactions.map(\.id))
+        return series.id
     }
 
     private func createTransaction(conversion: TransactionConversion) -> Transaction {

@@ -1869,6 +1869,13 @@
 "merchant.merge.suggested" = "С тем же названием";
 "merchant.merge.others" = "Другие продавцы";
 "merchant.merge.picked" = "Выбрано";
+"transaction.merchant" = "Продавец";
+"transaction.merchant.none" = "Не выбран";
+"merchant.picker.add" = "Добавить «%@»";
+"merchant.picker.clear" = "Без продавца";
+"merchant.picker.footer" = "Платёж будет считаться у продавца: на его экране и в аналитике. Описание не меняется.";
+"merchant.picker.emptyTitle" = "Продавцов пока нет";
+"merchant.picker.emptyMessage" = "Введите название продавца в поиске, чтобы добавить его.";
 "merchant.merge.footer" = "Точки станут одним продавцом: в его экране будут все их платежи, а чипсы под названием покажут каждую точку отдельно.";
 "merchant.merge.operations" = "Платежей: %d";
 "merchant.merge.emptyTitle" = "Других продавцов нет";

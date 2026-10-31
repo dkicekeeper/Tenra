@@ -1869,6 +1869,13 @@
 "merchant.merge.suggested" = "Same name";
 "merchant.merge.others" = "Other merchants";
 "merchant.merge.picked" = "Selected";
+"transaction.merchant" = "Merchant";
+"transaction.merchant.none" = "None";
+"merchant.picker.add" = "Add “%@”";
+"merchant.picker.clear" = "No merchant";
+"merchant.picker.footer" = "The payment counts towards the merchant, on its screen and in insights. The description stays as it is.";
+"merchant.picker.emptyTitle" = "No merchants yet";
+"merchant.picker.emptyMessage" = "Type a merchant's name in the search to add it.";
 "merchant.merge.footer" = "The points become one merchant: its screen shows all their payments, and the chips under its name show each point on its own.";
 "merchant.merge.operations" = "Payments: %d";
 "merchant.merge.emptyTitle" = "No other merchants";

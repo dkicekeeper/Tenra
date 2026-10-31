@@ -1869,6 +1869,13 @@
 "merchant.merge.suggested" = "Aynı ad";
 "merchant.merge.others" = "Diğer işyerleri";
 "merchant.merge.picked" = "Seçilenler";
+"transaction.merchant" = "İşyeri";
+"transaction.merchant.none" = "Seçilmedi";
+"merchant.picker.add" = "“%@” ekle";
+"merchant.picker.clear" = "İşyeri yok";
+"merchant.picker.footer" = "Ödeme bu işyerine sayılır: işyerinin ekranında ve analizlerde. Açıklama olduğu gibi kalır.";
+"merchant.picker.emptyTitle" = "Henüz işyeri yok";
+"merchant.picker.emptyMessage" = "Eklemek için aramaya bir işyeri adı yazın.";
 "merchant.merge.footer" = "Şubeler tek bir işyeri olur: ekranında tüm ödemeleri görünür, adın altındaki çipler her şubeyi ayrı gösterir.";
 "merchant.merge.operations" = "Ödeme: %d";
 "merchant.merge.emptyTitle" = "Başka işyeri yok";

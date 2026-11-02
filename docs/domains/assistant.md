@@ -456,7 +456,9 @@ spending, no em dashes, in all 11 languages.
   `ru-car-worth-saved` (the car's characteristics are saved: no question), `ru-net-worth`,
   `en-rental-yield`; the eval offers `estimate_asset_value` and the fixture's context has its
   line), checks: the right tool, figures
-  only by reference, no amounts in text, a draft instead of "saved", the language, prompt
+  only by reference, no amounts in text (with a currency on either side, with a scale word as
+  in "13,4 млн", or a big number; a year, a model name and a number with a unit such as km or
+  m² are not money), a draft instead of "saved", the language, prompt
   injection in a note, `blocks_decode`, `no_refusal`, `noPick`. A prompt change bumps
   `PROMPT_VERSION` and runs the eval before the deploy.
 - **Valuation eval** (`eval/valuation.ts`, `npm run eval:valuation -- --models ... --yes`): the

@@ -204,7 +204,7 @@ enum AgentBlock {                // AgentReply.swift; source = a tool result's r
 last week's summary once a week, subscriptions charging tomorrow, a debt due tomorrow, a goal
 behind its schedule (once a month) and an asset whose valuation is out of date (once a half-year,
 [assets.md](assets.md); its button is "Update value" and opens the valuation sheet on Home, no
-action spent, until Ten sees assets). Each has a key and never repeats. They show only on Home
+action spent: quicker than a chat, though Ten reads and values assets too). Each has a key and never repeats. They show only on Home
 (`AssistantNoticesSection`, under the accounts): the newest unread one with Ten in its mood and the
 count of the rest; "Go through it" opens the assistant with a question and a `<notice>` block (one
 free action), "Hide" shows the next. Works without notification permission. A push of an insight

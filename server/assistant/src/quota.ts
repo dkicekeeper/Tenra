@@ -31,11 +31,21 @@ async function read(kv: KVLike, key: string): Promise<number> {
 
 export async function consumeCall(kv: KVLike, userId: string, tier: Tier, config: Config, now = new Date()): Promise<QuotaStatus> {
   const limit = tier === "pro" ? config.proMonthlyCalls : config.freeMonthlyCalls;
-  const userKey = `calls:${userId}:${month(now)}`;
+  return consume(kv, `calls:${userId}:${month(now)}`, limit, 1, config, now);
+}
+
+/** A valuation (POST /v1/valuation): its own monthly count, and `valuationCallWeight` calls of
+ * the global daily stop, since its searches cost that many chat calls. */
+export async function consumeValuation(kv: KVLike, userId: string, tier: Tier, config: Config, now = new Date()): Promise<QuotaStatus> {
+  const limit = tier === "pro" ? config.proMonthlyValuations : config.freeMonthlyValuations;
+  return consume(kv, `valuations:${userId}:${month(now)}`, limit, config.valuationCallWeight, config, now);
+}
+
+async function consume(kv: KVLike, userKey: string, limit: number, weight: number, config: Config, now: Date): Promise<QuotaStatus> {
   const globalKey = `calls:all:${day(now)}`;
   const [used, global] = await Promise.all([read(kv, userKey), read(kv, globalKey)]);
 
-  if (global >= config.globalDailyCalls) return { allowed: false, used, limit, reason: "global" };
+  if (global + weight > config.globalDailyCalls) return { allowed: false, used, limit, reason: "global" };
   if (used >= limit) return { allowed: false, used, limit, reason: "user" };
 
   // KV takes one write per second per key and refuses more with an error. The daily key is
@@ -43,7 +53,7 @@ export async function consumeCall(kv: KVLike, userId: string, tier: Tier, config
   // is cheaper than a lost answer.
   await Promise.all([
     kv.put(userKey, String(used + 1), { expirationTtl: 40 * 24 * 3600 }).catch(() => undefined),
-    kv.put(globalKey, String(global + 1), { expirationTtl: 2 * 24 * 3600 }).catch(() => undefined),
+    kv.put(globalKey, String(global + weight), { expirationTtl: 2 * 24 * 3600 }).catch(() => undefined),
   ]);
   return { allowed: true, used: used + 1, limit };
 }

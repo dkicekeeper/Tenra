@@ -49,6 +49,21 @@ nonisolated enum AssetKind: String, Codable, CaseIterable, Sendable {
 nonisolated struct AssetValuation: Codable, Equatable, Hashable, Identifiable, Sendable {
     enum Source: String, Codable, Sendable {
         case purchase, manual, assistant, sale
+
+        /// A source of a later version reads as a valuation by hand, so the valuation stays.
+        init(from decoder: Decoder) throws {
+            let raw = try decoder.singleValueContainer().decode(String.self)
+            self = Source(rawValue: raw) ?? .manual
+        }
+    }
+
+    /// An estimate by listings of comparable ones for sale (AssetEstimate): their quartiles and
+    /// how many there were, in the asset's currency. A version without it skips the key.
+    struct Listings: Codable, Equatable, Hashable, Sendable {
+        var low: Double
+        var high: Double
+        var count: Int
+        var sites: [String]
     }
 
     var id: String
@@ -57,13 +72,16 @@ nonisolated struct AssetValuation: Codable, Equatable, Hashable, Identifiable, S
     var source: Source
     /// Where the figure came from: "listings on krisha.kz", "the bank's valuer".
     var note: String?
+    /// Set when the value is the median of listings; nil for a value by hand.
+    var listings: Listings?
 
-    init(id: String = UUID().uuidString, date: Date, value: Double, source: Source = .manual, note: String? = nil) {
+    init(id: String = UUID().uuidString, date: Date, value: Double, source: Source = .manual, note: String? = nil, listings: Listings? = nil) {
         self.id = id
         self.date = date
         self.value = value
         self.source = source
         self.note = note
+        self.listings = listings
     }
 }
 
@@ -140,8 +158,9 @@ nonisolated struct Asset: Equatable, Hashable, Identifiable {
     var linkedLoanAccountId: String?
     /// Rent (phase 2 of the plan).
     var incomeLink: AssetCategoryLink?
-    /// Upkeep: tax, the building's fees, repairs, insurance (phase 2 of the plan).
-    var expenseLink: AssetCategoryLink?
+    /// Upkeep: tax, the building's fees, repairs, insurance, from one category or several
+    /// (plan-assets-roadmap 2.3: a flat's upkeep is rarely in one category).
+    var expenseLinks: [AssetCategoryLink]
     var includeInNetWorth: Bool
     /// When it was sold; the sale price is the `.sale` valuation.
     var soldAt: Date?
@@ -155,6 +174,12 @@ nonisolated struct Asset: Equatable, Hashable, Identifiable {
     /// Payments linked to it by hand ("Link payments"), whatever their category or day: an
     /// expense is upkeep, an income is rent.
     var includedTransactionIds: [String]
+    /// What it is like, for an estimate by listings (CoreData v19): where it is, the area and
+    /// rooms, the make, model, year and mileage.
+    var attributes: AssetAttributes
+    /// The yield and the full result of the person's share rather than of the whole asset
+    /// (v19; off by default, the owner's decision D2): the rent a co-owner records is theirs.
+    var yieldOnShare: Bool
 
     init(
         id: String = UUID().uuidString,
@@ -176,7 +201,10 @@ nonisolated struct Asset: Equatable, Hashable, Identifiable {
         order: Int = 0,
         createdAt: Date = Date(),
         excludedTransactionIds: [String] = [],
-        includedTransactionIds: [String] = []
+        includedTransactionIds: [String] = [],
+        attributes: AssetAttributes = AssetAttributes(),
+        expenseLinks: [AssetCategoryLink] = [],
+        yieldOnShare: Bool = false
     ) {
         self.id = id
         self.name = name
@@ -190,7 +218,8 @@ nonisolated struct Asset: Equatable, Hashable, Identifiable {
         self.ownershipShare = ownershipShare
         self.linkedLoanAccountId = linkedLoanAccountId
         self.incomeLink = incomeLink
-        self.expenseLink = expenseLink
+        // Several upkeep links, or the one given as `expenseLink`.
+        self.expenseLinks = expenseLinks.isEmpty ? (expenseLink.map { [$0] } ?? []) : expenseLinks
         self.includeInNetWorth = includeInNetWorth
         self.soldAt = soldAt
         self.note = note
@@ -198,9 +227,17 @@ nonisolated struct Asset: Equatable, Hashable, Identifiable {
         self.createdAt = createdAt
         self.excludedTransactionIds = excludedTransactionIds
         self.includedTransactionIds = includedTransactionIds
+        self.attributes = attributes
+        self.yieldOnShare = yieldOnShare
     }
 
     var isSold: Bool { soldAt != nil }
+
+    /// The first upkeep link: one category, as the form had it before several.
+    var expenseLink: AssetCategoryLink? {
+        get { expenseLinks.first }
+        set { expenseLinks = newValue.map { [$0] } ?? [] }
+    }
 
     /// The sale: its price and day.
     var sale: AssetValuation? {

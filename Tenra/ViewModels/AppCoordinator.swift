@@ -132,20 +132,58 @@ class AppCoordinator {
         }
     }
 
+    /// Ten's server (Info.plist `TenraAssistantURL`): one client, so the chat and the asset
+    /// screen's estimate share its App Attest key; nil while it is not configured.
+    @ObservationIgnored private var agentServerClient: AgentServerClient?
+
+    private func agentServer() -> AgentServerClient? {
+        if let agentServerClient { return agentServerClient }
+        guard let url = AgentConfig.serverURL else { return nil }
+        let attestation = AgentAttestation.isSupported ? AgentAttestation(baseURL: url) : nil
+        let server = AgentServerClient(baseURL: url, attestation: attestation) {
+            await MainActor.run { PremiumManager.shared.appUserID }
+        }
+        agentServerClient = server
+        return server
+    }
+
+    /// The asset screen's "Estimate from listings" (docs/domains/assets.md): shown once the
+    /// server says it values assets (`checkAssetEstimates`, once a launch).
+    private(set) var assetEstimatesAvailable = false
+    @ObservationIgnored private var assetEstimatesChecked = false
+
+    /// The estimate's transport; nil without a server and in the screenshot demo.
+    var assetEstimateTransport: AgentValuationTransport? {
+        #if DEBUG
+        if ScreenshotDemoMode.isActive { return nil }
+        #endif
+        return agentServer()
+    }
+
+    /// Asks the server's health whether estimates are on, once a launch.
+    func checkAssetEstimates() async {
+        guard !assetEstimatesChecked else { return }
+        assetEstimatesChecked = true
+        guard assetEstimateTransport != nil, let server = agentServer() else { return }
+        assetEstimatesAvailable = await server.valuationAvailable()
+    }
+
     /// The AI assistant's thread, made on first use; nil while its server is not configured
     /// (Info.plist `TenraAssistantURL`, docs/domains/assistant.md §12). Without Pro it spends
     /// the free allowance, and the server needs App Attest (§8).
     func assistant() -> AssistantViewModel? {
         if let assistantModel { return assistantModel }
-        guard let url = AgentConfig.serverURL else { return nil }
+        guard let server = agentServer() else { return nil }
         observeStoreResetForAssistant()
-        let attestation = AgentAttestation.isSupported ? AgentAttestation(baseURL: url) : nil
-        var client: AgentTransport = AgentServerClient(baseURL: url, attestation: attestation) {
-            await MainActor.run { PremiumManager.shared.appUserID }
-        }
+        var client: AgentTransport = server
+        // estimate_asset_value asks the same server (POST /v1/valuation).
+        var valuation: AgentValuationTransport? = server
         #if DEBUG
         // Screenshot capture: no App Attest and no network in the Simulator.
-        if ScreenshotDemoMode.isActive { client = ScreenshotDemoTransport(reply: .current()) }
+        if ScreenshotDemoMode.isActive {
+            client = ScreenshotDemoTransport(reply: .current())
+            valuation = nil
+        }
         #endif
         let store = transactionStore
         let accounts = accountsViewModel
@@ -170,6 +208,7 @@ class AppCoordinator {
             goals: goals,
             debts: debts,
             assets: assets,
+            valuation: valuation,
             isPro: { PremiumManager.shared.isPro },
             suggestAccount: { category in accounts.suggestedAccount(forCategory: category, transactions: store.transactions)?.id }
         )
@@ -284,7 +323,8 @@ class AppCoordinator {
     }
 
     /// Ten writes first about the subscriptions charged tomorrow, the debts due tomorrow, the
-    /// goals behind their schedule, the assets whose valuation is out of date and auto-capture
+    /// goals behind their schedule, the assets whose valuation is out of date, the long loans
+    /// without an asset and auto-capture
     /// not set up (AssistantInbox); insights and the weekly summary post from the insights
     /// recompute.
     func refreshAssistantInbox(now: Date = Date()) {
@@ -302,6 +342,7 @@ class AppCoordinator {
         candidates += AssistantNotices.debtsDue(debtStore.debts, now: now)
         candidates += AssistantNotices.goalsBehind(goalStore.goals, saved: { [goalStore] in goalStore.saved(for: $0) }, now: now)
         candidates += AssistantNotices.staleAssets(assetStore.held, summary: { [assetStore] in assetStore.summary(for: $0, today: now) }, now: now)
+        candidates += AssistantNotices.loansWithoutAsset(transactionStore.accounts, assets: assetStore.assets, now: now)
         if let nudge = AssistantNotices.setupNudge(
             entries: transactionStore.transactionsCount,
             capturing: WalletCaptureStore.shared.hasEverCaptured,
@@ -322,7 +363,8 @@ class AppCoordinator {
             debts: Set(debtStore.debts.filter { !$0.isSettled }.map(\.id)),
             goals: Set(goalStore.goals.map(\.id)),
             capturing: WalletCaptureStore.shared.hasEverCaptured,
-            staleAssets: Set(assetStore.staleAssets().map(\.id))
+            staleAssets: Set(assetStore.staleAssets().map(\.id)),
+            loansWithoutAsset: Set(AssistantNotices.loansWithoutAsset(transactionStore.accounts, assets: assetStore.assets, now: Date()).compactMap(\.subjectId))
         )
     }
 
@@ -524,17 +566,23 @@ class AppCoordinator {
             return ids.compactMap { self.transactionStore.transactionById[$0] }
         }
 
+        // A sold asset's money: the incomes around the sale day (stored day keys sort as days).
+        assetStore.incomesOnDays = { [weak self] days in
+            guard let self else { return [] }
+            return self.transactionStore.transactions.filter { $0.type == .income && days.contains($0.date) }
+        }
+
         // An asset's rent and upkeep: the transactions of its linked category (and any of its
         // subcategories), from the category index.
         assetStore.transactionsOfLink = { [weak self] link, type in
             guard let self, let category = self.transactionStore.categoryById[link.categoryId] else { return [] }
-            let bucket = self.transactionStore.transactionsByCategoryName[category.name] ?? []
-            return bucket.filter { tx in
-                guard tx.type == type else { return false }
-                guard !link.isWholeCategory else { return true }
-                guard let linked = self.transactionStore.subcategoryIdsByTransactionId[tx.id] else { return false }
-                return link.subcategoryIds.contains { linked.contains($0) }
-            }
+            let store = self.transactionStore
+            return AssetStore.transactions(
+                ofLink: link,
+                type: type,
+                in: store.transactionsByCategoryName[category.name] ?? [],
+                subcategories: { store.subcategoryIdsByTransactionId[$0] }
+            )
         }
         // Net worth counts the assets and the personal debts: Insights reads them when a pass
         // starts, and recomputes when they change.

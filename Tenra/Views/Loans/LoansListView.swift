@@ -190,7 +190,7 @@ struct LoansListView: View {
         } message: {
             Text(String(localized: "loan.deleteMessage", defaultValue: "Payments made on this loan are real expenses on your bank accounts. You can keep them in history, or delete them along with the loan."))
         }
-        .paywallSheet(isPresented: $showingPaywall) {
+        .paywallSheet(isPresented: $showingPaywall, source: .loanAdd) {
             // After unlocking Pro, continue straight into the add-loan flow.
             showingAddLoan = true
         }

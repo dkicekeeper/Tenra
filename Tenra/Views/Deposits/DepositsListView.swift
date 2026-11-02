@@ -140,7 +140,7 @@ struct DepositsListView: View {
             onAdd: addDeposit,
             onDeleteSelected: { showingBulkDeleteDialog = true }
         )
-        .paywallSheet(isPresented: $showingPaywall) {
+        .paywallSheet(isPresented: $showingPaywall, source: .depositAdd) {
             // After unlocking Pro, continue straight into the add-deposit flow.
             showingAddDeposit = true
         }

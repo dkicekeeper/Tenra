@@ -7,6 +7,8 @@
 //  asset is worth its sale, the person's share and the linked loan give their own money in it.
 //  The store totals the held assets at their share, sells and takes a sale back; the
 //  repository keeps every field across a new store; a v16 store opens under v17 with its rows.
+//  The characteristics (v19) are kept, the form saves only the kind's, a valuation a later
+//  version wrote does not take the others with it, and a v18 store opens under v19.
 //
 
 import CoreData
@@ -110,6 +112,30 @@ struct AssetsTests {
         #expect(AssetValuationMath.history(of: asset).first?.source == .purchase)
     }
 
+    /// A valuation dated before the purchase (a value typed with an old day): the history runs
+    /// by day, the later purchase is the value and it is not out of date; on the purchase's own
+    /// day the purchase comes first and the valuation is the value.
+    @Test func aValuationBeforeThePurchaseDoesNotOutliveIt() {
+        let asset = Asset(
+            id: "car", name: "Car", kind: .vehicle, currency: "KZT",
+            purchaseDate: Self.day(2026, 10, 1), purchasePrice: 15_000_000,
+            valuations: [AssetValuation(id: "early", date: Self.day(2026, 3, 1), value: 12_000_000)]
+        )
+        let history = AssetValuationMath.history(of: asset, calendar: Self.calendar)
+        #expect(history.map(\.id) == ["early", AssetValuationMath.purchasePointId(asset)])
+        let summary = AssetValuationMath.summary(of: asset, today: Self.day(2026, 10, 29), calendar: Self.calendar)
+        #expect(summary.value == 15_000_000)
+        #expect(summary.valuedOn == Self.day(2026, 10, 1))
+        #expect(summary.gain == 0)
+        #expect(!AssetValuationMath.isStale(asset, today: Self.day(2026, 10, 29), calendar: Self.calendar))
+        #expect(AssetValuationMath.timeline(of: asset, calendar: Self.calendar).points.map(\.date) == [Self.day(2026, 3, 1), Self.day(2026, 10, 1)])
+
+        var sameDay = asset
+        sameDay.valuations = [AssetValuation(id: "same", date: Self.day(2026, 10, 1), value: 15_500_000)]
+        #expect(AssetValuationMath.history(of: sameDay, calendar: Self.calendar).map(\.id) == [AssetValuationMath.purchasePointId(sameDay), "same"])
+        #expect(AssetValuationMath.summary(of: sameDay, today: Self.day(2026, 10, 29), calendar: Self.calendar).value == 15_500_000)
+    }
+
     @Test func aSoldAssetIsWorthItsSaleAndGrewUntilIt() {
         var asset = Self.flat()
         asset.valuations.append(AssetValuation(id: "sale", date: Self.day(2027, 10, 29), value: 75_000_000, source: .sale))
@@ -147,6 +173,81 @@ struct AssetsTests {
         #expect(points.map(\.date) == [Self.day(2018, 10, 29), Self.day(2024, 1, 1), Self.day(2026, 10, 16)])
         // The watch throughout; the car (half) from 2024 on.
         #expect(points.map(\.value) == [25_000_000, 30_000_000, 76_000_000])
+    }
+
+    /// Charts run evenly in time (D3): a point a month apart (three over eight years, at most
+    /// 48 points) from the first dated point to today; the value on each is the latest point up
+    /// to it, a sold asset ends on its sale.
+    @Test func chartsRunEvenlyInTime() {
+        let calendar = Self.calendar
+        let days = AssetValuationMath.chartDays(from: Self.day(2018, 10, 29), to: Self.day(2026, 10, 29), calendar: calendar)
+        #expect(days.first == Self.day(2018, 10, 29))
+        #expect(days.last == Self.day(2026, 10, 29))
+        #expect(days.count <= 48)
+        #expect(days[1] == Self.day(2019, 1, 29))
+        #expect(AssetValuationMath.chartDays(from: Self.day(2026, 1, 1), to: Self.day(2026, 4, 15), calendar: calendar)
+            == [Self.day(2026, 1, 1), Self.day(2026, 2, 1), Self.day(2026, 3, 1), Self.day(2026, 4, 1), Self.day(2026, 4, 15)])
+        #expect(AssetValuationMath.chartDays(from: Self.day(2026, 1, 1), to: Self.day(2026, 1, 1), calendar: calendar) == [Self.day(2026, 1, 1)])
+
+        let flat = Self.flat()  // 24M in 2018, 70M on 16 Oct 2026
+        let points = AssetValuationMath.chartHistory(of: flat, today: Self.day(2026, 10, 29), calendar: calendar)
+        #expect(points.first?.value == 24_000_000)
+        #expect(points.last == AssetValuationMath.DatedValue(date: Self.day(2026, 10, 29), value: 70_000_000))
+        #expect(points.dropLast().allSatisfy { $0.value == 24_000_000 })
+
+        var sold = flat
+        sold.valuations.append(AssetValuation(id: "sale", date: Self.day(2026, 11, 1), value: 75_000_000, source: .sale))
+        sold.soldAt = Self.day(2026, 11, 1)
+        let soldPoints = AssetValuationMath.chartHistory(of: sold, today: Self.day(2027, 6, 1), calendar: calendar)
+        #expect(soldPoints.last == AssetValuationMath.DatedValue(date: Self.day(2026, 11, 1), value: 75_000_000))
+        #expect(soldPoints.filter { $0.date >= Self.day(2026, 11, 1) }.count == 1)
+
+        let car = Asset(name: "Car", kind: .vehicle, currency: "KZT", purchaseDate: Self.day(2026, 1, 1), purchasePrice: 10_000_000)
+        let total = AssetValuationMath.totalChartHistory(of: [flat, car], today: Self.day(2026, 10, 29), calendar: calendar) { amount, _ in amount }
+        #expect(total.first?.value == 24_000_000)
+        #expect(total.last?.value == 80_000_000)
+        #expect(AssetValuationMath.chartHistory(of: Asset(name: "Watch", kind: .other, currency: "KZT", purchasePrice: 1), calendar: calendar).isEmpty)
+    }
+
+    /// The form's and Ten's rules (finding A7): a value typed is a valuation of today, except a
+    /// new asset bought today at that price; a sold asset's is its sale price; a new currency
+    /// moves every amount, or none of them without a rate.
+    @Test func aValueTypedIsAValuationOfTodayButNotThePurchase() {
+        let today = Self.day(2026, 11, 2)
+        let new = Asset(name: "Car", kind: .vehicle, currency: "KZT", purchaseDate: today, purchasePrice: 10_000_000)
+        #expect(AssetEditing.applying(value: 10_000_000, to: new, isNew: true, today: today, calendar: Self.calendar).valuations.isEmpty)
+        #expect(AssetEditing.applying(value: 10_500_000, to: new, isNew: true, today: today, calendar: Self.calendar).valuations.map(\.value) == [10_500_000])
+        #expect(AssetEditing.applying(value: 10_000_000, to: new, isNew: false, today: today, calendar: Self.calendar).valuations.count == 1)
+        #expect(AssetEditing.applying(value: 9_000_000, to: new, isNew: true, today: today, source: .assistant, calendar: Self.calendar).valuations.first?.source == .assistant)
+
+        var sold = new
+        sold.valuations = [AssetValuation(id: "sale", date: today, value: 9_000_000, source: .sale)]
+        sold.soldAt = today
+        #expect(AssetEditing.applying(value: 9_500_000, to: sold, isNew: false, today: today, calendar: Self.calendar).valuations.map(\.value) == [9_500_000])
+
+        let flat = Self.flat()
+        let moved = AssetEditing.moved(flat) { $0 / 500 }
+        #expect(moved?.purchasePrice == 48_000)
+        #expect(moved?.valuations.map(\.value) == [140_000])
+        #expect(AssetEditing.moved(flat) { _ in nil } == nil)
+    }
+
+    /// A link's transactions (finding A8): its category's of its type, and with one of its
+    /// subcategories unless it takes the whole category.
+    @Test func aLinkTakesItsCategorysTransactionsOfItsType() {
+        func tx(_ id: String, _ type: TransactionType) -> Transaction {
+            Transaction(id: id, date: "2026-10-01", description: "", amount: 1, currency: "KZT", type: type, category: "Home", accountId: "card")
+        }
+        let bucket = [tx("repairs", .expense), tx("tax", .expense), tx("refund", .income)]
+        let subcategories: [String: [String]] = ["repairs": ["sub_repairs"], "tax": ["sub_tax"]]
+        let whole = AssetStore.transactions(ofLink: AssetCategoryLink(categoryId: "home"), type: .expense, in: bucket) { subcategories[$0] }
+        #expect(whole.map(\.id) == ["repairs", "tax"])
+        let repairs = AssetStore.transactions(
+            ofLink: AssetCategoryLink(categoryId: "home", subcategoryIds: ["sub_repairs"]), type: .expense, in: bucket
+        ) { subcategories[$0] }
+        #expect(repairs.map(\.id) == ["repairs"])
+        let rent = AssetStore.transactions(ofLink: AssetCategoryLink(categoryId: "home"), type: .income, in: bucket) { subcategories[$0] }
+        #expect(rent.map(\.id) == ["refund"])
     }
 
     // MARK: - AssetStore
@@ -223,6 +324,39 @@ struct AssetsTests {
         #expect(store.linkedTransactions(of: undated).upkeep?.count == 5)
     }
 
+    /// Upkeep from several categories (plan 2.3): every link counts, a payment two links both
+    /// count only once; another asset's taken links come one by one; the links are kept, and
+    /// the one object a store of v18 or before holds reads as one link.
+    @Test func upkeepFromSeveralCategories() async throws {
+        func payment(_ id: String, _ category: String) -> Transaction {
+            Transaction(id: id, date: "2026-10-01", description: "", amount: 10_000, currency: "KZT",
+                        type: .expense, category: category, accountId: "card")
+        }
+        let store = AssetStore(repository: nil)
+        store.transactionsOfLink = { link, _ in
+            switch link.categoryId {
+            case "tax": return [payment("property tax", "Tax")]
+            case "home": return [payment("repairs", "Home"), payment("shared", "Home")]
+            case "fees": return [payment("shared", "Home"), payment("building fee", "Fees")]
+            default: return []
+            }
+        }
+        let links = [AssetCategoryLink(categoryId: "tax"), AssetCategoryLink(categoryId: "home"), AssetCategoryLink(categoryId: "fees")]
+        let flat = Asset(id: "flat", name: "Flat", kind: .apartment, currency: "KZT", expenseLinks: links)
+        #expect(flat.expenseLink == AssetCategoryLink(categoryId: "tax"))
+        #expect(Set(store.linkedTransactions(of: flat).upkeep?.map(\.id) ?? []) == ["property tax", "repairs", "shared", "building fee"])
+        #expect(store.linkedTransactions(of: flat).upkeep?.count == 4)
+
+        await store.add(flat)
+        #expect(store.takenLinks(excluding: nil).expense.map(\.link) == links)
+        #expect(store.takenLinks(excluding: "flat").expense.isEmpty)
+
+        let data = try JSONEncoder().encode(links)
+        #expect(AssetRepository.links(from: data) == links)
+        let one = try JSONEncoder().encode(AssetCategoryLink(categoryId: "home", subcategoryIds: ["repairs"]))
+        #expect(AssetRepository.links(from: one) == [AssetCategoryLink(categoryId: "home", subcategoryIds: ["repairs"])])
+    }
+
     /// Payments by hand (v18): one its link counts taken out, one of another category or day
     /// linked in; taking out a payment linked by hand unlinks it; a removed one comes back.
     @Test func paymentsByHand() async {
@@ -283,6 +417,26 @@ struct AssetsTests {
         #expect(!AssetValuationMath.overlaps(transport, held: Held(start: nil, end: nil), AssetCategoryLink(categoryId: "home"), held: newCar))
     }
 
+    /// A valuation changed in place (plan 2.1) keeps its id; the sale's new day is the asset's
+    /// sale day.
+    @Test func aValuationIsChangedInPlace() async throws {
+        let store = AssetStore(repository: nil)
+        await store.add(Self.flat())
+        var valuation = try #require(store.asset(id: "flat")?.valuations.first)
+        valuation.value = 72_000_000
+        valuation.note = "Valuer"
+        await store.updateValuation(valuation, in: "flat")
+        #expect(store.asset(id: "flat")?.valuations == [valuation])
+        let changed = try #require(store.asset(id: "flat"))
+        #expect(store.summary(for: changed, today: Self.day(2026, 10, 29)).value == 72_000_000)
+
+        await store.sell(assetId: "flat", price: 75_000_000, date: Self.day(2026, 10, 30))
+        var sale = try #require(store.asset(id: "flat")?.sale)
+        sale.date = Self.day(2026, 10, 31)
+        await store.updateValuation(sale, in: "flat")
+        #expect(store.asset(id: "flat")?.soldAt == Self.day(2026, 10, 31))
+    }
+
     @Test func aDragGivesTheSectionsAssetsItsPlaces() async {
         let store = AssetStore(repository: nil)
         await store.add(Asset(id: "a", name: "A", kind: .apartment, currency: "KZT"))
@@ -314,10 +468,11 @@ struct AssetsTests {
             ownershipShare: 0.5,
             linkedLoanAccountId: "mortgage",
             incomeLink: AssetCategoryLink(categoryId: "rent", subcategoryId: "flat-rent"),
-            expenseLink: AssetCategoryLink(categoryId: "home"),
             includeInNetWorth: false,
             note: "Second floor",
-            createdAt: Self.day(2026, 10, 29)
+            createdAt: Self.day(2026, 10, 29),
+            expenseLinks: [AssetCategoryLink(categoryId: "home"), AssetCategoryLink(categoryId: "tax")],
+            yieldOnShare: true
         ))
         await store.add(Asset(id: "car", name: "Car", kind: .vehicle, currency: "KZT", createdAt: Self.day(2026, 10, 29)))
         await store.sell(assetId: "car", price: 8_000_000, date: Self.day(2026, 10, 30))
@@ -330,6 +485,86 @@ struct AssetsTests {
         await again.delete(id: "flat")
         await again.delete(id: "car")
         #expect(await AssetRepository(stack: stack).all().isEmpty)
+    }
+
+    // MARK: - Characteristics (v19)
+
+    @Test func characteristicsAreKeptWithTheAsset() async throws {
+        let stack = try makeStack()
+        let store = AssetStore(repository: AssetRepository(stack: stack))
+        await store.load()
+        let attributes = AssetAttributes([
+            "country": .text("KZ"), "city": .text("Алматы"), "area_m2": .number(64.5), "rooms": .number(2),
+            "utilities": .list(["gas", "water"]), "new_building": .flag(true), "a_later_key": .text("kept"),
+        ])
+        await store.add(Asset(id: "flat", name: "Flat", kind: .apartment, currency: "KZT", attributes: attributes))
+        await store.add(Asset(id: "car", name: "Car", kind: .vehicle, currency: "KZT"))
+        let reopened = AssetStore(repository: AssetRepository(stack: stack))
+        await reopened.load()
+        #expect(reopened.asset(id: "flat")?.attributes == attributes)
+        #expect(reopened.asset(id: "car")?.attributes.isEmpty == true)
+    }
+
+    /// The form saves the kind's fields as typed, keeps the kind's ones it does not show and a
+    /// later version's keys, drops another kind's, and saves the country only with something else.
+    @Test func theFormSavesTheKindsCharacteristics() {
+        let original = AssetAttributes(["make": .text("Toyota"), "region": .text("Алматинская область"), "a_later_key": .text("kept")])
+        var draft = AssetAttributesDraft(original, defaultCountry: "KZ")
+        draft.texts[.city] = " Алматы "
+        draft.texts[.areaM2] = "65,5"
+        draft.texts[.rooms] = "2"
+        draft.texts[.floor] = "second"
+        draft.texts[.building] = "panel"
+        draft.utilities = ["water", "gas"]
+        let saved = draft.attributes(for: .apartment, over: original)
+        #expect(saved.text(.city) == "Алматы")
+        #expect(saved.number(.areaM2) == 65.5)
+        #expect(saved.number(.rooms) == 2)
+        #expect(saved.number(.floor) == nil)
+        #expect(saved.text(.building) == "panel")
+        #expect(saved.list(.utilities).isEmpty)
+        #expect(saved.text(.make) == nil)
+        #expect(saved.text(.region) == "Алматинская область")
+        #expect(saved.values["a_later_key"] == .text("kept"))
+        #expect(saved.country == "KZ")
+        #expect(saved.missing(for: .apartment).isEmpty)
+
+        // Opened again, the form shows what was saved.
+        let again = AssetAttributesDraft(saved, defaultCountry: "US")
+        #expect(again.texts[.rooms] == "2")
+        #expect(again.texts[.country] == "KZ")
+
+        // A house takes the utilities, in the server's order.
+        #expect(draft.attributes(for: .house, over: AssetAttributes()).list(.utilities) == ["gas", "water"])
+        // The phone's country alone is not saved.
+        #expect(AssetAttributesDraft(AssetAttributes(), defaultCountry: "KZ").attributes(for: .vehicle, over: AssetAttributes()).isEmpty)
+    }
+
+    /// The server refuses a whole request for one value out of its rules: such a value, another
+    /// kind's field and a text with a long number in it (a phone, a VIN) are never sent.
+    @Test func onlyWhatTheServerTakesIsSent() {
+        #expect(AssetAttributes.hasLongNumber("8 777 123 45 67"))
+        #expect(AssetAttributes.hasLongNumber("ул. Абая 150, кв 1234567"))
+        #expect(!AssetAttributes.hasLongNumber("Camry 70, 2019"))
+        #expect(!AssetAttributes.hasLongNumber("ЖК Хайвил 2"))
+        let flat = AssetAttributes([
+            "city": .text("Алматы"), "district": .text("ул. Абая 150, кв 1234567"), "area_m2": .number(64),
+            "rooms": .number(2.5), "building": .text("glass"), "make": .text("Toyota"),
+        ])
+        #expect(flat.request(for: .apartment).keys.sorted() == ["area_m2", "city"])
+        #expect(flat.missing(for: .vehicle).count == 2)
+        #expect(AssetAttributes().missing(for: .apartment).count == 2)
+    }
+
+    /// A valuation a later version wrote is not lost with the rest: an unknown source reads as
+    /// one by hand, an entry that cannot be read is skipped.
+    @Test func valuationsAreReadOneByOne() {
+        let json = """
+        [{"id":"a","date":0,"value":100,"source":"listings"},{"id":"b","value":"broken"},{"id":"c","date":86400,"value":120,"source":"manual"}]
+        """
+        let valuations = AssetRepository.valuations(from: Data(json.utf8))
+        #expect(valuations.map(\.id) == ["a", "c"])
+        #expect(valuations.first?.source == .manual)
     }
 
     // MARK: - Migration
@@ -433,6 +668,57 @@ struct AssetsTests {
             let assets = try context.fetch(NSFetchRequest<NSManagedObject>(entityName: "AssetEntity"))
             #expect(assets.compactMap { $0.value(forKey: "name") as? String } == ["Car"])
             #expect(assets.first?.value(forKey: "transactionLinksData") == nil)
+        }
+    }
+
+    /// v19 added the characteristics (`AssetEntity.attributesData`): a v18 store with an asset
+    /// opens, the asset keeps everything, and it has no characteristics yet.
+    @Test func aV18StoreOpensWithCharacteristics() throws {
+        let momd = try #require(Bundle.main.url(forResource: "Tenra", withExtension: "momd"))
+        let v18 = try #require(NSManagedObjectModel(contentsOf: momd.appendingPathComponent("Tenra v18.mom")))
+        let current = try #require(NSManagedObjectModel(contentsOf: momd))
+        #expect(v18.entitiesByName["AssetEntity"]?.attributesByName["attributesData"] == nil)
+        #expect(current.entitiesByName["AssetEntity"]?.attributesByName["attributesData"] != nil)
+        #expect((try? NSMappingModel.inferredMappingModel(forSourceModel: v18, destinationModel: current)) != nil)
+
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent("AssetAttributesMigration-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let url = directory.appendingPathComponent("Tenra.sqlite")
+
+        // A v18 store with a flat in it, a payment removed by hand.
+        let links = try JSONEncoder().encode(AssetTransactionLinks(excluded: ["fine"], included: []))
+        let oldCoordinator = NSPersistentStoreCoordinator(managedObjectModel: v18)
+        let oldStore = try oldCoordinator.addPersistentStore(ofType: NSSQLiteStoreType, configurationName: nil, at: url, options: nil)
+        let oldContext = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
+        oldContext.persistentStoreCoordinator = oldCoordinator
+        let oldAssetEntity = try #require(v18.entitiesByName["AssetEntity"])
+        try oldContext.performAndWait {
+            let flat = NSManagedObject(entity: oldAssetEntity, insertInto: oldContext)
+            flat.setValue("flat", forKey: "id")
+            flat.setValue("Flat", forKey: "name")
+            flat.setValue("apartment", forKey: "kind")
+            flat.setValue(links, forKey: "transactionLinksData")
+            try oldContext.save()
+        }
+        try oldCoordinator.remove(oldStore)
+
+        // The same file under the current model.
+        let coordinator = NSPersistentStoreCoordinator(managedObjectModel: current)
+        _ = try coordinator.addPersistentStore(
+            ofType: NSSQLiteStoreType,
+            configurationName: nil,
+            at: url,
+            options: [NSMigratePersistentStoresAutomaticallyOption: true, NSInferMappingModelAutomaticallyOption: true]
+        )
+        let context = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
+        context.persistentStoreCoordinator = coordinator
+        try context.performAndWait {
+            let assets = try context.fetch(NSFetchRequest<NSManagedObject>(entityName: "AssetEntity"))
+            #expect(assets.compactMap { $0.value(forKey: "name") as? String } == ["Flat"])
+            #expect(assets.first?.value(forKey: "transactionLinksData") as? Data == links)
+            #expect(assets.first?.value(forKey: "attributesData") == nil)
+            #expect(assets.first?.value(forKey: "yieldOnShare") as? Bool == false)
         }
     }
 }

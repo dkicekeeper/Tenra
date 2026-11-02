@@ -4,7 +4,8 @@
 //
 //  An asset in the assets list: adapter over DesignKit's HoldingCard (8.2.0). The value large,
 //  rolling up as the list opens; its change over the purchase price as a trend pill with the
-//  gain ("+46 000 000 ₸ since purchase"); the purchase and every valuation as the sparkline;
+//  gain ("+46 000 000 ₸ since purchase"); its value over time as the sparkline, evenly in time
+//  (AssetValuationMath.chartHistory, D3) and ending today or on the sale, as on its screen;
 //  when it was valued under the name ("≈ estimate" when its depreciation counts the value down
 //  since), or when it was sold with a "Sold" badge; an "Out of date" badge once the valuation
 //  is older than its kind allows (AssetValuationMath.isStale). Without a purchase price there is
@@ -16,6 +17,8 @@ import SwiftUI
 struct AssetCard: View {
     let asset: Asset
     let summary: AssetValuationMath.Summary
+    /// The list's day, moved at midnight: the badge and the estimate follow it.
+    var today = Date()
 
     @Environment(\.amountsHidden) private var amountsHidden
 
@@ -27,15 +30,20 @@ struct AssetCard: View {
             amount: summary.value,
             currency: asset.currency,
             change: change,
-            history: AssetValuationMath.history(of: asset).map(\.value),
+            history: history,
             isLive: true
         ) {
             if asset.isSold {
                 Badge(String(localized: "asset.soldBadge"), color: AppColors.textSecondary)
-            } else if AssetValuationMath.isStale(asset) {
+            } else if AssetValuationMath.isStale(asset, today: today) {
                 Badge(String(localized: "asset.staleBadge"), color: AppColors.warning)
             }
         }
+    }
+
+    /// The value a month apart from the first point to today or the sale.
+    private var history: [Double] {
+        AssetValuationMath.chartHistory(of: asset, today: today).map(\.value)
     }
 
     private var subtitle: String? {

@@ -34,7 +34,7 @@ this file is the full index.
 
 | File | Purpose |
 |------|---------|
-| [architecture.md](architecture.md) | MVVM + Coordinator, TransactionStore, BalanceCoordinator, Repository, CoreData v18, backups |
+| [architecture.md](architecture.md) | MVVM + Coordinator, TransactionStore, BalanceCoordinator, Repository, CoreData v19, backups |
 | [concurrency.md](concurrency.md) | Swift 6 concurrency, CoreData threading, `@Observable` rules, DataSnapshot |
 | [design-system.md](design-system.md) | Tenra on DesignKit: the bridge and hooks, what stays in Tenra, screen patterns, amount formatting, dates and category styling, effects in use (tokens and components: DesignKit's own docs) |
 | [gotchas.md](gotchas.md) | SwiftUI layout, performance hot paths, previews, ignorable console warnings |
@@ -45,7 +45,7 @@ this file is the full index.
 | File | Purpose |
 |------|---------|
 | [domains/accounts.md](domains/accounts.md) | Account, series and parsed-date indexes, AccountDetailView read contract, ranking |
-| [domains/assets.md](domains/assets.md) | Assets (homes, cars): storage (v17, v18), value, gain, growth a year, share and loan, rent and upkeep, the sale, net worth, the Pro gate, screens |
+| [domains/assets.md](domains/assets.md) | Assets (homes, cars): storage (v17-v19), characteristics, value, gain, growth a year, share and loan, rent and upkeep, the sale, net worth, the Pro gate, screens |
 | [domains/assistant.md](domains/assistant.md) | Ten, the AI assistant: architecture, tools, reply blocks, threads and facts, "Ten writes", the server and its protocol, App Attest, limits, privacy, setup and eval |
 | [domains/categories.md](domains/categories.md) | Category, subcategory and budget aggregates, style cache, reorder |
 | [domains/charts.md](domains/charts.md) | Insight charts (DesignKit + `PeriodChartAdapters.swift`), scrolling, sparklines |
@@ -71,8 +71,8 @@ this file is the full index.
 | [backlog.md](backlog.md) | Open items, ideas not planned yet, decisions that stand |
 | [plan-assistant-ios27.md](plan-assistant-ios27.md) | Plan, not started: Ten on Apple's models (Private Cloud Compute, on device) behind a router, and Siri on iOS 27 |
 | [plan-notification-capture.md](plan-notification-capture.md) | Plan in flight: expenses and incomes from any bank's push notifications through iOS 27's notification trigger (`LogBankNotificationIntent`, the bank-agnostic `BankNotificationParser`, recorded through the Wallet path), own-account transfers and the setup guide: in 1.7, checked on the owner's phone, not yet in What's New; learned templates, "Unparsed" and the Apple model layer still ahead |
-| [plan-investments.md](plan-investments.md) | Plan, owner's decisions taken 2026-10-16, not started: investment portfolios (KASE and US stocks, ETFs, crypto on exchanges and wallets), quote sources and their licences, read-only exchange keys, purchases in parts (trade journal, average cost, XIRR), what Ten may and may not say about investments |
-| [plan-assets-roadmap.md](plan-assets-roadmap.md) | Plan, proposed 2026-11-02, owner's decisions pending: what comes after assets phases 1-4, from the audit ([archive/assets-audit-2026-11-02.md](archive/assets-audit-2026-11-02.md)): selling them in 1.8 (What's New, the paywall list, A1 and A2 fixes), automatic valuation in any country from listings found by web search on Ten's server (owner's decision 2026-11-02; gold and silver by the XAU and XAG rates), net worth in view, the core's gaps (editing a valuation, upkeep from several categories, the sale into money, charts by time), money around an asset (purchase and improvements, schema v18), net worth with investments |
+| [plan-investments.md](plan-investments.md) | Plan, owner's decisions taken 2026-10-16, not started: investment portfolios (KASE and US stocks, ETFs, crypto on exchanges and wallets, gold and silver by weight at the XAU and XAG rates), quote sources and their licences, read-only exchange keys, purchases in parts (trade journal, average cost, XIRR), what Ten may and may not say about investments |
+| [plan-assets-roadmap.md](plan-assets-roadmap.md) | Plan, proposed 2026-11-02, owner's decisions D1-D3, D7 and D12 taken the same day: what comes after assets phases 1-4, from the audit ([archive/assets-audit-2026-11-02.md](archive/assets-audit-2026-11-02.md)): selling them in 1.8 (What's New, the paywall list, A1 and A2 fixes), automatic valuation in any country from listings found by web search on Ten's server (owner's decision 2026-11-02; the server, its eval, Ten's tool and the characteristics in the form, schema v19, and the button on the asset screen done on the branch, off until the server's VALUATION_ENABLED; precious metals moved to the investments plan), net worth stays in Analytics (D1), the core's gaps (editing a valuation, upkeep from several categories, the sale into money, charts by time), money around an asset (purchase and improvements), net worth with investments |
 | [plan-charts-by-day.md](plan-charts-by-day.md) | Work in flight: DesignKit 8.3.0's charts in Tenra (options menu, a year ago, the spending forecast, the category's 12 months) and the "By day" insight, in `main` for 1.8; its What's New draft until 1.7.1 ships |
 | [public/](public/) | The support site: privacy policy, terms of use, support (GitHub Pages) |
 

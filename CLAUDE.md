@@ -83,7 +83,7 @@ Tenra is a native iOS finance management application built with SwiftUI and Core
 **Tech Stack:**
 - SwiftUI (iOS 26+ with Liquid Glass adoption)
 - Swift 5.0 (project setting), targeting Swift 6 patterns; `SWIFT_STRICT_CONCURRENCY = minimal`; `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor`
-- CoreData for persistence (v18 schema)
+- CoreData for persistence (v19 schema)
 - Observation framework (@Observable)
 - MVVM + Coordinator architecture
 
@@ -188,7 +188,7 @@ New file needed?
 
 | Working on... | Read first |
 |---|---|
-| AppCoordinator, TransactionStore role, BalanceCoordinator, Repository pattern, CoreData v18 model | [docs/architecture.md](docs/architecture.md) |
+| AppCoordinator, TransactionStore role, BalanceCoordinator, Repository pattern, CoreData v19 model | [docs/architecture.md](docs/architecture.md) |
 | `@Observable`, `Task`, `MainActor`, `nonisolated`, CoreData threading, `Sendable` | [docs/concurrency.md](docs/concurrency.md) |
 | `Views/Components/**`, a new screen or sheet, DesignKit in Tenra (bridge, adapters, screen patterns), amount formatting, dates and category styling, animations and effects | [docs/design-system.md](docs/design-system.md); tokens and components themselves: DesignKit's `docs/design-system.md` |
 | `Services/Insights/**` (operational guide) | [docs/domains/insights.md](docs/domains/insights.md) |
@@ -289,7 +289,7 @@ On iOS 26 `.swipeActions` silently no-ops outside a `List` (e.g. `LazyVStack`, `
 
 - **Apple Search Ads attribution**: `PremiumManager.configure()` turns on RevenueCat's AdServices token collection (no ATT); the RevenueCat dashboard's Apple Search Ads integration ties trials and purchases to campaigns.
 - **SDK isolation**: ONLY [PremiumManager](Tenra/Services/Premium/PremiumManager.swift) imports `RevenueCat`; ONLY [PaywallSheet](Tenra/Views/Premium/PaywallSheet.swift) imports `RevenueCatUI`. Feature gates depend solely on `premium.isPro` — never import the SDK elsewhere.
-- **Gate pattern** (3 lines): `@Environment(PremiumManager.self)` + `@State showingPaywall` + `.paywallSheet(isPresented:onUnlocked:)`; `onUnlocked` resumes the interrupted flow (after a purchase, or a restore that actually unlocked Pro). Whole-tab gates use `PremiumLockedView` (Voice/OCR tabs in TabViews.swift).
+- **Gate pattern** (3 lines): `@Environment(PremiumManager.self)` + `@State showingPaywall` + `.paywallSheet(isPresented:source:onUnlocked:)`; `onUnlocked` resumes the interrupted flow (after a purchase, or a restore that actually unlocked Pro). Whole-tab gates use `PremiumLockedView` (Voice/OCR tabs in TabViews.swift). `source` (`PaywallSource`) names the gate: `PremiumManager.notePaywallShown(from:)` writes it to RevenueCat's subscriber attribute `paywall_source` when the sheet appears, so conversions can be told apart by gate; a new gate adds a case.
 - **Paywall shows RevenueCatUI only when there is something to sell**: `PaywallSheet` first awaits `PremiumManager.checkOfferings()` (`OfferingsAvailability`, plain values); otherwise it shows a localized "temporarily unavailable" state with a retry (RevenueCatUI's own error alert closes the sheet: the 3-month "opens then closes" bug, RevenueCat error 23). A restore closes the sheet only when `applyPaywallResult(_:)` says `pro` is active, else "nothing to restore". Settings → About → Diagnostics shows whether the App Store returns products (launch health check).
 - **Offer codes** (promo codes): free users redeem them in Settings → "Redeem code", above About ([SettingsPurchaseSection](Tenra/Views/Settings/SettingsPurchaseSection.swift), StoreKit's `offerCodeRedemption` sheet, so the view imports StoreKit, never RevenueCat); `PremiumManager.syncAfterOfferCodeRedemption()` syncs with RevenueCat when the sheet closes. Codes are created in App Store Connect → the subscription → Offer Codes; one-off grants without a code: Actions → RevenueCat (`revenuecat.yml`, `grant`) or the RevenueCat dashboard → customer → grant entitlement.
 - **Subscription status display**: read `PremiumManager.proStatus` (`ProStatus`: plan, renewal date, `willRenew`, `managementURL`) — never import RevenueCat for status. Settings is a page of Home's stack (the gear) topped by the self-contained [SettingsProHero](Tenra/Views/Settings/SettingsProHero.swift): the crown on `AuroraBackground` with one button, "Get Tenra Pro" opening the paywall (free), "Manage Subscription" (subscriber) or the "Free forever" badge (Founding User). What Pro includes is the RevenueCat paywall's to list (configured in its dashboard); restore and redeem are rows of `SettingsPurchaseSection` for free users.
@@ -302,7 +302,7 @@ On iOS 26 `.swipeActions` silently no-ops outside a `List` (e.g. `LazyVStack`, `
 
 ⚠️ **The Xcode project uses file-system-synchronized groups (`PBXFileSystemSynchronizedRootGroup`).** Adding, deleting, or renaming files (`.swift`, `.stringsdict`, etc.) needs NO `project.pbxproj` edits — just create/`rm` on disk and they're auto-included in the target. (Verified: deleted a view + added `.stringsdict` files, both picked up by the build.)
 
-Schema version-bump checklist (currently v18) lives in the `/coredata-schema-bump` skill ([.claude/skills/coredata-schema-bump/SKILL.md](.claude/skills/coredata-schema-bump/SKILL.md)) — invoke it before touching `Tenra.xcdatamodeld`.
+Schema version-bump checklist (currently v19) lives in the `/coredata-schema-bump` skill ([.claude/skills/coredata-schema-bump/SKILL.md](.claude/skills/coredata-schema-bump/SKILL.md)) — invoke it before touching `Tenra.xcdatamodeld`.
 
 ## Testing
 

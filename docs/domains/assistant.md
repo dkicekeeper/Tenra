@@ -81,7 +81,7 @@ database, only the results of the tools it asked for.
 
 | Group | Tools | Built on |
 |---|---|---|
-| Read | `get_spending_summary`, `compare_periods`, `search_transactions`, `get_accounts`, `get_budgets`, `list_recurring`, `get_insights` (+ health score), `get_goals`, `get_debts`, `get_assets`, `get_net_worth`, `convert_currency` | `SummaryCalculator` / `TransactionType.summaryContribution`, `TransactionQueryService`, `BalanceCoordinator`, `CategoryBudgetService.budgetProgress`, `InsightsService`, `SpendingQueryService`, `AssetValuationMath` through `AssetStore`, `NetWorthCalculator` (and the net worth insight's months) |
+| Read | `get_spending_summary`, `compare_periods`, `search_transactions`, `get_accounts`, `get_budgets`, `list_recurring`, `get_insights` (+ health score), `get_goals`, `get_debts`, `get_assets`, `get_net_worth`, `estimate_asset_value`, `convert_currency` | `SummaryCalculator` / `TransactionType.summaryContribution`, `TransactionQueryService`, `BalanceCoordinator`, `CategoryBudgetService.budgetProgress`, `InsightsService`, `SpendingQueryService`, `AssetValuationMath` through `AssetStore`, `NetWorthCalculator` (and the net worth insight's months), `POST /v1/valuation` through `AgentServerClient` (§8) |
 | Draft | `draft_transactions`, `draft_budget`, `draft_recurring`, `draft_goal`, `draft_goal_contribution`, `draft_debt`, `draft_debt_repayment`, `draft_asset`, `draft_asset_valuation`, `draft_fact` | `TransactionDraftService.makeDraft` → `commit`, `CategoriesViewModel.setBudget`, `SubscriptionCreationService` + `linkSubcategoriesToTransaction` (red flag 5), `GoalStore`, `DebtStore`, `AssetStore`, `AgentMemory` |
 | Plan | `forecast_balance` (a daily limit until a date, what-ifs), `simulate_loan` (refinancing, early repayment, an extra payment each month), `project_savings` | the Forecasting insight, `RecurringStore`, `LoanInfo` + `LoanWhatIf`, `SavingsProjection` |
 
@@ -168,7 +168,10 @@ enum AgentBlock {                // AgentReply.swift; source = a tool result's r
 - `open` leads to the app's screens inside the assistant's stack (`AssistantDestinationView`): a
   category or an account by id from `<app_context>` (an account opens by kind: deposit, loan,
   ordinary), History (filtered by category when an id is given), Analytics, budgets,
-  subscriptions. An id that does not exist shows an empty state, never another screen.
+  subscriptions, the assets list (its cards open an asset in the same stack) or an asset by id.
+  An id that does not exist shows an empty state, never another screen. A destination the app
+  version does not know decodes as unsupported and is left out (`LenientBlock`). Goals and debts
+  have no button.
 
 ## 5. Threads and memory
 
@@ -204,7 +207,11 @@ enum AgentBlock {                // AgentReply.swift; source = a tool result's r
 last week's summary once a week, subscriptions charging tomorrow, a debt due tomorrow, a goal
 behind its schedule (once a month) and an asset whose valuation is out of date (once a half-year,
 [assets.md](assets.md); its button is "Update value" and opens the valuation sheet on Home, no
-action spent: quicker than a chat, though Ten reads and values assets too). Each has a key and never repeats. They show only on Home
+action spent: quicker than a chat, though Ten reads and values assets too), and a long loan no
+asset is bought with (`Kind.loanAsset`, `AssistantNotices.loansWithoutAsset`: an annuity of
+`loanAssetMinMonths` or more still owed, no asset linking it; once a loan, ever, the owner's
+decision D7; its button is "Add asset" and opens a new asset with the loan, the paywall first
+without Pro). Each has a key and never repeats. They show only on Home
 (`AssistantNoticesSection`, under the accounts): the newest unread one with Ten in its mood and the
 count of the rest; "Go through it" opens the assistant with a question and a `<notice>` block (one
 free action), "Hide" shows the next. Works without notification permission. A push of an insight
@@ -218,7 +225,8 @@ automation records a payment (`Subjects.capturing`).
 A notice keeps a copy of its text with the amounts as dots (`hiddenBody`), shown while "hide
 amounts" is on. A notice about a subscription, a debt, a goal or an asset leaves with it: the Home section
 shows only notices whose subject is still there (`AssistantNotices.Subjects`: active
-subscriptions, open debts, goals, assets still out of date, read once every store has loaded), and
+subscriptions, open debts, goals, assets still out of date, loans still without an asset, read
+once every store has loaded), and
 `refreshAssistantInbox` drops the rest for good (their keys stay posted).
 
 ## 7. The tab, the chat, voice and attachments
@@ -292,7 +300,8 @@ The app runs the agent loop, because the tools run on the phone: one server call
 - The first message of a thread carries `<app_context>`: today's date, locale, base currency,
   accounts and categories with ids, the held assets with ids (always a line, "none" when empty: it
   tells the prompt this app version has assets, and an older one, with no line, gets no asset
-  tools), the facts, the goals and open debts (format: `eval/fixture.ts`, `appContext`). A new one
+  tools), `valuation: listings` (this version runs `estimate_asset_value`), the facts, the goals
+  and open debts (format: `eval/fixture.ts`, `appContext`). A new one
   is sent when the date or the lists change.
 - Errors before the stream: 400 `invalid`, 401 `user`, 401 `attest` (with `reason`), 429 `quota`
   or `busy`, 451 `region_unavailable` (the app shows `assistant.error.region`), 502
@@ -314,6 +323,75 @@ The app runs the agent loop, because the tools run on the phone: one server call
   use a synthetic chain (`test/fixtures/make-appattest.mjs`). In the app `AgentAttestation`
   registers the key on the first turn (key id in UserDefaults: an App Attest key does not survive a
   reinstall), `AgentServerClient` signs every body, and `unknown_key` gets a new key and one retry.
+
+### Valuation from listings (`POST /v1/valuation`)
+
+What an asset is worth by comparable listings found with web search, in any country
+([plan-assets-roadmap.md](../plan-assets-roadmap.md) §3; the app does not call it yet, so
+`VALUATION_ENABLED` is `false`). Code: `src/valuation.ts`.
+
+- Same gates as a turn: the country, `x-tenra-user`, the App Attest assertion over the body, Pro
+  for the `user` inside it. Body (8 KB at most): `{"protocol": 1, "user": "...", "asset": {...}}`,
+  the asset as `AssetDescription`: `kind` (`apartment`, `house`, `land`, `commercial`, `vehicle`,
+  `other`), `country` (ISO), the place (city, region, district, complex) and the kind's
+  characteristics (area in m², land in ares, rooms as the country's listings count them, year,
+  building, floor, condition; make, model, generation, year, engine, mileage in km, customs,
+  steering; a description for `other`). Each kind has its required fields and refuses the others;
+  no name, no address, no text with seven digits or more (a phone, an IIN, a VIN). A bad field is
+  400 `invalid` with its name as the reason.
+- One model call (up to three: a paused turn goes on, a turn without the report is asked for it
+  once; a turn cut off by `max_tokens`, 16 000, gives no report) with the server tool `web_search` (`VALUATION_MAX_SEARCHES`, 3; `web_search_20260209` for
+  models with dynamic filtering, `web_search_20250305` for Haiku) and the strict client tool
+  `report_listings`: every listing for sale the model saw, with the URL of the search result it
+  saw it in. No `web_fetch`: listing sites' pages are never read. `user_location` comes from the
+  asset, except where web search refuses the country (a 400 "Country code KZ is not supported":
+  Kazakhstan, and any country such a 400 names, after which the call is made again without it);
+  the place is in the asset the model reads either way. The prompt asks for a second search
+  unless the first showed ten listings, full prices (thousands separators), and no shares,
+  auctions or "from" prices.
+- The arithmetic is code, never the model: a listing counts only when its URL is one of the search
+  results (normalized: no `www.`/`m.`, decoded, no trailing slash); rents, duplicates and other
+  currencies than the most common one are left out; rooms are the first number of a written
+  "2+1" (`rooms_text`, Turkey's way), else the model's figure; comparables by kind (real estate:
+  the same rooms unless that leaves fewer than three, size within 25%, then 40%, then by price among the same rooms, also when sizes are on
+  fewer than half of five or more same-room listings; a vehicle: the year ±1, the mileage
+  ±40 000 km when three are close); only the largest group of prices within 6.25 times of each
+  other (`outside_cluster`: prices misread by a power of ten make a group of their own, at times
+  as large as the real one; of two as large, the dearer); outliers by Tukey's fences from four
+  listings on;
+  the median and the quartiles, to three significant digits. Accuracy: `high` from 8 comparables
+  with quartiles within ±10% of the median, `medium` from 5 within ±20% (at most `medium` for a
+  widened match or `other`), `low` below; fewer than 3: `insufficient`.
+- Response (JSON, after the search, tens of seconds): `status`, `reason`, `currency` (the
+  market's; the phone converts), `value`, `low`, `high`, `accuracy`, `basis`, `per_unit`,
+  `count`, `listings` (title and URL from the search results, price, size, rooms, year,
+  mileage; never a seller's name or phone), `site_averages` (a site's own averages, shown beside,
+  never counted), `excluded` (counts by reason), `searched_at`, `searches`, `model`, `prompt`
+  (`VALUATION_PROMPT_VERSION`), `tier`, `quota`. Errors: 503 `disabled`, 429 `quota` or `busy`,
+  422 `refused`, 502 `upstream` with `code` and `retryable`.
+- The asset screen's "Estimate from listings" (`AssetEstimateSheet`, [assets.md](assets.md)) calls the
+  same endpoint with the same request (`AssetEstimateRequest`) through the chat's
+  `AgentServerClient`, which `AppCoordinator` keeps once (one App Attest key); it shows only
+  once `GET /v1/health` names a valuation prompt (`valuationAvailable()`, once a launch). The
+  month's estimates are the same count for both.
+- In the chat it is Ten's read tool `estimate_asset_value` (`FinanceToolkit+Assets.swift`), which
+  the server offers only while `VALUATION_ENABLED` is on (`toolsFor`; the name stays valid in a
+  history) and the prompt only when `<app_context>` has `valuation: listings` (this app version
+  and later). The phone sends the asset's kind, the country (the model's, else the one saved,
+  else the phone's region) and its characteristics, saved in its form (`AssetAttributes`, v19)
+  with the fields the model gave over them, only the kind's and only values the server takes,
+  never the name; without what the kind needs it asks the model to ask for it, before any
+  search (`get_assets` lists `characteristics` and `missing_for_estimate`). It returns the value,
+  the quartiles and the same in the asset's currency, `current_value` and `change_percent`,
+  `count`, `accuracy`, `sites` and up to six listings without links, `estimates_left`; the
+  server's refusals (off, the month's limit, a missing field, the region, busy) come back as
+  what to tell the user and the way to value it instead (the area times a price per unit). Ten
+  then offers `draft_asset_valuation` with the value. The chat step reads "Looking at listings"
+  (`AssistantStep.valuing`, `assistant.step.valuing`).
+- Its model is its own (`VALUATION_MODEL`, `VALUATION_EFFORT`), chosen by the valuation eval
+  (§12): Haiku 5.5, and `VALUATION_FALLBACK_MODEL` (Sonnet 5.5) asked again when Haiku finds
+  too few listings or declines, its result then standing (`valuate`; the response's `model` and
+  `fallback` say which). `/v1/health` gives the valuation prompt's version while it is on, else `null`.
 
 ## 9. The mascot
 
@@ -357,7 +435,12 @@ spending, no em dashes, in all 11 languages.
 - **The server's quota** per App Attest key (§8) sits above the app's, so a new user id does not
   reset it. A device without App Attest gets no assistant.
 - **Pro**: no allowance within fair use (`PRO_MONTHLY_CALLS`), Founding Users and lifetime
-  included. No separate AI subscription ([promotion-plan.md](../promotion-plan.md) §2).
+  included.
+- **Valuations** (`POST /v1/valuation`) count apart: `FREE_MONTHLY_VALUATIONS` (2) per attested
+  key, `PRO_MONTHLY_VALUATIONS` (30) per customer, and each weighs `VALUATION_CALL_WEIGHT` (25)
+  calls in `GLOBAL_DAILY_CALLS` (40, on the safe side). Cost: about $0.025 a valuation on Haiku
+  5.5 and $0.15 on Sonnet 5.5 (web search is $10 per 1 000 searches); the Sonnet fallback ran for
+  4 of 13 cases in eval run 122 and none in run 124. No separate AI subscription ([promotion-plan.md](../promotion-plan.md) §2).
 - **Cost** (Anthropic prices per 1M tokens, 2026-10: Haiku 5.5 $0.10 / $0.50, Sonnet 5.5 $2 / $10,
   Opus 5.5 $4 / $20; a message ≈ 2 model calls, ~16k input tokens half cached, ~1k output): Haiku
   ≈ $0.002 a message, ≈ $0.12 for 60 a month, against ≈ $0.67 a month net of an annual Pro.
@@ -376,16 +459,31 @@ spending, no em dashes, in all 11 languages.
   `https://tenra-assistant.dakacom.workers.dev`, its address in the app's Info.plist
   (`TenraAssistantURL`).
 - **Workflow** `Assistant server` (`.github/workflows/assistant.yml`): typecheck and unit tests on
-  every push to `server/assistant/**`; by hand, `deploy` (uploads the secrets to the Worker) or
-  `eval` (models, effort, cases).
+  every push to `server/assistant/**`; by hand, `deploy` (uploads the secrets to the Worker),
+  `eval` (models, effort, cases) or `eval-valuation` (the same inputs).
 - **Pro for a person on the server**: the server sees only RevenueCat, so a Founding User (kept on
   the phone) needs `pro` granted there (Actions → RevenueCat → `grant`).
 - **Eval** (`server/assistant/eval/`): a synthetic user (`fixture.ts`; never real statements), a
-  tool simulator, 49 cases in Russian and English (`cases.ts`; assets: `ru-asset-new`,
-  `ru-asset-valuation`, `ru-asset-worth-asks`, `ru-net-worth`, `en-rental-yield`), checks: the right tool, figures
-  only by reference, no amounts in text, a draft instead of "saved", the language, prompt
+  tool simulator, 52 cases in Russian and English (`cases.ts`; assets: `ru-asset-new`,
+  `ru-asset-valuation`, `ru-asset-worth-asks`, `ru-asset-worth-listings`, `en-car-worth-listings`,
+  `ru-car-worth-saved` (the car's characteristics are saved: no question), `ru-net-worth`,
+  `en-rental-yield`; the eval offers `estimate_asset_value` and the fixture's context has its
+  line), checks: the right tool, figures
+  only by reference, no amounts in text (with a currency on either side, with a scale word as
+  in "13,4 млн", or a big number; a year, a model name and a number with a unit such as km or
+  m² are not money), a draft instead of "saved", the language, prompt
   injection in a note, `blocks_decode`, `no_refusal`, `noPick`. A prompt change bumps
   `PROMPT_VERSION` and runs the eval before the deploy.
+- **Valuation eval** (`eval/valuation.ts`, `npm run eval:valuation -- --models ... --yes`): the
+  endpoint's own code with live web search on 13 cases (`eval/valuation-cases.ts`: flats in
+  Almaty, Astana, Shymkent and Karaganda, a Camry and a Cobalt, land in Kaskelen, flats in
+  Istanbul, Madrid and London, a Golf in Germany, a Civic in the US, and a handmade thing whose
+  answer is "too few"), each with a dated reference from official statistics, market reports or
+  price guides and a tolerance; `--fallback <model>` (the workflow's `fallback` input) runs the
+  production pair. Reports passes, the median deviation, comparables kept of those
+  reported, links dropped as not in the results, searches, cost and time. About $0.46 a run on
+  Haiku 5.5 and $1.82 on Sonnet 5.5; references older than three months are refreshed, never
+  widened. A change to the valuation prompt bumps `VALUATION_PROMPT_VERSION` and runs it.
 
 ## 13. Tests
 
@@ -394,6 +492,7 @@ spending, no em dashes, in all 11 languages.
   `AgentMemoryTests`, `AgentAttachmentTests`, and the tools over fixtures (`AgentCurrencyToolsTests`,
   `AgentForecastTests`, `AgentPlanningTests`, `PlanToolsTests`, `AssetToolsTests`).
 - Server: `npm test` in `server/assistant/` (`test/`: `index`, `quota`, `entitlement`, `claude`,
-  `appattest` on a synthetic chain, `tools` for the schemas, `eval` for the grader).
+  `appattest` on a synthetic chain, `tools` for the schemas, `eval` for the grader, `valuation`
+  for the valuation's checks, arithmetic, model loop, endpoint and its eval cases).
 - Not testable here: the real App Attest flow, streaming on a device, Ten's animation; checked on
   the iPhone.

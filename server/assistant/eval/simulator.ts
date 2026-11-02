@@ -690,6 +690,7 @@ function assetRow(a: (typeof ASSETS)[number]) {
     gain_percent: gain !== null && a.purchasePrice ? pct((gain / a.purchasePrice) * 100) : null,
     annual_growth_percent: growth === null ? null : pct(growth),
     depreciation_percent_a_year: null,
+    value_in_3_years: null,
     share_percent: Math.round(a.share * 100),
     owned_value: round(a.value * a.share),
     owned_value_base: round(toBase(a.value * a.share, a.currency)),
@@ -702,7 +703,26 @@ function assetRow(a: (typeof ASSETS)[number]) {
     counted_in_net_worth: true,
     sold: false,
     sold_on: null,
+    characteristics: Object.keys(a.characteristics).length ? a.characteristics : null,
+    missing_for_estimate: requiredFor(a.kind).filter((group) => !group.some((key) => a.characteristics[key] !== undefined)).map((group) => group.join(" or ")),
   };
+}
+
+/** What an estimate cannot go without (AssetAttributes.Field.required on the phone). */
+function requiredFor(kind: string): string[][] {
+  switch (kind) {
+    case "apartment":
+    case "commercial":
+      return [["city"], ["area_m2"]];
+    case "house":
+      return [["city", "region"], ["area_m2"]];
+    case "land":
+      return [["city", "region"], ["land_ares"]];
+    case "vehicle":
+      return [["make"], ["model"], ["year"]];
+    default:
+      return [["description"]];
+  }
 }
 
 function getAssets() {
@@ -790,6 +810,48 @@ function draftAsset(input: Input) {
   };
 }
 
+// estimate_asset_value as the phone answers it (FinanceToolkit+Assets.swift) after POST
+// /v1/valuation: the fields each kind needs or the server's 400, then a fixed market answer.
+function estimateAssetValue(input: Input) {
+  const ref = (str(input, "asset", true) ?? "").trim();
+  const asset = ASSETS.find((a) => a.id === ref);
+  if (!asset) throw new ToolInputError(`Unknown asset ${ref}. Use an asset id from <app_context>.`);
+  // As the phone: the saved characteristics, with what the model gave over them.
+  const merged: Record<string, unknown> = { ...asset.characteristics };
+  for (const [key, value] of Object.entries(input)) if (key !== "asset" && value !== null && value !== undefined) merged[key] = value;
+  const missing = requiredFor(asset.kind).filter((group) => !group.some((key) => merged[key] !== undefined));
+  if (missing.length) {
+    const names = missing.map((group) => group.join(" or ")).join(", ");
+    throw new ToolInputError(`To estimate ${asset.name[caseLocale]} the search needs ${names}. Ask the user for it in one short question, then call estimate_asset_value again with it.`);
+  }
+  const market =
+    asset.kind === "apartment"
+      ? { value: 72_500_000, low: 67_800_000, high: 76_100_000, count: 14, accuracy: "medium", sites: ["krisha.kz", "olx.kz"] }
+      : { value: 13_400_000, low: 12_700_000, high: 13_900_000, count: 9, accuracy: "medium", sites: ["kolesa.kz"] };
+  return {
+    status: "ok",
+    asset_id: asset.id,
+    name: asset.name[caseLocale],
+    market_currency: "KZT",
+    value: market.value,
+    low: market.low,
+    high: market.high,
+    asset_currency: asset.currency,
+    value_in_asset_currency: market.value,
+    low_in_asset_currency: market.low,
+    high_in_asset_currency: market.high,
+    current_value: asset.value,
+    change_percent: round(((market.value - asset.value) / asset.value) * 100),
+    count: market.count,
+    accuracy: market.accuracy,
+    basis: asset.kind === "apartment" ? "per_unit" : "price",
+    sites: market.sites,
+    asking_prices: true,
+    searched_at: `${TODAY}T10:00:00Z`,
+    estimates_left: 29,
+  };
+}
+
 function draftAssetValuation(input: Input) {
   const ref = (str(input, "asset", true) ?? "").trim();
   const asset = ASSETS.find((a) => a.id === ref || a.name.ru.toLowerCase() === ref.toLowerCase() || a.name.en.toLowerCase() === ref.toLowerCase());
@@ -865,6 +927,7 @@ const HANDLERS: Record<string, (input: Input) => unknown> = {
   get_net_worth: getNetWorth,
   draft_asset: draftAsset,
   draft_asset_valuation: draftAssetValuation,
+  estimate_asset_value: estimateAssetValue,
   convert_currency: convertCurrency,
 };
 

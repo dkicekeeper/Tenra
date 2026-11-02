@@ -78,7 +78,7 @@ struct AssistantChatView: View {
             }
             .onDisappear { tabBarVisibility?.isHidden = false }
             .onChange(of: premium.isPro) { model.refreshAllowance() }
-            .paywallSheet(isPresented: $showingPaywall) {
+            .paywallSheet(isPresented: $showingPaywall, source: .assistant) {
                 model.refreshAllowance()
                 retryFailed()
             }

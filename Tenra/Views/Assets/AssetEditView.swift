@@ -4,10 +4,12 @@
 //
 //  A new asset, or changes to one (docs/domains/assets.md): icon, name, what it is worth today
 //  and its currency in the hero; its kind; the purchase price and day (empty for an
-//  inheritance or a gift); the person's share and the loan it was bought with; the categories of
-//  its rent and its upkeep, each with an optional subcategory, never the transactions another
+//  inheritance or a gift); the person's share, the loan it was bought with and whether it counts
+//  in net worth; the categories of
+//  its rent and its upkeep, each with any of its subcategories, never the transactions another
 //  asset already counts; for transport and other things, the depreciation a year (off by
-//  default: the person sets it). A value changed here is a valuation of today (the sale price,
+//  default: the person sets it); its characteristics for an estimate by listings
+//  (AssetAttributesSection, v19). A value changed here is a valuation of today (the sale price,
 //  once sold). Changing the currency moves the purchase price and the valuations at today's rate, or
 //  keeps the currency without one.
 //
@@ -21,6 +23,8 @@ struct AssetEditView: View {
     let baseCurrency: String
     /// The categories rent and upkeep can come from, and the links other assets hold.
     var linkOptions: AssetLinkOptions = .empty
+    /// A new asset bought with this loan (from the loan's screen or Ten's message about it).
+    var initialLoanAccountId: String? = nil
     let onSave: (Asset) -> Void
 
     @Environment(\.dismiss) private var dismiss
@@ -42,11 +46,25 @@ struct AssetEditView: View {
     @State private var depreciationPercent = 0
     /// Empty: no loan.
     @State private var loanAccountId = ""
+    /// Off: the asset stays in its list but out of net worth and the totals.
+    @State private var includeInNetWorth = true
+    /// The yield of the person's share rather than of the whole asset (D2); offered below 100%.
+    @State private var yieldOnShare = false
+    @State private var note = ""
     /// Empty: no link; a subcategory left empty takes the whole category.
     @State private var incomeCategoryId = ""
     @State private var incomeSubcategoryIds: Set<String> = []
-    @State private var expenseCategoryId = ""
-    @State private var expenseSubcategoryIds: Set<String> = []
+    /// The upkeep rows, one category (and its subcategories) each: tax, the building's fees,
+    /// repairs (plan 2.3). A row without a category is left out.
+    @State private var expenseDrafts: [LinkDraft] = [LinkDraft()]
+
+    struct LinkDraft: Identifiable, Equatable {
+        let id = UUID()
+        var categoryId = ""
+        var subcategoryIds: Set<String> = []
+    }
+    /// Where it is and what it is like, as typed.
+    @State private var attributesDraft = AssetAttributesDraft()
 
     var body: some View {
         EditSheetContainer(
@@ -117,6 +135,18 @@ struct AssetEditView: View {
                                     + loanAccounts.map { (label: $0.name, value: $0.id) })
                             )
                         }
+                        if sharePercent < 100 {
+                            UniversalRow(
+                                String(localized: "asset.yieldOnShare"),
+                                icon: "percent",
+                                accessory: .toggle($yieldOnShare)
+                            )
+                        }
+                        UniversalRow(
+                            String(localized: "asset.includeInNetWorth"),
+                            icon: "chart.pie",
+                            accessory: .toggle($includeInNetWorth)
+                        )
                     }
 
                     if hasDepreciation {
@@ -144,14 +174,32 @@ struct AssetEditView: View {
                         )
                     }
                     if !linkOptions.expenseCategories.isEmpty {
-                        linkSection(
-                            header: String(localized: "asset.upkeep"),
-                            footer: String(localized: "asset.upkeep.hint"),
-                            icon: "wrench.and.screwdriver",
-                            categories: linkOptions.expenseCategories,
-                            categoryId: $expenseCategoryId,
-                            subcategoryIds: $expenseSubcategoryIds,
-                            overlaps: expenseOverlaps
+                        ForEach($expenseDrafts) { $draft in
+                            linkSection(
+                                header: draft.id == expenseDrafts.first?.id ? String(localized: "asset.upkeep") : nil,
+                                footer: draft.id == expenseDrafts.last?.id ? String(localized: "asset.upkeep.hint") : nil,
+                                icon: "wrench.and.screwdriver",
+                                categories: linkOptions.expenseCategories,
+                                categoryId: $draft.categoryId,
+                                subcategoryIds: $draft.subcategoryIds,
+                                overlaps: overlaps(draft)
+                            )
+                        }
+                        if canAddUpkeep {
+                            DSButton(String(localized: "asset.upkeep.add"), systemImage: "plus", appearance: .flat) {
+                                expenseDrafts.append(LinkDraft())
+                            }
+                        }
+                    }
+
+                    AssetAttributesSection(kind: kind, draft: $attributesDraft)
+
+                    // The row names it: a header with the same word would repeat it.
+                    FormSection {
+                        UniversalRow(
+                            String(localized: "asset.note"),
+                            icon: "text.alignleft",
+                            accessory: .textField($note, placeholder: String(localized: "moneyEntry.notePlaceholder"))
                         )
                     }
                 }
@@ -160,7 +208,9 @@ struct AssetEditView: View {
                 .animation(AppAnimation.smooth, value: purchasePrice != nil)
                 .animation(AppAnimation.smooth, value: hasDepreciation)
                 .animation(AppAnimation.smooth, value: incomeCategoryId)
-                .animation(AppAnimation.smooth, value: expenseCategoryId)
+                .animation(AppAnimation.smooth, value: expenseDrafts)
+                .animation(AppAnimation.smooth, value: kind)
+                .animation(AppAnimation.smooth, value: sharePercent < 100)
             }
         }
         .onAppear(perform: fill)
@@ -174,8 +224,14 @@ struct AssetEditView: View {
         .onChange(of: incomeCategoryId) {
             incomeSubcategoryIds = incomeSubcategoryIds.filter { linkOptions.has(subcategory: $0, in: incomeCategoryId) }
         }
-        .onChange(of: expenseCategoryId) {
-            expenseSubcategoryIds = expenseSubcategoryIds.filter { linkOptions.has(subcategory: $0, in: expenseCategoryId) }
+        .onChange(of: expenseDrafts.map(\.categoryId)) {
+            for index in expenseDrafts.indices {
+                let categoryId = expenseDrafts[index].categoryId
+                let kept = expenseDrafts[index].subcategoryIds.filter { linkOptions.has(subcategory: $0, in: categoryId) }
+                if kept != expenseDrafts[index].subcategoryIds {
+                    expenseDrafts[index].subcategoryIds = kept
+                }
+            }
         }
     }
 
@@ -184,8 +240,8 @@ struct AssetEditView: View {
     /// counts these transactions.
     @ViewBuilder
     private func linkSection(
-        header: String,
-        footer: String,
+        header: String?,
+        footer: String?,
         icon: String,
         categories: [AssetLinkOptions.Item],
         categoryId: Binding<String>,
@@ -242,15 +298,33 @@ struct AssetEditView: View {
 
     private var isValid: Bool {
         !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && (value != nil || purchasePrice != nil)
-            && !incomeOverlaps && !expenseOverlaps
+            && !incomeOverlaps && !expenseDrafts.contains(where: overlaps)
     }
 
     private var incomeLink: AssetCategoryLink? {
         Self.link(incomeCategoryId, incomeSubcategoryIds)
     }
 
-    private var expenseLink: AssetCategoryLink? {
-        Self.link(expenseCategoryId, expenseSubcategoryIds)
+    /// The upkeep links: the rows with a category, one link a category (a category picked
+    /// twice merges its subcategories; the whole category wins).
+    private var expenseLinks: [AssetCategoryLink] {
+        var result: [AssetCategoryLink] = []
+        for draft in expenseDrafts where !draft.categoryId.isEmpty {
+            if let index = result.firstIndex(where: { $0.categoryId == draft.categoryId }) {
+                let merged: Set<String> = result[index].isWholeCategory || draft.subcategoryIds.isEmpty
+                    ? []
+                    : Set(result[index].subcategoryIds).union(draft.subcategoryIds)
+                result[index] = AssetCategoryLink(categoryId: draft.categoryId, subcategoryIds: merged.sorted())
+            } else if let link = Self.link(draft.categoryId, draft.subcategoryIds) {
+                result.append(link)
+            }
+        }
+        return result
+    }
+
+    /// Another row while every row has a category and some category is left.
+    private var canAddUpkeep: Bool {
+        expenseDrafts.allSatisfy { !$0.categoryId.isEmpty } && expenseDrafts.count < linkOptions.expenseCategories.count
     }
 
     /// The subcategories sorted: the same pick saves the same link.
@@ -275,8 +349,9 @@ struct AssetEditView: View {
         } ?? false
     }
 
-    private var expenseOverlaps: Bool {
-        expenseLink.map { link in
+    /// An upkeep row another asset held on the same days already counts.
+    private func overlaps(_ draft: LinkDraft) -> Bool {
+        Self.link(draft.categoryId, draft.subcategoryIds).map { link in
             linkOptions.takenExpense.contains { AssetValuationMath.overlaps($0.link, held: $0.held, link, held: heldPeriod) }
         } ?? false
     }
@@ -293,8 +368,14 @@ struct AssetEditView: View {
     }
 
     private func fill() {
+        attributesDraft = AssetAttributesDraft(asset?.attributes ?? AssetAttributes(), defaultCountry: AssetAttributesDraft.phoneCountry)
         guard let asset else {
             currency = baseCurrency
+            loanAccountId = initialLoanAccountId ?? ""
+            if let loan = loanAccounts.first(where: { $0.id == initialLoanAccountId }) {
+                // In the loan's currency, as the purchase most likely was.
+                currency = loan.currency
+            }
             return
         }
         name = asset.name
@@ -312,10 +393,14 @@ struct AssetEditView: View {
         sharePercent = min(100, max(5, Int((asset.ownershipShare * 100).rounded())))
         depreciationPercent = min(50, max(0, Int(((asset.depreciationPerYear ?? 0) * 100).rounded())))
         loanAccountId = asset.linkedLoanAccountId ?? ""
+        includeInNetWorth = asset.includeInNetWorth
+        yieldOnShare = asset.yieldOnShare
+        note = asset.note ?? ""
         incomeCategoryId = asset.incomeLink?.categoryId ?? ""
         incomeSubcategoryIds = Set(asset.incomeLink?.subcategoryIds ?? [])
-        expenseCategoryId = asset.expenseLink?.categoryId ?? ""
-        expenseSubcategoryIds = Set(asset.expenseLink?.subcategoryIds ?? [])
+        expenseDrafts = asset.expenseLinks.isEmpty
+            ? [LinkDraft()]
+            : asset.expenseLinks.map { LinkDraft(categoryId: $0.categoryId, subcategoryIds: Set($0.subcategoryIds)) }
     }
 
     // MARK: - Save
@@ -331,14 +416,22 @@ struct AssetEditView: View {
         result.ownershipShare = Double(sharePercent) / 100
         result.depreciationPerYear = hasDepreciation && depreciationPercent > 0 ? Double(depreciationPercent) / 100 : nil
         result.linkedLoanAccountId = loanAccountId.isEmpty ? nil : loanAccountId
+        result.includeInNetWorth = includeInNetWorth
+        result.yieldOnShare = sharePercent < 100 && yieldOnShare
+        let trimmedNote = note.trimmingCharacters(in: .whitespacesAndNewlines)
+        result.note = trimmedNote.isEmpty ? nil : trimmedNote
         result.incomeLink = incomeLink
-        result.expenseLink = expenseLink
+        result.expenseLinks = expenseLinks
+        result.attributes = attributesDraft.attributes(for: kind, over: asset?.attributes ?? AssetAttributes())
 
         // Kept in the asset's currency: the purchase price and the valuations move to the new
         // one at today's rate, or the currency stays when there is no rate to move them at.
         result.currency = currency
         if let asset, asset.currency != currency {
-            if let moved = Self.amounts(of: asset, in: currency) {
+            let moved = AssetEditing.moved(asset) { amount in
+                CurrencyConverter.convertSync(amount: amount, from: asset.currency, to: currency)
+            }
+            if let moved {
                 result.valuations = moved.valuations
                 result.purchasePrice = moved.purchasePrice
             } else {
@@ -353,43 +446,11 @@ struct AssetEditView: View {
         result.purchaseDate = result.purchasePrice == nil ? nil : Calendar.current.startOfDay(for: purchaseDate)
 
         if let value, valueText != initialValueText {
-            if result.isSold, let index = result.valuations.lastIndex(where: { $0.source == .sale }) {
-                // A sold asset's value is its sale price.
-                result.valuations[index].value = value
-            } else if asset != nil || !isPurchaseToday(value: value, price: result.purchasePrice, date: result.purchaseDate, today: today) {
-                result.valuations.append(AssetValuation(date: today, value: value, source: .manual))
-            }
+            result = AssetEditing.applying(value: value, to: result, isNew: asset == nil, today: today)
         }
         HapticManager.success()
         onSave(result)
         dismiss()
-    }
-
-    /// A new asset bought today at the value typed: the purchase is the only point.
-    private func isPurchaseToday(value: Double, price: Double?, date: Date?, today: Date) -> Bool {
-        guard let price, let date else { return false }
-        return abs(price - value) < PersonalDebt.centTolerance && Calendar.current.isDate(date, inSameDayAs: today)
-    }
-
-    /// The asset's valuations and purchase price in another currency at today's rate; nil when
-    /// one of them has no rate.
-    private static func amounts(of asset: Asset, in currency: String) -> (valuations: [AssetValuation], purchasePrice: Double?)? {
-        func convert(_ amount: Double) -> Double? {
-            CurrencyConverter.convertSync(amount: amount, from: asset.currency, to: currency).map { ($0 * 100).rounded() / 100 }
-        }
-        var valuations: [AssetValuation] = []
-        for valuation in asset.valuations {
-            guard let value = convert(valuation.value) else { return nil }
-            var copy = valuation
-            copy.value = value
-            valuations.append(copy)
-        }
-        var price: Double?
-        if let purchase = asset.purchasePrice {
-            guard let converted = convert(purchase) else { return nil }
-            price = converted
-        }
-        return (valuations, price)
     }
 }
 

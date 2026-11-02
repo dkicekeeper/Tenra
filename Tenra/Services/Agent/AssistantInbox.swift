@@ -36,6 +36,9 @@ struct AssistantNotice: Codable, Equatable, Identifiable, Sendable {
         case setup
         /// An asset's valuation out of date: its action opens a new valuation, not Ten.
         case asset
+        /// A long loan no asset is bought with (plan-assets-roadmap 1.2): its action opens a new
+        /// asset with the loan, not Ten.
+        case loanAsset
     }
 
     enum Mood: String, Codable, Sendable {
@@ -290,6 +293,32 @@ extension AssistantNotices {
         }
     }
 
+    /// Long loans no asset is bought with (plan-assets-roadmap 1.2, the owner's decision D7: once
+    /// a loan, ever): annuities of three years or more still owed, which a flat or a car is
+    /// usually bought with. Installments are left out (a phone in parts), and so is a loan any
+    /// asset links, held or sold.
+    static func loansWithoutAsset(_ accounts: [Account], assets: [Asset], now: Date) -> [AssistantNotice] {
+        let linked = Set(assets.compactMap(\.linkedLoanAccountId))
+        return accounts.compactMap { account in
+            guard let loan = account.loanInfo, loan.loanType == .annuity, loan.termMonths >= loanAssetMinMonths,
+                  loan.remainingPrincipal > 0, !linked.contains(account.id) else { return nil }
+            return AssistantNotice(
+                id: "loanAsset:\(account.id)",
+                kind: .loanAsset,
+                title: account.name,
+                body: String(localized: "assistant.notice.loanAsset"),
+                mood: .idle,
+                question: "",
+                insightId: nil,
+                subjectId: account.id,
+                createdAt: now
+            )
+        }
+    }
+
+    /// A loan this long or longer may have bought a flat or a car.
+    static let loanAssetMinMonths = 36
+
     /// A goal younger than this is never behind.
     static let goalGraceDays: Double = 30
     /// How far below the time gone the saved share must fall.
@@ -308,6 +337,8 @@ extension AssistantNotices {
         var capturing = false
         /// The held assets whose valuation is still out of date.
         var staleAssets: Set<String> = []
+        /// The loans still without an asset.
+        var loansWithoutAsset: Set<String> = []
 
         func contains(_ notice: AssistantNotice) -> Bool {
             switch notice.kind {
@@ -319,6 +350,7 @@ extension AssistantNotices {
             case .goal: return notice.subjectId.map(goals.contains) ?? true
             case .setup: return !capturing
             case .asset: return notice.subjectId.map(staleAssets.contains) ?? true
+            case .loanAsset: return notice.subjectId.map(loansWithoutAsset.contains) ?? true
             case .signal, .digest: return true
             }
         }

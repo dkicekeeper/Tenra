@@ -86,6 +86,14 @@ describe("grader", () => {
     expect(year.find((c) => c.name === "no_money_in_text")?.pass).toBe(true);
     const yearAmount = universalChecks(record("Осталось 2027 ₸."), "ru", "Сколько осталось?");
     expect(yearAmount.find((c) => c.name === "no_money_in_text")?.pass).toBe(false);
+    // Millions, a currency first, a scale before the currency: money. A model with its year, a
+    // mileage and an area: characteristics.
+    const say = (text: string, prompt = "Сколько стоит машина?") =>
+      universalChecks(record(text), "ru", prompt).find((c) => c.name === "no_money_in_text")?.pass;
+    expect(say("Оценка около 72,5 млн, диапазон от 67,8 до 76,1 млн тенге.")).toBe(false);
+    expect(say("Медиана **13,4 млн ₸**.")).toBe(false);
+    expect(say("Typical asking price is $16,500.", "What is it worth?")).toBe(false);
+    expect(say("Похожие Toyota Camry XV70 2019 года с пробегом около 110 000 км, участок 1 200 м².")).toBe(true);
     const broken = universalChecks(record("Кафе выросли.", "totals.sum"), "ru");
     expect(broken.find((c) => c.name === "refs_resolve")?.pass).toBe(false);
     // The model never sees tool_use ids: a block pointing at one resolves nothing.
@@ -103,6 +111,9 @@ describe("grader", () => {
     expect(refs(open({ destination: "history", target_id: null }))).toBe(true);
     expect(refs(open({ destination: "category", target_id: "cat_made_up" }))).toBe(false);
     expect(refs(open({ destination: "account", target_id: null }))).toBe(false);
+    expect(refs(open({ destination: "asset", target_id: "asset_flat" }))).toBe(true);
+    expect(refs(open({ destination: "asset", target_id: null }))).toBe(false);
+    expect(refs(open({ destination: "assets", target_id: null }))).toBe(true);
     const openCase = CASES.find((c) => c.id === "ru-open-category")!;
     expect(caseCheck(open({ destination: "category", target_id: "cat_cafe" }), openCase.checks[0]!).pass).toBe(true);
     expect(caseCheck(open({ destination: "analytics", target_id: null }), openCase.checks[0]!).pass).toBe(false);

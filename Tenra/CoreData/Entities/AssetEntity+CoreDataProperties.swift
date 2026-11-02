@@ -28,6 +28,8 @@ extension AssetEntity {
     @NSManaged public nonisolated var includeInNetWorth: Bool
     @NSManaged public nonisolated var soldAt: Date?
     @NSManaged public nonisolated var transactionLinksData: Data?  // AssetTransactionLinks as JSON (v18)
+    @NSManaged public nonisolated var attributesData: Data?  // AssetAttributes as JSON (v19)
+    @NSManaged public nonisolated var yieldOnShare: Bool  // the yield of the person's share (v19)
     @NSManaged public nonisolated var note: String?
     @NSManaged public nonisolated var order: Int32
     @NSManaged public nonisolated var createdAt: Date?

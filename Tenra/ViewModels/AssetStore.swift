@@ -31,6 +31,8 @@ final class AssetStore {
     private(set) var assets: [Asset] = []
     /// The kept assets have been read: an empty list means there are none.
     private(set) var isLoaded: Bool
+    /// The repository's writes in the order they were asked for (SerialTaskQueue).
+    @ObservationIgnored private let writes = SerialTaskQueue()
 
     /// A loan account's remaining principal; nil when the account is gone. Set by AppCoordinator.
     @ObservationIgnored var loanBalance: (String) -> AssetValuationMath.LoanBalance? = { _ in nil }
@@ -40,6 +42,9 @@ final class AssetStore {
     /// The transactions of these ids that still exist (the payments linked or removed by hand),
     /// from TransactionStore's id index. Set by AppCoordinator.
     @ObservationIgnored var transactionsWithIds: ([String]) -> [Transaction] = { _ in [] }
+    /// The incomes of these days (stored day keys, both included), for the sale's money
+    /// (`AssetSale`). Set by AppCoordinator.
+    @ObservationIgnored var incomesOnDays: (ClosedRange<String>) -> [Transaction] = { _ in [] }
     /// Called after the assets change (and once they are read): net worth is recomputed. Set by
     /// AppCoordinator.
     @ObservationIgnored var didChange: () -> Void = {}
@@ -134,16 +139,16 @@ final class AssetStore {
     }
 
     /// What the held assets counted in net worth were worth over time, at their share, in
-    /// `currency` (the list's hero chart).
-    func valueHistory(in currency: String) -> [AssetValuationMath.DatedValue] {
-        AssetValuationMath.totalHistory(of: held.filter(\.includeInNetWorth)) { [self] amount, asset in
+    /// `currency` (the list's hero chart), evenly in time up to `today` (D3).
+    func valueHistory(in currency: String, today: Date = Date()) -> [AssetValuationMath.DatedValue] {
+        AssetValuationMath.totalChartHistory(of: held.filter(\.includeInNetWorth), today: today) { [self] amount, asset in
             convert(amount, from: asset.currency, to: currency)
         }
     }
 
     // MARK: - Rent and upkeep
 
-    /// The rent (`.income` of the income link) and the upkeep (`.expense` of the expense link)
+    /// The rent (`.income` of the income link) and the upkeep (`.expense` of the expense links)
     /// of the days the asset is held (from its purchase to its sale,
     /// `AssetValuationMath.HeldPeriod`), without the payments removed by hand and with the ones
     /// linked by hand (an expense is upkeep, an income rent, whatever its day), newest first;
@@ -152,27 +157,53 @@ final class AssetStore {
         let excluded = Set(asset.excludedTransactionIds)
         let included = transactionsWithIds(asset.includedTransactionIds)
         let byLink = transactionsOfLinks(of: asset)
-        func counted(_ link: AssetCategoryLink?, _ byLink: [Transaction], _ type: TransactionType) -> [Transaction]? {
+        func counted(_ hasLink: Bool, _ byLink: [Transaction], _ type: TransactionType) -> [Transaction]? {
             let byHand = included.filter { $0.type == type }
-            guard link != nil || !byHand.isEmpty else { return nil }
+            guard hasLink || !byHand.isEmpty else { return nil }
             var seen = Set<String>()
             return (byLink.filter { !excluded.contains($0.id) } + byHand)
                 .filter { seen.insert($0.id).inserted }
                 .sorted { $0.date > $1.date }
         }
-        return (counted(asset.incomeLink, byLink.rent, .income), counted(asset.expenseLink, byLink.upkeep, .expense))
+        return (counted(asset.incomeLink != nil, byLink.rent, .income), counted(!asset.expenseLinks.isEmpty, byLink.upkeep, .expense))
     }
 
     /// What the category links alone count: their payments of the days the asset is held, with
     /// none removed by hand.
     private func transactionsOfLinks(of asset: Asset) -> (rent: [Transaction], upkeep: [Transaction]) {
         let held = AssetValuationMath.heldPeriod(of: asset)
-        func whileHeld(_ link: AssetCategoryLink?, _ type: TransactionType) -> [Transaction] {
-            (link.map { transactionsOfLink($0, type) } ?? []).filter { tx in
-                FastDateParser.date(from: tx.date).map { held.contains($0) } ?? false
+        /// Each transaction once, though two links of the asset may both count it.
+        func whileHeld(_ links: [AssetCategoryLink], _ type: TransactionType) -> [Transaction] {
+            var seen = Set<String>()
+            return links.flatMap { transactionsOfLink($0, type) }.filter { tx in
+                seen.insert(tx.id).inserted && (FastDateParser.date(from: tx.date).map { held.contains($0) } ?? false)
             }
         }
-        return (whileHeld(asset.incomeLink, .income), whileHeld(asset.expenseLink, .expense))
+        return (whileHeld(asset.incomeLink.map { [$0] } ?? [], .income), whileHeld(asset.expenseLinks, .expense))
+    }
+
+    /// A link's transactions among its category's (`bucket`): of `type`, and with any of the
+    /// link's subcategories unless it takes the whole category (finding A8 of the assets audit:
+    /// AppCoordinator wires it to TransactionStore's indexes).
+    static func transactions(
+        ofLink link: AssetCategoryLink,
+        type: TransactionType,
+        in bucket: [Transaction],
+        subcategories: (String) -> [String]?
+    ) -> [Transaction] {
+        bucket.filter { tx in
+            guard tx.type == type else { return false }
+            guard !link.isWholeCategory else { return true }
+            guard let linked = subcategories(tx.id) else { return false }
+            return link.subcategoryIds.contains { linked.contains($0) }
+        }
+    }
+
+    /// The money of a sold asset's sale is recorded as an income (`AssetSale`): the "Record the
+    /// money" banner goes. True for a held asset.
+    func isSaleIncomeRecorded(_ asset: Asset) -> Bool {
+        guard let window = AssetSale.window(of: asset) else { return true }
+        return AssetSale.isRecorded(asset, among: incomesOnDays(window))
     }
 
     /// The payments removed from the asset by hand that still exist, newest first.
@@ -213,13 +244,23 @@ final class AssetStore {
     }
 
     func incomeSummary(for asset: Asset, today: Date = Date()) -> AssetValuationMath.IncomeSummary {
-        let linked = linkedTransactions(of: asset)
-        return AssetValuationMath.income(
+        incomeSummary(for: asset, linked: linkedTransactions(of: asset), today: today)
+    }
+
+    /// The same from rent and upkeep already gathered (`linkedTransactions(of:)`), so a screen
+    /// that shows both gathers them once.
+    func incomeSummary(
+        for asset: Asset,
+        linked: (rent: [Transaction]?, upkeep: [Transaction]?),
+        today: Date = Date()
+    ) -> AssetValuationMath.IncomeSummary {
+        AssetValuationMath.income(
             rent: linked.rent.map { dated($0, in: asset.currency) },
             upkeep: linked.upkeep.map { dated($0, in: asset.currency) },
             summary: summary(for: asset, today: today),
             purchaseDate: asset.purchaseDate,
             soldAt: asset.soldAt,
+            onShare: asset.yieldOnShare ? asset.ownershipShare : nil,
             today: today
         )
     }
@@ -228,12 +269,12 @@ final class AssetStore {
     /// not overlap one held on the same days (`AssetValuationMath.overlaps(_:held:_:held:)`).
     func takenLinks(excluding assetId: String?) -> (income: [AssetLinkOptions.Taken], expense: [AssetLinkOptions.Taken]) {
         let others = assets.filter { $0.id != assetId }
-        func taken(_ link: (Asset) -> AssetCategoryLink?) -> [AssetLinkOptions.Taken] {
-            others.compactMap { asset in
-                link(asset).map { AssetLinkOptions.Taken(link: $0, held: AssetValuationMath.heldPeriod(of: asset)) }
+        func taken(_ links: (Asset) -> [AssetCategoryLink]) -> [AssetLinkOptions.Taken] {
+            others.flatMap { asset in
+                links(asset).map { AssetLinkOptions.Taken(link: $0, held: AssetValuationMath.heldPeriod(of: asset)) }
             }
         }
-        return (taken(\.incomeLink), taken(\.expenseLink))
+        return (taken { $0.incomeLink.map { [$0] } ?? [] }, taken(\.expenseLinks))
     }
 
     /// Transactions in the asset's currency, at the cached rates.
@@ -282,7 +323,7 @@ final class AssetStore {
         var asset = asset
         asset.order = (assets.map(\.order).max() ?? -1) + 1
         assets.append(asset)
-        await repository?.save(asset)
+        await writes.run { [repository] in await repository?.save(asset) }
         didChange()
     }
 
@@ -290,13 +331,13 @@ final class AssetStore {
     func update(_ asset: Asset) async {
         guard let index = assets.firstIndex(where: { $0.id == asset.id }) else { return }
         assets[index] = asset
-        await repository?.save(asset)
+        await writes.run { [repository] in await repository?.save(asset) }
         didChange()
     }
 
     func delete(id: String) async {
         assets.removeAll { $0.id == id }
-        await repository?.delete(id: id)
+        await writes.run { [repository] in await repository?.delete(id: id) }
         didChange()
     }
 
@@ -331,7 +372,7 @@ final class AssetStore {
     private func save(_ ids: [String]) async {
         for id in ids {
             if let asset = assets.first(where: { $0.id == id }) {
-                await repository?.save(asset)
+                await writes.run { [repository] in await repository?.save(asset) }
             }
         }
     }
@@ -340,6 +381,17 @@ final class AssetStore {
     func addValuation(_ valuation: AssetValuation, to assetId: String) async {
         guard var asset = asset(id: assetId) else { return }
         asset.valuations.append(valuation)
+        await update(asset)
+    }
+
+    /// A valuation changed in place (its value, day or note); the sale's day is the asset's
+    /// sale day.
+    func updateValuation(_ valuation: AssetValuation, in assetId: String) async {
+        guard var asset = asset(id: assetId), let index = asset.valuations.firstIndex(where: { $0.id == valuation.id }) else { return }
+        asset.valuations[index] = valuation
+        if valuation.source == .sale {
+            asset.soldAt = valuation.date
+        }
         await update(asset)
     }
 

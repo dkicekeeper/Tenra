@@ -2,8 +2,9 @@
 //  AgentServerClient.swift
 //  Tenra
 //
-//  Calls the assistant Worker (`POST /v1/turn`) and streams its server-sent events. Network
-//  work runs off the main actor (docs/concurrency.md). The base URL comes from Info.plist
+//  Calls the assistant Worker (`POST /v1/turn`) and streams its server-sent events, and asks it
+//  what an asset is worth by listings (`POST /v1/valuation`, the estimate_asset_value tool).
+//  Network work runs off the main actor (docs/concurrency.md). The base URL comes from Info.plist
 //  (`TenraAssistantURL`); without it the cloud brain is off. With App Attest every body is
 //  signed (AgentAttestation); the server needs that from people without Pro.
 //
@@ -12,6 +13,19 @@ import Foundation
 
 nonisolated protocol AgentTransport: Sendable {
     func turn(_ messages: [AgentWireMessage]) -> AsyncThrowingStream<AgentStreamEvent, Error>
+}
+
+/// `POST /v1/valuation` (docs/domains/assistant.md §8): an asset's value from comparable listings.
+nonisolated protocol AgentValuationTransport: Sendable {
+    /// The server's answer as it is; its refusals are thrown as AgentServerError.
+    func valuation(asset: [String: JSONValue]) async throws -> JSONValue
+}
+
+/// The body of `POST /v1/valuation`: the asset's kind, place and characteristics, never its name.
+nonisolated struct AgentValuationRequest: Sendable, Encodable {
+    let `protocol`: Int
+    let user: String
+    let asset: [String: JSONValue]
 }
 
 nonisolated enum AgentServerError: Error, Equatable {
@@ -58,7 +72,7 @@ nonisolated enum AgentConfig {
     }
 }
 
-nonisolated final class AgentServerClient: AgentTransport {
+nonisolated final class AgentServerClient: AgentTransport, AgentValuationTransport {
     private let baseURL: URL
     private let session: URLSession
     private let userID: @Sendable () async -> String?
@@ -101,6 +115,55 @@ nonisolated final class AgentServerClient: AgentTransport {
             }
             continuation.onTermination = { _ in task.cancel() }
         }
+    }
+
+    func valuation(asset: [String: JSONValue]) async throws -> JSONValue {
+        guard let user = await userID() else { throw AgentServerError.unauthorized }
+        let body = try JSONEncoder().encode(AgentValuationRequest(protocol: AgentProtocol.version, user: user, asset: asset))
+        var answer = try await Self.post(body, path: "v1/valuation", user: user, baseURL: baseURL, session: session, attestation: attestation)
+        if case .failure(let error) = answer, error == .attestation(reason: "unknown_key"), let attestation {
+            await attestation.reset()
+            answer = try await Self.post(body, path: "v1/valuation", user: user, baseURL: baseURL, session: session, attestation: attestation)
+        }
+        return try JSONDecoder().decode(JSONValue.self, from: answer.get())
+    }
+
+    /// Whether the server values assets from listings (`GET /v1/health` names the valuation
+    /// prompt, or null while `VALUATION_ENABLED` is off). Unsigned; false when it cannot be reached.
+    func valuationAvailable() async -> Bool {
+        var request = URLRequest(url: baseURL.appending(path: "v1/health"))
+        request.timeoutInterval = 15
+        guard let answer = try? await session.data(for: request),
+              (answer.1 as? HTTPURLResponse)?.statusCode == 200,
+              let health = try? JSONDecoder().decode(JSONValue.self, from: answer.0) else { return false }
+        return health["valuation"]?.stringValue != nil
+    }
+
+    /// One signed POST that answers in JSON: its body on 200, the server's error otherwise. A
+    /// valuation searches the web first: tens of seconds, a minute and more with the fallback.
+    private static func post(
+        _ body: Data,
+        path: String,
+        user: String,
+        baseURL: URL,
+        session: URLSession,
+        attestation: AgentAttestation?
+    ) async throws -> Result<Data, AgentServerError> {
+        var request = URLRequest(url: baseURL.appending(path: path))
+        request.httpMethod = "POST"
+        request.timeoutInterval = 180
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
+        request.setValue(user, forHTTPHeaderField: "x-tenra-user")
+        request.httpBody = body
+        if let attestation {
+            let headers = try await attestation.headers(for: body)
+            for (name, value) in headers { request.setValue(value, forHTTPHeaderField: name) }
+        }
+        let (data, response) = try await session.data(for: request)
+        let status = (response as? HTTPURLResponse)?.statusCode ?? 0
+        guard status == 200 else { return .failure(AgentServerError.from(status: status, body: data)) }
+        return .success(data)
     }
 
     /// One POST: the stream on 200, the server's error otherwise.

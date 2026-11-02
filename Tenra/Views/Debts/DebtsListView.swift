@@ -103,7 +103,7 @@ struct DebtsListView: View {
         } message: {
             Text(String(localized: "debt.deleteMessage"))
         }
-        .paywallSheet(isPresented: $showingPaywall) {
+        .paywallSheet(isPresented: $showingPaywall, source: .debtAdd) {
             // After unlocking Pro, continue straight into the new debt.
             showingAdd = true
         }

@@ -24,6 +24,9 @@ final class TransactionAddCoordinator {
     // MARK: - State
 
     var formData: TransactionFormData
+    /// The amount came filled in, in its own currency (a sale's price): an account in another
+    /// currency converts it rather than taking the account's currency.
+    @ObservationIgnored private let keepsCurrency: Bool
 
     // MARK: - Initialization
 
@@ -34,14 +37,26 @@ final class TransactionAddCoordinator {
         transactionsViewModel: TransactionsViewModel,
         categoriesViewModel: CategoriesViewModel,
         accountsViewModel: AccountsViewModel,
-        transactionStore: TransactionStore
+        transactionStore: TransactionStore,
+        subcategoryIds: Set<String> = [],
+        prefill: TransactionAddModal.Prefill? = nil
     ) {
-        self.formData = TransactionFormData(
+        var formData = TransactionFormData(
             category: category,
             type: type,
             currency: currency,
             suggestedAccountId: nil  // Will be computed in onAppear
         )
+        // Picked up front: an asset's rent goes in with the subcategories its link counts.
+        formData.subcategoryIds = subcategoryIds
+        // An asset's sale money: its amount, day and description, in the sale's currency.
+        if let prefill {
+            formData.amountText = AmountInputFormatting.bindingString(for: prefill.amount)
+            formData.selectedDate = prefill.date
+            formData.description = prefill.description
+        }
+        self.formData = formData
+        self.keepsCurrency = prefill != nil
 
         self.transactionsViewModel = transactionsViewModel
         self.categoriesViewModel = categoriesViewModel
@@ -102,7 +117,7 @@ final class TransactionAddCoordinator {
 
     /// Update currency when account selection changes
     func updateCurrencyForSelectedAccount() {
-        guard let accountId = formData.accountId,
+        guard !keepsCurrency, let accountId = formData.accountId,
               let account = accountsViewModel.accounts.first(where: { $0.id == accountId }) else {
             return
         }

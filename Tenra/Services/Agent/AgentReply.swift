@@ -38,6 +38,9 @@ nonisolated enum AgentChartKind: String, Sendable, Equatable, Decodable {
 
 nonisolated enum AgentDestination: String, Sendable, Equatable, Decodable {
     case category, account, analytics, history, budgets, subscriptions
+    /// The assets list, and one asset by its id (plan-assets-roadmap 1.4). A version without
+    /// them reads the block as unsupported and leaves it out.
+    case assets, asset
 }
 
 nonisolated enum AgentBlock: Sendable, Equatable, Decodable {

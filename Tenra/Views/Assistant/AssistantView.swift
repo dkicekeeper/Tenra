@@ -149,7 +149,7 @@ struct AssistantView: View {
             },
             onDecline: { awaitingConsent = nil }
         )
-        .paywallSheet(isPresented: $showingPaywall) {
+        .paywallSheet(isPresented: $showingPaywall, source: .assistant) {
             model.refreshAllowance()
         }
         .sheet(isPresented: $showingVoice) {

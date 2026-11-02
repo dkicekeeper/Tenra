@@ -1,4 +1,5 @@
 import type Anthropic from "@anthropic-ai/sdk";
+import type { Config } from "./config";
 
 // Tool definitions sent to Claude. The phone executes every tool (FinanceToolkit in the
 // app) and returns the result; this server only describes them. Names and shapes are the
@@ -8,6 +9,9 @@ import type Anthropic from "@anthropic-ai/sdk";
 // Order is fixed: the tool list is part of the cached prompt prefix.
 
 type Tool = Anthropic.Beta.BetaTool;
+
+/** Values an asset from listings (POST /v1/valuation through the phone); offered while that is on. */
+export const ESTIMATE_ASSET_VALUE = "estimate_asset_value";
 type Schema = Tool["input_schema"];
 
 const date = { type: "string", format: "date", description: "YYYY-MM-DD" } as const;
@@ -180,7 +184,7 @@ const readTools: Tool[] = [
   {
     name: "get_assets",
     description:
-      "What the user owns (Finances, Assets): homes, land, cars and other things, the held ones and the latest sold. Each with its value now (the latest valuation, or the purchase price; is_estimate when a yearly depreciation the user set counts it down), valued_on and out_of_date (a valuation older than six months for homes and cars, a year for other things), the purchase price and date, the gain and gain_percent since the purchase, annual_growth_percent, share_percent and owned_value (owned_value_base in the base currency), loan_left and own_money_in_it with a linked loan, rent_last_12_months, upkeep_last_12_months, rental_yield_percent ((rent minus upkeep) over the value) and full_result (the gain plus all rent minus all upkeep since the purchase). Plus total_base, what the held assets counted in net worth come to, and gain_base.",
+      "What the user owns (Finances, Assets): homes, land, cars and other things, the held ones and the latest sold. Each with its value now (the latest valuation, or the purchase price; is_estimate when a yearly depreciation the user set counts it down), valued_on and out_of_date (a valuation older than six months for homes and cars, a year for other things), the purchase price and date, the gain and gain_percent since the purchase, annual_growth_percent, value_in_3_years (with a yearly depreciation the user set, what it will be worth in three years at that rate), share_percent and owned_value (owned_value_base in the base currency), loan_left and own_money_in_it with a linked loan, rent_last_12_months, upkeep_last_12_months, rental_yield_percent ((rent minus upkeep) over the value) and full_result (the gain plus all rent minus all upkeep since the purchase). Plus total_base, what the held assets counted in net worth come to, and gain_base.",
     input_schema: object({}),
   },
   {
@@ -188,6 +192,45 @@ const readTools: Tool[] = [
     description:
       "Net worth, computed on the phone as the app's net worth insight: money on the accounts plus the assets at the user's share plus what others owe them, minus what is left of the loans and what they owe, all in the base currency. Fields net_worth, money, assets, owed_to_me, loans and i_owe for metrics; lines (key, label, total, subtracted) for a chart of its parts; history, net worth at the end of each of the last months, for a line chart when it is not empty.",
     input_schema: object({}),
+  },
+  {
+    name: ESTIMATE_ASSET_VALUE,
+    description:
+      "Estimates what one of the user's assets is worth now from listings of comparable ones for sale, found by a web search on the server; the median and the range of their asking prices are computed in code, never by you. Takes up to a minute and counts against a monthly limit: call it once per question, with what the kind needs. The characteristics saved on the asset (get_assets) go with it on their own: pass what the user said. asset is an asset id from <app_context>. A flat or commercial property: city, district, area_m2, rooms (as the country's listings count them), and when known year_built, building, floor, floors, condition, complex. A house: city or region, area_m2, land_ares. Land: city or region, land_ares (a sotka is an are), land_use, utilities. A vehicle: make, model, year, mileage_km, and when known generation, engine_l, fuel, transmission, customs_cleared. Other things: description. country is ISO 3166 (the user's by default). Returns status (ok, or insufficient when too few comparable listings were found), value_in_asset_currency, low_in_asset_currency and high_in_asset_currency (the asset's currency), the same in the market's currency (value, low, high, market_currency), current_value and change_percent against it, count (listings used), accuracy (high, medium or low), sites, and estimates_left this month.",
+    input_schema: object(
+      {
+        asset: { type: "string" },
+        country: { type: "string", description: "ISO 3166-1 alpha-2, for example KZ; the user's by default" },
+        city: { type: "string" },
+        region: { type: "string" },
+        district: { type: "string" },
+        complex: { type: "string", description: "A residential complex or a building's name" },
+        area_m2: { type: "number", description: "Floor area in square metres" },
+        rooms: { type: "integer" },
+        year_built: { type: "integer" },
+        building: { type: "string", enum: ["panel", "brick", "monolith", "block", "wood", "other"] },
+        floor: { type: "integer" },
+        floors: { type: "integer" },
+        condition: { type: "string", enum: ["rough", "needs_repair", "standard", "good", "excellent"] },
+        land_ares: { type: "number", description: "Land in ares: one sotka is one are" },
+        land_use: { type: "string", enum: ["residential", "garden", "farm", "commercial", "other"] },
+        utilities: { type: "array", items: { type: "string", enum: ["gas", "water", "sewer", "electricity"] } },
+        commercial_type: { type: "string", enum: ["office", "retail", "warehouse", "other"] },
+        make: { type: "string" },
+        model: { type: "string" },
+        generation: { type: "string" },
+        year: { type: "integer", description: "A vehicle's model year" },
+        engine_l: { type: "number" },
+        fuel: { type: "string", enum: ["petrol", "diesel", "hybrid", "electric", "gas", "other"] },
+        transmission: { type: "string", enum: ["automatic", "manual"] },
+        drive: { type: "string", enum: ["fwd", "rwd", "awd"] },
+        mileage_km: { type: "number" },
+        customs_cleared: { type: "boolean", description: "Kazakhstan: registered in the country" },
+        steering: { type: "string", enum: ["left", "right"] },
+        description: { type: "string", description: "What the thing is, for other things" },
+      },
+      ["asset"],
+    ),
   },
   {
     name: "convert_currency",
@@ -414,7 +457,7 @@ const renderReply: Tool = {
             draft_id: { type: "string", description: "A draft_id a draft tool returned to you; never a draft from <draft_status>, whose card is already in the chat" },
           }),
           block("open", {
-            destination: { type: "string", enum: ["category", "account", "analytics", "history", "budgets", "subscriptions"] },
+            destination: { type: "string", enum: ["category", "account", "analytics", "history", "budgets", "subscriptions", "assets", "asset"] },
             target_id: nullable({ type: "string" }),
             label: { type: "string" },
           }),
@@ -427,5 +470,11 @@ const renderReply: Tool = {
 };
 
 export const TOOLS: Tool[] = [...readTools, ...draftTools, renderReply];
+/** Every tool name a history may hold, estimate_asset_value included while it is off. */
 export const TOOL_NAMES: ReadonlySet<string> = new Set(TOOLS.map((t) => t.name));
+
+/** The tools of a turn: estimate_asset_value only while POST /v1/valuation is on. */
+export function toolsFor(config: Pick<Config, "valuationEnabled">): Tool[] {
+  return config.valuationEnabled ? TOOLS : TOOLS.filter((t) => t.name !== ESTIMATE_ASSET_VALUE);
+}
 export const DRAFT_TOOLS: ReadonlySet<string> = new Set(draftTools.map((t) => t.name));

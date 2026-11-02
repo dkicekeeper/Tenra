@@ -4,9 +4,9 @@
 //
 //  Where an `open` block of a reply leads (docs/domains/assistant.md §4): the app's own
 //  screens, pushed on the assistant's navigation stack, built the way the screens that own
-//  them build them. The model names the destination and, for an account or a category, its id
-//  from <app_context>; an id that matches nothing (deleted since, or made up) shows an empty
-//  state instead of a wrong screen.
+//  them build them. The model names the destination and, for an account, a category or an asset,
+//  its id from <app_context>; an id that matches nothing (deleted since, or made up) shows an
+//  empty state instead of a wrong screen.
 //
 
 import SwiftUI
@@ -20,8 +20,10 @@ enum AssistantRoute: Hashable {
     case analytics
     case budgets
     case subscriptions
+    case assets
+    case asset(String)
 
-    /// Nil for an account or a category without an id: such a block leads nowhere.
+    /// Nil for an account, a category or an asset without an id: such a block leads nowhere.
     init?(destination: AgentDestination, targetId: String?) {
         let id = targetId.flatMap { $0.isEmpty ? nil : $0 }
         switch destination {
@@ -35,6 +37,10 @@ enum AssistantRoute: Hashable {
         case .analytics: self = .analytics
         case .budgets: self = .budgets
         case .subscriptions: self = .subscriptions
+        case .assets: self = .assets
+        case .asset:
+            guard let id else { return nil }
+            self = .asset(id)
         }
     }
 
@@ -46,6 +52,7 @@ enum AssistantRoute: Hashable {
         case .analytics: "chart.bar"
         case .budgets: "gauge.with.dots.needle.50percent"
         case .subscriptions: "repeat"
+        case .assets, .asset: "house"
         }
     }
 }
@@ -107,6 +114,18 @@ struct AssistantDestinationView: View {
                 categoriesViewModel: coordinator.categoriesViewModel,
                 accountsViewModel: coordinator.accountsViewModel
             )
+        case .assets:
+            // Its cards push FinancesDestination, which only Finances' own stack handles.
+            AssetsListView(assetStore: coordinator.assetStore)
+                .navigationDestination(for: FinancesDestination.self) { destination in
+                    if case .assetDetail(let assetId) = destination {
+                        AssetDetailView(assetStore: coordinator.assetStore, assetId: assetId)
+                            .environment(timeFilterManager)
+                    }
+                }
+        case .asset(let id):
+            // An id that matches nothing: the screen's own "not found".
+            AssetDetailView(assetStore: coordinator.assetStore, assetId: id)
         }
     }
 

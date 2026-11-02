@@ -1,7 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import type { Config } from "./config";
 import { SYSTEM_PROMPT } from "./prompt";
-import { TOOLS } from "./tools";
+import { toolsFor } from "./tools";
 
 type Params = Anthropic.Beta.Messages.MessageCreateParamsStreaming;
 type ContentBlock = Anthropic.Beta.BetaContentBlock;
@@ -24,7 +24,7 @@ export function buildParams(config: Config, messages: Anthropic.Beta.BetaMessage
     max_tokens: config.maxTokens,
     // Stable prefix: tools, then this system text. Per-user context lives in the messages.
     system: [{ type: "text", text: SYSTEM_PROMPT }],
-    tools: TOOLS,
+    tools: toolsFor(config),
     // Forced tool choice is a 400 on the current models: render_reply is required by the prompt.
     tool_choice: { type: "auto" },
     thinking: { type: "adaptive", block_binding: { prefix_mismatch_behavior: "drop_block" } },

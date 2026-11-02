@@ -88,10 +88,10 @@
 
 ```
 en-US
-• Assets: add your flat, house, land or car and see what it is worth today, how much it has grown since you bought it, what the rent brings in and the upkeep costs. A car can lose value by a rule you set, and Ten reminds you when a valuation gets old. Net worth in Analytics adds it all up: your money, assets and what you are owed, minus loans and debts. Adding assets is part of Tenra Pro.
+• Assets: add your flat, house, land or car and see what it is worth today, how much it has grown since you bought it, what the rent brings in and the upkeep costs. A car can lose value by a rule you set, with what it will be worth in three years, and Ten reminds you when a valuation gets old. After a sale, Tenra offers to record the money in an account. Net worth in Analytics adds it all up: your money, assets and what you are owed, minus loans and debts. Adding assets is part of Tenra Pro.
 
 ru
-• Активы: добавьте квартиру, дом, участок или машину и смотрите, сколько они стоят сегодня, насколько выросли с покупки, сколько приносит аренда и стоит содержание. Машина может дешеветь по вашему правилу, а Тэн напомнит, когда оценка устарела. Чистый капитал в аналитике складывает всё: деньги, активы и долги вам минус кредиты и ваши долги. Добавление активов входит в Tenra Pro.
+• Активы: добавьте квартиру, дом, участок или машину и смотрите, сколько они стоят сегодня, насколько выросли с покупки, сколько приносит аренда и стоит содержание. Машина может дешеветь по вашему правилу, и видно, сколько она будет стоить через три года, а Тэн напомнит, когда оценка устарела. После продажи Tenra предложит записать деньги на счёт. Чистый капитал в аналитике складывает всё: деньги, активы и долги вам минус кредиты и ваши долги. Добавление активов входит в Tenra Pro.
 ```
 
 Код 0.3-0.6 сделан на ветке `claude/compassionate-volta-j9mpvg` (вместе с треком А); остаются

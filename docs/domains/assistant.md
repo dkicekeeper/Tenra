@@ -410,9 +410,9 @@ spending, no em dashes, in all 11 languages.
   included.
 - **Valuations** (`POST /v1/valuation`) count apart: `FREE_MONTHLY_VALUATIONS` (2) per attested
   key, `PRO_MONTHLY_VALUATIONS` (30) per customer, and each weighs `VALUATION_CALL_WEIGHT` (25)
-  calls in `GLOBAL_DAILY_CALLS` (40). Cost (eval run 120): about $0.025 a valuation on Haiku 5.5
-  and $0.15 on Sonnet 5.5 (web search is $10 per 1 000 searches); with the Sonnet fallback about
-  a quarter of the time, some $0.06 on average. No separate AI subscription ([promotion-plan.md](../promotion-plan.md) §2).
+  calls in `GLOBAL_DAILY_CALLS` (40, on the safe side). Cost: about $0.025 a valuation on Haiku
+  5.5 and $0.15 on Sonnet 5.5 (web search is $10 per 1 000 searches); the Sonnet fallback ran for
+  4 of 13 cases in eval run 122 and none in run 124. No separate AI subscription ([promotion-plan.md](../promotion-plan.md) §2).
 - **Cost** (Anthropic prices per 1M tokens, 2026-10: Haiku 5.5 $0.10 / $0.50, Sonnet 5.5 $2 / $10,
   Opus 5.5 $4 / $20; a message ≈ 2 model calls, ~16k input tokens half cached, ~1k output): Haiku
   ≈ $0.002 a message, ≈ $0.12 for 60 a month, against ≈ $0.67 a month net of an annual Pro.

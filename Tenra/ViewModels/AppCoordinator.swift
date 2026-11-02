@@ -323,7 +323,8 @@ class AppCoordinator {
     }
 
     /// Ten writes first about the subscriptions charged tomorrow, the debts due tomorrow, the
-    /// goals behind their schedule, the assets whose valuation is out of date and auto-capture
+    /// goals behind their schedule, the assets whose valuation is out of date, the long loans
+    /// without an asset and auto-capture
     /// not set up (AssistantInbox); insights and the weekly summary post from the insights
     /// recompute.
     func refreshAssistantInbox(now: Date = Date()) {
@@ -341,6 +342,7 @@ class AppCoordinator {
         candidates += AssistantNotices.debtsDue(debtStore.debts, now: now)
         candidates += AssistantNotices.goalsBehind(goalStore.goals, saved: { [goalStore] in goalStore.saved(for: $0) }, now: now)
         candidates += AssistantNotices.staleAssets(assetStore.held, summary: { [assetStore] in assetStore.summary(for: $0, today: now) }, now: now)
+        candidates += AssistantNotices.loansWithoutAsset(transactionStore.accounts, assets: assetStore.assets, now: now)
         if let nudge = AssistantNotices.setupNudge(
             entries: transactionStore.transactionsCount,
             capturing: WalletCaptureStore.shared.hasEverCaptured,
@@ -361,7 +363,8 @@ class AppCoordinator {
             debts: Set(debtStore.debts.filter { !$0.isSettled }.map(\.id)),
             goals: Set(goalStore.goals.map(\.id)),
             capturing: WalletCaptureStore.shared.hasEverCaptured,
-            staleAssets: Set(assetStore.staleAssets().map(\.id))
+            staleAssets: Set(assetStore.staleAssets().map(\.id)),
+            loansWithoutAsset: Set(AssistantNotices.loansWithoutAsset(transactionStore.accounts, assets: assetStore.assets, now: Date()).compactMap(\.subjectId))
         )
     }
 

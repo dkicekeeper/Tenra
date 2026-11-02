@@ -2444,6 +2444,7 @@
 "asset.depreciation.off" = "Desactivado";
 "asset.depreciationValue" = "%@ al año";
 "assistant.notice.asset.stale" = "Valorado en %1$@ el %2$@. Los precios cambian: actualiza el valor para que tu patrimonio neto sea exacto.";
+"assistant.notice.loanAsset" = "Si con este préstamo compraste un piso o un coche, añádelo a tus activos: el patrimonio mostrará cuánto es dinero tuyo.";
 "asset.saleHint" = "¿Por cuánto lo vendiste?";
 "asset.chart.value" = "Valor";
 
@@ -2571,6 +2572,8 @@
 "asset.valuation.day" = "Fecha de valoración";
 "asset.includeInNetWorth" = "Contar en el patrimonio";
 "asset.yieldOnShare" = "Rentabilidad de mi parte";
+"loan.asset.add" = "Añadir activo";
+"loan.asset" = "Activo";
 "asset.note" = "Nota";
 "insights.netWorth.title" = "Patrimonio neto";
 "insights.netWorth.subtitle" = "Dinero, activos y deudas";

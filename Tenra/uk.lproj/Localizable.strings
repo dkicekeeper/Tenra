@@ -2444,6 +2444,7 @@
 "asset.depreciation.off" = "Ні";
 "asset.depreciationValue" = "%@ на рік";
 "assistant.notice.asset.stale" = "Оцінка %1$@ від %2$@. Ціни змінюються: оновіть її, щоб капітал був точним.";
+"assistant.notice.loanAsset" = "Якщо на цей кредит куплено квартиру чи машину, додайте їх до активів: капітал покаже, скільки в них ваших грошей.";
 "asset.saleHint" = "За скільки продали?";
 "asset.chart.value" = "Вартість";
 
@@ -2571,6 +2572,8 @@
 "asset.valuation.day" = "Дата оцінки";
 "asset.includeInNetWorth" = "Враховувати в капіталі";
 "asset.yieldOnShare" = "Дохідність від моєї частки";
+"loan.asset.add" = "Додати актив";
+"loan.asset" = "Актив";
 "asset.note" = "Нотатка";
 "insights.netWorth.title" = "Чистий капітал";
 "insights.netWorth.subtitle" = "Гроші, активи та борги";

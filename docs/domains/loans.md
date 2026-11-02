@@ -49,6 +49,14 @@ Closed loans surface in `LoansListView` under a collapsed "Closed" `DisclosureGr
 
 `LoanDetailView` when closed: `primaryAction`/`secondaryAction` are `nil` (paying a zero balance would drive `remainingPrincipal` negative and silently reopen the loan), "Change Rate" is hidden, the hero subtitle becomes "Closed <date>" (from `lastPaymentDate`), and a one-shot success banner fires on the `false → true` edge of `isPaidOffLoan`. The amortization schedule and payment history stay fully readable.
 
+## Its asset
+
+Above its cards, `LoanDetailView` shows the asset bought with the loan (an asset whose
+`linkedLoanAccountId` is the loan; a row that opens it), or, while the loan is owed, "Add asset",
+which opens the asset form with the loan picked ([assets.md](assets.md) §Screens). Ten writes once
+about a long annuity without an asset (`AssistantNotices.loansWithoutAsset`,
+[assistant.md](assistant.md) §6).
+
 ## This Month's Payment Status
 
 `LoanMonthStatusService` (pure, `Services/Loans/`) gives each active loan `LoanMonthStatus`: `.paid(nextDueDate:)` or `.unpaid(dueDate:isOverdue:)`, shown by `LoanMonthStatusBadge` under the type badge in `LoanCard` and in the `LoanDetailView` hero. Pinned by `LoanMonthStatusTests`.

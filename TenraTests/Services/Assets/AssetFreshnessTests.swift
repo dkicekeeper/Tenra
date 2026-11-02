@@ -134,6 +134,30 @@ struct AssetFreshnessTests {
         #expect(spring.map(\.id) == ["asset:flat:2027-H1"])
     }
 
+    /// D7: Ten writes once per long loan no asset is bought with (an annuity of three years or
+    /// more, still owed); not about an installment, a short loan, a paid one or one an asset
+    /// links; the message leaves once an asset links the loan.
+    @Test func aLongLoanWithoutAnAssetIsWrittenAboutOnce() {
+        func loan(_ id: String, type: LoanType = .annuity, months: Int = 240, left: Decimal = 20_000_000) -> Account {
+            Account(id: id, name: id, currency: "KZT", loanInfo: LoanInfo(
+                bankName: "Bank", loanType: type, originalPrincipal: 30_000_000, remainingPrincipal: left,
+                interestRateAnnual: 12, termMonths: months, startDate: "2020-01-01", paymentDay: 10
+            ))
+        }
+        let accounts = [
+            loan("mortgage"), loan("phone", type: .installment, months: 12), loan("short", months: 24),
+            loan("paid", left: 0), loan("linked"), Account(id: "card", name: "Card", currency: "KZT"),
+        ]
+        let flat = Asset(id: "flat", name: "Flat", kind: .apartment, currency: "KZT", linkedLoanAccountId: "linked")
+        let notices = AssistantNotices.loansWithoutAsset(accounts, assets: [flat], now: Self.day(2026, 11, 2))
+        #expect(notices.map(\.id) == ["loanAsset:mortgage"])
+        #expect(notices.first?.kind == .loanAsset)
+        #expect(notices.first?.subjectId == "mortgage")
+
+        let subjects = AssistantNotices.Subjects(subscriptions: [], debts: [], goals: [], loansWithoutAsset: [])
+        #expect(notices.first.map(subjects.contains) == false)
+    }
+
     @Test func theMessageLeavesOnceTheAssetIsValued() {
         let notice = AssistantNotice(
             id: "asset:flat:2026-H2", kind: .asset, title: "Flat", body: "", mood: .idle,

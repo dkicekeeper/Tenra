@@ -2444,6 +2444,7 @@
 "asset.depreciation.off" = "Нет";
 "asset.depreciationValue" = "%@ в год";
 "assistant.notice.asset.stale" = "Оценка %1$@ от %2$@. Цены меняются: обновите её, чтобы капитал был точным.";
+"assistant.notice.loanAsset" = "Если на этот кредит куплены квартира или машина, добавьте их в активы: капитал покажет, сколько в них ваших денег.";
 "asset.saleHint" = "За сколько продали?";
 "asset.chart.value" = "Стоимость";
 
@@ -2571,6 +2572,8 @@
 "asset.valuation.day" = "Дата оценки";
 "asset.includeInNetWorth" = "Учитывать в капитале";
 "asset.yieldOnShare" = "Доходность от моей доли";
+"loan.asset.add" = "Добавить актив";
+"loan.asset" = "Актив";
 "asset.note" = "Заметка";
 "insights.netWorth.title" = "Чистый капитал";
 "insights.netWorth.subtitle" = "Деньги, активы и долги";

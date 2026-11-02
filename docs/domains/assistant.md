@@ -207,7 +207,11 @@ enum AgentBlock {                // AgentReply.swift; source = a tool result's r
 last week's summary once a week, subscriptions charging tomorrow, a debt due tomorrow, a goal
 behind its schedule (once a month) and an asset whose valuation is out of date (once a half-year,
 [assets.md](assets.md); its button is "Update value" and opens the valuation sheet on Home, no
-action spent: quicker than a chat, though Ten reads and values assets too). Each has a key and never repeats. They show only on Home
+action spent: quicker than a chat, though Ten reads and values assets too), and a long loan no
+asset is bought with (`Kind.loanAsset`, `AssistantNotices.loansWithoutAsset`: an annuity of
+`loanAssetMinMonths` or more still owed, no asset linking it; once a loan, ever, the owner's
+decision D7; its button is "Add asset" and opens a new asset with the loan, the paywall first
+without Pro). Each has a key and never repeats. They show only on Home
 (`AssistantNoticesSection`, under the accounts): the newest unread one with Ten in its mood and the
 count of the rest; "Go through it" opens the assistant with a question and a `<notice>` block (one
 free action), "Hide" shows the next. Works without notification permission. A push of an insight
@@ -221,7 +225,8 @@ automation records a payment (`Subjects.capturing`).
 A notice keeps a copy of its text with the amounts as dots (`hiddenBody`), shown while "hide
 amounts" is on. A notice about a subscription, a debt, a goal or an asset leaves with it: the Home section
 shows only notices whose subject is still there (`AssistantNotices.Subjects`: active
-subscriptions, open debts, goals, assets still out of date, read once every store has loaded), and
+subscriptions, open debts, goals, assets still out of date, loans still without an asset, read
+once every store has loaded), and
 `refreshAssistantInbox` drops the rest for good (their keys stay posted).
 
 ## 7. The tab, the chat, voice and attachments

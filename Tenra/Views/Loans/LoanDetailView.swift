@@ -25,6 +25,9 @@ struct LoanDetailView: View {
     @State private var showingDeleteConfirmation = false
     @State private var showingLinkPayments = false
     @State private var showFullSchedule = false
+    /// A new asset bought with this loan (plan-assets-roadmap 1.2); Tenra Pro first without it.
+    @State private var showingAssetForm = false
+    @State private var showingAssetPaywall = false
     @State private var cachedSchedule: [LoanPaymentService.AmortizationEntry] = []
     @State private var cachedTransactions: [Transaction] = []
     @State private var paymentError: String? = nil
@@ -316,6 +319,22 @@ struct LoanDetailView: View {
             }
         )
         .heroAccentGlow(icon: account.iconSource)
+        .sheet(isPresented: $showingAssetForm) {
+            let store = appCoordinator.transactionStore
+            AssetEditView(
+                asset: nil,
+                loanAccounts: store.accounts.filter { $0.loanInfo != nil },
+                baseCurrency: transactionsViewModel.appSettings.baseCurrency,
+                linkOptions: AssetLinkOptions.make(store: store, assets: appCoordinator.assetStore, excluding: nil),
+                initialLoanAccountId: account.id
+            ) { asset in
+                Task { await appCoordinator.assetStore.add(asset) }
+            }
+        }
+        // After unlocking Pro, the form opens.
+        .paywallSheet(isPresented: $showingAssetPaywall, source: .assetAdd) {
+            showingAssetForm = true
+        }
         .sheet(isPresented: $showingEditView) {
             LoanEditView(
                 loansViewModel: loansViewModel,
@@ -549,6 +568,7 @@ struct LoanDetailView: View {
     @ViewBuilder
     private func loanCustomSections(for account: Account) -> some View {
         VStack(spacing: AppSpacing.lg) {
+            assetRow(for: account)
             if let loanInfo = account.loanInfo {
                 // Payment breakdown is meaningless for installments (0% interest, fixed
                 // principal-only splits) — hide it entirely for that loan type.
@@ -560,6 +580,44 @@ struct LoanDetailView: View {
             }
         }
         .screenPadding()
+    }
+
+    // MARK: - Its asset
+
+    /// The asset this loan bought (plan-assets-roadmap 1.2): its row opens it; without one,
+    /// while the loan is owed, "Add asset" opens a new asset with the loan (Tenra Pro).
+    @ViewBuilder
+    private func assetRow(for account: Account) -> some View {
+        let assetStore = appCoordinator.assetStore
+        if let asset = assetStore.assets.first(where: { $0.linkedLoanAccountId == account.id }) {
+            FormSection {
+                UniversalRow(
+                    String(localized: "loan.asset"),
+                    icon: "house",
+                    value: asset.name,
+                    accessory: .navigation {
+                        AssetDetailView(assetStore: assetStore, assetId: asset.id)
+                            .environment(timeFilterManager)
+                    }
+                )
+            }
+        } else if !account.isPaidOffLoan {
+            FormSection {
+                UniversalRow(
+                    String(localized: "loan.asset"),
+                    icon: "house",
+                    value: String(localized: "loan.asset.add"),
+                    accessory: .action {
+                        HapticManager.light()
+                        if PremiumManager.shared.isPro {
+                            showingAssetForm = true
+                        } else {
+                            showingAssetPaywall = true
+                        }
+                    }
+                )
+            }
+        }
     }
 
     // MARK: - Payment Breakdown Card

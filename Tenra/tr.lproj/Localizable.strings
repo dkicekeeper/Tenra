@@ -2444,6 +2444,7 @@
 "asset.depreciation.off" = "Kapalı";
 "asset.depreciationValue" = "Yılda %@";
 "assistant.notice.asset.stale" = "Değerleme: %1$@, %2$@. Fiyatlar değişir: net varlığın doğru olsun diye değeri güncelle.";
+"assistant.notice.loanAsset" = "Bu krediyle bir ev ya da araba aldıysan varlıklarına ekle: net varlık, içinde ne kadar kendi paran olduğunu gösterir.";
 "asset.saleHint" = "Kaça sattın?";
 "asset.chart.value" = "Değer";
 
@@ -2571,6 +2572,8 @@
 "asset.valuation.day" = "Değerleme tarihi";
 "asset.includeInNetWorth" = "Net varlığa dahil et";
 "asset.yieldOnShare" = "Payıma göre getiri";
+"loan.asset.add" = "Varlık ekle";
+"loan.asset" = "Varlık";
 "asset.note" = "Not";
 "insights.netWorth.title" = "Net varlık";
 "insights.netWorth.subtitle" = "Para, varlıklar ve borçlar";

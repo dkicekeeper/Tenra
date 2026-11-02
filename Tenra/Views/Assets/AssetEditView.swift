@@ -23,6 +23,8 @@ struct AssetEditView: View {
     let baseCurrency: String
     /// The categories rent and upkeep can come from, and the links other assets hold.
     var linkOptions: AssetLinkOptions = .empty
+    /// A new asset bought with this loan (from the loan's screen or Ten's message about it).
+    var initialLoanAccountId: String? = nil
     let onSave: (Asset) -> Void
 
     @Environment(\.dismiss) private var dismiss
@@ -369,6 +371,11 @@ struct AssetEditView: View {
         attributesDraft = AssetAttributesDraft(asset?.attributes ?? AssetAttributes(), defaultCountry: AssetAttributesDraft.phoneCountry)
         guard let asset else {
             currency = baseCurrency
+            loanAccountId = initialLoanAccountId ?? ""
+            if let loan = loanAccounts.first(where: { $0.id == initialLoanAccountId }) {
+                // In the loan's currency, as the purchase most likely was.
+                currency = loan.currency
+            }
             return
         }
         name = asset.name

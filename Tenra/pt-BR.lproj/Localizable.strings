@@ -2444,6 +2444,7 @@
 "asset.depreciation.off" = "Desligado";
 "asset.depreciationValue" = "%@ por ano";
 "assistant.notice.asset.stale" = "Avaliado em %1$@ em %2$@. Os preços mudam: atualize o valor para que seu patrimônio líquido fique certo.";
+"assistant.notice.loanAsset" = "Se este empréstimo comprou um imóvel ou um carro, adicione-o aos seus bens: o patrimônio mostrará quanto é dinheiro seu.";
 "asset.saleHint" = "Por quanto vendeu?";
 "asset.chart.value" = "Valor";
 
@@ -2571,6 +2572,8 @@
 "asset.valuation.day" = "Data da avaliação";
 "asset.includeInNetWorth" = "Contar no patrimônio";
 "asset.yieldOnShare" = "Rendimento da minha parte";
+"loan.asset.add" = "Adicionar bem";
+"loan.asset" = "Bem";
 "asset.note" = "Nota";
 "insights.netWorth.title" = "Patrimônio líquido";
 "insights.netWorth.subtitle" = "Dinheiro, bens e dívidas";

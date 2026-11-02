@@ -2444,6 +2444,7 @@
 "asset.depreciation.off" = "オフ";
 "asset.depreciationValue" = "年%@";
 "assistant.notice.asset.stale" = "%2$@時点の評価は%1$@です。価格は変わります。純資産を正確に保つため評価を更新しましょう。";
+"assistant.notice.loanAsset" = "このローンで住宅や車を購入したなら、資産に追加しましょう。純資産で自己資金の割合がわかります。";
 "asset.saleHint" = "いくらで売りましたか？";
 "asset.chart.value" = "価値";
 
@@ -2571,6 +2572,8 @@
 "asset.valuation.day" = "評価日";
 "asset.includeInNetWorth" = "純資産に含める";
 "asset.yieldOnShare" = "自分の持分で利回りを計算";
+"loan.asset.add" = "資産を追加";
+"loan.asset" = "資産";
 "asset.note" = "メモ";
 "insights.netWorth.title" = "純資産";
 "insights.netWorth.subtitle" = "お金、資産、借金";

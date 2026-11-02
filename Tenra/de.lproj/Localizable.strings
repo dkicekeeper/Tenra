@@ -2444,6 +2444,7 @@
 "asset.depreciation.off" = "Aus";
 "asset.depreciationValue" = "%@ pro Jahr";
 "assistant.notice.asset.stale" = "Bewertet mit %1$@ am %2$@. Preise ändern sich: Aktualisieren Sie den Wert, damit Ihr Nettovermögen stimmt.";
+"assistant.notice.loanAsset" = "Wenn mit diesem Kredit eine Wohnung oder ein Auto gekauft wurde, fügen Sie sie zu Ihren Vermögenswerten hinzu: Das Nettovermögen zeigt, wie viel davon Ihr eigenes Geld ist.";
 "asset.saleHint" = "Für wie viel haben Sie verkauft?";
 "asset.chart.value" = "Wert";
 
@@ -2571,6 +2572,8 @@
 "asset.valuation.day" = "Bewertet am";
 "asset.includeInNetWorth" = "Im Nettovermögen zählen";
 "asset.yieldOnShare" = "Rendite auf meinen Anteil";
+"loan.asset.add" = "Vermögenswert hinzufügen";
+"loan.asset" = "Vermögenswert";
 "asset.note" = "Notiz";
 "insights.netWorth.title" = "Nettovermögen";
 "insights.netWorth.subtitle" = "Geld, Vermögenswerte und Schulden";

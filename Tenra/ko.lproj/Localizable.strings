@@ -2444,6 +2444,7 @@
 "asset.depreciation.off" = "끔";
 "asset.depreciationValue" = "연 %@";
 "assistant.notice.asset.stale" = "%2$@ 평가 %1$@. 가격은 변해요. 순자산이 정확하도록 가치를 업데이트하세요.";
+"assistant.notice.loanAsset" = "이 대출로 집이나 차를 샀다면 자산에 추가해 보세요. 순자산에서 내 돈이 얼마인지 볼 수 있습니다.";
 "asset.saleHint" = "얼마에 팔았나요?";
 "asset.chart.value" = "가치";
 
@@ -2571,6 +2572,8 @@
 "asset.valuation.day" = "평가일";
 "asset.includeInNetWorth" = "순자산에 포함";
 "asset.yieldOnShare" = "내 지분 기준 수익률";
+"loan.asset.add" = "자산 추가";
+"loan.asset" = "자산";
 "asset.note" = "메모";
 "insights.netWorth.title" = "순자산";
 "insights.netWorth.subtitle" = "돈, 자산, 빚";

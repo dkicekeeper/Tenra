@@ -88,8 +88,8 @@ Found by the docs audit of 2026-10-12, not verified on device yet:
 
 - **Assets, next:** planned in [plan-assets-roadmap.md](plan-assets-roadmap.md) (phase 5 of
   the first plan included: purchase and improvements tied to an asset, the yield in dollars,
-  the CSV export, "Open Assets" in Ten's open block). Housing price indexes as a hint to a
-  valuation stay an idea (its §8).
+  the CSV export, "Open Assets" in Ten's open block; housing price indexes became its track A,
+  automatic valuation).
 
 - **Statement import:** a one-tap "align the balance to the statement" after the closing-balance
   check (today it only shows the difference).

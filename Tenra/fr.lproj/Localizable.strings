@@ -2445,6 +2445,7 @@
 "asset.depreciation.hint" = "Après chaque estimation, la valeur baisse de cette part chaque année jusqu’à la suivante. Désactivé garde la dernière estimation.";
 "asset.depreciation.off" = "Désactivé";
 "asset.depreciationValue" = "%@ par an";
+"asset.forecast" = "Dans 3 ans";
 "assistant.notice.asset.stale" = "Estimé à %1$@ le %2$@. Les prix changent : mettez la valeur à jour pour que votre patrimoine net soit juste.";
 "assistant.notice.loanAsset" = "Si ce prêt a servi à acheter un logement ou une voiture, ajoutez-le à vos biens : le patrimoine montrera la part qui vous appartient.";
 "asset.saleHint" = "Vendu combien ?";

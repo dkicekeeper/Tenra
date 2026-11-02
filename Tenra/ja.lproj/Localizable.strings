@@ -2445,6 +2445,7 @@
 "asset.depreciation.hint" = "評価のあと、新しい評価を入力するまで毎年この割合で価値が下がります。オフなら最後の評価のままです。";
 "asset.depreciation.off" = "オフ";
 "asset.depreciationValue" = "年%@";
+"asset.forecast" = "3年後";
 "assistant.notice.asset.stale" = "%2$@時点の評価は%1$@です。価格は変わります。純資産を正確に保つため評価を更新しましょう。";
 "assistant.notice.loanAsset" = "このローンで住宅や車を購入したなら、資産に追加しましょう。純資産で自己資金の割合がわかります。";
 "asset.saleHint" = "いくらで売りましたか？";

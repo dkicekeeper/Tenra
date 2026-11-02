@@ -2445,6 +2445,7 @@
 "asset.depreciation.hint" = "Depois de cada avaliação, o valor cai essa parte a cada ano até você informar uma nova. Desligado mantém a última avaliação.";
 "asset.depreciation.off" = "Desligado";
 "asset.depreciationValue" = "%@ por ano";
+"asset.forecast" = "Em 3 anos";
 "assistant.notice.asset.stale" = "Avaliado em %1$@ em %2$@. Os preços mudam: atualize o valor para que seu patrimônio líquido fique certo.";
 "assistant.notice.loanAsset" = "Se este empréstimo comprou um imóvel ou um carro, adicione-o aos seus bens: o patrimônio mostrará quanto é dinheiro seu.";
 "asset.saleHint" = "Por quanto vendeu?";

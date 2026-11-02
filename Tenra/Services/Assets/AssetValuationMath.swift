@@ -278,6 +278,25 @@ nonisolated enum AssetValuationMath {
         return rate
     }
 
+    /// Years ahead the depreciation forecast looks (plan-assets-roadmap 2.9).
+    static let forecastYears = 3
+
+    /// What a held asset that depreciates will be worth in `years` years: its rate from the
+    /// latest dated point (the purchase or a valuation), the whole asset as the hero shows it.
+    /// Nil without a rate, once sold, or without a dated point (nothing to wear from).
+    static func forecast(
+        of asset: Asset,
+        today: Date = Date(),
+        years: Int = forecastYears,
+        calendar: Calendar = .current
+    ) -> DatedValue? {
+        guard !asset.isSold, depreciationRate(of: asset) != nil,
+              let day = calendar.date(byAdding: .year, value: years, to: calendar.startOfDay(for: today)),
+              let estimate = estimate(timeline(of: asset, calendar: calendar), on: day, calendar: calendar),
+              estimate.isEstimate else { return nil }
+        return DatedValue(date: day, value: estimate.value)
+    }
+
     static func timeline(of asset: Asset, calendar: Calendar = .current) -> Timeline {
         let points = history(of: asset, calendar: calendar)
             .filter { $0.source != .sale }

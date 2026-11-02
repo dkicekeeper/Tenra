@@ -557,6 +557,9 @@ struct AssetDetailView: View {
                 HeroSparkline(
                     dataPoints: AssetChartPoints.points(points, estimateLast: summary.isEstimate),
                     series: AssetChartPoints.series(color: chartColor(summary)),
+                    // The wear ahead (2.9): a dashed tail to the value in three years, the
+                    // "In 3 years" row below.
+                    projectedValue: AssetValuationMath.forecast(of: asset, today: today)?.value,
                     valueFormat: .currency(asset.currency),
                     entranceDelay: AssetChartPoints.entranceDelay
                 )
@@ -620,6 +623,16 @@ struct AssetDetailView: View {
                 value: String(format: String(localized: "asset.depreciationValue"), Self.percentText(rate)),
                 iconColor: AppColors.textSecondary
             ))
+            if let forecast = AssetValuationMath.forecast(of: asset, today: today) {
+                rows.append(InfoRowConfig(
+                    icon: "hourglass",
+                    label: String(localized: "asset.forecast"),
+                    amount: forecast.value,
+                    currency: asset.currency,
+                    prefix: "\u{2248} ",
+                    iconColor: AppColors.textSecondary
+                ))
+            }
         }
         if asset.ownershipShare < 1 {
             rows.append(InfoRowConfig(

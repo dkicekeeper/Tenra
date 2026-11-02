@@ -2445,6 +2445,7 @@
 "asset.depreciation.hint" = "Después de cada valoración, el valor baja esta parte cada año hasta que introduzcas una nueva. Desactivado mantiene la última valoración.";
 "asset.depreciation.off" = "Desactivado";
 "asset.depreciationValue" = "%@ al año";
+"asset.forecast" = "En 3 años";
 "assistant.notice.asset.stale" = "Valorado en %1$@ el %2$@. Los precios cambian: actualiza el valor para que tu patrimonio neto sea exacto.";
 "assistant.notice.loanAsset" = "Si con este préstamo compraste un piso o un coche, añádelo a tus activos: el patrimonio mostrará cuánto es dinero tuyo.";
 "asset.saleHint" = "¿Por cuánto lo vendiste?";

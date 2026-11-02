@@ -2445,6 +2445,7 @@
 "asset.depreciation.hint" = "평가 후 새 평가를 입력할 때까지 매년 이 비율만큼 가치가 줄어요. 끄면 마지막 평가를 유지해요.";
 "asset.depreciation.off" = "끔";
 "asset.depreciationValue" = "연 %@";
+"asset.forecast" = "3년 후";
 "assistant.notice.asset.stale" = "%2$@ 평가 %1$@. 가격은 변해요. 순자산이 정확하도록 가치를 업데이트하세요.";
 "assistant.notice.loanAsset" = "이 대출로 집이나 차를 샀다면 자산에 추가해 보세요. 순자산에서 내 돈이 얼마인지 볼 수 있습니다.";
 "asset.saleHint" = "얼마에 팔았나요?";

@@ -2445,6 +2445,7 @@
 "asset.depreciation.hint" = "Her değerlemeden sonra değer, yenisini girene kadar her yıl bu oranda düşer. Kapalı, son değerlemeyi tutar.";
 "asset.depreciation.off" = "Kapalı";
 "asset.depreciationValue" = "Yılda %@";
+"asset.forecast" = "3 yıl sonra";
 "assistant.notice.asset.stale" = "Değerleme: %1$@, %2$@. Fiyatlar değişir: net varlığın doğru olsun diye değeri güncelle.";
 "assistant.notice.loanAsset" = "Bu krediyle bir ev ya da araba aldıysan varlıklarına ekle: net varlık, içinde ne kadar kendi paran olduğunu gösterir.";
 "asset.saleHint" = "Kaça sattın?";

@@ -2445,6 +2445,7 @@
 "asset.depreciation.hint" = "After each valuation, the value goes down by this share every year until you enter a new one. Off keeps the last valuation.";
 "asset.depreciation.off" = "Off";
 "asset.depreciationValue" = "%@ a year";
+"asset.forecast" = "In 3 years";
 "assistant.notice.asset.stale" = "Valued at %1$@ on %2$@. Prices change: update the value to keep your net worth accurate.";
 "assistant.notice.loanAsset" = "If this loan bought a flat or a car, add it to your assets: net worth will show how much of it is your own money.";
 "asset.saleHint" = "What did you sell it for?";

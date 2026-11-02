@@ -2445,6 +2445,7 @@
 "asset.depreciation.hint" = "Nach jeder Bewertung sinkt der Wert jedes Jahr um diesen Anteil, bis Sie eine neue eingeben. „Aus“ behält die letzte Bewertung.";
 "asset.depreciation.off" = "Aus";
 "asset.depreciationValue" = "%@ pro Jahr";
+"asset.forecast" = "In 3 Jahren";
 "assistant.notice.asset.stale" = "Bewertet mit %1$@ am %2$@. Preise ändern sich: Aktualisieren Sie den Wert, damit Ihr Nettovermögen stimmt.";
 "assistant.notice.loanAsset" = "Wenn mit diesem Kredit eine Wohnung oder ein Auto gekauft wurde, fügen Sie sie zu Ihren Vermögenswerten hinzu: Das Nettovermögen zeigt, wie viel davon Ihr eigenes Geld ist.";
 "asset.saleHint" = "Für wie viel haben Sie verkauft?";

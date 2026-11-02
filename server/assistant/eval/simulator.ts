@@ -690,6 +690,7 @@ function assetRow(a: (typeof ASSETS)[number]) {
     gain_percent: gain !== null && a.purchasePrice ? pct((gain / a.purchasePrice) * 100) : null,
     annual_growth_percent: growth === null ? null : pct(growth),
     depreciation_percent_a_year: null,
+    value_in_3_years: null,
     share_percent: Math.round(a.share * 100),
     owned_value: round(a.value * a.share),
     owned_value_base: round(toBase(a.value * a.share, a.currency)),

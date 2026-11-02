@@ -2445,6 +2445,7 @@
 "asset.depreciation.hint" = "Dopo ogni valutazione, il valore scende di questa quota ogni anno finché non ne inserisci una nuova. Disattivato mantiene l’ultima valutazione.";
 "asset.depreciation.off" = "Disattivato";
 "asset.depreciationValue" = "%@ all’anno";
+"asset.forecast" = "Tra 3 anni";
 "assistant.notice.asset.stale" = "Valutato %1$@ il %2$@. I prezzi cambiano: aggiorna il valore perché il tuo patrimonio netto sia preciso.";
 "assistant.notice.loanAsset" = "Se con questo prestito hai comprato una casa o un’auto, aggiungila ai tuoi beni: il patrimonio mostrerà quanto è denaro tuo.";
 "asset.saleHint" = "A quanto l’hai venduto?";

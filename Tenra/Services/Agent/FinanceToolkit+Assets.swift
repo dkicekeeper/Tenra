@@ -83,6 +83,8 @@ extension FinanceToolkit {
                 "gain_percent": percent(summary.gainPercent),
                 "annual_growth_percent": percent(summary.annualGrowthPercent),
                 "depreciation_percent_a_year": percent(AssetValuationMath.depreciationRate(of: asset).map { $0 * 100 }),
+                // The wear ahead at that rate (the hero's dashed tail and "In 3 years").
+                "value_in_3_years": number(AssetValuationMath.forecast(of: asset, today: today, calendar: calendar)?.value),
                 "share_percent": .number((min(1, max(0, asset.ownershipShare)) * 100).rounded()),
                 "owned_value": .number(FinanceToolkitCompute.round2(summary.ownedValue)),
                 "owned_value_base": ownedBase,

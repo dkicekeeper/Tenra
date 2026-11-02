@@ -1,12 +1,13 @@
 # Assets
 
 What the person owns and what it is worth: a home, a car, land, anything else. An asset has its
-own CoreData row (v17; v18 its payments by hand), a card in Finances, list, detail and edit screens. It never changes an
-account balance or a transaction: a flat bought in 2018 stays an expense, and the asset lives
+own CoreData row (v17; v18 its payments by hand), a card in Finances, list, detail and edit
+screens. It never changes an account balance or a transaction: a flat bought in 2018 stays an expense, and the asset lives
 next to it with its own purchase price and valuations; its rent and upkeep are the transactions
 of the categories it is linked to. Adding an asset is Tenra Pro. Net worth (money, assets and
-debts) is a free insight. The plan, its ideas for later and the owner's decisions:
-[archive/plans/plan-assets.md](../archive/plans/plan-assets.md).
+debts) is a free insight. The first plan and the owner's decisions:
+[archive/plans/plan-assets.md](../archive/plans/plan-assets.md); what comes next:
+[plan-assets-roadmap.md](../plan-assets-roadmap.md).
 
 ## Model
 

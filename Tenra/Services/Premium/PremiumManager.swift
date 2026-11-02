@@ -130,6 +130,14 @@ final class PremiumManager {
         return true
     }
 
+    /// The paywall was shown from `source`: RevenueCat keeps the latest as the subscriber
+    /// attribute `paywall_source`, so the purchase that follows carries it. Nothing without
+    /// RevenueCat (tests, the screenshot demo, no key).
+    func notePaywallShown(from source: PaywallSource) {
+        guard isConfigured else { return }
+        Purchases.shared.attribution.setAttributes(["paywall_source": source.rawValue])
+    }
+
     /// Record a soft-paywall impression (call when it is actually presented).
     func markSoftPaywallShown() {
         defaults.set(defaults.integer(forKey: Key.softPaywallCount) + 1, forKey: Key.softPaywallCount)

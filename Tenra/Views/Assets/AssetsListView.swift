@@ -27,6 +27,8 @@ struct AssetsListView: View {
     @State private var editingAsset: Asset?
     /// The assets a confirmation is asked for: one from its menu, or the ones selected.
     @State private var assetsToDelete: [String] = []
+    /// "Out of date" and the depreciation estimates depend on the day: moved at midnight.
+    @State private var today = Date()
 
     private var baseCurrency: String {
         coordinator.transactionsViewModel.appSettings.baseCurrency
@@ -45,6 +47,7 @@ struct AssetsListView: View {
     var body: some View {
         // Assets in other currencies convert at the cached rates: drawn again when they change.
         let _ = coordinator.transactionStore.currencyRatesVersion
+        let _ = today
         Group {
             if !assetStore.isLoaded {
                 // The cards to come (AssetCard is DesignKit's HoldingCard).
@@ -82,7 +85,7 @@ struct AssetsListView: View {
             onAdd: add,
             onDeleteSelected: { assetsToDelete = Array(selection) }
         )
-        .paywallSheet(isPresented: $showingPaywall) {
+        .paywallSheet(isPresented: $showingPaywall, source: .assetAdd) {
             // After unlocking Pro, continue straight into the new asset.
             showingAdd = true
         }
@@ -121,6 +124,9 @@ struct AssetsListView: View {
             Text(String(localized: "asset.deleteMessage"))
         }
         .task { await assetStore.load() }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.significantTimeChangeNotification)) { _ in
+            today = Date()
+        }
     }
 
     // MARK: - List
@@ -226,7 +232,7 @@ struct AssetsListView: View {
 
     private func row(_ asset: Asset) -> some View {
         NavigationLink(value: FinancesDestination.assetDetail(asset.id)) {
-            AssetCard(asset: asset, summary: assetStore.summary(for: asset))
+            AssetCard(asset: asset, summary: assetStore.summary(for: asset, today: today), today: today)
         }
         .buttonStyle(.plain)
         .scrollReveal()

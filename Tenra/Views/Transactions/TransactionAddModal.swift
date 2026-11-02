@@ -53,6 +53,7 @@ struct TransactionAddModal: View {
         categoriesViewModel: CategoriesViewModel,
         accountsViewModel: AccountsViewModel,
         transactionStore: TransactionStore,
+        subcategoryIds: Set<String> = [],
         onDismiss: @escaping () -> Void
     ) {
         _coordinator = State(initialValue: TransactionAddCoordinator(
@@ -62,7 +63,8 @@ struct TransactionAddModal: View {
             transactionsViewModel: transactionsViewModel,
             categoriesViewModel: categoriesViewModel,
             accountsViewModel: accountsViewModel,
-            transactionStore: transactionStore
+            transactionStore: transactionStore,
+            subcategoryIds: subcategoryIds
         ))
         self.onDismiss = onDismiss
     }

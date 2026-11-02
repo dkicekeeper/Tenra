@@ -6,14 +6,15 @@
 //  (the sale price once sold) with when it was valued and the gain over the purchase price as a
 //  trend pill, then its worth over time, the purchase and every valuation, drawing in. Actions:
 //  "Update value" (a valuation, MoneyEntrySheet) and "Sell" (the sale price and day), or
-//  "Return to assets" once sold. Info rows: the purchase, the gain, the growth a year, the
+//  "Undo sale" once sold. Info rows: the purchase, the gain, the growth a year, the
 //  person's share, the linked loan and their own money in it, the rent and upkeep of the last 12
 //  months, the yield and the full result. Then the valuations, newest first (a long press deletes
 //  one, which breaks into dust), and the rent and upkeep transactions by day; with a rent
 //  category and no rent yet, a banner opens the add form in it. A valuation older than its kind
 //  allows puts a banner on top that opens "Update value"; with a depreciation rule the value is
 //  an estimate ("≈"), and the chart ends on it today. A valuation above the value bursts
-//  sparkles over the hero; a sale above the purchase price celebrates. Once Ten's server values
+//  sparkles over the hero; a sale above the purchase price celebrates. The rent banner's form
+//  comes with the link's subcategories. Once Ten's server values
 //  assets, "Estimate from listings" (the menu, and the out-of-date banner) opens
 //  AssetEstimateSheet.
 //
@@ -335,6 +336,8 @@ struct AssetDetailView: View {
                     categoriesViewModel: coordinator.categoriesViewModel,
                     accountsViewModel: coordinator.accountsViewModel,
                     transactionStore: coordinator.transactionStore,
+                    // The link's subcategories: a rent it does not count would leave the banner.
+                    subcategoryIds: Set(asset.incomeLink?.subcategoryIds ?? []),
                     onDismiss: { showingRentEntry = false }
                 )
                 .environment(timeFilterManager)

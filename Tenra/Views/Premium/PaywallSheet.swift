@@ -14,7 +14,9 @@
 //      Button {
 //          if premium.isPro { doGatedThing() } else { showPaywall = true }
 //      } label: { ... }
-//      .paywallSheet(isPresented: $showPaywall)
+//      .paywallSheet(isPresented: $showPaywall, source: .assetAdd)
+//
+//  `source` names the gate for RevenueCat's `paywall_source` attribute (PremiumManager).
 //
 //  RevenueCatUI is shown only once PremiumManager has confirmed the App Store has something to
 //  sell. When the offerings can't load (RevenueCat error 23 when the App Store has no products,
@@ -28,12 +30,15 @@ import RevenueCatUI
 
 struct PaywallSheet: ViewModifier {
     @Binding var isPresented: Bool
+    /// The gate that opened it.
+    let source: PaywallSource
     /// Optional callback fired after a purchase or a restore unlocked Pro (sheet auto-dismisses).
     var onUnlocked: (() -> Void)?
 
     func body(content: Content) -> some View {
         content.sheet(isPresented: $isPresented) {
             PaywallSheetContent(isPresented: $isPresented, onUnlocked: onUnlocked)
+                .onAppear { PremiumManager.shared.notePaywallShown(from: source) }
         }
     }
 }
@@ -158,8 +163,9 @@ extension View {
     /// Presents the RevenueCat paywall when `isPresented` becomes true.
     func paywallSheet(
         isPresented: Binding<Bool>,
+        source: PaywallSource,
         onUnlocked: (() -> Void)? = nil
     ) -> some View {
-        modifier(PaywallSheet(isPresented: isPresented, onUnlocked: onUnlocked))
+        modifier(PaywallSheet(isPresented: isPresented, source: source, onUnlocked: onUnlocked))
     }
 }

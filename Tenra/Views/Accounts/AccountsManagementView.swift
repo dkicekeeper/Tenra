@@ -188,7 +188,7 @@ struct AccountsManagementView: View {
             }
             .navigationTransition(.zoom(sourceID: account.id, in: accountNamespace))
         }
-        .paywallSheet(isPresented: $showingPaywall) {
+        .paywallSheet(isPresented: $showingPaywall, source: .accountAdd) {
             // After unlocking Pro, resume the flow the paywall interrupted.
             if let account = pendingConvertAccount {
                 pendingConvertAccount = nil

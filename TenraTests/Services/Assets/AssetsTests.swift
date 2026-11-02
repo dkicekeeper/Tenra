@@ -112,6 +112,30 @@ struct AssetsTests {
         #expect(AssetValuationMath.history(of: asset).first?.source == .purchase)
     }
 
+    /// A valuation dated before the purchase (a value typed with an old day): the history runs
+    /// by day, the later purchase is the value and it is not out of date; on the purchase's own
+    /// day the purchase comes first and the valuation is the value.
+    @Test func aValuationBeforeThePurchaseDoesNotOutliveIt() {
+        let asset = Asset(
+            id: "car", name: "Car", kind: .vehicle, currency: "KZT",
+            purchaseDate: Self.day(2026, 10, 1), purchasePrice: 15_000_000,
+            valuations: [AssetValuation(id: "early", date: Self.day(2026, 3, 1), value: 12_000_000)]
+        )
+        let history = AssetValuationMath.history(of: asset, calendar: Self.calendar)
+        #expect(history.map(\.id) == ["early", AssetValuationMath.purchasePointId(asset)])
+        let summary = AssetValuationMath.summary(of: asset, today: Self.day(2026, 10, 29), calendar: Self.calendar)
+        #expect(summary.value == 15_000_000)
+        #expect(summary.valuedOn == Self.day(2026, 10, 1))
+        #expect(summary.gain == 0)
+        #expect(!AssetValuationMath.isStale(asset, today: Self.day(2026, 10, 29), calendar: Self.calendar))
+        #expect(AssetValuationMath.timeline(of: asset, calendar: Self.calendar).points.map(\.date) == [Self.day(2026, 3, 1), Self.day(2026, 10, 1)])
+
+        var sameDay = asset
+        sameDay.valuations = [AssetValuation(id: "same", date: Self.day(2026, 10, 1), value: 15_500_000)]
+        #expect(AssetValuationMath.history(of: sameDay, calendar: Self.calendar).map(\.id) == [AssetValuationMath.purchasePointId(sameDay), "same"])
+        #expect(AssetValuationMath.summary(of: sameDay, today: Self.day(2026, 10, 29), calendar: Self.calendar).value == 15_500_000)
+    }
+
     @Test func aSoldAssetIsWorthItsSaleAndGrewUntilIt() {
         var asset = Self.flat()
         asset.valuations.append(AssetValuation(id: "sale", date: Self.day(2027, 10, 29), value: 75_000_000, source: .sale))

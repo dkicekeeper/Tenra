@@ -52,7 +52,7 @@ struct AssetEstimateSheet: View {
                 }
             }
         }
-        .paywallSheet(isPresented: $showingPaywall) {
+        .paywallSheet(isPresented: $showingPaywall, source: .assetEstimate) {
             model.edit()
         }
         .interactiveDismissDisabled(model.phase == .searching)

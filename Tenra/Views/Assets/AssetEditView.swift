@@ -5,7 +5,7 @@
 //  A new asset, or changes to one (docs/domains/assets.md): icon, name, what it is worth today
 //  and its currency in the hero; its kind; the purchase price and day (empty for an
 //  inheritance or a gift); the person's share and the loan it was bought with; the categories of
-//  its rent and its upkeep, each with an optional subcategory, never the transactions another
+//  its rent and its upkeep, each with any of its subcategories, never the transactions another
 //  asset already counts; for transport and other things, the depreciation a year (off by
 //  default: the person sets it); its characteristics for an estimate by listings
 //  (AssetAttributesSection, v19). A value changed here is a valuation of today (the sale price,

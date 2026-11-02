@@ -124,7 +124,7 @@ private struct AssistantAttachmentSources: ViewModifier {
             guard takesHandedOverFiles, wanted, coordinator.consumePendingStatementPick() else { return }
             source = .file
         }
-        .paywallSheet(isPresented: $showingPaywall) {
+        .paywallSheet(isPresented: $showingPaywall, source: .importStatement) {
             guard let url = csvAwaitingPro else { return }
             csvAwaitingPro = nil
             importCSV(url)

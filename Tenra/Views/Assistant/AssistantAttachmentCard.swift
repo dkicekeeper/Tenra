@@ -65,7 +65,7 @@ struct AssistantAttachmentCard: View {
                 }
             }
         }
-        .paywallSheet(isPresented: $showingPaywall) {
+        .paywallSheet(isPresented: $showingPaywall, source: .assistantAttachment) {
             model.refreshAllowance()
             reviewing = true
         }

@@ -34,14 +34,18 @@ final class TransactionAddCoordinator {
         transactionsViewModel: TransactionsViewModel,
         categoriesViewModel: CategoriesViewModel,
         accountsViewModel: AccountsViewModel,
-        transactionStore: TransactionStore
+        transactionStore: TransactionStore,
+        subcategoryIds: Set<String> = []
     ) {
-        self.formData = TransactionFormData(
+        var formData = TransactionFormData(
             category: category,
             type: type,
             currency: currency,
             suggestedAccountId: nil  // Will be computed in onAppear
         )
+        // Picked up front: an asset's rent goes in with the subcategories its link counts.
+        formData.subcategoryIds = subcategoryIds
+        self.formData = formData
 
         self.transactionsViewModel = transactionsViewModel
         self.categoriesViewModel = categoriesViewModel

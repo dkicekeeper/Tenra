@@ -6,8 +6,8 @@
 //  valuation, or the purchase price without one, less the depreciation since when the asset has
 //  a rule), the person's share of it, the gain over the purchase price, the growth a year once a
 //  year has passed, the person's own money in it after the linked loan, and whether the
-//  valuation is out of date. Every screen (and Ten, later) takes these figures from here, never
-//  its own maths, as GoalProgress does for goals. All amounts are in the asset's currency.
+//  valuation is out of date. Every screen and Ten take these figures from here, never their own
+//  maths, as GoalProgress does for goals. All amounts are in the asset's currency.
 //
 
 import Foundation
@@ -49,19 +49,25 @@ nonisolated enum AssetValuationMath {
     /// Days in an average year, for the growth a year.
     static let daysPerYear = 365.25
 
-    /// The purchase (when its price and day are known) and every valuation, oldest first: the
-    /// points of the value chart and of the history list. Valuations of one day keep the order
-    /// they were added in.
-    static func history(of asset: Asset) -> [AssetValuation] {
-        var points: [AssetValuation] = []
+    /// The purchase (when its price and day are known) and every valuation, by day: the points
+    /// of the value chart and of the history list. The purchase comes first in its day, and
+    /// valuations of one day keep the order they were added in; a valuation dated before the
+    /// purchase comes before it.
+    static func history(of asset: Asset, calendar: Calendar = .current) -> [AssetValuation] {
+        var points: [(day: Date, rank: Int, valuation: AssetValuation)] = []
         if let price = asset.purchasePrice, let date = asset.purchaseDate {
-            points.append(AssetValuation(id: purchasePointId(asset), date: date, value: price, source: .purchase))
+            let purchase = AssetValuation(id: purchasePointId(asset), date: date, value: price, source: .purchase)
+            points.append((calendar.startOfDay(for: date), -1, purchase))
         }
-        let valuations = asset.valuations.enumerated()
-            .sorted { ($0.element.date, $0.offset) < ($1.element.date, $1.offset) }
-            .map(\.element)
-        points.append(contentsOf: valuations)
-        return points
+        for (offset, valuation) in asset.valuations.enumerated() {
+            points.append((calendar.startOfDay(for: valuation.date), offset, valuation))
+        }
+        return points.sorted { ($0.day, $0.rank) < ($1.day, $1.rank) }.map(\.valuation)
+    }
+
+    /// The latest point of `history` but the sale: the purchase, when no valuation is later.
+    static func latestPoint(of asset: Asset, calendar: Calendar = .current) -> AssetValuation? {
+        history(of: asset, calendar: calendar).last { $0.source != .sale }
     }
 
     /// The id of the purchase point in `history`, which is not a stored valuation.
@@ -76,11 +82,11 @@ nonisolated enum AssetValuationMath {
             .element
     }
 
-    /// The value now: the sale price once sold, else the latest valuation, else the purchase
-    /// price; nil when there is none of them.
+    /// The value now: the sale price once sold, else the latest point (a valuation, or the
+    /// purchase when it is later), else the purchase price; nil when there is none of them.
     static func currentValue(of asset: Asset) -> Double? {
         if asset.isSold, let sale = asset.sale { return sale.value }
-        return latestValuation(of: asset)?.value ?? asset.purchasePrice
+        return latestPoint(of: asset)?.value ?? asset.purchasePrice
     }
 
     static func summary(
@@ -89,7 +95,9 @@ nonisolated enum AssetValuationMath {
         today: Date = Date(),
         calendar: Calendar = .current
     ) -> Summary {
-        let latest = asset.isSold ? (asset.sale ?? latestValuation(of: asset)) : latestValuation(of: asset)
+        let latest = asset.isSold
+            ? (asset.sale ?? latestPoint(of: asset, calendar: calendar))
+            : latestPoint(of: asset, calendar: calendar)
         var value = latest?.value ?? asset.purchasePrice ?? 0
         var valuedOn = latest?.date ?? asset.purchaseDate
         var isEstimate = false
@@ -212,7 +220,7 @@ nonisolated enum AssetValuationMath {
     }
 
     static func timeline(of asset: Asset, calendar: Calendar = .current) -> Timeline {
-        let points = history(of: asset)
+        let points = history(of: asset, calendar: calendar)
             .filter { $0.source != .sale }
             .map { DatedValue(date: calendar.startOfDay(for: $0.date), value: $0.value) }
         return Timeline(
@@ -251,10 +259,10 @@ nonisolated enum AssetValuationMath {
         kind.group == .other ? 12 : 6
     }
 
-    /// The day the value was last set: the latest valuation, else the purchase, else when the
-    /// asset was added.
-    static func lastValuedOn(_ asset: Asset) -> Date {
-        latestValuation(of: asset)?.date ?? asset.purchaseDate ?? asset.createdAt
+    /// The day the value was last set: the latest point (a valuation, or the purchase when it is
+    /// later), else the purchase, else when the asset was added.
+    static func lastValuedOn(_ asset: Asset, calendar: Calendar = .current) -> Date {
+        latestPoint(of: asset, calendar: calendar)?.date ?? asset.purchaseDate ?? asset.createdAt
     }
 
     /// A held asset whose value was last set more than `staleAfterMonths` ago: its card says so
@@ -263,7 +271,7 @@ nonisolated enum AssetValuationMath {
         guard !asset.isSold,
               let limit = calendar.date(byAdding: .month, value: -staleAfterMonths(asset.kind), to: calendar.startOfDay(for: today))
         else { return false }
-        return calendar.startOfDay(for: lastValuedOn(asset)) < limit
+        return calendar.startOfDay(for: lastValuedOn(asset, calendar: calendar)) < limit
     }
 
     // MARK: - Rent and upkeep

@@ -65,7 +65,8 @@ nonisolated final class AssetRepository: @unchecked Sendable {
                 entity.ownershipShare = asset.ownershipShare
                 entity.linkedLoanAccountId = asset.linkedLoanAccountId
                 entity.incomeLinkData = try asset.incomeLink.map { try encoder.encode($0) }
-                entity.expenseLinkData = try asset.expenseLink.map { try encoder.encode($0) }
+                // The upkeep links as an array (v19); a store of v18 or before holds one object.
+                entity.expenseLinkData = try asset.expenseLinks.isEmpty ? nil : encoder.encode(asset.expenseLinks)
                 entity.includeInNetWorth = asset.includeInNetWorth
                 entity.soldAt = asset.soldAt
                 let links = AssetTransactionLinks(excluded: asset.excludedTransactionIds, included: asset.includedTransactionIds)
@@ -114,7 +115,7 @@ nonisolated final class AssetRepository: @unchecked Sendable {
             ownershipShare: entity.ownershipShare,
             linkedLoanAccountId: entity.linkedLoanAccountId,
             incomeLink: entity.incomeLinkData.flatMap { try? decoder.decode(AssetCategoryLink.self, from: $0) },
-            expenseLink: entity.expenseLinkData.flatMap { try? decoder.decode(AssetCategoryLink.self, from: $0) },
+            expenseLink: nil,
             includeInNetWorth: entity.includeInNetWorth,
             soldAt: entity.soldAt,
             note: entity.note,
@@ -122,7 +123,8 @@ nonisolated final class AssetRepository: @unchecked Sendable {
             createdAt: entity.createdAt ?? .distantPast,
             excludedTransactionIds: links?.excluded ?? [],
             includedTransactionIds: links?.included ?? [],
-            attributes: entity.attributesData.flatMap { try? decoder.decode(AssetAttributes.self, from: $0) } ?? AssetAttributes()
+            attributes: entity.attributesData.flatMap { try? decoder.decode(AssetAttributes.self, from: $0) } ?? AssetAttributes(),
+            expenseLinks: entity.expenseLinkData.map { Self.links(from: $0, decoder: decoder) } ?? []
         )
     }
 
@@ -133,6 +135,12 @@ nonisolated final class AssetRepository: @unchecked Sendable {
         init(from decoder: Decoder) throws {
             value = try? Element(from: decoder)
         }
+    }
+
+    /// The upkeep links: an array, or the one object a store of v18 or before holds.
+    static func links(from data: Data, decoder: JSONDecoder = JSONDecoder()) -> [AssetCategoryLink] {
+        if let links = try? decoder.decode([AssetCategoryLink].self, from: data) { return links }
+        return (try? decoder.decode(AssetCategoryLink.self, from: data)).map { [$0] } ?? []
     }
 
     /// The valuations one by one: one this version cannot read (a later one's) is skipped and the

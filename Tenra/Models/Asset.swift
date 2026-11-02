@@ -158,8 +158,9 @@ nonisolated struct Asset: Equatable, Hashable, Identifiable {
     var linkedLoanAccountId: String?
     /// Rent (phase 2 of the plan).
     var incomeLink: AssetCategoryLink?
-    /// Upkeep: tax, the building's fees, repairs, insurance (phase 2 of the plan).
-    var expenseLink: AssetCategoryLink?
+    /// Upkeep: tax, the building's fees, repairs, insurance, from one category or several
+    /// (plan-assets-roadmap 2.3: a flat's upkeep is rarely in one category).
+    var expenseLinks: [AssetCategoryLink]
     var includeInNetWorth: Bool
     /// When it was sold; the sale price is the `.sale` valuation.
     var soldAt: Date?
@@ -198,7 +199,8 @@ nonisolated struct Asset: Equatable, Hashable, Identifiable {
         createdAt: Date = Date(),
         excludedTransactionIds: [String] = [],
         includedTransactionIds: [String] = [],
-        attributes: AssetAttributes = AssetAttributes()
+        attributes: AssetAttributes = AssetAttributes(),
+        expenseLinks: [AssetCategoryLink] = []
     ) {
         self.id = id
         self.name = name
@@ -212,7 +214,8 @@ nonisolated struct Asset: Equatable, Hashable, Identifiable {
         self.ownershipShare = ownershipShare
         self.linkedLoanAccountId = linkedLoanAccountId
         self.incomeLink = incomeLink
-        self.expenseLink = expenseLink
+        // Several upkeep links, or the one given as `expenseLink`.
+        self.expenseLinks = expenseLinks.isEmpty ? (expenseLink.map { [$0] } ?? []) : expenseLinks
         self.includeInNetWorth = includeInNetWorth
         self.soldAt = soldAt
         self.note = note
@@ -224,6 +227,12 @@ nonisolated struct Asset: Equatable, Hashable, Identifiable {
     }
 
     var isSold: Bool { soldAt != nil }
+
+    /// The first upkeep link: one category, as the form had it before several.
+    var expenseLink: AssetCategoryLink? {
+        get { expenseLinks.first }
+        set { expenseLinks = newValue.map { [$0] } ?? [] }
+    }
 
     /// The sale: its price and day.
     var sale: AssetValuation? {

@@ -2452,6 +2452,7 @@
 "asset.rent.hint" = "Income in this category counts as the asset's rent.";
 "asset.upkeep" = "Upkeep";
 "asset.upkeep.hint" = "Expenses in this category count as its upkeep: tax, fees, repairs, insurance.";
+"asset.upkeep.add" = "Add another category";
 "asset.link.category" = "Category";
 "asset.link.none" = "Not linked";
 "asset.link.subcategory" = "Subcategories";

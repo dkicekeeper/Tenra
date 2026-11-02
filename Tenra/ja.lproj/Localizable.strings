@@ -2452,6 +2452,7 @@
 "asset.rent.hint" = "このカテゴリの収入を資産の家賃収入として数えます。";
 "asset.upkeep" = "維持費";
 "asset.upkeep.hint" = "このカテゴリの支出を維持費として数えます：税金、管理費、修理、保険。";
+"asset.upkeep.add" = "カテゴリを追加";
 "asset.link.category" = "カテゴリ";
 "asset.link.none" = "なし";
 "asset.link.subcategory" = "サブカテゴリ";

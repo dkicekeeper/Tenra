@@ -2452,6 +2452,7 @@
 "asset.rent.hint" = "Los ingresos de esta categoría cuentan como alquiler del activo.";
 "asset.upkeep" = "Mantenimiento";
 "asset.upkeep.hint" = "Los gastos de esta categoría cuentan como su mantenimiento: impuestos, cuotas, reparaciones, seguro.";
+"asset.upkeep.add" = "Añadir otra categoría";
 "asset.link.category" = "Categoría";
 "asset.link.none" = "Ninguna";
 "asset.link.subcategory" = "Subcategorías";

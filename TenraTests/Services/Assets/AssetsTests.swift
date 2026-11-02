@@ -249,6 +249,39 @@ struct AssetsTests {
         #expect(store.linkedTransactions(of: undated).upkeep?.count == 5)
     }
 
+    /// Upkeep from several categories (plan 2.3): every link counts, a payment two links both
+    /// count only once; another asset's taken links come one by one; the links are kept, and
+    /// the one object a store of v18 or before holds reads as one link.
+    @Test func upkeepFromSeveralCategories() async throws {
+        func payment(_ id: String, _ category: String) -> Transaction {
+            Transaction(id: id, date: "2026-10-01", description: "", amount: 10_000, currency: "KZT",
+                        type: .expense, category: category, accountId: "card")
+        }
+        let store = AssetStore(repository: nil)
+        store.transactionsOfLink = { link, _ in
+            switch link.categoryId {
+            case "tax": return [payment("property tax", "Tax")]
+            case "home": return [payment("repairs", "Home"), payment("shared", "Home")]
+            case "fees": return [payment("shared", "Home"), payment("building fee", "Fees")]
+            default: return []
+            }
+        }
+        let links = [AssetCategoryLink(categoryId: "tax"), AssetCategoryLink(categoryId: "home"), AssetCategoryLink(categoryId: "fees")]
+        let flat = Asset(id: "flat", name: "Flat", kind: .apartment, currency: "KZT", expenseLinks: links)
+        #expect(flat.expenseLink == AssetCategoryLink(categoryId: "tax"))
+        #expect(Set(store.linkedTransactions(of: flat).upkeep?.map(\.id) ?? []) == ["property tax", "repairs", "shared", "building fee"])
+        #expect(store.linkedTransactions(of: flat).upkeep?.count == 4)
+
+        await store.add(flat)
+        #expect(store.takenLinks(excluding: nil).expense.map(\.link) == links)
+        #expect(store.takenLinks(excluding: "flat").expense.isEmpty)
+
+        let data = try JSONEncoder().encode(links)
+        #expect(AssetRepository.links(from: data) == links)
+        let one = try JSONEncoder().encode(AssetCategoryLink(categoryId: "home", subcategoryIds: ["repairs"]))
+        #expect(AssetRepository.links(from: one) == [AssetCategoryLink(categoryId: "home", subcategoryIds: ["repairs"])])
+    }
+
     /// Payments by hand (v18): one its link counts taken out, one of another category or day
     /// linked in; taking out a payment linked by hand unlinks it; a removed one comes back.
     @Test func paymentsByHand() async {
@@ -360,10 +393,10 @@ struct AssetsTests {
             ownershipShare: 0.5,
             linkedLoanAccountId: "mortgage",
             incomeLink: AssetCategoryLink(categoryId: "rent", subcategoryId: "flat-rent"),
-            expenseLink: AssetCategoryLink(categoryId: "home"),
             includeInNetWorth: false,
             note: "Second floor",
-            createdAt: Self.day(2026, 10, 29)
+            createdAt: Self.day(2026, 10, 29),
+            expenseLinks: [AssetCategoryLink(categoryId: "home"), AssetCategoryLink(categoryId: "tax")]
         ))
         await store.add(Asset(id: "car", name: "Car", kind: .vehicle, currency: "KZT", createdAt: Self.day(2026, 10, 29)))
         await store.sell(assetId: "car", price: 8_000_000, date: Self.day(2026, 10, 30))

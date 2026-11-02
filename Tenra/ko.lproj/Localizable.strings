@@ -2452,6 +2452,7 @@
 "asset.rent.hint" = "이 카테고리의 수입을 자산의 임대 수입으로 셉니다.";
 "asset.upkeep" = "유지비";
 "asset.upkeep.hint" = "이 카테고리의 지출을 유지비로 셉니다: 세금, 관리비, 수리, 보험.";
+"asset.upkeep.add" = "카테고리 추가";
 "asset.link.category" = "카테고리";
 "asset.link.none" = "선택 안 함";
 "asset.link.subcategory" = "하위 카테고리";

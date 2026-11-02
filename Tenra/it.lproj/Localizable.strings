@@ -2452,6 +2452,7 @@
 "asset.rent.hint" = "Le entrate di questa categoria contano come affitto del bene.";
 "asset.upkeep" = "Manutenzione";
 "asset.upkeep.hint" = "Le spese di questa categoria contano come manutenzione: tasse, spese condominiali, riparazioni, assicurazione.";
+"asset.upkeep.add" = "Aggiungi un’altra categoria";
 "asset.link.category" = "Categoria";
 "asset.link.none" = "Nessuna";
 "asset.link.subcategory" = "Sottocategorie";

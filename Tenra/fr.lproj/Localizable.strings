@@ -2452,6 +2452,7 @@
 "asset.rent.hint" = "Les revenus de cette catégorie comptent comme le loyer de l’actif.";
 "asset.upkeep" = "Entretien";
 "asset.upkeep.hint" = "Les dépenses de cette catégorie comptent comme son entretien : taxes, charges, réparations, assurance.";
+"asset.upkeep.add" = "Ajouter une autre catégorie";
 "asset.link.category" = "Catégorie";
 "asset.link.none" = "Aucune";
 "asset.link.subcategory" = "Sous-catégories";

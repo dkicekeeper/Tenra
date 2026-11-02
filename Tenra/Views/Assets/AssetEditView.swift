@@ -50,8 +50,15 @@ struct AssetEditView: View {
     /// Empty: no link; a subcategory left empty takes the whole category.
     @State private var incomeCategoryId = ""
     @State private var incomeSubcategoryIds: Set<String> = []
-    @State private var expenseCategoryId = ""
-    @State private var expenseSubcategoryIds: Set<String> = []
+    /// The upkeep rows, one category (and its subcategories) each: tax, the building's fees,
+    /// repairs (plan 2.3). A row without a category is left out.
+    @State private var expenseDrafts: [LinkDraft] = [LinkDraft()]
+
+    struct LinkDraft: Identifiable, Equatable {
+        let id = UUID()
+        var categoryId = ""
+        var subcategoryIds: Set<String> = []
+    }
     /// Where it is and what it is like, as typed.
     @State private var attributesDraft = AssetAttributesDraft()
 
@@ -156,15 +163,22 @@ struct AssetEditView: View {
                         )
                     }
                     if !linkOptions.expenseCategories.isEmpty {
-                        linkSection(
-                            header: String(localized: "asset.upkeep"),
-                            footer: String(localized: "asset.upkeep.hint"),
-                            icon: "wrench.and.screwdriver",
-                            categories: linkOptions.expenseCategories,
-                            categoryId: $expenseCategoryId,
-                            subcategoryIds: $expenseSubcategoryIds,
-                            overlaps: expenseOverlaps
-                        )
+                        ForEach($expenseDrafts) { $draft in
+                            linkSection(
+                                header: draft.id == expenseDrafts.first?.id ? String(localized: "asset.upkeep") : nil,
+                                footer: draft.id == expenseDrafts.last?.id ? String(localized: "asset.upkeep.hint") : nil,
+                                icon: "wrench.and.screwdriver",
+                                categories: linkOptions.expenseCategories,
+                                categoryId: $draft.categoryId,
+                                subcategoryIds: $draft.subcategoryIds,
+                                overlaps: overlaps(draft)
+                            )
+                        }
+                        if canAddUpkeep {
+                            DSButton(String(localized: "asset.upkeep.add"), systemImage: "plus", appearance: .flat) {
+                                expenseDrafts.append(LinkDraft())
+                            }
+                        }
                     }
 
                     AssetAttributesSection(kind: kind, draft: $attributesDraft)
@@ -183,7 +197,7 @@ struct AssetEditView: View {
                 .animation(AppAnimation.smooth, value: purchasePrice != nil)
                 .animation(AppAnimation.smooth, value: hasDepreciation)
                 .animation(AppAnimation.smooth, value: incomeCategoryId)
-                .animation(AppAnimation.smooth, value: expenseCategoryId)
+                .animation(AppAnimation.smooth, value: expenseDrafts)
                 .animation(AppAnimation.smooth, value: kind)
             }
         }
@@ -198,8 +212,14 @@ struct AssetEditView: View {
         .onChange(of: incomeCategoryId) {
             incomeSubcategoryIds = incomeSubcategoryIds.filter { linkOptions.has(subcategory: $0, in: incomeCategoryId) }
         }
-        .onChange(of: expenseCategoryId) {
-            expenseSubcategoryIds = expenseSubcategoryIds.filter { linkOptions.has(subcategory: $0, in: expenseCategoryId) }
+        .onChange(of: expenseDrafts.map(\.categoryId)) {
+            for index in expenseDrafts.indices {
+                let categoryId = expenseDrafts[index].categoryId
+                let kept = expenseDrafts[index].subcategoryIds.filter { linkOptions.has(subcategory: $0, in: categoryId) }
+                if kept != expenseDrafts[index].subcategoryIds {
+                    expenseDrafts[index].subcategoryIds = kept
+                }
+            }
         }
     }
 
@@ -208,8 +228,8 @@ struct AssetEditView: View {
     /// counts these transactions.
     @ViewBuilder
     private func linkSection(
-        header: String,
-        footer: String,
+        header: String?,
+        footer: String?,
         icon: String,
         categories: [AssetLinkOptions.Item],
         categoryId: Binding<String>,
@@ -266,15 +286,33 @@ struct AssetEditView: View {
 
     private var isValid: Bool {
         !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && (value != nil || purchasePrice != nil)
-            && !incomeOverlaps && !expenseOverlaps
+            && !incomeOverlaps && !expenseDrafts.contains(where: overlaps)
     }
 
     private var incomeLink: AssetCategoryLink? {
         Self.link(incomeCategoryId, incomeSubcategoryIds)
     }
 
-    private var expenseLink: AssetCategoryLink? {
-        Self.link(expenseCategoryId, expenseSubcategoryIds)
+    /// The upkeep links: the rows with a category, one link a category (a category picked
+    /// twice merges its subcategories; the whole category wins).
+    private var expenseLinks: [AssetCategoryLink] {
+        var result: [AssetCategoryLink] = []
+        for draft in expenseDrafts where !draft.categoryId.isEmpty {
+            if let index = result.firstIndex(where: { $0.categoryId == draft.categoryId }) {
+                let merged: Set<String> = result[index].isWholeCategory || draft.subcategoryIds.isEmpty
+                    ? []
+                    : Set(result[index].subcategoryIds).union(draft.subcategoryIds)
+                result[index] = AssetCategoryLink(categoryId: draft.categoryId, subcategoryIds: merged.sorted())
+            } else if let link = Self.link(draft.categoryId, draft.subcategoryIds) {
+                result.append(link)
+            }
+        }
+        return result
+    }
+
+    /// Another row while every row has a category and some category is left.
+    private var canAddUpkeep: Bool {
+        expenseDrafts.allSatisfy { !$0.categoryId.isEmpty } && expenseDrafts.count < linkOptions.expenseCategories.count
     }
 
     /// The subcategories sorted: the same pick saves the same link.
@@ -299,8 +337,9 @@ struct AssetEditView: View {
         } ?? false
     }
 
-    private var expenseOverlaps: Bool {
-        expenseLink.map { link in
+    /// An upkeep row another asset held on the same days already counts.
+    private func overlaps(_ draft: LinkDraft) -> Bool {
+        Self.link(draft.categoryId, draft.subcategoryIds).map { link in
             linkOptions.takenExpense.contains { AssetValuationMath.overlaps($0.link, held: $0.held, link, held: heldPeriod) }
         } ?? false
     }
@@ -341,8 +380,9 @@ struct AssetEditView: View {
         note = asset.note ?? ""
         incomeCategoryId = asset.incomeLink?.categoryId ?? ""
         incomeSubcategoryIds = Set(asset.incomeLink?.subcategoryIds ?? [])
-        expenseCategoryId = asset.expenseLink?.categoryId ?? ""
-        expenseSubcategoryIds = Set(asset.expenseLink?.subcategoryIds ?? [])
+        expenseDrafts = asset.expenseLinks.isEmpty
+            ? [LinkDraft()]
+            : asset.expenseLinks.map { LinkDraft(categoryId: $0.categoryId, subcategoryIds: Set($0.subcategoryIds)) }
     }
 
     // MARK: - Save
@@ -362,7 +402,7 @@ struct AssetEditView: View {
         let trimmedNote = note.trimmingCharacters(in: .whitespacesAndNewlines)
         result.note = trimmedNote.isEmpty ? nil : trimmedNote
         result.incomeLink = incomeLink
-        result.expenseLink = expenseLink
+        result.expenseLinks = expenseLinks
         result.attributes = attributesDraft.attributes(for: kind, over: asset?.attributes ?? AssetAttributes())
 
         // Kept in the asset's currency: the purchase price and the valuations move to the new

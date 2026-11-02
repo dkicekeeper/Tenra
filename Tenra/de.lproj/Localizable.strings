@@ -2452,6 +2452,7 @@
 "asset.rent.hint" = "Einnahmen dieser Kategorie zählen als Miete des Vermögenswerts.";
 "asset.upkeep" = "Unterhalt";
 "asset.upkeep.hint" = "Ausgaben dieser Kategorie zählen als Unterhalt: Steuer, Gebühren, Reparaturen, Versicherung.";
+"asset.upkeep.add" = "Weitere Kategorie hinzufügen";
 "asset.link.category" = "Kategorie";
 "asset.link.none" = "Keine";
 "asset.link.subcategory" = "Unterkategorien";

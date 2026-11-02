@@ -2452,6 +2452,7 @@
 "asset.rent.hint" = "Bu kategorideki gelirler varlığın kirası sayılır.";
 "asset.upkeep" = "Bakım giderleri";
 "asset.upkeep.hint" = "Bu kategorideki giderler bakım gideri sayılır: vergi, aidat, onarım, sigorta.";
+"asset.upkeep.add" = "Başka kategori ekle";
 "asset.link.category" = "Kategori";
 "asset.link.none" = "Seçilmedi";
 "asset.link.subcategory" = "Alt kategoriler";

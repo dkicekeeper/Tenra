@@ -2452,6 +2452,7 @@
 "asset.rent.hint" = "As receitas desta categoria contam como aluguel do bem.";
 "asset.upkeep" = "Manutenção";
 "asset.upkeep.hint" = "As despesas desta categoria contam como manutenção: impostos, taxas, reparos, seguro.";
+"asset.upkeep.add" = "Adicionar outra categoria";
 "asset.link.category" = "Categoria";
 "asset.link.none" = "Nenhuma";
 "asset.link.subcategory" = "Subcategorias";

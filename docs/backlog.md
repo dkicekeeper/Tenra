@@ -86,12 +86,10 @@ Found by the docs audit of 2026-10-12, not verified on device yet:
 
 ## Ideas, not planned yet
 
-- **Assets, later** (the assets plan is done: [archive/plans/plan-assets.md](archive/plans/plan-assets.md)
-  §9, phase 5): purchase and repair transactions tied to an asset ("an investment in it": the
-  purchase price from them, analytics spending "without asset purchases" in their own metrics
-  only, totals stay on `summaryContribution`, rule #11); the yield in dollars and after
-  inflation; assets in the CSV export; housing price indexes as a hint to a valuation; "Open
-  Assets" as a destination of Ten's open block.
+- **Assets, next:** planned in [plan-assets-roadmap.md](plan-assets-roadmap.md) (phase 5 of
+  the first plan included: purchase and improvements tied to an asset, the yield in dollars,
+  the CSV export, "Open Assets" in Ten's open block). Automatic valuation is its track A: listings
+  found by web search on Ten's server; housing price indexes deferred there (§3.3).
 
 - **Statement import:** a one-tap "align the balance to the statement" after the closing-balance
   check (today it only shows the difference).

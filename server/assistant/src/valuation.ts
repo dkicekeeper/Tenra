@@ -10,7 +10,7 @@ import { isValidUserId, PROTOCOL_VERSION, ValidationError } from "./validate";
 // request carries the asset's kind, place and characteristics, never its name or an address,
 // and nothing of it is logged.
 
-export const VALUATION_PROMPT_VERSION = "2026-11-02.1";
+export const VALUATION_PROMPT_VERSION = "2026-11-02.2";
 export const REPORT_LISTINGS = "report_listings";
 
 type Params = Anthropic.Beta.Messages.MessageCreateParamsNonStreaming;
@@ -222,16 +222,30 @@ const DYNAMIC_FILTERING_MODELS = new Set([
   "claude-sonnet-4-6",
 ]);
 
-export function webSearchTool(model: string, maxUses: number, asset: AssetDescription): Anthropic.Beta.BetaToolUnion {
+/** Countries web search refuses in `user_location` (a 400, "Country code KZ is not supported"),
+ * and those learned from such a refusal while this isolate runs: the place stays in the asset
+ * the model reads, and so in its queries. */
+const LOCATION_UNSUPPORTED = new Set(["KZ"]);
+
+export const supportsLocation = (country: string) => !LOCATION_UNSUPPORTED.has(country);
+
+/** A 400 naming the country of `user_location` as unsupported. */
+export function isLocationRefusal(error: unknown): boolean {
+  const e = error as { status?: unknown; message?: unknown };
+  return e?.status === 400 && typeof e.message === "string" && /country code \w+ is not supported/i.test(e.message);
+}
+
+export function webSearchTool(model: string, maxUses: number, asset: AssetDescription, withLocation = supportsLocation(asset.country)): Anthropic.Beta.BetaToolUnion {
   const user_location: Anthropic.Beta.BetaUserLocation = {
     type: "approximate",
     country: asset.country,
     ...(asset.city ? { city: asset.city } : {}),
     ...(asset.region ? { region: asset.region } : {}),
   };
+  const located = withLocation ? { user_location } : {};
   return DYNAMIC_FILTERING_MODELS.has(model)
-    ? { type: "web_search_20260209", name: "web_search", max_uses: maxUses, user_location }
-    : { type: "web_search_20250305", name: "web_search", max_uses: maxUses, user_location };
+    ? { type: "web_search_20260209", name: "web_search", max_uses: maxUses, ...located }
+    : { type: "web_search_20250305", name: "web_search", max_uses: maxUses, ...located };
 }
 
 const nullable = (schema: Record<string, unknown>) => ({ anyOf: [schema, { type: "null" }] });
@@ -288,9 +302,9 @@ export const REPORT_LISTINGS_TOOL: Anthropic.Beta.BetaTool = {
 
 export const VALUATION_SYSTEM_PROMPT = `You find listings for sale that are comparable to one asset, so that an app can estimate what it is worth. You never estimate the value yourself.
 
-1. Search with web_search for current listings of comparable assets for sale in the asset's country and place: the same kind, and as close as the description allows (district or complex, rooms, size, year; for a vehicle make, model, generation, year, mileage). Write each query in the language of that country's listing sites, the way a local buyer would (Russian for Kazakhstan, Turkish for Turkey, German for Germany), and prefer the country's big listing sites and their search result pages.
+1. Search with web_search for current listings of comparable assets for sale in the asset's country and place: the same kind, and as close as the description allows (district or complex, rooms, size, year; for a vehicle make, model, generation, year, mileage). Write each query in the language of that country's listing sites, the way a local buyer would (Russian for Kazakhstan, Turkish for Turkey, German for Germany), and prefer the country's big listing sites and their search result pages. Unless the first search already showed ten or more such listings, search again with other wording or on another of the country's listing sites: the value needs many listings.
 2. Then call report_listings once, with every listing for sale you saw in the results that is the same kind of asset, close or not: the app filters them. For each listing: the asking price and its currency as written, sale or rent, the size in square metres, land in ares, rooms as that country's listings count them (the first number of 2+1 in Turkey, bedrooms in the UK and the US), year, mileage in kilometres, the district when shown, and source_url: the URL of the search result you saw it in, copied exactly. One results page can hold several listings: report each one with that page's URL.
-3. Report only what the results show. Never invent a listing, a price, a size or a URL. Skip listings without a price. Never report sellers' names, phone numbers or exact addresses.
+3. Report only what the results show. Never invent a listing, a price, a size or a URL. Copy each price in full as a number, minding the country's thousands separators ("5.150.000 TL" is 5150000, "1,250,000" is 1250000); never shorten it. Skip listings without a price, and those that are not a whole asset for sale at a fixed price: a share or shared ownership, an auction, rent to own, a new development's "from" price. Never report sellers' names, phone numbers or exact addresses.
 4. A site's own average or index ("average price of a two-room flat in the district", "price per m² in the city") is not a listing: put it in site_averages.
 5. If nothing relevant was found, call report_listings with empty lists. Write no other text.`;
 
@@ -306,8 +320,14 @@ export function valuationConfig(config: Config): ValuationConfig {
 
 /** `searchesLeft`: a later call of the same valuation keeps the search tool (its earlier calls are
  * in the history) with what is left of the limit, at least one. */
-export function buildValuationParams(config: ValuationConfig, asset: AssetDescription, now: Date, searchesLeft = config.maxSearches): Params {
-  const tools: Anthropic.Beta.BetaToolUnion[] = [webSearchTool(config.model, Math.max(1, searchesLeft), asset), REPORT_LISTINGS_TOOL];
+export function buildValuationParams(
+  config: ValuationConfig,
+  asset: AssetDescription,
+  now: Date,
+  searchesLeft = config.maxSearches,
+  withLocation = supportsLocation(asset.country),
+): Params {
+  const tools: Anthropic.Beta.BetaToolUnion[] = [webSearchTool(config.model, Math.max(1, searchesLeft), asset, withLocation), REPORT_LISTINGS_TOOL];
   return {
     model: config.model,
     max_tokens: 8000,
@@ -349,9 +369,10 @@ export interface SearchOutcome {
 
 const NUDGE = "Call report_listings now with the listings you found.";
 
-/** Searches until the model calls report_listings: a paused turn goes on, a turn that ended without the report is asked for it once. At most three calls. */
+/** Searches until the model calls report_listings: a paused turn goes on, a turn that ended without the report is asked for it once. At most three calls. A location the search refuses is dropped and the call made again. */
 export async function searchListings(call: ModelCall, config: ValuationConfig, asset: AssetDescription, now: Date): Promise<SearchOutcome> {
-  const first = buildValuationParams(config, asset, now);
+  let withLocation = supportsLocation(asset.country);
+  const first = buildValuationParams(config, asset, now, config.maxSearches, withLocation);
   const messages: MessageParam[] = [...first.messages];
   const content: ContentBlock[] = [];
   const usage: ValuationUsage = { input_tokens: 0, output_tokens: 0, cache_read_input_tokens: 0, cache_creation_input_tokens: 0, searches: 0 };
@@ -361,8 +382,16 @@ export async function searchListings(call: ModelCall, config: ValuationConfig, a
   let report: Report | undefined;
 
   while (calls < 3) {
-    const params = calls === 0 ? first : { ...buildValuationParams(config, asset, now, config.maxSearches - usage.searches), messages };
-    const message = await call(params);
+    const params = { ...buildValuationParams(config, asset, now, config.maxSearches - usage.searches, withLocation), messages };
+    let message: Message;
+    try {
+      message = await call(params);
+    } catch (error) {
+      if (!withLocation || !isLocationRefusal(error)) throw error;
+      LOCATION_UNSUPPORTED.add(asset.country);
+      withLocation = false;
+      message = await call({ ...buildValuationParams(config, asset, now, config.maxSearches - usage.searches, false), messages });
+    }
     calls += 1;
     usage.input_tokens += message.usage.input_tokens;
     usage.output_tokens += message.usage.output_tokens;
@@ -500,6 +529,8 @@ export interface ValuationResult {
 }
 
 export const MIN_COMPARABLES = 3;
+/** A comparable this many times above or below the median is a misread, not a market price. */
+const FAR_FROM_MEDIAN = 2.5;
 const LISTINGS_RETURNED = 12;
 
 interface Candidate {
@@ -595,8 +626,18 @@ export function computeValuation(asset: AssetDescription, report: Report | undef
 
   const { chosen, values, basis, unit, size, relaxed } = comparables(asset, candidates, drop);
 
-  // Outliers by Tukey's fences, once there are enough to tell.
   let kept = chosen.map((c, i) => ({ c, v: values[i]! }));
+  // A price misread by a power of ten, or another kind of thing: more than 2.5 times off the
+  // median. Tukey's fences miss it when such prices are many (they make their own cluster).
+  if (kept.length >= MIN_COMPARABLES) {
+    const middle = quantile(kept.map((k) => Math.log(k.v)).sort((a, b) => a - b), 0.5);
+    kept = kept.filter((k) => {
+      if (Math.abs(Math.log(k.v) - middle) <= Math.log(FAR_FROM_MEDIAN)) return true;
+      drop("far_from_median");
+      return false;
+    });
+  }
+  // Outliers by Tukey's fences, once there are enough to tell.
   if (kept.length >= 4) {
     const sorted = kept.map((k) => k.v).sort((a, b) => a - b);
     const q1 = quantile(sorted, 0.25);
@@ -706,6 +747,9 @@ function comparables(asset: AssetDescription, candidates: Candidate[], drop: (re
     return false;
   });
 
+  // The listings that name the same rooms, priced as a whole: what is left when sizes are few.
+  const sameRoomsKnown = asset.rooms === undefined ? sameRooms : sameRooms.filter((c) => c.listing.rooms === asset.rooms);
+
   if (size !== undefined) {
     for (const [share, relaxed] of [
       [0.25, false],
@@ -715,7 +759,10 @@ function comparables(asset: AssetDescription, candidates: Candidate[], drop: (re
         const s = sizeOf(c);
         return s !== null && s > 0 && within(s, size, share);
       });
-      if (close.length >= MIN_COMPARABLES) {
+      // Sizes on only a few of many listings (a detail page here and there, as in the UK) would
+      // price the asset by those few: then the many same-room listings are the better sample.
+      const fewOfMany = sameRoomsKnown.length >= 5 && close.length * 2 < sameRoomsKnown.length;
+      if (close.length >= MIN_COMPARABLES && !fewOfMany) {
         for (let i = close.length; i < sameRooms.length; i++) drop("size");
         return { chosen: close, values: close.map((c) => c.listing.price / sizeOf(c)!), basis: "per_unit", unit, size, relaxed };
       }

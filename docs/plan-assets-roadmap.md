@@ -7,8 +7,11 @@
 > остальные решения не приняты (§8). **A1 и A6 сделаны** (ветка
 > `claude/compassionate-volta-j9mpvg`): `POST /v1/valuation` (`server/assistant/src/valuation.ts`,
 > выключен `VALUATION_ENABLED = "false"` до версии приложения с кнопкой) и eval оценки на 13
-> случаях (`eval/valuation.ts`, Actions → Assistant server → `eval-valuation`); eval ещё не
-> запускался, от него зависит D11. Дальше A2 (Тэн в чате). Фазы 1-4 первого плана в `main` и выйдут в 1.8:
+> случаях (`eval/valuation.ts`, Actions → Assistant server → `eval-valuation`). Первый прогон
+> 2026-11-02: поиск отклоняет `user_location` с KZ (все казахстанские случаи упали до поиска),
+> Haiku неверно прочитал часть цен в Стамбуле, в Лондоне площадь была у немногих объявлений,
+> Sonnet искал один раз; выдуманных ссылок ноль. Все четыре поправлены, прогон повторяется; от
+> него зависит D11. Дальше A2 (Тэн в чате). Фазы 1-4 первого плана в `main` и выйдут в 1.8:
 > [archive/plans/plan-assets.md](archive/plans/plan-assets.md). Правила раздела:
 > [domains/assets.md](domains/assets.md). Связан с [plan-investments.md](plan-investments.md):
 > портфель станет строкой капитала.

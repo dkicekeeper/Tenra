@@ -331,15 +331,23 @@ What an asset is worth by comparable listings found with web search, in any coun
   no name, no address, no text with seven digits or more (a phone, an IIN, a VIN). A bad field is
   400 `invalid` with its name as the reason.
 - One model call (up to three: a paused turn goes on, a turn without the report is asked for it
-  once) with the server tool `web_search` (`VALUATION_MAX_SEARCHES`, 3; `user_location` from the
-  asset; `web_search_20260209` for models with dynamic filtering, `web_search_20250305` for
-  Haiku) and the strict client tool `report_listings`: every listing for sale the model saw, with
-  the URL of the search result it saw it in. No `web_fetch`: listing sites' pages are never read.
+  once) with the server tool `web_search` (`VALUATION_MAX_SEARCHES`, 3; `web_search_20260209` for
+  models with dynamic filtering, `web_search_20250305` for Haiku) and the strict client tool
+  `report_listings`: every listing for sale the model saw, with the URL of the search result it
+  saw it in. No `web_fetch`: listing sites' pages are never read. `user_location` comes from the
+  asset, except where web search refuses the country (a 400 "Country code KZ is not supported":
+  Kazakhstan, and any country such a 400 names, after which the call is made again without it);
+  the place is in the asset the model reads either way. The prompt asks for a second search
+  unless the first showed ten listings, full prices (thousands separators), and no shares,
+  auctions or "from" prices.
 - The arithmetic is code, never the model: a listing counts only when its URL is one of the search
   results (normalized: no `www.`/`m.`, decoded, no trailing slash); rents, duplicates and other
   currencies than the most common one are left out; comparables by kind (real estate: the same
-  rooms, size within 25%, then 40%, then by price among the same rooms; a vehicle: the year ±1,
-  the mileage ±40 000 km when three are close); outliers by Tukey's fences from four listings on;
+  rooms, size within 25%, then 40%, then by price among the same rooms, also when sizes are on
+  fewer than half of five or more same-room listings; a vehicle: the year ±1, the mileage
+  ±40 000 km when three are close); a comparable more than 2.5 times off the median dropped
+  (`far_from_median`: a misread price, which can make a cluster of its own); outliers by Tukey's
+  fences from four listings on;
   the median and the quartiles, to three significant digits. Accuracy: `high` from 8 comparables
   with quartiles within ±10% of the median, `medium` from 5 within ±20% (at most `medium` for a
   widened match or `other`), `low` below; fewer than 3: `insufficient`.

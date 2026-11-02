@@ -172,10 +172,14 @@ describe("parseValuationRequest", () => {
 });
 
 describe("buildValuationParams", () => {
-  it("gives the dynamic-filtering search to the models that have it", () => {
+  it("gives the dynamic-filtering search to the models that have it, and the place where the search takes it", () => {
     const haiku = buildValuationParams(valuationConfig(readConfig({})), flat, now);
     expect(haiku.model).toBe("claude-haiku-5-5");
-    expect(haiku.tools?.[0]).toMatchObject({ type: "web_search_20250305", max_uses: 3, user_location: { type: "approximate", country: "KZ", city: "Алматы" } });
+    // Web search refuses KZ as a user_location (a 400): the place stays in the asset's text.
+    expect(haiku.tools?.[0]).toMatchObject({ type: "web_search_20250305", max_uses: 3 });
+    expect(haiku.tools?.[0]).not.toHaveProperty("user_location");
+    const madrid = buildValuationParams(valuationConfig(readConfig({})), { kind: "apartment", country: "ES", city: "Madrid", area_m2: 80 }, now);
+    expect(madrid.tools?.[0]).toMatchObject({ user_location: { type: "approximate", country: "ES", city: "Madrid" } });
     const sonnet = buildValuationParams(valuationConfig(readConfig({ VALUATION_MODEL: "claude-sonnet-5-5", VALUATION_MAX_SEARCHES: "4" })), flat, now);
     expect(sonnet.tools?.[0]).toMatchObject({ type: "web_search_20260209", max_uses: 4 });
   });
@@ -265,11 +269,40 @@ describe("computeValuation", () => {
   it("drops an outlier once there are enough listings to tell", () => {
     const url = "https://a.kz/list";
     const results = searchResults(searched("s", "q", [url]));
-    const perM2 = [700, 710, 720, 730, 740, 750, 760, 770, 2_000];
+    const perM2 = [700, 710, 720, 730, 740, 750, 760, 770, 1_400];
     const report: Report = { listings: perM2.map((k, i) => listing({ source_url: url, price: k * 1000 * (60 + i), size_m2: 60 + i })), site_averages: [] };
     const value = computeValuation({ ...flat, area_m2: 64 }, report, results, now);
     expect(value.excluded).toEqual({ outlier: 1 });
     expect(value).toMatchObject({ count: 8, accuracy: "high" });
+  });
+
+  it("drops prices misread by a power of ten even when they are many", () => {
+    // As in the eval's Istanbul run: real asking prices of 13-26 million and a cluster read as
+    // 0.4-2.4 million for the same 100 m².
+    const url = "https://www.hepsiemlak.com/kadikoy-satilik/daire-2-1";
+    const results = searchResults(searched("s", "Kadıköy satılık daire 2+1", [url]));
+    const real = [25_950_000, 22_500_000, 15_950_000, 12_650_000, 13_200_000, 21_500_000, 17_300_000, 14_500_000, 14_450_000];
+    const misread = [515_000, 920_000, 600_000, 475_000, 430_000, 950_000, 560_000, 2_350_000];
+    const report: Report = { listings: [...real, ...misread].map((price, i) => listing({ source_url: url, price, currency: "TRY", size_m2: 100 + (i % 3), rooms: 2 })), site_averages: [] };
+    const kadikoy: AssetDescription = { kind: "apartment", country: "TR", city: "İstanbul", district: "Kadıköy", area_m2: 100, rooms: 2 };
+    const value = computeValuation(kadikoy, report, results, now);
+    expect(value.excluded).toEqual({ far_from_median: 8 });
+    expect(value).toMatchObject({ status: "ok", currency: "TRY", count: 9 });
+    expect(value.value! / 15_950_000).toBeGreaterThan(0.95);
+    expect(value.value! / 15_950_000).toBeLessThan(1.05);
+  });
+
+  it("prices by the many same-room listings when only a few give a size", () => {
+    // As in the eval's London run: five sizes among twenty two-bedroom listings, all cheap ones.
+    const url = "https://www.rightmove.co.uk/property-for-sale/Lewisham/2-bed-flats.htm";
+    const results = searchResults(searched("s", "2 bedroom flat for sale Lewisham", [url]));
+    const sized = [275_000, 350_000, 350_000, 275_000, 300_000].map((price, i) => listing({ source_url: url, price, currency: "GBP", rooms: 2, size_m2: 59 + i * 2 }));
+    const unsized = [700_000, 675_000, 625_000, 500_000, 600_000, 430_000, 425_000, 300_000, 240_000, 365_000, 475_000, 355_000, 535_000, 550_000, 375_000].map((price) =>
+      listing({ source_url: url, price, currency: "GBP", rooms: 2 }),
+    );
+    const lewisham: AssetDescription = { kind: "apartment", country: "GB", city: "London", district: "Lewisham", area_m2: 65, rooms: 2 };
+    const value = computeValuation(lewisham, { listings: [...sized, ...unsized], site_averages: [] }, results, now);
+    expect(value).toMatchObject({ status: "ok", basis: "price", count: 20, value: 400_000 });
   });
 
   it("prices by the listing price among the same rooms when sizes are missing", () => {
@@ -322,6 +355,30 @@ describe("searchListings", () => {
     expect(JSON.stringify(last.content)).toContain(REPORT_LISTINGS);
     // The searches were spent: the tool stays (its calls are in the history) with one left.
     expect(sent[1]!.tools?.[0]).toMatchObject({ name: "web_search", max_uses: 1 });
+  });
+
+  it("asks again without a location the search refuses", async () => {
+    const sent: Anthropic.Beta.Messages.MessageCreateParamsNonStreaming[] = [];
+    const istanbul: AssetDescription = { kind: "apartment", country: "TR", city: "İstanbul", area_m2: 100 };
+    let first = true;
+    const outcome = await searchListings(
+      async (params) => {
+        sent.push(params);
+        if (first) {
+          first = false;
+          throw Object.assign(new Error("400 tools.0.web_search_20250305: Country code TR is not supported."), { status: 400 });
+        }
+        return message([reported({ listings: [], site_averages: [] })], "tool_use", 1);
+      },
+      config,
+      istanbul,
+      now,
+    );
+    expect(outcome.report).toEqual({ listings: [], site_averages: [] });
+    expect(sent[0]!.tools?.[0]).toHaveProperty("user_location");
+    expect(sent[1]!.tools?.[0]).not.toHaveProperty("user_location");
+    // Another error is not retried.
+    await expect(searchListings(async () => Promise.reject(Object.assign(new Error("400 max_tokens"), { status: 400 })), config, istanbul, now)).rejects.toThrow("max_tokens");
   });
 
   it("stops on a refusal", async () => {

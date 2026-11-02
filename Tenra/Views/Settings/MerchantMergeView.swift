@@ -6,7 +6,8 @@
 //  history to merge with it into one brand (MerchantGroupStore), points the bank names apart
 //  ("ZARA MEGA", "ZARA DOSTYK PLAZA"). The ones picked stay on top, then those that start with
 //  the same words, then the rest; the system search finds a merchant by the bank's text, by the
-//  name the person gave it and by its brand's name. Rows as in Settings → Wallet → Merchants
+//  name the person gave it, by its brand's name and by its payments' categories and
+//  subcategories. Rows as in Settings → Wallet → Merchants
 //  (`MerchantChoiceRow`: the name and a line under it, DesignKit's `SelectionIndicator`). The
 //  history is swept once, off the main actor (red flag #9).
 //
@@ -162,10 +163,12 @@ struct MerchantMergeView: View {
     private func load() async {
         guard !hasLoaded else { return }
         let all = transactionStore.transactions
+        let subcategoryIds = transactionStore.subcategoryIdsByTransactionId
+        let subcategoryNames = transactionStore.subcategoryById.mapValues(\.name)
         let ownKey = CategorySuggestionService.normalizedMerchant(merchant)
         let excluded = Set(MerchantGroupStore.shared.group(forKey: ownKey)?.members ?? [ownKey])
         let found = await Task.detached(priority: .userInitiated) {
-            MerchantDirectory.entries(in: all, excluding: excluded, like: ownKey)
+            MerchantDirectory.entries(in: all, excluding: excluded, like: ownKey, subcategoryIds: subcategoryIds, subcategoryNames: subcategoryNames)
         }.value
         guard !Task.isCancelled else { return }
         // The names live on the main actor (the logo store, the brands): read once here.
@@ -178,8 +181,8 @@ struct MerchantMergeView: View {
             let title = custom ?? MerchantName.displayName(candidate.name)
             let brand = groups.group(forKey: candidate.id).map { groups.displayName(of: $0) }
             titles[candidate.id] = title
-            searchable[candidate.id] = ([candidate.id, title] + [brand].compactMap { $0 })
-                .map(CategorySuggestionService.normalizedMerchant)
+            searchable[candidate.id] = (([candidate.id, title] + [brand].compactMap { $0 })
+                .map(CategorySuggestionService.normalizedMerchant) + candidate.tags)
                 .joined(separator: " | ")
         }
         self.titles = titles

@@ -6,8 +6,9 @@
 //  a payment entered by hand counts towards the merchant picked here, whatever its description
 //  says (`MerchantGroupStore.link`). The history's merchants, the ones worth a screen first
 //  (remembered, with a logo or a given name, a brand's point, linked by hand), then by how often;
-//  the system search reads the bank's text, the name the person gave a merchant and its brand's
-//  name, and a name nobody has yet is added as typed. The picked one stays on top; "No
+//  the system search reads the bank's text, the name the person gave a merchant, its brand's
+//  name and its payments' categories and subcategories, and a name nobody has yet is added as
+//  typed. The picked one stays on top; "No
 //  merchant" removes a link. The history is swept once, off the main actor (red flag #9).
 //
 
@@ -149,8 +150,10 @@ struct MerchantPickerView: View {
     private func load() async {
         guard !hasLoaded else { return }
         let all = transactionStore.transactions
+        let subcategoryIds = transactionStore.subcategoryIdsByTransactionId
+        let subcategoryNames = transactionStore.subcategoryById.mapValues(\.name)
         let found = await Task.detached(priority: .userInitiated) {
-            MerchantDirectory.entries(in: all, excluding: [], like: "")
+            MerchantDirectory.entries(in: all, excluding: [], like: "", subcategoryIds: subcategoryIds, subcategoryNames: subcategoryNames)
         }.value
         guard !Task.isCancelled else { return }
         // Linked by hand: a merchant typed in a form may have no description of its own.
@@ -163,18 +166,18 @@ struct MerchantPickerView: View {
         }
         var rows: [(entry: Entry, known: Bool)] = []
         var seen = Set<String>()
-        func add(key: String, merchant: String, count: Int) {
+        func add(key: String, merchant: String, count: Int, tags: [String] = []) {
             let title = TransactionMerchant.title(of: merchant)
             let brand = groups.group(forKey: key).map { groups.displayName(of: $0) }
-            let searchable = ([key, title] + [brand].compactMap { $0 })
-                .map(CategorySuggestionService.normalizedMerchant)
+            let searchable = (([key, title] + [brand].compactMap { $0 })
+                .map(CategorySuggestionService.normalizedMerchant) + tags)
                 .joined(separator: " | ")
             let known = linkedCounts[key] != nil || TransactionMerchant.describedMerchant(merchant) != nil
             rows.append((Entry(id: key, merchant: merchant, title: title, count: count, searchable: searchable), known))
             seen.insert(key)
         }
         for entry in found {
-            add(key: entry.id, merchant: entry.name, count: entry.count + (linkedCounts[entry.id]?.count ?? 0))
+            add(key: entry.id, merchant: entry.name, count: entry.count + (linkedCounts[entry.id]?.count ?? 0), tags: entry.tags)
         }
         for (key, linked) in linkedCounts where !seen.contains(key) {
             add(key: key, merchant: linked.merchant, count: linked.count)

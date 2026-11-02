@@ -79,7 +79,7 @@ with `CurrencyConverter.convertSync`, the amount itself as the cold-cache fallba
   space points evenly, so `AssetValuationMath.chartDays` gives a day a month apart (a few months
   over a long span, at most 48) from the first point to today; an asset's own chart
   (`chartHistory`) ends on the sale price on the sale day once sold. `totalHistory` (a point on
-  every day of a purchase or a valuation) stays for net worth's months.
+  every day of a purchase or a valuation) is no longer drawn; its tests pin the value on a day.
 - **Rent and upkeep**: the `.income` transactions of the income link and the `.expense` ones of
   every expense link, a payment two links both count once (`AssetStore.transactionsOfLink`, wired by `AppCoordinator` to
   `TransactionStore`'s category index, filtered by the transaction links of its subcategories:

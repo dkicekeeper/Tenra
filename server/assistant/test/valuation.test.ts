@@ -507,7 +507,7 @@ describe("consumeValuation", () => {
 describe("the valuation eval", () => {
   it("has cases the endpoint accepts, each with a dated reference", async () => {
     const { VALUATION_CASES } = await import("../eval/valuation-cases");
-    expect(VALUATION_CASES.length).toBeGreaterThanOrEqual(12);
+    expect(VALUATION_CASES.length).toBeGreaterThanOrEqual(20);
     expect(new Set(VALUATION_CASES.map((c) => c.id)).size).toBe(VALUATION_CASES.length);
     for (const c of VALUATION_CASES) {
       expect(parseValuationRequest(JSON.stringify({ protocol: 1, asset: c.asset })).asset).toEqual(c.asset);

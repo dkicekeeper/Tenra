@@ -6,8 +6,9 @@
 // listings read by hand. Market prices move: refresh a reference older than about three months,
 // and widen nothing to make a case pass.
 //
-// Rooms are counted as the country's listings count them: rooms in Kazakhstan, bedrooms in the
-// UK, the US and Spain, the first number of "2+1" in Turkey.
+// Rooms are counted as the country's listings count them: rooms in Kazakhstan, Ukraine and
+// Korea, rooms with the living room in Germany (Zimmer) and France (pièces), bedrooms in the UK,
+// the US, Spain and Brazil (dormitórios), the first number of "2+1" in Turkey.
 
 import type { AssetDescription } from "../src/valuation";
 
@@ -118,6 +119,82 @@ export const VALUATION_CASES: ValuationCase[] = [
       source: "KBB: 2019 Civic LX resale 14 400 USD; CarGurus: 2019 Civic average listing 17 122 USD; Edmunds: an LX with 72 thousand miles at 17 998 USD",
       asOf: "2026-11-02",
     },
+  },
+  {
+    id: "kz-elantra-2021",
+    asset: { kind: "vehicle", country: "KZ", city: "Астана", make: "Hyundai", model: "Elantra", year: 2021, engine_l: 1.6, fuel: "petrol", transmission: "automatic", mileage_km: 80_000, customs_cleared: true },
+    expect: {
+      status: "ok",
+      currency: "KZT",
+      value: 7_500_000,
+      tolerance: 0.12,
+      source: "Kolesa.kz: 493 listings of 2021 Elantras at 7 833 693 KZT on average; Astana automatics with 68-84 thousand km at 7.15-7.6 million (October 2026)",
+      asOf: "2026-11-02",
+    },
+  },
+  {
+    id: "ua-kyiv-obolon-2r",
+    // Kyiv lists resale flats in US dollars.
+    asset: { kind: "apartment", country: "UA", city: "Київ", district: "Оболонський", area_m2: 54, rooms: 2, year_built: 1984, building: "panel", condition: "standard" },
+    expect: { status: "ok", currency: "USD", value: 85_000, tolerance: 0.2, source: "LUN statistics: median two-room resale flat of the Obolon district at 85 000 USD (October 2026)", asOf: "2026-11-02" },
+  },
+  {
+    id: "kr-seoul-dobong-84",
+    asset: { kind: "apartment", country: "KR", city: "서울", district: "도봉구", area_m2: 84, rooms: 3, year_built: 1997, building: "monolith" },
+    expect: {
+      status: "ok",
+      currency: "KRW",
+      value: 700_000_000,
+      tolerance: 0.2,
+      source: "KB Real Estate via its September 2026 district summary: Dobong-gu apartments at 29.13 million KRW per 3.3 m2 of exclusive area; 84 m2 flats of the district at 680 million on average",
+      asOf: "2026-11-02",
+    },
+  },
+  {
+    id: "de-berlin-neukoelln",
+    asset: { kind: "apartment", country: "DE", city: "Berlin", district: "Neukölln", area_m2: 70, rooms: 2, year_built: 1910, building: "brick", condition: "standard" },
+    expect: {
+      status: "ok",
+      currency: "EUR",
+      value: 350_000,
+      tolerance: 0.2,
+      source: "Flats in Neukölln: ImmoScout24 4 802 EUR/m2, Immowelt 5 128 EUR/m2 (October 2026), Guthmann transactions 4 800 EUR/m2 (2026)",
+      asOf: "2026-11-02",
+    },
+  },
+  {
+    id: "fr-lyon-3e",
+    asset: { kind: "apartment", country: "FR", city: "Lyon", district: "3e arrondissement", area_m2: 60, rooms: 3, year_built: 1970, condition: "standard" },
+    expect: {
+      status: "ok",
+      currency: "EUR",
+      value: 276_000,
+      tolerance: 0.2,
+      source: "Flats in Lyon 3e: SeLoger 4 561 EUR/m2, Ciléad 4 633 EUR/m2, efficity 4 280 EUR/m2 (October 2026)",
+      asOf: "2026-11-02",
+    },
+  },
+  {
+    id: "br-sao-paulo-pinheiros",
+    asset: { kind: "apartment", country: "BR", city: "São Paulo", district: "Pinheiros", area_m2: 70, rooms: 2, year_built: 2005 },
+    expect: { status: "ok", currency: "BRL", value: 1_275_000, tolerance: 0.2, source: "FipeZAP: Pinheiros asking prices at 18 219 BRL/m2 (August 2026; 18 307 in March)", asOf: "2026-11-02" },
+  },
+  {
+    id: "tr-clio-2020",
+    asset: { kind: "vehicle", country: "TR", city: "İstanbul", make: "Renault", model: "Clio", generation: "V", year: 2020, engine_l: 1.0, fuel: "petrol", transmission: "automatic", mileage_km: 90_000 },
+    expect: {
+      status: "ok",
+      currency: "TRY",
+      value: 1_000_000,
+      tolerance: 0.12,
+      source: "arabam.com and sahibinden.com: 2020 Clio 1.0 TCe automatics with 75-102 thousand km at 968 000-1 038 000 TRY (October 2026), read by hand",
+      asOf: "2026-11-02",
+    },
+  },
+  {
+    id: "fr-other-bronze",
+    asset: { kind: "other", country: "FR", city: "Bordeaux", description: "Sculpture en bronze, pièce unique d'un artiste local non coté, 40 cm", year: 2008 },
+    expect: { status: "insufficient", source: "A one-off piece by an artist with no market has no comparable listings" },
   },
   {
     id: "kz-other-handmade",

@@ -235,16 +235,35 @@ final class AssetStore {
     /// list): they take that section's places among all the assets, in memory at once, then
     /// kept.
     func reorder(_ orderedIds: [String]) async {
+        await save(placing(orderedIds))
+    }
+
+    /// A step of a drag in DesignKit's `CardList`: the assets take their places at once (the
+    /// card moves under the finger and the next step reads the new order), saved after.
+    func move(_ orderedIds: [String]) {
+        let moved = placing(orderedIds)
+        Task { await save(moved) }
+    }
+
+    /// The listed assets take the section's places; returns the ids that moved.
+    private func placing(_ orderedIds: [String]) -> [String] {
         let places = orderedIds.compactMap { id in assets.first { $0.id == id }?.order }.sorted()
-        var moved: [Asset] = []
+        var moved: [String] = []
         for (id, place) in zip(orderedIds, places) {
             guard let i = assets.firstIndex(where: { $0.id == id }), assets[i].order != place else { continue }
             assets[i].order = place
-            moved.append(assets[i])
+            moved.append(id)
         }
         assets.sort { $0.order < $1.order }
-        for asset in moved {
-            await repository?.save(asset)
+        return moved
+    }
+
+    /// Saves the assets as they are now (a later step's places, not an earlier one's).
+    private func save(_ ids: [String]) async {
+        for id in ids {
+            if let asset = assets.first(where: { $0.id == id }) {
+                await repository?.save(asset)
+            }
         }
     }
 

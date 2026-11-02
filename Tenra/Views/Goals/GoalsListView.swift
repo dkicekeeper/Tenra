@@ -134,7 +134,7 @@ struct GoalsListView: View {
         CardList(goals, layout: .stack, mode: mode, selection: $selection, onMove: { source, destination in
             var reordered = goals
             reordered.move(fromOffsets: source, toOffset: destination)
-            Task { await goalStore.reorder(reordered.map(\.id)) }
+            goalStore.move(reordered.map(\.id))
         }) { goal in
             row(goal, today: today)
         }

@@ -34,8 +34,10 @@ struct DepositsListView: View {
 
     private let logger = Logger(subsystem: "Tenra", category: "DepositsListView")
 
+    /// The deposits in the person's order. Read from `accounts` (observable), not the
+    /// `depositAccounts` cache: a drag's step then redraws the list at once.
     private var deposits: [Account] {
-        accountsViewModel.depositAccounts.sortedByOrder()
+        accountsViewModel.accounts.filter(\.isDeposit).sortedByOrder()
     }
 
     /// Deposits are a Pro feature (interest accrual + capitalization tracking): every add path

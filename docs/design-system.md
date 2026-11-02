@@ -255,7 +255,12 @@ dragging and adds; no swipe actions.
   `NavigationLink`s; the circle and the handle sit beside the card. The order is `Account.order`
   (loans: only while the filter shows every loan), `SavingsGoal.order` (within in progress or
   reached), `PersonalDebt.order` and `RecurringSeries.order` (CoreData v16; nil keeps the list's
-  own order, the soonest due first for debts). Goals and debts show three
+  own order, the soonest due first for debts). ⚠️ A list in `CardList` must be built from that
+  stored order and apply each `onMove` at once: CardList calls it on every item the finger
+  crosses, with indices of the last render. `LoansViewModel.loans` once filtered the accounts
+  without sorting, so a drag saved the order and the list drew the old one again; goals, debts
+  and assets move through their store's synchronous `move(_:)` (saved after), not a
+  `Task { await reorder }` a turn later. Goals and debts show three
   `PayoffProgressCardSkeleton`s until their store loads, replaced through `.skeletonReveal` (§7).
 - **Assets** (`AssetsListView`): a hero on `.heroBackground` with the total, its gain and its
   worth over time (`HeroSparkline`), the screen's title inline, `.heroScrollEdge()` on the scroll

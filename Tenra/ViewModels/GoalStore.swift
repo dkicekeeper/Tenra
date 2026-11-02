@@ -132,16 +132,35 @@ final class GoalStore {
     /// (DesignKit 8.0.0's list): they take that list's places among all the goals, in memory at
     /// once (the list moves while the finger does), then kept.
     func reorder(_ orderedIds: [String]) async {
+        await save(placing(orderedIds))
+    }
+
+    /// A step of a drag in DesignKit's `CardList`: the goals take their places at once (the
+    /// card moves under the finger and the next step reads the new order), saved after.
+    func move(_ orderedIds: [String]) {
+        let moved = placing(orderedIds)
+        Task { await save(moved) }
+    }
+
+    /// The listed goals take the list's places; returns the ids that moved.
+    private func placing(_ orderedIds: [String]) -> [String] {
         let places = orderedIds.compactMap { id in goals.first { $0.id == id }?.order }.sorted()
-        var moved: [SavingsGoal] = []
+        var moved: [String] = []
         for (id, place) in zip(orderedIds, places) {
             guard let i = goals.firstIndex(where: { $0.id == id }), goals[i].order != place else { continue }
             goals[i].order = place
-            moved.append(goals[i])
+            moved.append(id)
         }
         goals.sort { $0.order < $1.order }
-        for goal in moved {
-            await repository?.save(goal)
+        return moved
+    }
+
+    /// Saves the goals as they are now (a later step's places, not an earlier one's).
+    private func save(_ ids: [String]) async {
+        for id in ids {
+            if let goal = goals.first(where: { $0.id == id }) {
+                await repository?.save(goal)
+            }
         }
     }
 

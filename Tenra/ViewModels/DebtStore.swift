@@ -137,14 +137,33 @@ final class DebtStore {
     /// The debts of one list in the order the person dragged them to: each gets its place, in
     /// memory at once (the list moves while the finger does), then kept.
     func reorder(_ orderedIds: [String]) async {
-        var moved: [PersonalDebt] = []
+        await save(placing(orderedIds))
+    }
+
+    /// A step of a drag in DesignKit's `CardList`: the debts take their places at once (the
+    /// card moves under the finger and the next step reads the new order), saved after.
+    func move(_ orderedIds: [String]) {
+        let moved = placing(orderedIds)
+        Task { await save(moved) }
+    }
+
+    /// The listed debts take the places 0, 1, …; returns the ids that moved.
+    private func placing(_ orderedIds: [String]) -> [String] {
+        var moved: [String] = []
         for (index, id) in orderedIds.enumerated() {
             guard let i = debts.firstIndex(where: { $0.id == id }), debts[i].order != index else { continue }
             debts[i].order = index
-            moved.append(debts[i])
+            moved.append(id)
         }
-        for debt in moved {
-            await repository?.save(debt)
+        return moved
+    }
+
+    /// Saves the debts as they are now (a later step's places, not an earlier one's).
+    private func save(_ ids: [String]) async {
+        for id in ids {
+            if let debt = debts.first(where: { $0.id == id }) {
+                await repository?.save(debt)
+            }
         }
     }
 

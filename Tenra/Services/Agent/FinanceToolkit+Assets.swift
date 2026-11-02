@@ -62,6 +62,10 @@ extension FinanceToolkit {
             let number = { (value: Double?) in value.map { JSONValue.number(FinanceToolkitCompute.round2($0)) } ?? .null }
             let percent = { (value: Double?) in value.map { JSONValue.number(($0 * 10).rounded() / 10) } ?? .null }
             let day = { (date: Date?) in date.map { JSONValue.string(FastDateParser.string(from: $0)) } ?? .null }
+            let characteristics = Self.characteristics(of: asset)
+            let missing: [JSONValue] = asset.isSold ? [] : asset.attributes.missing(for: asset.kind).map { group in
+                JSONValue.string(group.map(\.rawValue).joined(separator: " or "))
+            }
             // Typed up front: a literal this long is slow to infer from the return alone.
             let row: [String: JSONValue] = [
                 "id": .string(asset.id),
@@ -91,6 +95,9 @@ extension FinanceToolkit {
                 "counted_in_net_worth": .bool(counted),
                 "sold": .bool(asset.isSold),
                 "sold_on": day(asset.soldAt),
+                // Saved in its form (v19): what estimate_asset_value sends without being told.
+                "characteristics": characteristics.isEmpty ? .null : .object(characteristics),
+                "missing_for_estimate": .array(missing),
             ]
             return .object(row)
         }
@@ -379,11 +386,26 @@ extension FinanceToolkit {
             throw FinanceToolError(message: "\(asset.name) is sold: its value is the sale price, changed on its screen.")
         }
 
-        // The kind is the asset's; the country the model's, else the phone's region.
-        let country = fields["country"]?.stringValue?.uppercased() ?? Locale.current.region?.identifier.uppercased() ?? "KZ"
+        // The kind is the asset's; the country the model's, else the one saved, else the phone's
+        // region. The characteristics saved in its form (v19), with what the user said in the
+        // chat over them; a value of the wrong type or range, or of another kind, is left out:
+        // the server would refuse the whole request.
+        let country = fields["country"]?.stringValue?.uppercased() ?? asset.attributes.country
+            ?? Locale.current.region?.identifier.uppercased() ?? "KZ"
+        var merged = asset.attributes
+        for field in AssetAttributes.Field.fields(for: asset.kind) where Self.valuationFields.contains(field.rawValue) {
+            if let given = fields[field.rawValue].flatMap(Self.attributeValue), field.accepts(given) {
+                merged[field] = given
+            }
+        }
+        let missing = merged.missing(for: asset.kind)
+        guard missing.isEmpty else {
+            let names = missing.map { $0.map(\.rawValue).joined(separator: " or ") }.joined(separator: ", ")
+            throw FinanceToolError(message: "To estimate \(asset.name) the search needs \(names). Ask the user for it in one short question, then call estimate_asset_value again with it.")
+        }
         var description: [String: JSONValue] = ["kind": .string(asset.kind.rawValue), "country": .string(country)]
-        for (key, value) in fields where Self.valuationFields.contains(key) && value != .null {
-            description[key] = value
+        for (key, value) in merged.request(for: asset.kind) {
+            description[key] = Self.jsonValue(value)
         }
 
         let answer: JSONValue
@@ -464,6 +486,42 @@ extension FinanceToolkit {
             "missing_rates": .array(missingRates),
         ]
         return .success(.object(row))
+    }
+
+    /// An asset's saved characteristics as get_assets lists them: the fields the valuation
+    /// request takes for its kind, and its country.
+    static func characteristics(of asset: Asset) -> [String: JSONValue] {
+        var result: [String: JSONValue] = [:]
+        for (key, value) in asset.attributes.request(for: asset.kind) {
+            result[key] = jsonValue(value)
+        }
+        if let country = asset.attributes.country, !result.isEmpty {
+            result["country"] = .string(country)
+        }
+        return result
+    }
+
+    static func jsonValue(_ value: AssetAttributes.Value) -> JSONValue {
+        switch value {
+        case .text(let text): return .string(text)
+        case .number(let number): return .number(number)
+        case .flag(let flag): return .bool(flag)
+        case .list(let list): return .array(list.map(JSONValue.string))
+        }
+    }
+
+    /// A value from the model's input as a characteristic; nil for null, an object or a list
+    /// with anything but strings in it.
+    static func attributeValue(_ value: JSONValue) -> AssetAttributes.Value? {
+        switch value {
+        case .string(let text): return .text(text)
+        case .number(let number): return .number(number)
+        case .bool(let flag): return .flag(flag)
+        case .array(let items):
+            let texts = items.compactMap(\.stringValue)
+            return texts.count == items.count ? .list(texts) : nil
+        case .null, .object: return nil
+        }
     }
 
     /// What the model is told when the server refuses an estimate, with what to do instead.

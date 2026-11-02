@@ -364,8 +364,11 @@ What an asset is worth by comparable listings found with web search, in any coun
 - In the chat it is Ten's read tool `estimate_asset_value` (`FinanceToolkit+Assets.swift`), which
   the server offers only while `VALUATION_ENABLED` is on (`toolsFor`; the name stays valid in a
   history) and the prompt only when `<app_context>` has `valuation: listings` (this app version
-  and later). The phone sends the asset's kind, the country (the model's, else the phone's
-  region) and the fields the model gave from a fixed list, never the name; it returns the value,
+  and later). The phone sends the asset's kind, the country (the model's, else the one saved,
+  else the phone's region) and its characteristics, saved in its form (`AssetAttributes`, v19)
+  with the fields the model gave over them, only the kind's and only values the server takes,
+  never the name; without what the kind needs it asks the model to ask for it, before any
+  search (`get_assets` lists `characteristics` and `missing_for_estimate`). It returns the value,
   the quartiles and the same in the asset's currency, `current_value` and `change_percent`,
   `count`, `accuracy`, `sites` and up to six listings without links, `estimates_left`; the
   server's refusals (off, the month's limit, a missing field, the region, busy) come back as
@@ -448,10 +451,11 @@ spending, no em dashes, in all 11 languages.
 - **Pro for a person on the server**: the server sees only RevenueCat, so a Founding User (kept on
   the phone) needs `pro` granted there (Actions → RevenueCat → `grant`).
 - **Eval** (`server/assistant/eval/`): a synthetic user (`fixture.ts`; never real statements), a
-  tool simulator, 51 cases in Russian and English (`cases.ts`; assets: `ru-asset-new`,
+  tool simulator, 52 cases in Russian and English (`cases.ts`; assets: `ru-asset-new`,
   `ru-asset-valuation`, `ru-asset-worth-asks`, `ru-asset-worth-listings`, `en-car-worth-listings`,
-  `ru-net-worth`, `en-rental-yield`; the eval offers `estimate_asset_value` and the fixture's
-  context has its line), checks: the right tool, figures
+  `ru-car-worth-saved` (the car's characteristics are saved: no question), `ru-net-worth`,
+  `en-rental-yield`; the eval offers `estimate_asset_value` and the fixture's context has its
+  line), checks: the right tool, figures
   only by reference, no amounts in text, a draft instead of "saved", the language, prompt
   injection in a note, `blocks_decode`, `no_refusal`, `noPick`. A prompt change bumps
   `PROMPT_VERSION` and runs the eval before the deploy.

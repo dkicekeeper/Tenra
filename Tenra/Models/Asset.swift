@@ -49,6 +49,12 @@ nonisolated enum AssetKind: String, Codable, CaseIterable, Sendable {
 nonisolated struct AssetValuation: Codable, Equatable, Hashable, Identifiable, Sendable {
     enum Source: String, Codable, Sendable {
         case purchase, manual, assistant, sale
+
+        /// A source of a later version reads as a valuation by hand, so the valuation stays.
+        init(from decoder: Decoder) throws {
+            let raw = try decoder.singleValueContainer().decode(String.self)
+            self = Source(rawValue: raw) ?? .manual
+        }
     }
 
     var id: String
@@ -155,6 +161,9 @@ nonisolated struct Asset: Equatable, Hashable, Identifiable {
     /// Payments linked to it by hand ("Link payments"), whatever their category or day: an
     /// expense is upkeep, an income is rent.
     var includedTransactionIds: [String]
+    /// What it is like, for an estimate by listings (CoreData v19): where it is, the area and
+    /// rooms, the make, model, year and mileage.
+    var attributes: AssetAttributes
 
     init(
         id: String = UUID().uuidString,
@@ -176,7 +185,8 @@ nonisolated struct Asset: Equatable, Hashable, Identifiable {
         order: Int = 0,
         createdAt: Date = Date(),
         excludedTransactionIds: [String] = [],
-        includedTransactionIds: [String] = []
+        includedTransactionIds: [String] = [],
+        attributes: AssetAttributes = AssetAttributes()
     ) {
         self.id = id
         self.name = name
@@ -198,6 +208,7 @@ nonisolated struct Asset: Equatable, Hashable, Identifiable {
         self.createdAt = createdAt
         self.excludedTransactionIds = excludedTransactionIds
         self.includedTransactionIds = includedTransactionIds
+        self.attributes = attributes
     }
 
     var isSold: Bool { soldAt != nil }

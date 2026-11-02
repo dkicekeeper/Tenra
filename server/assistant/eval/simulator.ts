@@ -702,7 +702,26 @@ function assetRow(a: (typeof ASSETS)[number]) {
     counted_in_net_worth: true,
     sold: false,
     sold_on: null,
+    characteristics: Object.keys(a.characteristics).length ? a.characteristics : null,
+    missing_for_estimate: requiredFor(a.kind).filter((group) => !group.some((key) => a.characteristics[key] !== undefined)).map((group) => group.join(" or ")),
   };
+}
+
+/** What an estimate cannot go without (AssetAttributes.Field.required on the phone). */
+function requiredFor(kind: string): string[][] {
+  switch (kind) {
+    case "apartment":
+    case "commercial":
+      return [["city"], ["area_m2"]];
+    case "house":
+      return [["city", "region"], ["area_m2"]];
+    case "land":
+      return [["city", "region"], ["land_ares"]];
+    case "vehicle":
+      return [["make"], ["model"], ["year"]];
+    default:
+      return [["description"]];
+  }
 }
 
 function getAssets() {
@@ -796,16 +815,13 @@ function estimateAssetValue(input: Input) {
   const ref = (str(input, "asset", true) ?? "").trim();
   const asset = ASSETS.find((a) => a.id === ref);
   if (!asset) throw new ToolInputError(`Unknown asset ${ref}. Use an asset id from <app_context>.`);
-  const missing = (key: string, what: string) => {
-    if (input[key] === undefined || input[key] === null) throw new ToolInputError(`${key} is needed (${what}): ask the user for it, then call estimate_asset_value again.`);
-  };
-  if (asset.kind === "apartment") {
-    missing("city", "the city");
-    missing("area_m2", "the area in square metres");
-  } else if (asset.kind === "vehicle") {
-    missing("make", "the make");
-    missing("model", "the model");
-    missing("year", "the model year");
+  // As the phone: the saved characteristics, with what the model gave over them.
+  const merged: Record<string, unknown> = { ...asset.characteristics };
+  for (const [key, value] of Object.entries(input)) if (key !== "asset" && value !== null && value !== undefined) merged[key] = value;
+  const missing = requiredFor(asset.kind).filter((group) => !group.some((key) => merged[key] !== undefined));
+  if (missing.length) {
+    const names = missing.map((group) => group.join(" or ")).join(", ");
+    throw new ToolInputError(`To estimate ${asset.name[caseLocale]} the search needs ${names}. Ask the user for it in one short question, then call estimate_asset_value again with it.`);
   }
   const market =
     asset.kind === "apartment"

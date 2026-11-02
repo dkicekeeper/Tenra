@@ -202,7 +202,8 @@ export const DEBTS: Debt[] = [
 
 // Assets (AssetStore on the phone): a flat that grew and is rented out, and a car whose value
 // was set in March, so it is out of date. Rent and upkeep are what the flat's linked categories
-// hold, over the last 12 months and since the purchase.
+// hold, over the last 12 months and since the purchase. The car's characteristics are saved in
+// its form (v19), the flat's are not: an estimate of the car needs no question.
 export interface Asset {
   id: string;
   name: Record<"ru" | "en", string>;
@@ -217,6 +218,8 @@ export interface Asset {
   upkeepYear: number | null;
   rentTotal: number | null;
   upkeepTotal: number | null;
+  /** Saved in the asset's form, by the valuation request's names. */
+  characteristics: Record<string, string | number | boolean | string[]>;
 }
 
 export const ASSETS: Asset[] = [
@@ -224,11 +227,16 @@ export const ASSETS: Asset[] = [
     id: "asset_flat", name: { ru: "Квартира на Абая", en: "Flat on Abay" }, kind: "apartment", currency: "KZT",
     purchasePrice: 24_000_000, purchaseDate: "2018-10-29", value: 70_000_000, valuedOn: "2026-10-16", share: 1,
     rentYear: 6_000_000, upkeepYear: 200_000, rentTotal: 30_000_000, upkeepTotal: 1_100_000,
+    characteristics: {},
   },
   {
     id: "asset_car", name: { ru: "Toyota Camry", en: "Toyota Camry" }, kind: "vehicle", currency: "KZT",
     purchasePrice: 15_000_000, purchaseDate: "2024-03-01", value: 12_600_000, valuedOn: "2026-03-02", share: 1,
     rentYear: null, upkeepYear: null, rentTotal: null, upkeepTotal: null,
+    characteristics: {
+      country: "KZ", city: "Алматы", make: "Toyota", model: "Camry", generation: "XV70", year: 2019,
+      mileage_km: 110_000, engine_l: 2.5, transmission: "automatic",
+    },
   },
 ];
 

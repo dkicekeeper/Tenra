@@ -7,7 +7,8 @@
 //  inheritance or a gift); the person's share and the loan it was bought with; the categories of
 //  its rent and its upkeep, each with an optional subcategory, never the transactions another
 //  asset already counts; for transport and other things, the depreciation a year (off by
-//  default: the person sets it). A value changed here is a valuation of today (the sale price,
+//  default: the person sets it); its characteristics for an estimate by listings
+//  (AssetAttributesSection, v19). A value changed here is a valuation of today (the sale price,
 //  once sold). Changing the currency moves the purchase price and the valuations at today's rate, or
 //  keeps the currency without one.
 //
@@ -47,6 +48,8 @@ struct AssetEditView: View {
     @State private var incomeSubcategoryIds: Set<String> = []
     @State private var expenseCategoryId = ""
     @State private var expenseSubcategoryIds: Set<String> = []
+    /// Where it is and what it is like, as typed.
+    @State private var attributesDraft = AssetAttributesDraft()
 
     var body: some View {
         EditSheetContainer(
@@ -154,6 +157,8 @@ struct AssetEditView: View {
                             overlaps: expenseOverlaps
                         )
                     }
+
+                    AssetAttributesSection(kind: kind, draft: $attributesDraft)
                 }
                 .screenPadding()
                 .padding(.top, AppSpacing.md)
@@ -161,6 +166,7 @@ struct AssetEditView: View {
                 .animation(AppAnimation.smooth, value: hasDepreciation)
                 .animation(AppAnimation.smooth, value: incomeCategoryId)
                 .animation(AppAnimation.smooth, value: expenseCategoryId)
+                .animation(AppAnimation.smooth, value: kind)
             }
         }
         .onAppear(perform: fill)
@@ -292,7 +298,16 @@ struct AssetEditView: View {
         }
     }
 
+    /// The phone's country: where a new asset most likely is.
+    private static var phoneCountry: String? {
+        guard let code = Locale.current.region?.identifier, code.count == 2, code.allSatisfy({ $0.isASCII && $0.isLetter }) else {
+            return nil
+        }
+        return code.uppercased()
+    }
+
     private func fill() {
+        attributesDraft = AssetAttributesDraft(asset?.attributes ?? AssetAttributes(), defaultCountry: Self.phoneCountry)
         guard let asset else {
             currency = baseCurrency
             return
@@ -333,6 +348,7 @@ struct AssetEditView: View {
         result.linkedLoanAccountId = loanAccountId.isEmpty ? nil : loanAccountId
         result.incomeLink = incomeLink
         result.expenseLink = expenseLink
+        result.attributes = attributesDraft.attributes(for: kind, over: asset?.attributes ?? AssetAttributes())
 
         // Kept in the asset's currency: the purchase price and the valuations move to the new
         // one at today's rate, or the currency stays when there is no rate to move them at.

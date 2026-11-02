@@ -4,7 +4,8 @@
 //
 //  Assets in CoreData v17 (`AssetEntity`), outside the DataRepositoryProtocol facade like the
 //  goals and debts (GoalRepository, DebtRepository): AssetStore is the only caller. An asset's
-//  valuations, category links and (v18) payments by hand are kept as JSON on its row. Backups carry the assets with
+//  valuations, category links, (v18) payments by hand and (v19) characteristics are kept as JSON
+//  on its row; a valuation that cannot be read is skipped, not the list. Backups carry the assets with
 //  the rest of the store, "delete all data" removes them, and AssetStore reads them again when
 //  the store is replaced.
 //
@@ -69,6 +70,7 @@ nonisolated final class AssetRepository: @unchecked Sendable {
                 entity.soldAt = asset.soldAt
                 let links = AssetTransactionLinks(excluded: asset.excludedTransactionIds, included: asset.includedTransactionIds)
                 entity.transactionLinksData = links.excluded.isEmpty && links.included.isEmpty ? nil : try encoder.encode(links)
+                entity.attributesData = asset.attributes.isEmpty ? nil : try encoder.encode(asset.attributes)
                 entity.note = asset.note
                 entity.order = Int32(clamping: asset.order)
                 entity.createdAt = asset.createdAt
@@ -107,7 +109,7 @@ nonisolated final class AssetRepository: @unchecked Sendable {
             currency: entity.currency ?? "KZT",
             purchaseDate: entity.purchaseDate,
             purchasePrice: entity.purchasePrice?.doubleValue,
-            valuations: entity.valuations.flatMap { try? decoder.decode([AssetValuation].self, from: $0) } ?? [],
+            valuations: entity.valuations.map { Self.valuations(from: $0, decoder: decoder) } ?? [],
             depreciationPerYear: entity.depreciationPerYear?.doubleValue,
             ownershipShare: entity.ownershipShare,
             linkedLoanAccountId: entity.linkedLoanAccountId,
@@ -119,7 +121,24 @@ nonisolated final class AssetRepository: @unchecked Sendable {
             order: Int(entity.order),
             createdAt: entity.createdAt ?? .distantPast,
             excludedTransactionIds: links?.excluded ?? [],
-            includedTransactionIds: links?.included ?? []
+            includedTransactionIds: links?.included ?? [],
+            attributes: entity.attributesData.flatMap { try? decoder.decode(AssetAttributes.self, from: $0) } ?? AssetAttributes()
         )
+    }
+
+    /// One entry of a list that may not decode on its own.
+    nonisolated private struct Lossy<Element: Decodable>: Decodable {
+        let value: Element?
+
+        init(from decoder: Decoder) throws {
+            value = try? Element(from: decoder)
+        }
+    }
+
+    /// The valuations one by one: one this version cannot read (a later one's) is skipped and the
+    /// rest stay, rather than the asset losing them all on its next save.
+    static func valuations(from data: Data, decoder: JSONDecoder = JSONDecoder()) -> [AssetValuation] {
+        guard let entries = try? decoder.decode([Lossy<AssetValuation>].self, from: data) else { return [] }
+        return entries.compactMap(\.value)
     }
 }

@@ -8,9 +8,11 @@
 //  currency; get_net_worth gives its lines (NetWorthCalculator); draft_asset files a new asset
 //  (Tenra Pro, a valuation of today for what it is worth now) and draft_asset_valuation a value,
 //  given or multiplied from an area and a price per unit on the phone; both save through
-//  AssetStore and undo. estimate_asset_value sends the asset's kind, the country and the
-//  characteristics the model gave (never the name) to the server's valuation, and gives its
-//  value against the app's; the server's refusals become what to tell the user. Amounts are KZT,
+//  AssetStore and undo. estimate_asset_value sends the asset's kind, the country and its
+//  characteristics (saved in its form, v19, with what the model gave over them; never the name)
+//  to the server's valuation, asks for what the kind still needs before any search, and gives
+//  its value against the app's; the server's refusals become what to tell the user. get_assets
+//  lists what is saved and what is missing for an estimate. Amounts are KZT,
 //  so no shared FX state is involved.
 //
 
@@ -285,6 +287,55 @@ struct AssetToolsTests {
         let sold = await setup.toolkit.execute(name: "estimate_asset_value", input: ["asset": "a_flat"])
         #expect(sold.error != nil)
         #expect(server.sent.isEmpty)
+    }
+
+    /// The characteristics saved in the form go with the estimate, what the user said in the
+    /// chat over them; another kind's field, a later version's key and a value the server would
+    /// refuse stay out.
+    @Test func savedCharacteristicsGoWithTheEstimateAndTheChatsOverThem() async throws {
+        let server = FakeValuation(.success(Self.estimate))
+        let setup = Self.make(valuation: server)
+        var flat = Self.flat
+        flat.attributes = AssetAttributes([
+            "country": .text("TR"), "city": .text("İstanbul"), "area_m2": .number(64), "rooms": .number(2),
+            "building": .text("monolith"), "make": .text("Toyota"), "later_field": .text("kept"),
+        ])
+        await setup.assets.add(flat)
+
+        let output = await setup.toolkit.execute(name: "estimate_asset_value", input: ["asset": "a_flat", "rooms": 3, "floor": 2.5])
+        _ = try #require(output.value, "\(output.error ?? "")")
+        let sent = try #require(server.sent.first)
+        #expect(sent["country"] == "TR")
+        #expect(sent["city"] == "İstanbul")
+        #expect(sent["area_m2"]?.numberValue == 64)
+        #expect(sent["rooms"]?.numberValue == 3)
+        #expect(sent["building"] == "monolith")
+        #expect(!sent.keys.contains("make") && !sent.keys.contains("floor") && !sent.keys.contains("later_field"))
+    }
+
+    /// Without what the kind needs (a flat's city and area), the model is told what to ask, and
+    /// nothing is searched.
+    @Test func anEstimateWithoutWhatTheKindNeedsAsksFirst() async {
+        let server = FakeValuation(.success(Self.estimate))
+        let setup = Self.make(valuation: server)
+        await setup.assets.add(Self.flat)
+        let output = await setup.toolkit.execute(name: "estimate_asset_value", input: ["asset": "a_flat", "rooms": 2])
+        #expect(output.error?.contains("city") == true)
+        #expect(output.error?.contains("area_m2") == true)
+        #expect(server.sent.isEmpty)
+    }
+
+    @Test func getAssetsShowsWhatIsSavedForAnEstimate() async throws {
+        let setup = Self.make()
+        var flat = Self.flat
+        flat.attributes = AssetAttributes(["country": .text("KZ"), "city": .text("Алматы"), "rooms": .number(2)])
+        await setup.assets.add(flat)
+        let output = await setup.toolkit.execute(name: "get_assets", input: [:])
+        let result = try #require(output.value, "\(output.error ?? "")")
+        #expect(result.value(atPath: "assets.0.characteristics.city")?.stringValue == "Алматы")
+        #expect(result.value(atPath: "assets.0.characteristics.country")?.stringValue == "KZ")
+        #expect(result.value(atPath: "assets.0.characteristics.rooms")?.numberValue == 2)
+        #expect(result.value(atPath: "assets.0.missing_for_estimate") == ["area_m2"])
     }
 
     @Test func theContextSaysThisVersionEstimatesFromListings() {

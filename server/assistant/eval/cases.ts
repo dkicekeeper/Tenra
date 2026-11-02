@@ -403,6 +403,16 @@ export const CASES: EvalCase[] = [
     ],
   },
   {
+    id: "ru-car-worth-saved",
+    locale: "ru",
+    prompt: "За сколько сейчас можно продать мою машину?",
+    checks: [
+      // The car's characteristics are saved (get_assets): no question, the estimate right away.
+      { kind: "toolArgs", tool: "estimate_asset_value", match: (i) => i.asset === "asset_car", label: "the car estimated without asking what is saved" },
+      { kind: "metricFrom", tool: "estimate_asset_value", pathEnds: "value_in_asset_currency", label: "the value from the estimate" },
+    ],
+  },
+  {
     id: "ru-net-worth",
     locale: "ru",
     prompt: "Какой у меня чистый капитал?",

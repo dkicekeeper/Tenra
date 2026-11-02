@@ -7,6 +7,8 @@
 //  asset is worth its sale, the person's share and the linked loan give their own money in it.
 //  The store totals the held assets at their share, sells and takes a sale back; the
 //  repository keeps every field across a new store; a v16 store opens under v17 with its rows.
+//  The characteristics (v19) are kept, the form saves only the kind's, a valuation a later
+//  version wrote does not take the others with it, and a v18 store opens under v19.
 //
 
 import CoreData
@@ -332,6 +334,86 @@ struct AssetsTests {
         #expect(await AssetRepository(stack: stack).all().isEmpty)
     }
 
+    // MARK: - Characteristics (v19)
+
+    @Test func characteristicsAreKeptWithTheAsset() async throws {
+        let stack = try makeStack()
+        let store = AssetStore(repository: AssetRepository(stack: stack))
+        await store.load()
+        let attributes = AssetAttributes([
+            "country": .text("KZ"), "city": .text("Алматы"), "area_m2": .number(64.5), "rooms": .number(2),
+            "utilities": .list(["gas", "water"]), "new_building": .flag(true), "a_later_key": .text("kept"),
+        ])
+        await store.add(Asset(id: "flat", name: "Flat", kind: .apartment, currency: "KZT", attributes: attributes))
+        await store.add(Asset(id: "car", name: "Car", kind: .vehicle, currency: "KZT"))
+        let reopened = AssetStore(repository: AssetRepository(stack: stack))
+        await reopened.load()
+        #expect(reopened.asset(id: "flat")?.attributes == attributes)
+        #expect(reopened.asset(id: "car")?.attributes.isEmpty == true)
+    }
+
+    /// The form saves the kind's fields as typed, keeps the kind's ones it does not show and a
+    /// later version's keys, drops another kind's, and saves the country only with something else.
+    @Test func theFormSavesTheKindsCharacteristics() {
+        let original = AssetAttributes(["make": .text("Toyota"), "region": .text("Алматинская область"), "a_later_key": .text("kept")])
+        var draft = AssetAttributesDraft(original, defaultCountry: "KZ")
+        draft.texts[.city] = " Алматы "
+        draft.texts[.areaM2] = "65,5"
+        draft.texts[.rooms] = "2"
+        draft.texts[.floor] = "second"
+        draft.texts[.building] = "panel"
+        draft.utilities = ["water", "gas"]
+        let saved = draft.attributes(for: .apartment, over: original)
+        #expect(saved.text(.city) == "Алматы")
+        #expect(saved.number(.areaM2) == 65.5)
+        #expect(saved.number(.rooms) == 2)
+        #expect(saved.number(.floor) == nil)
+        #expect(saved.text(.building) == "panel")
+        #expect(saved.list(.utilities).isEmpty)
+        #expect(saved.text(.make) == nil)
+        #expect(saved.text(.region) == "Алматинская область")
+        #expect(saved.values["a_later_key"] == .text("kept"))
+        #expect(saved.country == "KZ")
+        #expect(saved.missing(for: .apartment).isEmpty)
+
+        // Opened again, the form shows what was saved.
+        let again = AssetAttributesDraft(saved, defaultCountry: "US")
+        #expect(again.texts[.rooms] == "2")
+        #expect(again.texts[.country] == "KZ")
+
+        // A house takes the utilities, in the server's order.
+        #expect(draft.attributes(for: .house, over: AssetAttributes()).list(.utilities) == ["gas", "water"])
+        // The phone's country alone is not saved.
+        #expect(AssetAttributesDraft(AssetAttributes(), defaultCountry: "KZ").attributes(for: .vehicle, over: AssetAttributes()).isEmpty)
+    }
+
+    /// The server refuses a whole request for one value out of its rules: such a value, another
+    /// kind's field and a text with a long number in it (a phone, a VIN) are never sent.
+    @Test func onlyWhatTheServerTakesIsSent() {
+        #expect(AssetAttributes.hasLongNumber("8 777 123 45 67"))
+        #expect(AssetAttributes.hasLongNumber("ул. Абая 150, кв 1234567"))
+        #expect(!AssetAttributes.hasLongNumber("Camry 70, 2019"))
+        #expect(!AssetAttributes.hasLongNumber("ЖК Хайвил 2"))
+        let flat = AssetAttributes([
+            "city": .text("Алматы"), "district": .text("ул. Абая 150, кв 1234567"), "area_m2": .number(64),
+            "rooms": .number(2.5), "building": .text("glass"), "make": .text("Toyota"),
+        ])
+        #expect(flat.request(for: .apartment).keys.sorted() == ["area_m2", "city"])
+        #expect(flat.missing(for: .vehicle).count == 2)
+        #expect(AssetAttributes().missing(for: .apartment).count == 2)
+    }
+
+    /// A valuation a later version wrote is not lost with the rest: an unknown source reads as
+    /// one by hand, an entry that cannot be read is skipped.
+    @Test func valuationsAreReadOneByOne() {
+        let json = """
+        [{"id":"a","date":0,"value":100,"source":"listings"},{"id":"b","value":"broken"},{"id":"c","date":86400,"value":120,"source":"manual"}]
+        """
+        let valuations = AssetRepository.valuations(from: Data(json.utf8))
+        #expect(valuations.map(\.id) == ["a", "c"])
+        #expect(valuations.first?.source == .manual)
+    }
+
     // MARK: - Migration
 
     /// A store written by v16 opens under the current model by lightweight migration, keeps
@@ -433,6 +515,56 @@ struct AssetsTests {
             let assets = try context.fetch(NSFetchRequest<NSManagedObject>(entityName: "AssetEntity"))
             #expect(assets.compactMap { $0.value(forKey: "name") as? String } == ["Car"])
             #expect(assets.first?.value(forKey: "transactionLinksData") == nil)
+        }
+    }
+
+    /// v19 added the characteristics (`AssetEntity.attributesData`): a v18 store with an asset
+    /// opens, the asset keeps everything, and it has no characteristics yet.
+    @Test func aV18StoreOpensWithCharacteristics() throws {
+        let momd = try #require(Bundle.main.url(forResource: "Tenra", withExtension: "momd"))
+        let v18 = try #require(NSManagedObjectModel(contentsOf: momd.appendingPathComponent("Tenra v18.mom")))
+        let current = try #require(NSManagedObjectModel(contentsOf: momd))
+        #expect(v18.entitiesByName["AssetEntity"]?.attributesByName["attributesData"] == nil)
+        #expect(current.entitiesByName["AssetEntity"]?.attributesByName["attributesData"] != nil)
+        #expect((try? NSMappingModel.inferredMappingModel(forSourceModel: v18, destinationModel: current)) != nil)
+
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent("AssetAttributesMigration-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let url = directory.appendingPathComponent("Tenra.sqlite")
+
+        // A v18 store with a flat in it, a payment removed by hand.
+        let links = try JSONEncoder().encode(AssetTransactionLinks(excluded: ["fine"], included: []))
+        let oldCoordinator = NSPersistentStoreCoordinator(managedObjectModel: v18)
+        let oldStore = try oldCoordinator.addPersistentStore(ofType: NSSQLiteStoreType, configurationName: nil, at: url, options: nil)
+        let oldContext = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
+        oldContext.persistentStoreCoordinator = oldCoordinator
+        let oldAssetEntity = try #require(v18.entitiesByName["AssetEntity"])
+        try oldContext.performAndWait {
+            let flat = NSManagedObject(entity: oldAssetEntity, insertInto: oldContext)
+            flat.setValue("flat", forKey: "id")
+            flat.setValue("Flat", forKey: "name")
+            flat.setValue("apartment", forKey: "kind")
+            flat.setValue(links, forKey: "transactionLinksData")
+            try oldContext.save()
+        }
+        try oldCoordinator.remove(oldStore)
+
+        // The same file under the current model.
+        let coordinator = NSPersistentStoreCoordinator(managedObjectModel: current)
+        _ = try coordinator.addPersistentStore(
+            ofType: NSSQLiteStoreType,
+            configurationName: nil,
+            at: url,
+            options: [NSMigratePersistentStoresAutomaticallyOption: true, NSInferMappingModelAutomaticallyOption: true]
+        )
+        let context = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
+        context.persistentStoreCoordinator = coordinator
+        try context.performAndWait {
+            let assets = try context.fetch(NSFetchRequest<NSManagedObject>(entityName: "AssetEntity"))
+            #expect(assets.compactMap { $0.value(forKey: "name") as? String } == ["Flat"])
+            #expect(assets.first?.value(forKey: "transactionLinksData") as? Data == links)
+            #expect(assets.first?.value(forKey: "attributesData") == nil)
         }
     }
 }

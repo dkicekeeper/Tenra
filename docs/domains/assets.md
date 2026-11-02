@@ -1,7 +1,7 @@
 # Assets
 
 What the person owns and what it is worth: a home, a car, land, anything else. An asset has its
-own CoreData row (v17; v18 its payments by hand), a card in Finances, list, detail and edit
+own CoreData row (v17; v18 its payments by hand; v19 its characteristics), a card in Finances, list, detail and edit
 screens. It never changes an account balance or a transaction: a flat bought in 2018 stays an expense, and the asset lives
 next to it with its own purchase price and valuations; its rent and upkeep are the transactions
 of the categories it is linked to. Adding an asset is Tenra Pro. Net worth (money, assets and
@@ -13,9 +13,10 @@ debts) is a free insight. The first plan and the owner's decisions:
 
 | Type | File | What it is |
 |---|---|---|
-| `Asset` | `Models/Asset.swift` | name, `kind`, icon, currency, optional purchase price and day, `valuations`, `depreciationPerYear` (0.15 for 15% a year; nil, the default, keeps the last valuation), `ownershipShare`, optional `linkedLoanAccountId`, `incomeLink` / `expenseLink` (`AssetCategoryLink`: a category id, never a name, and an optional subcategory id), `includeInNetWorth`, `soldAt`, `order`, `excludedTransactionIds` / `includedTransactionIds` (the payments removed and linked by hand); and, kept for later, `note` |
+| `Asset` | `Models/Asset.swift` | name, `kind`, icon, currency, optional purchase price and day, `valuations`, `depreciationPerYear` (0.15 for 15% a year; nil, the default, keeps the last valuation), `ownershipShare`, optional `linkedLoanAccountId`, `incomeLink` / `expenseLink` (`AssetCategoryLink`: a category id, never a name, and an optional subcategory id), `includeInNetWorth`, `soldAt`, `order`, `excludedTransactionIds` / `includedTransactionIds` (the payments removed and linked by hand), `attributes` (`AssetAttributes`); and, kept for later, `note` |
 | `AssetKind` | same | apartment, house, land, commercial (the list's real estate), vehicle (transport), other; the default icon of each |
-| `AssetValuation` | same | a day, a value in the asset's currency, a source (`purchase`, `manual`, `assistant`, `sale`) and an optional note ("listings on krisha.kz") |
+| `AssetValuation` | same | a day, a value in the asset's currency, a source (`purchase`, `manual`, `assistant`, `sale`; one a later version adds reads as `manual`) and an optional note ("listings on krisha.kz") |
+| `AssetAttributes` | `Models/AssetAttributes.swift` | the characteristics for an estimate by listings, by the valuation request's field names (`server/assistant/src/valuation.ts`): the country, city, district, a flat's area, rooms, year, building, floor and condition, a house's land and utilities, a car's make, model, generation, year, mileage, engine, fuel, gearbox, drive, steering wheel and customs; values are texts, numbers, yes or no and lists. `Field` holds each field's rule (the server's types and ranges, no text with seven digits in a row), the fields of each kind and the required ones; `request(for:)` is what the request may send (another kind's field and a value outside the rules left out: the server refuses the whole request for one), `missing(for:)` what it still needs. A key this version does not know is kept |
 
 The purchase is not a stored valuation: `AssetValuationMath.history` puts it first, from the
 purchase price and day. The sale is the `.sale` valuation, and `soldAt` its day.
@@ -25,8 +26,10 @@ purchase price and day. The sale is the `.sale` valuation, and `soldAt` its day.
 - `AssetEntity` (CoreData v17), read and written only by `AssetRepository` (`Services/Assets/`),
   outside the `DataRepositoryProtocol` facade like the goals and debts. Valuations and the category
   links are JSON on the row, and so are the payments by hand (`transactionLinksData`, v18,
-  `AssetTransactionLinks`, nil while both lists are empty); the icon is `IconSource` JSON. The purchase price and the depreciation
-  are optional numbers (`NSNumber`).
+  `AssetTransactionLinks`, nil while both lists are empty) and the characteristics
+  (`attributesData`, v19, `AssetAttributes`, nil while empty); the icon is `IconSource` JSON. The
+  purchase price and the depreciation are optional numbers (`NSNumber`). The valuations are read
+  one by one: one that does not decode (a later version's) is skipped, not the list.
 - Backups carry the assets (the store file is copied whole), "delete all data" destroys them with
   the store, and `AssetStore` reloads on `CoreDataStack.storeDidResetNotification`.
 - `AssetStore` (`ViewModels/`, `@Observable`) is the single source of truth, owned by
@@ -126,7 +129,7 @@ with `CurrencyConverter.convertSync`, the amount itself as the cold-cache fallba
 | List rows | `AssetCard`, an adapter over DesignKit's `HoldingCard` (8.2.0): the value rolling up (`isLive`), the gain as a `TrendBadge` pill with "+46 000 000 ₸ since purchase", the purchase and the valuations as the sparkline in the gain's colour, the valuation or sale day under the name ("≈ Estimate, valued …" with depreciation), a "Sold" badge, or an "Out of date" one in the warning colour |
 | List | `Views/Assets/AssetsListView.swift`: the hero on `.heroBackground` (green while the assets gained, the accent otherwise) with the total, the gain and `HeroSparkline` of `totalHistory`; the cards rise over its end (`.padding(.top, -AppSpacing.xxl)`, `.heroScrollEdge()`), in sections real estate, transport, other, sold (`CardList(.stack)`, a drag reorders within a section, the sold ones by sale day), each card `.scrollReveal()`; three `HoldingCardSkeleton`s until the store loads, `MascotEmptyState` when there are none |
 | Detail | `AssetDetailView` on `EntityDetailScaffold`: `HeroSection` (icon, value, the valuation or sale day, the gain pill, the value in the base currency for a foreign one) with `HeroSparkline` of the history under it (and today's estimate with depreciation), drawing in after the push; "Update value" and "Sell" (or "Undo sale"); info rows (kind, purchase price and day, gain or result, growth a year, depreciation a year, the share, loan left and own money, rent and upkeep over 12 months, yield, full result, sale day); when out of date, a warning `StatusBanner` "The value is from …" that opens "Update value"; with a rent category and no rent yet, a `StatusBanner` that opens the add form in that category (the person makes it monthly there); the valuations newest first in a card of `HistoryEntryRow` (a long press deletes one, which leaves with `DissolveTransition`; the purchase is changed in Edit); the rent and upkeep transactions by day (`GroupedTransactionList`); the menu's "Link payments", "Remove payments" (with any counted) and "Removed payments" (with any removed) open `LinkPaymentsView` (search, category, subcategory and account filters, select all). A valuation above the value plays `.sparkleBurst` over the hero; a sale above the purchase price `.celebration(playsHaptic: false)`. It reads `transactions`, `categoriesMutationVersion` and `subcategoriesMutationVersion` so a transaction or a category change redraws it |
-| Edit | `AssetEditView`: hero with icon, name, the value today (the estimate with depreciation) and the currency; kind (an icon the person did not pick follows it); purchase price and day; share (5% steps) and the loan; for transport and other things, depreciation a year (a stepper, 0 is "Off", up to 50%; a real-estate kind saves none); rent and upkeep, each a category and, when it has any, its subcategories as chips, several at once (`ChipPicker`, "Whole category" while none is picked; `AssetLinkOptions`) |
+| Edit | `AssetEditView`: hero with icon, name, the value today (the estimate with depreciation) and the currency; kind (an icon the person did not pick follows it); purchase price and day; share (5% steps) and the loan; for transport and other things, depreciation a year (a stepper, 0 is "Off", up to 50%; a real-estate kind saves none); rent and upkeep, each a category and, when it has any, its subcategories as chips, several at once (`ChipPicker`, "Whole category" while none is picked; `AssetLinkOptions`); last, `AssetAttributesSection`: "Location" (country, a list with search, the phone's by default; city; district for real estate) and "Characteristics" by kind (a flat: area, rooms, year built, building, floor, floors, condition; a house: area, land, year, building, floors, utilities as chips, condition; commercial: type, area, floor, condition; land: ares, use, utilities; a car: make, model, generation, year, mileage, engine, fuel, gearbox, drive, and in Kazakhstan the steering wheel and customs; other: what it is, year, condition), each optional, "Not set" by default. `AssetAttributesDraft` keeps them as typed: a number that does not read is left out, the kind's fields the form does not show (region, complex) stay, another kind's go, and the country is saved only with something else |
 | Ten writes | `AssistantNotices.staleAssets` ([assistant.md](assistant.md) §6): once a half-year per out-of-date asset (`asset:<id>:<year>-H<1/2>`), "Valued at 70 000 000 ₸ on 16 Apr…"; its button is "Update value" and opens the valuation sheet on Home (no answer spent); it leaves once the asset is valued, sold or deleted (`Subjects.staleAssets`) |
 | Money in | `MoneyEntrySheet` (DesignKit's `AmountEntrySheet`): a valuation or the sale, the current value filled in |
 
@@ -143,8 +146,11 @@ its value now as a valuation of today; `draft_asset_valuation` a value, or an ar
 per unit from listings, multiplied on the phone. Both are `source: .assistant`, saved and undone
 through `AssetStore` on the confirm card. `estimate_asset_value` values a held asset by comparable
 listings found by a web search on Ten's server (`POST /v1/valuation`, [assistant.md](assistant.md)
-§8; off until the version that ships it): Ten asks for what the kind needs (a flat's city,
-district, area and rooms; a car's make, model, year and mileage), shows the median and range in
-the asset's currency against its value in the app, and offers `draft_asset_valuation` with it.
+§8; off until the version that ships it): it sends the characteristics saved in the form with
+what the user said in the chat over them, and `get_assets` lists them (`characteristics`) with
+what an estimate still needs (`missing_for_estimate`), so Ten asks only for that (a flat's city
+and area, a car's make, model and year) or estimates right away; it shows the median and range
+in the asset's currency against its value in the app, and offers `draft_asset_valuation` with it.
+What the user tells Ten in the chat is not saved into the form.
 "Ask Ten" is in an asset's "…" menu ("How much is it worth now?", "Does it pay off?"). The out-of-date message keeps its button to the valuation
 sheet: the quickest way to a new value.

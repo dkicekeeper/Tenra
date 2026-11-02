@@ -40,9 +40,10 @@ struct MerchantChoiceRow: View {
             } trailing: {
                 SelectionIndicator(isSelected: isSelected)
             }
+            // Inside the label: the whole row picks the merchant, not only its text.
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .contentShape(Rectangle())
         .accessibilityElement(children: .combine)
         .accessibilityAddTraits(isSelected ? .isSelected : [])
         // The button keeps the row's divider inset to itself: the 44 pt tile and its space.

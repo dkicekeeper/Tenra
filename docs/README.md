@@ -34,7 +34,7 @@ this file is the full index.
 
 | File | Purpose |
 |------|---------|
-| [architecture.md](architecture.md) | MVVM + Coordinator, TransactionStore, BalanceCoordinator, Repository, CoreData v17, backups |
+| [architecture.md](architecture.md) | MVVM + Coordinator, TransactionStore, BalanceCoordinator, Repository, CoreData v18, backups |
 | [concurrency.md](concurrency.md) | Swift 6 concurrency, CoreData threading, `@Observable` rules, DataSnapshot |
 | [design-system.md](design-system.md) | Tenra on DesignKit: the bridge and hooks, what stays in Tenra, screen patterns, amount formatting, dates and category styling, effects in use (tokens and components: DesignKit's own docs) |
 | [gotchas.md](gotchas.md) | SwiftUI layout, performance hot paths, previews, ignorable console warnings |
@@ -45,7 +45,7 @@ this file is the full index.
 | File | Purpose |
 |------|---------|
 | [domains/accounts.md](domains/accounts.md) | Account, series and parsed-date indexes, AccountDetailView read contract, ranking |
-| [domains/assets.md](domains/assets.md) | Assets (homes, cars): storage (v17), value, gain, growth a year, share and loan, rent and upkeep, the sale, net worth, the Pro gate, screens |
+| [domains/assets.md](domains/assets.md) | Assets (homes, cars): storage (v17, v18), value, gain, growth a year, share and loan, rent and upkeep, the sale, net worth, the Pro gate, screens |
 | [domains/assistant.md](domains/assistant.md) | Ten, the AI assistant: architecture, tools, reply blocks, threads and facts, "Ten writes", the server and its protocol, App Attest, limits, privacy, setup and eval |
 | [domains/categories.md](domains/categories.md) | Category, subcategory and budget aggregates, style cache, reorder |
 | [domains/charts.md](domains/charts.md) | Insight charts (DesignKit + `PeriodChartAdapters.swift`), scrolling, sparklines |

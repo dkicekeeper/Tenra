@@ -377,6 +377,13 @@
 "iconPicker.title" = "Виберіть зображення";
 "iconPicker.iconsTab" = "Іконки";
 "iconPicker.logosTab" = "Логотипи";
+"iconPicker.photoTab" = "Фото";
+"iconPicker.photoHint" = "Власний логотип із картинки, обрізаної під квадрат.";
+"iconPicker.photoFailed" = "Не вдалося використати картинку. Спробуйте іншу.";
+"iconPicker.choosePhoto" = "Вибрати фото";
+"imageCropper.title" = "Переміщення і масштаб";
+"imageCropper.cancel" = "Скасувати";
+"imageCropper.choose" = "Вибрати";
 "iconPicker.frequentlyUsed" = "Часто використовувані";
 "iconPicker.foodAndDrinks" = "Їжа та напої";
 "iconPicker.transport" = "Транспорт";
@@ -2455,6 +2462,11 @@
 "asset.yield" = "Дохідність оренди";
 "asset.fullResult" = "Повний результат";
 "asset.rent.empty" = "У «%@» ще немає оренди. Запишіть перший платіж і зробіть його щомісячним.";
+"asset.payments.link" = "Прив'язати платежі";
+"asset.payments.remove" = "Прибрати платежі";
+"asset.payments.removed" = "Прибрані платежі";
+"asset.payments.removeCount" = "Прибрати %d";
+"asset.payments.returnCount" = "Повернути %d";
 "insights.netWorth.title" = "Чистий капітал";
 "insights.netWorth.subtitle" = "Гроші, активи та борги";
 "insights.formula.netWorth.title" = "Чистий капітал";

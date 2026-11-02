@@ -344,11 +344,49 @@ nonisolated enum AssetValuationMath {
     }
 
     /// Two links count the same transactions: one category, and either of them takes all of it
-    /// (no subcategory) or both take a subcategory in common. Two assets may not share them,
-    /// else the rent of two flats under one "Rent" counts twice.
+    /// (no subcategory) or both take a subcategory in common. Two assets held at the same time
+    /// may not share them, else the rent of two flats under one "Rent" counts twice.
     static func overlaps(_ a: AssetCategoryLink, _ b: AssetCategoryLink) -> Bool {
         a.categoryId == b.categoryId
             && (a.isWholeCategory || b.isWholeCategory || !Set(a.subcategoryIds).isDisjoint(with: b.subcategoryIds))
+    }
+
+    /// The days an asset is held: from its purchase day (open without one) to its sale day
+    /// (open while it is held). Its rent and upkeep are the payments of these days (the owner's
+    /// car, 2026-11-02: bought in June 2021, it counted the repairs of the car before it).
+    struct HeldPeriod: Equatable {
+        var start: Date?
+        var end: Date?
+
+        func contains(_ day: Date, calendar: Calendar = .current) -> Bool {
+            let day = calendar.startOfDay(for: day)
+            if let start, day < calendar.startOfDay(for: start) { return false }
+            if let end, day > calendar.startOfDay(for: end) { return false }
+            return true
+        }
+    }
+
+    static func heldPeriod(of asset: Asset) -> HeldPeriod {
+        HeldPeriod(start: asset.purchaseDate, end: asset.soldAt)
+    }
+
+    /// Two held periods share more than a day: one sold on the day the next was bought (a car
+    /// replaced by the next) do not.
+    static func overlaps(_ a: HeldPeriod, _ b: HeldPeriod, calendar: Calendar = .current) -> Bool {
+        if let aStart = a.start, let bEnd = b.end,
+           calendar.startOfDay(for: aStart) >= calendar.startOfDay(for: bEnd) { return false }
+        if let bStart = b.start, let aEnd = a.end,
+           calendar.startOfDay(for: bStart) >= calendar.startOfDay(for: aEnd) { return false }
+        return true
+    }
+
+    /// Two assets' links count the same transactions: the links overlap and so do the days the
+    /// assets are held. A car sold before the next one was bought may keep the same "Transport".
+    static func overlaps(
+        _ a: AssetCategoryLink, held aHeld: HeldPeriod,
+        _ b: AssetCategoryLink, held bHeld: HeldPeriod
+    ) -> Bool {
+        overlaps(a, b) && overlaps(aHeld, bHeld)
     }
 
     /// Whole and part years between two days; nil when the end is before the start.

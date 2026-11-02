@@ -15,9 +15,21 @@ import Observation
 class LoansViewModel {
     // MARK: - Observable Properties
 
-    /// Computed directly from accountsViewModel — always in sync (Phase 16 pattern)
+    /// Computed directly from accountsViewModel — always in sync (Phase 16 pattern), in the
+    /// person's order (`Account.order`, the loans list's drag); loans never moved keep the order
+    /// they were added in. Read unsorted, a drag saved its order and the list drew the old one
+    /// again (the owner's check of build 65).
     var loans: [Account] {
-        accountsViewModel.accounts.filter { $0.isLoan }
+        accountsViewModel.accounts.filter { $0.isLoan }.enumerated()
+            .sorted { lhs, rhs in
+                switch (lhs.element.order, rhs.element.order) {
+                case let (left?, right?): return left != right ? left < right : lhs.offset < rhs.offset
+                case (.some, nil): return true
+                case (nil, .some): return false
+                case (nil, nil): return lhs.offset < rhs.offset
+                }
+            }
+            .map(\.element)
     }
 
     /// Кредиты с непогашенным остатком. Это то, что пользователь считает «своими

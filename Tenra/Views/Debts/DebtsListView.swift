@@ -126,7 +126,7 @@ struct DebtsListView: View {
             CardList(debts, layout: .stack, mode: mode, selection: $selection, onMove: { source, destination in
                 var reordered = debts
                 reordered.move(fromOffsets: source, toOffset: destination)
-                Task { await debtStore.reorder(reordered.map(\.id)) }
+                debtStore.move(reordered.map(\.id))
             }) { debt in
                 NavigationLink(value: FinancesDestination.debtDetail(debt.id)) {
                     DebtCard(debt: debt, today: today)

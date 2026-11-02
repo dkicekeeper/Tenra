@@ -377,6 +377,13 @@
 "iconPicker.title" = "画像を選択";
 "iconPicker.iconsTab" = "アイコン";
 "iconPicker.logosTab" = "ロゴ";
+"iconPicker.photoTab" = "写真";
+"iconPicker.photoHint" = "画像から作る自分のロゴ。正方形に切り抜きます。";
+"iconPicker.photoFailed" = "この画像は使用できませんでした。別の画像をお試しください。";
+"iconPicker.choosePhoto" = "写真を選択";
+"imageCropper.title" = "移動と拡大縮小";
+"imageCropper.cancel" = "キャンセル";
+"imageCropper.choose" = "選択";
 "iconPicker.frequentlyUsed" = "よく使う";
 "iconPicker.foodAndDrinks" = "飲食";
 "iconPicker.transport" = "交通";
@@ -2455,6 +2462,11 @@
 "asset.yield" = "利回り";
 "asset.fullResult" = "トータルの結果";
 "asset.rent.empty" = "「%@」にはまだ家賃収入がありません。最初の入金を記録して、毎月にしましょう。";
+"asset.payments.link" = "支払いを紐づける";
+"asset.payments.remove" = "支払いを外す";
+"asset.payments.removed" = "外した支払い";
+"asset.payments.removeCount" = "%d件を外す";
+"asset.payments.returnCount" = "%d件を戻す";
 "insights.netWorth.title" = "純資産";
 "insights.netWorth.subtitle" = "お金、資産、借金";
 "insights.formula.netWorth.title" = "純資産";

@@ -377,6 +377,13 @@
 "iconPicker.title" = "Seleziona immagine";
 "iconPicker.iconsTab" = "Icone";
 "iconPicker.logosTab" = "Loghi";
+"iconPicker.photoTab" = "Foto";
+"iconPicker.photoHint" = "Il tuo logo da un'immagine, ritagliata a quadrato.";
+"iconPicker.photoFailed" = "Impossibile usare l'immagine. Prova con un'altra.";
+"iconPicker.choosePhoto" = "Scegli foto";
+"imageCropper.title" = "Sposta e ridimensiona";
+"imageCropper.cancel" = "Annulla";
+"imageCropper.choose" = "Scegli";
 "iconPicker.frequentlyUsed" = "Usate di frequente";
 "iconPicker.foodAndDrinks" = "Cibo e bevande";
 "iconPicker.transport" = "Trasporti";
@@ -2455,6 +2462,11 @@
 "asset.yield" = "Rendimento da affitto";
 "asset.fullResult" = "Risultato totale";
 "asset.rent.empty" = "Ancora nessun affitto in «%@». Registra il primo pagamento e rendilo mensile.";
+"asset.payments.link" = "Collega pagamenti";
+"asset.payments.remove" = "Togli pagamenti";
+"asset.payments.removed" = "Pagamenti tolti";
+"asset.payments.removeCount" = "Togli %d";
+"asset.payments.returnCount" = "Ripristina %d";
 "insights.netWorth.title" = "Patrimonio netto";
 "insights.netWorth.subtitle" = "Denaro, beni e debiti";
 "insights.formula.netWorth.title" = "Patrimonio netto";

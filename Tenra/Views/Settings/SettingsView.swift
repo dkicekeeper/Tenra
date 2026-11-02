@@ -339,6 +339,8 @@ struct SettingsView: View {
                                 .foregroundStyle(AppColors.textSecondary)
                         }
                     }
+                    // The whole row copies, not only its text.
+                    .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
                 .rowDividerInset(AppIconSize.lg + AppSpacing.md)

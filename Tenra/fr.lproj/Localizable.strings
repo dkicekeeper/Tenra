@@ -377,6 +377,13 @@
 "iconPicker.title" = "Sélectionner une image";
 "iconPicker.iconsTab" = "Icônes";
 "iconPicker.logosTab" = "Logos";
+"iconPicker.photoTab" = "Photo";
+"iconPicker.photoHint" = "Votre propre logo à partir d'une image, recadrée en carré.";
+"iconPicker.photoFailed" = "Impossible d'utiliser cette image. Essayez-en une autre.";
+"iconPicker.choosePhoto" = "Choisir une photo";
+"imageCropper.title" = "Déplacer et redimensionner";
+"imageCropper.cancel" = "Annuler";
+"imageCropper.choose" = "Choisir";
 "iconPicker.frequentlyUsed" = "Fréquemment utilisées";
 "iconPicker.foodAndDrinks" = "Alimentation et boissons";
 "iconPicker.transport" = "Transports";
@@ -2455,6 +2462,11 @@
 "asset.yield" = "Rendement locatif";
 "asset.fullResult" = "Résultat total";
 "asset.rent.empty" = "Pas encore de loyer dans « %@ ». Enregistrez le premier paiement et rendez-le mensuel.";
+"asset.payments.link" = "Associer des paiements";
+"asset.payments.remove" = "Retirer des paiements";
+"asset.payments.removed" = "Paiements retirés";
+"asset.payments.removeCount" = "Retirer %d";
+"asset.payments.returnCount" = "Rétablir %d";
 "insights.netWorth.title" = "Patrimoine net";
 "insights.netWorth.subtitle" = "Argent, actifs et dettes";
 "insights.formula.netWorth.title" = "Patrimoine net";

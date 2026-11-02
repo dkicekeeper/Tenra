@@ -11,7 +11,8 @@ import SwiftUI
 
 struct AccountRow: View {
     let account: Account
-    let onEdit: () -> Void
+    /// Opens the account; nil in a `CardList(onOpen:)`, which takes the taps on the whole card.
+    let onEdit: (() -> Void)?
     let balanceCoordinator: BalanceCoordinator
     /// Pre-computed interest accrued to today (from parent via DepositInterestService)
     var interestToday: Double? = nil
@@ -63,23 +64,34 @@ struct AccountRow: View {
     }
 
     var body: some View {
-        Button(action: onEdit) {
-            AmountRow(
-                account.name,
-                leading: .icon(account.iconSource),
-                value: .amount(balance, color: AppColors.Text.secondary),
-                currency: account.currency,
-                style: .list,
-                detail: interestDetail,
-                accessory: account.isDeposit ? .systemImage("lock.square.stack.fill") : .none,
-                transitionSourceID: transitionSourceID,
-                transitionNamespace: transitionNamespace
-            )
+        Group {
+            if let onEdit {
+                Button(action: onEdit) {
+                    content
+                }
+                .buttonStyle(.plain)
+            } else {
+                content
+            }
         }
-        .buttonStyle(.plain)
-        .contentShape(Rectangle())
         .accessibilityElement(children: .combine)
         .accessibilityLabel(accountAccessibilityLabel)
+    }
+
+    private var content: some View {
+        AmountRow(
+            account.name,
+            leading: .icon(account.iconSource),
+            value: .amount(balance, color: AppColors.Text.secondary),
+            currency: account.currency,
+            style: .list,
+            detail: interestDetail,
+            accessory: account.isDeposit ? .systemImage("lock.square.stack.fill") : .none,
+            transitionSourceID: transitionSourceID,
+            transitionNamespace: transitionNamespace
+        )
+        // The whole row takes the tap, the space between the name and the amount too.
+        .contentShape(Rectangle())
     }
 }
 

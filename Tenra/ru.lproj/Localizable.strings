@@ -377,6 +377,13 @@
 "iconPicker.title" = "Выбрать изображение";
 "iconPicker.iconsTab" = "Иконки";
 "iconPicker.logosTab" = "Логотипы";
+"iconPicker.photoTab" = "Фото";
+"iconPicker.photoHint" = "Свой логотип из картинки, обрезанной под квадрат.";
+"iconPicker.photoFailed" = "Не удалось использовать картинку. Попробуйте другую.";
+"iconPicker.choosePhoto" = "Выбрать фото";
+"imageCropper.title" = "Перемещение и масштаб";
+"imageCropper.cancel" = "Отменить";
+"imageCropper.choose" = "Выбрать";
 "iconPicker.frequentlyUsed" = "Часто используемые";
 "iconPicker.foodAndDrinks" = "Еда и напитки";
 "iconPicker.transport" = "Транспорт";
@@ -2455,6 +2462,11 @@
 "asset.yield" = "Доходность аренды";
 "asset.fullResult" = "Полный результат";
 "asset.rent.empty" = "В «%@» пока нет аренды. Запишите первый платёж и сделайте его ежемесячным.";
+"asset.payments.link" = "Привязать платежи";
+"asset.payments.remove" = "Убрать платежи";
+"asset.payments.removed" = "Убранные платежи";
+"asset.payments.removeCount" = "Убрать %d";
+"asset.payments.returnCount" = "Вернуть %d";
 "insights.netWorth.title" = "Чистый капитал";
 "insights.netWorth.subtitle" = "Деньги, активы и долги";
 "insights.formula.netWorth.title" = "Чистый капитал";

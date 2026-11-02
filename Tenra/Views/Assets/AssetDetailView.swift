@@ -30,6 +30,12 @@ struct AssetDetailView: View {
     @State private var showingValuation = false
     @State private var showingSale = false
     @State private var showingDelete = false
+    /// "Link payments", "Remove payments" or "Removed payments" (the owner's car, 2026-11-02).
+    @State private var paymentsScreen: PaymentsScreen?
+
+    private enum PaymentsScreen: Hashable {
+        case link, remove, removed
+    }
     /// The add form in the rent category.
     @State private var showingRentEntry = false
     /// Bumped by a valuation above the value: one burst of sparkles over the hero.
@@ -54,6 +60,47 @@ struct AssetDetailView: View {
                 .navigationTitle(String(localized: "asset.listTitle"))
             }
         }
+    }
+
+    /// The payments by hand, on the shared `LinkPaymentsView` (search, category and subcategory
+    /// filters, select all): any expense or income its rent and upkeep don't count yet, the ones
+    /// they count, or the ones removed.
+    private func paymentsView(_ screen: PaymentsScreen, asset: Asset, counted: Set<String>) -> some View {
+        let store = assetStore
+        let assetId = asset.id
+        let removed = Set(asset.excludedTransactionIds)
+        let title: String
+        var options = LinkPaymentsView.Options.asset
+        let findCandidates: @Sendable ([Transaction], AmountMatchMode) -> [Transaction]
+        let perform: @Sendable ([Transaction]) async throws -> Void
+        switch screen {
+        case .link:
+            title = String(localized: "asset.payments.link")
+            findCandidates = { all, _ in
+                all.filter { ($0.type == .expense || $0.type == .income) && !counted.contains($0.id) }
+            }
+            perform = { selected in await store.include(selected.map(\.id), in: assetId) }
+        case .remove:
+            title = String(localized: "asset.payments.remove")
+            options.actionTitleFormat = String(localized: "asset.payments.removeCount")
+            findCandidates = { all, _ in all.filter { counted.contains($0.id) } }
+            perform = { selected in await store.exclude(selected.map(\.id), from: assetId) }
+        case .removed:
+            title = String(localized: "asset.payments.removed")
+            options.actionTitleFormat = String(localized: "asset.payments.returnCount")
+            findCandidates = { all, _ in all.filter { removed.contains($0.id) } }
+            perform = { selected in await store.restore(selected.map(\.id), to: assetId) }
+        }
+        return LinkPaymentsView(
+            title: title,
+            displayCurrency: appSettings.baseCurrency,
+            findCandidates: findCandidates,
+            performLink: perform,
+            options: options,
+            transactionStore: coordinator.transactionStore,
+            accountsViewModel: coordinator.accountsViewModel,
+            categoriesViewModel: coordinator.categoriesViewModel
+        )
     }
 
     @ViewBuilder
@@ -157,6 +204,30 @@ struct AssetDetailView: View {
                 } label: {
                     Label(String(localized: "button.edit"), systemImage: "pencil")
                 }
+                // Payments by hand: any expense or income linked to it, the ones its category
+                // counts taken out, and given back.
+                Button {
+                    HapticManager.selection()
+                    paymentsScreen = .link
+                } label: {
+                    Label(String(localized: "asset.payments.link"), systemImage: "link.badge.plus")
+                }
+                if !linkedTransactions.isEmpty {
+                    Button {
+                        HapticManager.selection()
+                        paymentsScreen = .remove
+                    } label: {
+                        Label(String(localized: "asset.payments.remove"), systemImage: "minus.circle")
+                    }
+                }
+                if !asset.excludedTransactionIds.isEmpty {
+                    Button {
+                        HapticManager.selection()
+                        paymentsScreen = .removed
+                    } label: {
+                        Label(String(localized: "asset.payments.removed"), systemImage: "arrow.uturn.backward.circle")
+                    }
+                }
                 Divider()
                 Button(role: .destructive) {
                     HapticManager.warning()
@@ -209,6 +280,9 @@ struct AssetDetailView: View {
                     if let price = asset.purchasePrice, amount > price { celebrations += 1 }
                 }
             }
+        }
+        .navigationDestination(item: $paymentsScreen) { screen in
+            paymentsView(screen, asset: asset, counted: Set(linkedTransactions.map(\.id)))
         }
         .navigationDestination(isPresented: $showingRentEntry) {
             if let category = rentCategory(of: asset) {

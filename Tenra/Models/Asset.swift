@@ -114,6 +114,12 @@ nonisolated struct AssetCategoryLink: Codable, Equatable, Hashable, Sendable {
     }
 }
 
+/// The payments of an asset set by hand, kept as JSON on its row (`AssetEntity.transactionLinksData`, v18).
+nonisolated struct AssetTransactionLinks: Codable, Equatable {
+    var excluded: [String] = []
+    var included: [String] = []
+}
+
 nonisolated struct Asset: Equatable, Hashable, Identifiable {
     var id: String
     var name: String
@@ -143,6 +149,12 @@ nonisolated struct Asset: Equatable, Hashable, Identifiable {
     /// Position in its list.
     var order: Int
     var createdAt: Date
+    /// Payments taken out of it by hand ("Remove payments"): its links count them, it does not
+    /// (CoreData v18, the owner's car, 2026-11-02).
+    var excludedTransactionIds: [String]
+    /// Payments linked to it by hand ("Link payments"), whatever their category or day: an
+    /// expense is upkeep, an income is rent.
+    var includedTransactionIds: [String]
 
     init(
         id: String = UUID().uuidString,
@@ -162,7 +174,9 @@ nonisolated struct Asset: Equatable, Hashable, Identifiable {
         soldAt: Date? = nil,
         note: String? = nil,
         order: Int = 0,
-        createdAt: Date = Date()
+        createdAt: Date = Date(),
+        excludedTransactionIds: [String] = [],
+        includedTransactionIds: [String] = []
     ) {
         self.id = id
         self.name = name
@@ -182,6 +196,8 @@ nonisolated struct Asset: Equatable, Hashable, Identifiable {
         self.note = note
         self.order = order
         self.createdAt = createdAt
+        self.excludedTransactionIds = excludedTransactionIds
+        self.includedTransactionIds = includedTransactionIds
     }
 
     var isSold: Bool { soldAt != nil }

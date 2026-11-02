@@ -212,7 +212,7 @@ struct AssetsListView: View {
             let onMove: ((IndexSet, Int) -> Void)? = canReorder ? { source, destination in
                 var reordered = assets
                 reordered.move(fromOffsets: source, toOffset: destination)
-                Task { await assetStore.reorder(reordered.map(\.id)) }
+                assetStore.move(reordered.map(\.id))
             } : nil
             SectionHeader(title)
                 .screenPadding()

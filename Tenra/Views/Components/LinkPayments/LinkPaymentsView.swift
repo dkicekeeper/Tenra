@@ -32,6 +32,8 @@ struct LinkPaymentsView: View {
         var defaultAmountMode: AmountMatchMode = .tolerance
         /// Auto-select all candidates on initial load.
         var autoSelectOnInitialLoad: Bool = true
+        /// The primary button's text for the count picked (a localized `%d` format); nil: "Link N".
+        var actionTitleFormat: String? = nil
 
         static let subscription = Options()
         static let loan = Options(
@@ -46,6 +48,13 @@ struct LinkPaymentsView: View {
         static let deposit = Options(
             showCategoryFilter: false,
             showSubcategoryFilter: false,
+            defaultAmountMode: .all,
+            autoSelectOnInitialLoad: false
+        )
+        /// Payments linked to or removed from an asset by hand (AssetDetailView): no amount to
+        /// match, the person picks each one.
+        static let asset = Options(
+            showAmountModeFilter: false,
             defaultAmountMode: .all,
             autoSelectOnInitialLoad: false
         )
@@ -427,7 +436,7 @@ struct LinkPaymentsView: View {
                             ProgressView()
                                 .frame(maxWidth: .infinity)
                         } else {
-                            Text(String(format: String(localized: "subscription.linkPayments.link", defaultValue: "Link %d"), selectedIds.count))
+                            Text(String(format: options.actionTitleFormat ?? String(localized: "subscription.linkPayments.link", defaultValue: "Link %d"), selectedIds.count))
                                 .frame(maxWidth: .infinity)
                         }
                     }

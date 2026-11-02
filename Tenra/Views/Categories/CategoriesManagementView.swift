@@ -102,7 +102,8 @@ struct CategoriesManagementView: View {
     /// Edit and Delete; the toolbar selects several to delete and changes the order by dragging.
     private var categoriesList: some View {
         ScrollView {
-            CardList(filteredCategories, mode: mode, selection: $selection, onMove: moveCategory) { category in
+            // A tap anywhere on a card opens it (DesignKit 8.5.0's `onOpen`), its padding too.
+            CardList(filteredCategories, mode: mode, selection: $selection, onMove: moveCategory, onOpen: { navigatingCategory = $0 }) { category in
                 categoryCard(category)
             }
             .screenPadding()
@@ -116,7 +117,7 @@ struct CategoriesManagementView: View {
             isDefault: false,
             budgetProgress: budgetProgressMap[category.id],
             currency: transactionsViewModel.appSettings.baseCurrency,
-            onEdit: { navigatingCategory = category },
+            onEdit: nil,
             transitionSourceID: category.id,
             transitionNamespace: categoryNamespace
         )

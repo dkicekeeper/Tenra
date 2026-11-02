@@ -8,8 +8,12 @@ phone found the 15 points of "After the device check" below, fixed in #113 with 
 owner's second look on build 63 found four more, fixed in #115 with DesignKit 8.4.1
 (dkicekeeper/DesignKit#96), both in `main` since 2026-10-31, in 1.8 build 64 (2026-10-31). The
 third look on build 64 found three more, fixed in #117 with DesignKit 8.4.2
-(dkicekeeper/DesignKit#97), both in `main` since 2026-10-31; 1.8 build 65 (2026-10-31) has them
-and waits on the owner's check on the phone. The What's New below
+(dkicekeeper/DesignKit#97), both in `main` since 2026-10-31, in 1.8 build 65 (2026-10-31). The
+fourth look on build 65 found six more: five fixed in #119 with DesignKit 8.5.0
+(dkicekeeper/DesignKit#98) and the assets' held days, in `main` since 2026-11-02, in 1.8 build 66
+(2026-11-02); the assets' payments by hand (point 6, CoreData v18) came in #120, in `main` since
+2026-11-02, in 1.8 build 67 (2026-11-02), which waits on the owner's check on the phone. The
+What's New below
 goes into 1.8's `release-notes.md` once 1.7.1's notes move to the archive; then this file moves to
 `archive/plans/`.
 
@@ -69,6 +73,24 @@ second look (2026-10-31) found four more, fixed in #115 and DesignKit 8.4.1 (bui
    keeps the ones picked on top.
 4. Its rows are the Wallet merchants list's (`UniversalRow`, `SelectionIndicator`): the form
    row with a hint under the title was too tall.
+
+Device check on build 65 (2026-11-02), the owner's fourth look, fixed in #119 and DesignKit 8.5.0
+(build 66) and #120 (build 67):
+
+1. Loans did not reorder (the drag saved `Account.order`, `LoansViewModel.loans` ignored it);
+   deposits, goals, debts and assets move at once too.
+2. A logo from one's own picture, cropped to a square (DesignKit 8.5.0's `SquareImageCropper`,
+   `IconPicker`'s Photo tab; `UserLogoStore`, [domains/logos.md](domains/logos.md)).
+3. The chart still jumped to another month after a scroll: a probe showed SwiftUI re-applies a
+   scroll position binding that differs from the offset, and the binding held Swift Charts'
+   report (the month before, at rest). DesignKit 8.5.0 reads the period from the exact offset.
+4. The whole row or card takes the tap (DesignKit 8.5.0's rows and `CardList(onOpen:)`).
+5. "Combine points" searches merchants by their payments' categories and subcategories.
+6. An asset counted the payments of its category from before it was bought (the owner's car,
+   bought on 1 June 2021, took the repairs of the car before it): it counts the days it is held,
+   and two assets held one after another may share a category (build 66). Its menu links any
+   payment by hand, removes one and gives removed ones back ("Link payments", "Remove payments",
+   "Removed payments", CoreData v18, build 67; [domains/assets.md](domains/assets.md)).
 
 Device check on build 64: the owner's third look (2026-10-31) found three more, fixed in #117
 and DesignKit 8.4.2 (build 65):

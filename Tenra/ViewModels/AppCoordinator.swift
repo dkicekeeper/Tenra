@@ -525,6 +525,12 @@ class AppCoordinator {
             )
         }
 
+        // The payments linked to or removed from an asset by hand, by id.
+        assetStore.transactionsWithIds = { [weak self] ids in
+            guard let self else { return [] }
+            return ids.compactMap { self.transactionStore.transactionById[$0] }
+        }
+
         // An asset's rent and upkeep: the transactions of its linked category (and any of its
         // subcategories), from the category index.
         assetStore.transactionsOfLink = { [weak self] link, type in

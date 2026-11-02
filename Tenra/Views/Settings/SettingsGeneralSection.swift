@@ -40,8 +40,9 @@ struct SettingsGeneralSection<BackgroundDest: View>: View {
 
     var body: some View {
         FormSection(header: String(localized: "settings.general")) {
-            // Base Currency Picker: a row with its value, pushing the currencies (DesignKit
-            // 8.0.0: a card's navigation row draws its own chevron).
+            // Base Currency Picker: a row with its value, pushing the currencies (a card's
+            // navigation row draws its own chevron; again since DesignKit 8.5.0, 8.0.0 to 8.4
+            // dropped it).
             UniversalRow(
                 String(localized: "settings.baseCurrency"),
                 icon: "dollarsign.circle",

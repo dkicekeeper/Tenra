@@ -377,6 +377,13 @@
 "iconPicker.title" = "Select Image";
 "iconPicker.iconsTab" = "Icons";
 "iconPicker.logosTab" = "Logos";
+"iconPicker.photoTab" = "Photo";
+"iconPicker.photoHint" = "Your own logo from a picture, cropped to a square.";
+"iconPicker.photoFailed" = "The picture could not be used. Try another one.";
+"iconPicker.choosePhoto" = "Choose photo";
+"imageCropper.title" = "Move and scale";
+"imageCropper.cancel" = "Cancel";
+"imageCropper.choose" = "Choose";
 "iconPicker.frequentlyUsed" = "Frequently Used";
 "iconPicker.foodAndDrinks" = "Food & Drinks";
 "iconPicker.transport" = "Transport";

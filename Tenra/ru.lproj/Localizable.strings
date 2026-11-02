@@ -377,6 +377,13 @@
 "iconPicker.title" = "Выбрать изображение";
 "iconPicker.iconsTab" = "Иконки";
 "iconPicker.logosTab" = "Логотипы";
+"iconPicker.photoTab" = "Фото";
+"iconPicker.photoHint" = "Свой логотип из картинки, обрезанной под квадрат.";
+"iconPicker.photoFailed" = "Не удалось использовать картинку. Попробуйте другую.";
+"iconPicker.choosePhoto" = "Выбрать фото";
+"imageCropper.title" = "Перемещение и масштаб";
+"imageCropper.cancel" = "Отменить";
+"imageCropper.choose" = "Выбрать";
 "iconPicker.frequentlyUsed" = "Часто используемые";
 "iconPicker.foodAndDrinks" = "Еда и напитки";
 "iconPicker.transport" = "Транспорт";

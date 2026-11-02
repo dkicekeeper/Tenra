@@ -377,6 +377,13 @@
 "iconPicker.title" = "Görsel Seç";
 "iconPicker.iconsTab" = "Simgeler";
 "iconPicker.logosTab" = "Logolar";
+"iconPicker.photoTab" = "Fotoğraf";
+"iconPicker.photoHint" = "Bir resimden kare olarak kırpılmış kendi logonuz.";
+"iconPicker.photoFailed" = "Resim kullanılamadı. Başka birini deneyin.";
+"iconPicker.choosePhoto" = "Fotoğraf seç";
+"imageCropper.title" = "Taşı ve ölçekle";
+"imageCropper.cancel" = "Vazgeç";
+"imageCropper.choose" = "Seç";
 "iconPicker.frequentlyUsed" = "Sık Kullanılanlar";
 "iconPicker.foodAndDrinks" = "Yiyecek ve İçecek";
 "iconPicker.transport" = "Ulaşım";

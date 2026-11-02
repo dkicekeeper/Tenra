@@ -14,7 +14,9 @@
 //  half-way is never listed. Restore checks a copy of the backup before the live store is
 //  touched and keeps the live files until the restored store has opened
 //  (CoreDataStack.swapStore). Manual and automatic backups have separate limits, so the
-//  weekly automatic backup never deletes one the user made.
+//  weekly automatic backup never deletes one the user made. The person's logo pictures
+//  (UserLogoStore, Application Support/UserLogos) are copied into each backup folder and back
+//  on restore, best effort: they live outside the store.
 //
 //  The container's Documents folder is NOT public (Info.plist
 //  `NSUbiquitousContainerIsDocumentScopePublic = false`, since 2026-09-25): a
@@ -254,6 +256,9 @@ nonisolated final class CloudBackupService: @unchecked Sendable {
             try fm.createDirectory(at: backupDir, withIntermediateDirectories: false)
             createdBackupDir = true
             let backupStoreURL = try PersistentStoreFiles.copyStore(at: snapshotURL, into: backupDir)
+            // The person's own logo pictures (UserLogoStore) go with the store, best effort:
+            // a backup without them still restores everything else.
+            Self.copyUserLogos(from: UserLogoStore.directory, to: backupDir.appendingPathComponent(Self.userLogosFolder))
             metadata = BackupMetadata(
                 id: UUID().uuidString,
                 date: Date(),
@@ -373,6 +378,23 @@ nonisolated final class CloudBackupService: @unchecked Sendable {
     /// performs file I/O, SQLite's page check and PSC.add, which together can run for
     /// hundreds of ms, and must never block the main thread (watchdog + missed UI frames).
     /// - Parameter metadata: The backup to restore
+    /// The folder of a backup that holds the person's logo pictures.
+    private static let userLogosFolder = "UserLogos"
+
+    /// Copies the logo pictures `source` holds that `destination` lacks; never throws.
+    private static func copyUserLogos(from source: URL, to destination: URL) {
+        let fm = FileManager.default
+        guard let files = try? fm.contentsOfDirectory(at: source, includingPropertiesForKeys: nil, options: .skipsHiddenFiles),
+              !files.isEmpty else { return }
+        try? fm.createDirectory(at: destination, withIntermediateDirectories: true)
+        for file in files where file.pathExtension == "png" {
+            let target = destination.appendingPathComponent(file.lastPathComponent)
+            if !fm.fileExists(atPath: target.path) {
+                try? fm.copyItem(at: file, to: target)
+            }
+        }
+    }
+
     func restoreBackup(_ metadata: BackupMetadata) async throws {
         // NOTE: The JSON metadata.modelVersion field is unreliable historical data —
         // all backups were stamped v7 regardless of actual schema. The gate is a real
@@ -431,6 +453,12 @@ nonisolated final class CloudBackupService: @unchecked Sendable {
             } catch CoreDataStack.CloudBackupError.incompatibleVersion(_) {
                 throw CoreDataStack.CloudBackupError.incompatibleVersion(shownVersion)
             }
+            // Logo pictures the backup holds and this phone lacks (best effort).
+            let logos = sourceURL.deletingLastPathComponent().appendingPathComponent(Self.userLogosFolder)
+            if let files = try? FileManager.default.contentsOfDirectory(at: logos, includingPropertiesForKeys: nil) {
+                for file in files { _ = ensureDownloaded(file) }
+            }
+            Self.copyUserLogos(from: logos, to: UserLogoStore.directory)
         }.value
 
         CloudBackupService.logger.info("Backup restored: \(metadata.id)")

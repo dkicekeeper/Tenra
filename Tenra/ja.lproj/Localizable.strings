@@ -377,6 +377,13 @@
 "iconPicker.title" = "画像を選択";
 "iconPicker.iconsTab" = "アイコン";
 "iconPicker.logosTab" = "ロゴ";
+"iconPicker.photoTab" = "写真";
+"iconPicker.photoHint" = "画像から作る自分のロゴ。正方形に切り抜きます。";
+"iconPicker.photoFailed" = "この画像は使用できませんでした。別の画像をお試しください。";
+"iconPicker.choosePhoto" = "写真を選択";
+"imageCropper.title" = "移動と拡大縮小";
+"imageCropper.cancel" = "キャンセル";
+"imageCropper.choose" = "選択";
 "iconPicker.frequentlyUsed" = "よく使う";
 "iconPicker.foodAndDrinks" = "飲食";
 "iconPicker.transport" = "交通";

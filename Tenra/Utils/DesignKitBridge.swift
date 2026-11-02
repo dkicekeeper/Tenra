@@ -29,6 +29,15 @@ enum DesignKitBridge {
         DesignKitLogoLoader.loader = { brandName in
             await LogoService.shared.logoImage(brandName: brandName)
         }
+        // IconPicker's Photo tab (DesignKit 8.5.0): the square the person cropped is kept as a
+        // file and named "photo:<uuid>" (UserLogoStore), which the logo loader above reads.
+        DesignKitIconPhotos.save = { image in
+            let key = await Task.detached(priority: .userInitiated) {
+                UserLogoStore.save(image)
+            }.value
+            return key.map { .brandService($0) }
+        }
+        DesignKitIconPhotos.isPhoto = { UserLogoStore.isPhoto($0) }
         DesignKitCurrencyConverter.convert = { amount, from, to in
             await CurrencyConverter.convert(amount: amount, from: from, to: to)
         }

@@ -303,6 +303,9 @@ nonisolated enum MerchantDirectory {
         let count: Int
         /// Starts with the same word as the merchant it is offered to.
         let isSuggested: Bool
+        /// The categories and subcategories of its payments, normalized for the search
+        /// ("Taxi" finds the merchants of taxi rides).
+        var tags: [String] = []
     }
 
     /// The expenses and income a merchant's screen does not count yet, to link to it by hand.
@@ -313,15 +316,32 @@ nonisolated enum MerchantDirectory {
     }
 
     /// Every merchant of the history's expenses and income but `excluded`: those that share the
-    /// first word of `key` first, then the most frequent.
-    static func entries(in transactions: [Transaction], excluding excluded: Set<String>, like key: String) -> [Entry] {
+    /// first word of `key` first, then the most frequent. `subcategoryIds` (a transaction's id →
+    /// its subcategories, `TransactionStore.subcategoryIdsByTransactionId`) and `subcategoryNames`
+    /// (a subcategory's id → its name) fill each entry's `tags` with its payments' categories and
+    /// subcategories.
+    static func entries(
+        in transactions: [Transaction],
+        excluding excluded: Set<String>,
+        like key: String,
+        subcategoryIds: [String: [String]] = [:],
+        subcategoryNames: [String: String] = [:]
+    ) -> [Entry] {
         var counts: [String: (name: String, date: String, count: Int)] = [:]
+        var tags: [String: Set<String>] = [:]
         for tx in transactions where tx.type == .expense || tx.type == .income {
             let merchant = CategorySuggestionService.normalizedMerchant(tx.description)
             guard merchant.count >= CategorySuggestionService.minimumMerchantLength,
                   !excluded.contains(merchant) else { continue }
             var entry = counts[merchant] ?? (name: tx.description, date: tx.date, count: 0)
             entry.count += 1
+            var merchantTags = tags[merchant] ?? []
+            if !tx.category.isEmpty { merchantTags.insert(tx.category) }
+            if let legacy = tx.subcategory, !legacy.isEmpty { merchantTags.insert(legacy) }
+            for id in subcategoryIds[tx.id] ?? [] {
+                if let name = subcategoryNames[id] { merchantTags.insert(name) }
+            }
+            tags[merchant] = merchantTags
             // The latest description names it: the bank's current spelling.
             if tx.date > entry.date {
                 entry.name = tx.description
@@ -337,7 +357,8 @@ nonisolated enum MerchantDirectory {
                     name: entry.name.trimmingCharacters(in: .whitespacesAndNewlines),
                     count: entry.count,
                     isSuggested: !firstWord.isEmpty
-                        && merchant.split(separator: " ").first.map(String.init) == firstWord
+                        && merchant.split(separator: " ").first.map(String.init) == firstWord,
+                    tags: (tags[merchant] ?? []).map(CategorySuggestionService.normalizedMerchant).sorted()
                 )
             }
             .sorted { lhs, rhs in

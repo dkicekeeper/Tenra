@@ -140,12 +140,19 @@ final class AssetStore {
 
     // MARK: - Rent and upkeep
 
-    /// The rent (`.income` of the income link) and the upkeep (`.expense` of the expense link),
-    /// newest first; nil for a kind without a link.
+    /// The rent (`.income` of the income link) and the upkeep (`.expense` of the expense link)
+    /// of the days the asset is held (from its purchase to its sale,
+    /// `AssetValuationMath.HeldPeriod`), newest first; nil for a kind without a link.
     func linkedTransactions(of asset: Asset) -> (rent: [Transaction]?, upkeep: [Transaction]?) {
-        let rent = asset.incomeLink.map { transactionsOfLink($0, .income) }
-        let upkeep = asset.expenseLink.map { transactionsOfLink($0, .expense) }
-        return (rent?.sorted { $0.date > $1.date }, upkeep?.sorted { $0.date > $1.date })
+        let held = AssetValuationMath.heldPeriod(of: asset)
+        func whileHeld(_ transactions: [Transaction]) -> [Transaction] {
+            transactions
+                .filter { tx in FastDateParser.date(from: tx.date).map { held.contains($0) } ?? false }
+                .sorted { $0.date > $1.date }
+        }
+        let rent = asset.incomeLink.map { whileHeld(transactionsOfLink($0, .income)) }
+        let upkeep = asset.expenseLink.map { whileHeld(transactionsOfLink($0, .expense)) }
+        return (rent, upkeep)
     }
 
     func incomeSummary(for asset: Asset, today: Date = Date()) -> AssetValuationMath.IncomeSummary {
@@ -160,11 +167,16 @@ final class AssetStore {
         )
     }
 
-    /// The links the other assets hold, which a link of this one may not overlap
-    /// (`AssetValuationMath.overlaps`).
-    func takenLinks(excluding assetId: String?) -> (income: [AssetCategoryLink], expense: [AssetCategoryLink]) {
+    /// The links the other assets hold, with the days they hold them: a link of this one may
+    /// not overlap one held on the same days (`AssetValuationMath.overlaps(_:held:_:held:)`).
+    func takenLinks(excluding assetId: String?) -> (income: [AssetLinkOptions.Taken], expense: [AssetLinkOptions.Taken]) {
         let others = assets.filter { $0.id != assetId }
-        return (others.compactMap(\.incomeLink), others.compactMap(\.expenseLink))
+        func taken(_ link: (Asset) -> AssetCategoryLink?) -> [AssetLinkOptions.Taken] {
+            others.compactMap { asset in
+                link(asset).map { AssetLinkOptions.Taken(link: $0, held: AssetValuationMath.heldPeriod(of: asset)) }
+            }
+        }
+        return (taken(\.incomeLink), taken(\.expenseLink))
     }
 
     /// Transactions in the asset's currency, at the cached rates.
@@ -235,16 +247,35 @@ final class AssetStore {
     /// list): they take that section's places among all the assets, in memory at once, then
     /// kept.
     func reorder(_ orderedIds: [String]) async {
+        await save(placing(orderedIds))
+    }
+
+    /// A step of a drag in DesignKit's `CardList`: the assets take their places at once (the
+    /// card moves under the finger and the next step reads the new order), saved after.
+    func move(_ orderedIds: [String]) {
+        let moved = placing(orderedIds)
+        Task { await save(moved) }
+    }
+
+    /// The listed assets take the section's places; returns the ids that moved.
+    private func placing(_ orderedIds: [String]) -> [String] {
         let places = orderedIds.compactMap { id in assets.first { $0.id == id }?.order }.sorted()
-        var moved: [Asset] = []
+        var moved: [String] = []
         for (id, place) in zip(orderedIds, places) {
             guard let i = assets.firstIndex(where: { $0.id == id }), assets[i].order != place else { continue }
             assets[i].order = place
-            moved.append(assets[i])
+            moved.append(id)
         }
         assets.sort { $0.order < $1.order }
-        for asset in moved {
-            await repository?.save(asset)
+        return moved
+    }
+
+    /// Saves the assets as they are now (a later step's places, not an earlier one's).
+    private func save(_ ids: [String]) async {
+        for id in ids {
+            if let asset = assets.first(where: { $0.id == id }) {
+                await repository?.save(asset)
+            }
         }
     }
 

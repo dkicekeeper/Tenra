@@ -70,6 +70,18 @@ second look (2026-10-31) found four more, fixed in #115 and DesignKit 8.4.1 (bui
 4. Its rows are the Wallet merchants list's (`UniversalRow`, `SelectionIndicator`): the form
    row with a hint under the title was too tall.
 
+Device check on build 65 (2026-11-02), the owner's fourth look:
+
+1. Loans did not reorder (the drag saved `Account.order`, `LoansViewModel.loans` ignored it);
+   deposits, goals, debts and assets move at once too.
+2. A logo from one's own picture, cropped to a square (DesignKit 8.5.0's `SquareImageCropper`,
+   `IconPicker`'s Photo tab; `UserLogoStore`, [domains/logos.md](domains/logos.md)).
+3. The chart still jumped to another month after a scroll: a probe showed SwiftUI re-applies a
+   scroll position binding that differs from the offset, and the binding held Swift Charts'
+   report (the month before, at rest). DesignKit 8.5.0 reads the period from the exact offset.
+4. The whole row or card takes the tap (DesignKit 8.5.0's rows and `CardList(onOpen:)`).
+5. "Combine points" searches merchants by their payments' categories and subcategories.
+
 Device check on build 64: the owner's third look (2026-10-31) found three more, fixed in #117
 and DesignKit 8.4.2 (build 65):
 

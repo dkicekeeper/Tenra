@@ -74,9 +74,10 @@ struct MerchantCategoriesView: View {
             } trailing: {
                 DisclosureChevron()
             }
+            // Inside the label: the whole row opens the merchant, not only its text.
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .contentShape(Rectangle())
         .accessibilityElement(children: .combine)
         .accessibilityIdentifier("merchants.row.\(merchant.id)")
         // The button keeps the row's divider inset to itself: the 44 pt tile and its space.

@@ -32,6 +32,21 @@ GLOBAL_DAILY_CALLS = "1200"
 BLOCKED_COUNTRIES = "RU,BY"
 # The app App Attest assertions must come from: Team ID + bundle id.
 APP_ID = "SY2L2VMQP7.dakacom.Tenra"
+# POST /v1/valuation, an asset's value from comparable listings found by web search
+# (src/valuation.ts, docs/plan-assets-roadmap.md §3). Off until the app version that calls it
+# ships, with its line in the privacy policy.
+VALUATION_ENABLED = "false"
+# Chosen by the valuation eval (eval/valuation.ts), apart from the chat's model.
+VALUATION_MODEL = "claude-haiku-5-5"
+VALUATION_EFFORT = "low"
+# Web searches per valuation, $0.01 each.
+VALUATION_MAX_SEARCHES = "3"
+# Valuations a month: per App Attest key without Pro, per customer with it.
+FREE_MONTHLY_VALUATIONS = "2"
+PRO_MONTHLY_VALUATIONS = "30"
+# A valuation counts as this many calls in GLOBAL_DAILY_CALLS: on Haiku its three searches and
+# their results cost about $0.035, some 25 chat calls.
+VALUATION_CALL_WEIGHT = "25"
 
 # The KV namespace `tenra-assistant-quota` (Cloudflare → Storage & databases → Workers KV).
 [[kv_namespaces]]

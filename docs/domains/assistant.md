@@ -315,6 +315,44 @@ The app runs the agent loop, because the tools run on the phone: one server call
   registers the key on the first turn (key id in UserDefaults: an App Attest key does not survive a
   reinstall), `AgentServerClient` signs every body, and `unknown_key` gets a new key and one retry.
 
+### Valuation from listings (`POST /v1/valuation`)
+
+What an asset is worth by comparable listings found with web search, in any country
+([plan-assets-roadmap.md](../plan-assets-roadmap.md) §3; the app does not call it yet, so
+`VALUATION_ENABLED` is `false`). Code: `src/valuation.ts`.
+
+- Same gates as a turn: the country, `x-tenra-user`, the App Attest assertion over the body, Pro
+  for the `user` inside it. Body (8 KB at most): `{"protocol": 1, "user": "...", "asset": {...}}`,
+  the asset as `AssetDescription`: `kind` (`apartment`, `house`, `land`, `commercial`, `vehicle`,
+  `other`), `country` (ISO), the place (city, region, district, complex) and the kind's
+  characteristics (area in m², land in ares, rooms as the country's listings count them, year,
+  building, floor, condition; make, model, generation, year, engine, mileage in km, customs,
+  steering; a description for `other`). Each kind has its required fields and refuses the others;
+  no name, no address, no text with seven digits or more (a phone, an IIN, a VIN). A bad field is
+  400 `invalid` with its name as the reason.
+- One model call (up to three: a paused turn goes on, a turn without the report is asked for it
+  once) with the server tool `web_search` (`VALUATION_MAX_SEARCHES`, 3; `user_location` from the
+  asset; `web_search_20260209` for models with dynamic filtering, `web_search_20250305` for
+  Haiku) and the strict client tool `report_listings`: every listing for sale the model saw, with
+  the URL of the search result it saw it in. No `web_fetch`: listing sites' pages are never read.
+- The arithmetic is code, never the model: a listing counts only when its URL is one of the search
+  results (normalized: no `www.`/`m.`, decoded, no trailing slash); rents, duplicates and other
+  currencies than the most common one are left out; comparables by kind (real estate: the same
+  rooms, size within 25%, then 40%, then by price among the same rooms; a vehicle: the year ±1,
+  the mileage ±40 000 km when three are close); outliers by Tukey's fences from four listings on;
+  the median and the quartiles, to three significant digits. Accuracy: `high` from 8 comparables
+  with quartiles within ±10% of the median, `medium` from 5 within ±20% (at most `medium` for a
+  widened match or `other`), `low` below; fewer than 3: `insufficient`.
+- Response (JSON, after the search, tens of seconds): `status`, `reason`, `currency` (the
+  market's; the phone converts), `value`, `low`, `high`, `accuracy`, `basis`, `per_unit`,
+  `count`, `listings` (title and URL from the search results, price, size, rooms, year,
+  mileage; never a seller's name or phone), `site_averages` (a site's own averages, shown beside,
+  never counted), `excluded` (counts by reason), `searched_at`, `searches`, `model`, `prompt`
+  (`VALUATION_PROMPT_VERSION`), `tier`, `quota`. Errors: 503 `disabled`, 429 `quota` or `busy`,
+  422 `refused`, 502 `upstream` with `code` and `retryable`.
+- Its model is its own (`VALUATION_MODEL`, `VALUATION_EFFORT`), chosen by the valuation eval
+  (§12). `/v1/health` gives the valuation prompt's version while it is on, else `null`.
+
 ## 9. The mascot
 
 `ParticleCreature` (DesignKit): a dark glass sphere with some 400 particles, eyes that blink and
@@ -357,7 +395,11 @@ spending, no em dashes, in all 11 languages.
 - **The server's quota** per App Attest key (§8) sits above the app's, so a new user id does not
   reset it. A device without App Attest gets no assistant.
 - **Pro**: no allowance within fair use (`PRO_MONTHLY_CALLS`), Founding Users and lifetime
-  included. No separate AI subscription ([promotion-plan.md](../promotion-plan.md) §2).
+  included.
+- **Valuations** (`POST /v1/valuation`) count apart: `FREE_MONTHLY_VALUATIONS` (2) per attested
+  key, `PRO_MONTHLY_VALUATIONS` (30) per customer, and each weighs `VALUATION_CALL_WEIGHT` (25)
+  calls in `GLOBAL_DAILY_CALLS`. Cost: web search is $10 per 1 000 searches, so with three
+  searches and their results a valuation is about $0.035 on Haiku 5.5 and $0.14 on Sonnet 5.5. No separate AI subscription ([promotion-plan.md](../promotion-plan.md) §2).
 - **Cost** (Anthropic prices per 1M tokens, 2026-10: Haiku 5.5 $0.10 / $0.50, Sonnet 5.5 $2 / $10,
   Opus 5.5 $4 / $20; a message ≈ 2 model calls, ~16k input tokens half cached, ~1k output): Haiku
   ≈ $0.002 a message, ≈ $0.12 for 60 a month, against ≈ $0.67 a month net of an annual Pro.
@@ -376,8 +418,8 @@ spending, no em dashes, in all 11 languages.
   `https://tenra-assistant.dakacom.workers.dev`, its address in the app's Info.plist
   (`TenraAssistantURL`).
 - **Workflow** `Assistant server` (`.github/workflows/assistant.yml`): typecheck and unit tests on
-  every push to `server/assistant/**`; by hand, `deploy` (uploads the secrets to the Worker) or
-  `eval` (models, effort, cases).
+  every push to `server/assistant/**`; by hand, `deploy` (uploads the secrets to the Worker),
+  `eval` (models, effort, cases) or `eval-valuation` (the same inputs).
 - **Pro for a person on the server**: the server sees only RevenueCat, so a Founding User (kept on
   the phone) needs `pro` granted there (Actions → RevenueCat → `grant`).
 - **Eval** (`server/assistant/eval/`): a synthetic user (`fixture.ts`; never real statements), a
@@ -386,6 +428,15 @@ spending, no em dashes, in all 11 languages.
   only by reference, no amounts in text, a draft instead of "saved", the language, prompt
   injection in a note, `blocks_decode`, `no_refusal`, `noPick`. A prompt change bumps
   `PROMPT_VERSION` and runs the eval before the deploy.
+- **Valuation eval** (`eval/valuation.ts`, `npm run eval:valuation -- --models ... --yes`): the
+  endpoint's own code with live web search on 13 cases (`eval/valuation-cases.ts`: flats in
+  Almaty, Astana, Shymkent and Karaganda, a Camry and a Cobalt, land in Kaskelen, flats in
+  Istanbul, Madrid and London, a Golf in Germany, a Civic in the US, and a handmade thing whose
+  answer is "too few"), each with a dated reference from official statistics, market reports or
+  price guides and a tolerance. Reports passes, the median deviation, comparables kept of those
+  reported, links dropped as not in the results, searches, cost and time. About $0.46 a run on
+  Haiku 5.5 and $1.82 on Sonnet 5.5; references older than three months are refreshed, never
+  widened. A change to the valuation prompt bumps `VALUATION_PROMPT_VERSION` and runs it.
 
 ## 13. Tests
 
@@ -394,6 +445,7 @@ spending, no em dashes, in all 11 languages.
   `AgentMemoryTests`, `AgentAttachmentTests`, and the tools over fixtures (`AgentCurrencyToolsTests`,
   `AgentForecastTests`, `AgentPlanningTests`, `PlanToolsTests`, `AssetToolsTests`).
 - Server: `npm test` in `server/assistant/` (`test/`: `index`, `quota`, `entitlement`, `claude`,
-  `appattest` on a synthetic chain, `tools` for the schemas, `eval` for the grader).
+  `appattest` on a synthetic chain, `tools` for the schemas, `eval` for the grader, `valuation`
+  for the valuation's checks, arithmetic, model loop, endpoint and its eval cases).
 - Not testable here: the real App Attest flow, streaming on a device, Ten's animation; checked on
   the iPhone.

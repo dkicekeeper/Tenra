@@ -4,7 +4,11 @@
 > ([archive/assets-audit-2026-11-02.md](archive/assets-audit-2026-11-02.md), находки A1-A15),
 > дополнен в тот же день треком автоматической оценки (§3). Решение владельца 2026-11-02:
 > **основной путь автооценки во всех странах: поиск по объявлениям через сервер Тэна**;
-> остальные решения не приняты (§8), ничего не начато. Фазы 1-4 первого плана в `main` и выйдут в 1.8:
+> остальные решения не приняты (§8). **A1 и A6 сделаны** (ветка
+> `claude/compassionate-volta-j9mpvg`): `POST /v1/valuation` (`server/assistant/src/valuation.ts`,
+> выключен `VALUATION_ENABLED = "false"` до версии приложения с кнопкой) и eval оценки на 13
+> случаях (`eval/valuation.ts`, Actions → Assistant server → `eval-valuation`); eval ещё не
+> запускался, от него зависит D11. Дальше A2 (Тэн в чате). Фазы 1-4 первого плана в `main` и выйдут в 1.8:
 > [archive/plans/plan-assets.md](archive/plans/plan-assets.md). Правила раздела:
 > [domains/assets.md](domains/assets.md). Связан с [plan-investments.md](plan-investments.md):
 > портфель станет строкой капитала.

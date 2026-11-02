@@ -72,6 +72,7 @@ nonisolated final class AssetRepository: @unchecked Sendable {
                 let links = AssetTransactionLinks(excluded: asset.excludedTransactionIds, included: asset.includedTransactionIds)
                 entity.transactionLinksData = links.excluded.isEmpty && links.included.isEmpty ? nil : try encoder.encode(links)
                 entity.attributesData = asset.attributes.isEmpty ? nil : try encoder.encode(asset.attributes)
+                entity.yieldOnShare = asset.yieldOnShare
                 entity.note = asset.note
                 entity.order = Int32(clamping: asset.order)
                 entity.createdAt = asset.createdAt
@@ -124,7 +125,8 @@ nonisolated final class AssetRepository: @unchecked Sendable {
             excludedTransactionIds: links?.excluded ?? [],
             includedTransactionIds: links?.included ?? [],
             attributes: entity.attributesData.flatMap { try? decoder.decode(AssetAttributes.self, from: $0) } ?? AssetAttributes(),
-            expenseLinks: entity.expenseLinkData.map { Self.links(from: $0, decoder: decoder) } ?? []
+            expenseLinks: entity.expenseLinkData.map { Self.links(from: $0, decoder: decoder) } ?? [],
+            yieldOnShare: entity.yieldOnShare
         )
     }
 

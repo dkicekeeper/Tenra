@@ -63,6 +63,7 @@
         <attribute name="soldAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="transactionLinksData" optional="YES" attributeType="Binary"/>
         <attribute name="valuations" optional="YES" attributeType="Binary"/>
+        <attribute name="yieldOnShare" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
     </entity>
     <entity name="CategoryAggregateEntity" representedClassName=".CategoryAggregateEntity" syncable="YES">
         <attribute name="categoryName" attributeType="String" defaultValueString=""/>

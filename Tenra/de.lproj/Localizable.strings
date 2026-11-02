@@ -2570,6 +2570,7 @@
 "asset.valuation.editTitle" = "Bewertung bearbeiten";
 "asset.valuation.day" = "Bewertet am";
 "asset.includeInNetWorth" = "Im Nettovermögen zählen";
+"asset.yieldOnShare" = "Rendite auf meinen Anteil";
 "asset.note" = "Notiz";
 "insights.netWorth.title" = "Nettovermögen";
 "insights.netWorth.subtitle" = "Geld, Vermögenswerte und Schulden";

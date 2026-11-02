@@ -222,6 +222,7 @@ final class AssetStore {
             summary: summary(for: asset, today: today),
             purchaseDate: asset.purchaseDate,
             soldAt: asset.soldAt,
+            onShare: asset.yieldOnShare ? asset.ownershipShare : nil,
             today: today
         )
     }

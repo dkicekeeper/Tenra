@@ -67,6 +67,25 @@ struct NetWorthTests {
         #expect(income.hasRent)
     }
 
+    /// D2: by default the yield is of the whole value; with `yieldOnShare` (a co-owner records
+    /// their own rent) of their share, and the full result counts their share of the gain.
+    @Test func theYieldOfTheShareWhenTheAssetAsks() {
+        let today = Self.day(2026, 10, 29)
+        let rent = (0..<12).map { AssetValuationMath.DatedAmount(date: Self.calendar.date(byAdding: .month, value: -$0, to: today)!, amount: 250_000) }
+        func income(onShare share: Double?) -> AssetValuationMath.IncomeSummary {
+            AssetValuationMath.income(
+                rent: rent, upkeep: nil, summary: Self.summary(),
+                purchaseDate: Self.flat.purchaseDate, soldAt: nil, onShare: share, today: today, calendar: Self.calendar
+            )
+        }
+        // 3M a year over the whole 70M; over half of it, twice as much.
+        #expect(abs((income(onShare: nil).yieldPercent ?? 0) - 4.2857) < 0.001)
+        #expect(abs((income(onShare: 0.5).yieldPercent ?? 0) - 8.5714) < 0.001)
+        // Half of the 46M gain plus the 3M rent.
+        #expect(income(onShare: 0.5).fullResult == 26_000_000)
+        #expect(income(onShare: nil).fullResult == 49_000_000)
+    }
+
     @Test func withoutLinksThereIsNoIncome() {
         let income = AssetValuationMath.income(
             rent: nil, upkeep: nil, summary: Self.summary(),

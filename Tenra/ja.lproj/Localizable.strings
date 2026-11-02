@@ -2570,6 +2570,7 @@
 "asset.valuation.editTitle" = "評価額を編集";
 "asset.valuation.day" = "評価日";
 "asset.includeInNetWorth" = "純資産に含める";
+"asset.yieldOnShare" = "自分の持分で利回りを計算";
 "asset.note" = "メモ";
 "insights.netWorth.title" = "純資産";
 "insights.netWorth.subtitle" = "お金、資産、借金";

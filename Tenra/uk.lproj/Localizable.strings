@@ -2570,6 +2570,7 @@
 "asset.valuation.editTitle" = "Змінити оцінку";
 "asset.valuation.day" = "Дата оцінки";
 "asset.includeInNetWorth" = "Враховувати в капіталі";
+"asset.yieldOnShare" = "Дохідність від моєї частки";
 "asset.note" = "Нотатка";
 "insights.netWorth.title" = "Чистий капітал";
 "insights.netWorth.subtitle" = "Гроші, активи та борги";

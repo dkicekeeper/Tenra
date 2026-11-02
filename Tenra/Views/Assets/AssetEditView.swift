@@ -46,6 +46,8 @@ struct AssetEditView: View {
     @State private var loanAccountId = ""
     /// Off: the asset stays in its list but out of net worth and the totals.
     @State private var includeInNetWorth = true
+    /// The yield of the person's share rather than of the whole asset (D2); offered below 100%.
+    @State private var yieldOnShare = false
     @State private var note = ""
     /// Empty: no link; a subcategory left empty takes the whole category.
     @State private var incomeCategoryId = ""
@@ -131,6 +133,13 @@ struct AssetEditView: View {
                                     + loanAccounts.map { (label: $0.name, value: $0.id) })
                             )
                         }
+                        if sharePercent < 100 {
+                            UniversalRow(
+                                String(localized: "asset.yieldOnShare"),
+                                icon: "percent",
+                                accessory: .toggle($yieldOnShare)
+                            )
+                        }
                         UniversalRow(
                             String(localized: "asset.includeInNetWorth"),
                             icon: "chart.pie",
@@ -199,6 +208,7 @@ struct AssetEditView: View {
                 .animation(AppAnimation.smooth, value: incomeCategoryId)
                 .animation(AppAnimation.smooth, value: expenseDrafts)
                 .animation(AppAnimation.smooth, value: kind)
+                .animation(AppAnimation.smooth, value: sharePercent < 100)
             }
         }
         .onAppear(perform: fill)
@@ -377,6 +387,7 @@ struct AssetEditView: View {
         depreciationPercent = min(50, max(0, Int(((asset.depreciationPerYear ?? 0) * 100).rounded())))
         loanAccountId = asset.linkedLoanAccountId ?? ""
         includeInNetWorth = asset.includeInNetWorth
+        yieldOnShare = asset.yieldOnShare
         note = asset.note ?? ""
         incomeCategoryId = asset.incomeLink?.categoryId ?? ""
         incomeSubcategoryIds = Set(asset.incomeLink?.subcategoryIds ?? [])
@@ -399,6 +410,7 @@ struct AssetEditView: View {
         result.depreciationPerYear = hasDepreciation && depreciationPercent > 0 ? Double(depreciationPercent) / 100 : nil
         result.linkedLoanAccountId = loanAccountId.isEmpty ? nil : loanAccountId
         result.includeInNetWorth = includeInNetWorth
+        result.yieldOnShare = sharePercent < 100 && yieldOnShare
         let trimmedNote = note.trimmingCharacters(in: .whitespacesAndNewlines)
         result.note = trimmedNote.isEmpty ? nil : trimmedNote
         result.incomeLink = incomeLink

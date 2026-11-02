@@ -430,7 +430,8 @@ struct AssetsTests {
             includeInNetWorth: false,
             note: "Second floor",
             createdAt: Self.day(2026, 10, 29),
-            expenseLinks: [AssetCategoryLink(categoryId: "home"), AssetCategoryLink(categoryId: "tax")]
+            expenseLinks: [AssetCategoryLink(categoryId: "home"), AssetCategoryLink(categoryId: "tax")],
+            yieldOnShare: true
         ))
         await store.add(Asset(id: "car", name: "Car", kind: .vehicle, currency: "KZT", createdAt: Self.day(2026, 10, 29)))
         await store.sell(assetId: "car", price: 8_000_000, date: Self.day(2026, 10, 30))
@@ -676,6 +677,7 @@ struct AssetsTests {
             #expect(assets.compactMap { $0.value(forKey: "name") as? String } == ["Flat"])
             #expect(assets.first?.value(forKey: "transactionLinksData") as? Data == links)
             #expect(assets.first?.value(forKey: "attributesData") == nil)
+            #expect(assets.first?.value(forKey: "yieldOnShare") as? Bool == false)
         }
     }
 }

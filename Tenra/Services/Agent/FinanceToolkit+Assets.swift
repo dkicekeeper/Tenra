@@ -91,6 +91,8 @@ extension FinanceToolkit {
                 "rent_last_12_months": number(income.rentYear),
                 "upkeep_last_12_months": number(income.upkeepYear),
                 "rental_yield_percent": percent(income.yieldPercent),
+                // The yield and the full result are of the user's share, not the whole asset.
+                "yield_of_share": .bool(asset.yieldOnShare && asset.ownershipShare < 1),
                 "full_result": number(income.fullResult),
                 "counted_in_net_worth": .bool(counted),
                 "sold": .bool(asset.isSold),

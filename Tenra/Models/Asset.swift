@@ -177,6 +177,9 @@ nonisolated struct Asset: Equatable, Hashable, Identifiable {
     /// What it is like, for an estimate by listings (CoreData v19): where it is, the area and
     /// rooms, the make, model, year and mileage.
     var attributes: AssetAttributes
+    /// The yield and the full result of the person's share rather than of the whole asset
+    /// (v19; off by default, the owner's decision D2): the rent a co-owner records is theirs.
+    var yieldOnShare: Bool
 
     init(
         id: String = UUID().uuidString,
@@ -200,7 +203,8 @@ nonisolated struct Asset: Equatable, Hashable, Identifiable {
         excludedTransactionIds: [String] = [],
         includedTransactionIds: [String] = [],
         attributes: AssetAttributes = AssetAttributes(),
-        expenseLinks: [AssetCategoryLink] = []
+        expenseLinks: [AssetCategoryLink] = [],
+        yieldOnShare: Bool = false
     ) {
         self.id = id
         self.name = name
@@ -224,6 +228,7 @@ nonisolated struct Asset: Equatable, Hashable, Identifiable {
         self.excludedTransactionIds = excludedTransactionIds
         self.includedTransactionIds = includedTransactionIds
         self.attributes = attributes
+        self.yieldOnShare = yieldOnShare
     }
 
     var isSold: Bool { soldAt != nil }

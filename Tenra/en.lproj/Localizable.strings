@@ -2570,6 +2570,7 @@
 "asset.valuation.editTitle" = "Edit valuation";
 "asset.valuation.day" = "Valued on";
 "asset.includeInNetWorth" = "Count in net worth";
+"asset.yieldOnShare" = "Yield on my share";
 "asset.note" = "Note";
 "insights.netWorth.title" = "Net Worth";
 "insights.netWorth.subtitle" = "Money, assets and debts";

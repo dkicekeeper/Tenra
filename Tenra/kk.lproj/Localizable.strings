@@ -2570,6 +2570,7 @@
 "asset.valuation.editTitle" = "Бағалауды өзгерту";
 "asset.valuation.day" = "Бағалау күні";
 "asset.includeInNetWorth" = "Капиталда есептеу";
+"asset.yieldOnShare" = "Менің үлесімнен табыстылық";
 "asset.note" = "Жазба";
 "insights.netWorth.title" = "Таза капитал";
 "insights.netWorth.subtitle" = "Ақша, активтер және қарыздар";

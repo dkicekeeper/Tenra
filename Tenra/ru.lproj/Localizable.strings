@@ -2570,6 +2570,7 @@
 "asset.valuation.editTitle" = "Изменить оценку";
 "asset.valuation.day" = "Дата оценки";
 "asset.includeInNetWorth" = "Учитывать в капитале";
+"asset.yieldOnShare" = "Доходность от моей доли";
 "asset.note" = "Заметка";
 "insights.netWorth.title" = "Чистый капитал";
 "insights.netWorth.subtitle" = "Деньги, активы и долги";

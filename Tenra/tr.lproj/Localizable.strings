@@ -2570,6 +2570,7 @@
 "asset.valuation.editTitle" = "Değerlemeyi düzenle";
 "asset.valuation.day" = "Değerleme tarihi";
 "asset.includeInNetWorth" = "Net varlığa dahil et";
+"asset.yieldOnShare" = "Payıma göre getiri";
 "asset.note" = "Not";
 "insights.netWorth.title" = "Net varlık";
 "insights.netWorth.subtitle" = "Para, varlıklar ve borçlar";

@@ -2570,6 +2570,7 @@
 "asset.valuation.editTitle" = "Modifica la stima";
 "asset.valuation.day" = "Data della stima";
 "asset.includeInNetWorth" = "Conta nel patrimonio";
+"asset.yieldOnShare" = "Rendimento sulla mia quota";
 "asset.note" = "Nota";
 "insights.netWorth.title" = "Patrimonio netto";
 "insights.netWorth.subtitle" = "Denaro, beni e debiti";

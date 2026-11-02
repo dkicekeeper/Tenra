@@ -2570,6 +2570,7 @@
 "asset.valuation.editTitle" = "평가액 수정";
 "asset.valuation.day" = "평가일";
 "asset.includeInNetWorth" = "순자산에 포함";
+"asset.yieldOnShare" = "내 지분 기준 수익률";
 "asset.note" = "메모";
 "insights.netWorth.title" = "순자산";
 "insights.netWorth.subtitle" = "돈, 자산, 빚";

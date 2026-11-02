@@ -2570,6 +2570,7 @@
 "asset.valuation.editTitle" = "Editar valoración";
 "asset.valuation.day" = "Fecha de valoración";
 "asset.includeInNetWorth" = "Contar en el patrimonio";
+"asset.yieldOnShare" = "Rentabilidad de mi parte";
 "asset.note" = "Nota";
 "insights.netWorth.title" = "Patrimonio neto";
 "insights.netWorth.subtitle" = "Dinero, activos y deudas";

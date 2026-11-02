@@ -348,13 +348,14 @@ nonisolated enum AssetValuationMath {
         var rentYear: Double?
         /// Upkeep (tax, the building's fees, repairs) over the same 12 months.
         var upkeepYear: Double?
-        /// (rent − upkeep) over 12 months as a percent of the value; needs a rent link and a value
-        /// above zero.
+        /// (rent − upkeep) over 12 months as a percent of the value (of the person's share of it,
+        /// with `yieldOnShare`); needs a rent link and a value above zero.
         var yieldPercent: Double?
         /// Every rent since the purchase (all of it without a purchase day).
         var rentTotal: Double?
         var upkeepTotal: Double?
-        /// The gain plus every rent minus every upkeep; needs a purchase price and a link.
+        /// The gain (the share's, with `yieldOnShare`) plus every rent minus every upkeep; needs a
+        /// purchase price and a link.
         var fullResult: Double?
         /// Any rent recorded at all (none: the screen offers to record it).
         var hasRent: Bool
@@ -366,6 +367,7 @@ nonisolated enum AssetValuationMath {
         summary: Summary,
         purchaseDate: Date?,
         soldAt: Date?,
+        onShare share: Double? = nil,
         today: Date = Date(),
         calendar: Calendar = .current
     ) -> IncomeSummary {
@@ -392,12 +394,16 @@ nonisolated enum AssetValuationMath {
         let rentTotal = sum(rent, from: since)
         let upkeepTotal = sum(upkeep, from: since)
         var yield: Double?
-        if let rentYear, summary.value > 0 {
-            yield = (rentYear - (upkeepYear ?? 0)) / summary.value * 100
+        // By default of the whole value; of the person's share when the asset asks for it (D2:
+        // the rent a co-owner records is their own).
+        let part = share.map { min(1, max(0, $0)) } ?? 1
+        let base = summary.value * part
+        if let rentYear, base > 0 {
+            yield = (rentYear - (upkeepYear ?? 0)) / base * 100
         }
         var fullResult: Double?
         if let gain = summary.gain, rentTotal != nil || upkeepTotal != nil {
-            fullResult = gain + (rentTotal ?? 0) - (upkeepTotal ?? 0)
+            fullResult = gain * part + (rentTotal ?? 0) - (upkeepTotal ?? 0)
         }
         return IncomeSummary(
             rentYear: rentYear,

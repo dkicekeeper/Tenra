@@ -11,7 +11,8 @@ third look on build 64 found three more, fixed in #117 with DesignKit 8.4.2
 (dkicekeeper/DesignKit#97), both in `main` since 2026-10-31, in 1.8 build 65 (2026-10-31). The
 fourth look on build 65 found six more: five fixed in #119 with DesignKit 8.5.0
 (dkicekeeper/DesignKit#98) and the assets' held days, in `main` since 2026-11-02, in 1.8 build 66
-(2026-11-02); the assets' payments by hand (point 6, CoreData v18) are #120, for build 67. The
+(2026-11-02); the assets' payments by hand (point 6, CoreData v18) came in #120, in `main` since
+2026-11-02, in 1.8 build 67 (2026-11-02), which waits on the owner's check on the phone. The
 What's New below
 goes into 1.8's `release-notes.md` once 1.7.1's notes move to the archive; then this file moves to
 `archive/plans/`.

@@ -566,6 +566,12 @@ class AppCoordinator {
             return ids.compactMap { self.transactionStore.transactionById[$0] }
         }
 
+        // A sold asset's money: the incomes around the sale day (stored day keys sort as days).
+        assetStore.incomesOnDays = { [weak self] days in
+            guard let self else { return [] }
+            return self.transactionStore.transactions.filter { $0.type == .income && days.contains($0.date) }
+        }
+
         // An asset's rent and upkeep: the transactions of its linked category (and any of its
         // subcategories), from the category index.
         assetStore.transactionsOfLink = { [weak self] link, type in

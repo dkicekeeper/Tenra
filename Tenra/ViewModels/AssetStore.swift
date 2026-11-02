@@ -42,6 +42,9 @@ final class AssetStore {
     /// The transactions of these ids that still exist (the payments linked or removed by hand),
     /// from TransactionStore's id index. Set by AppCoordinator.
     @ObservationIgnored var transactionsWithIds: ([String]) -> [Transaction] = { _ in [] }
+    /// The incomes of these days (stored day keys, both included), for the sale's money
+    /// (`AssetSale`). Set by AppCoordinator.
+    @ObservationIgnored var incomesOnDays: (ClosedRange<String>) -> [Transaction] = { _ in [] }
     /// Called after the assets change (and once they are read): net worth is recomputed. Set by
     /// AppCoordinator.
     @ObservationIgnored var didChange: () -> Void = {}
@@ -194,6 +197,13 @@ final class AssetStore {
             guard let linked = subcategories(tx.id) else { return false }
             return link.subcategoryIds.contains { linked.contains($0) }
         }
+    }
+
+    /// The money of a sold asset's sale is recorded as an income (`AssetSale`): the "Record the
+    /// money" banner goes. True for a held asset.
+    func isSaleIncomeRecorded(_ asset: Asset) -> Bool {
+        guard let window = AssetSale.window(of: asset) else { return true }
+        return AssetSale.isRecorded(asset, among: incomesOnDays(window))
     }
 
     /// The payments removed from the asset by hand that still exist, newest first.

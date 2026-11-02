@@ -2448,6 +2448,11 @@
 "assistant.notice.asset.stale" = "%2$@時点の評価は%1$@です。価格は変わります。純資産を正確に保つため評価を更新しましょう。";
 "assistant.notice.loanAsset" = "このローンで住宅や車を購入したなら、資産に追加しましょう。純資産で自己資金の割合がわかります。";
 "asset.saleHint" = "いくらで売りましたか？";
+"asset.saleIncome.banner" = "売却代金を収入として記録しましょう。金額と日付は入力済みです。";
+"asset.saleIncome.choose" = "どのカテゴリに記録しますか？";
+"asset.saleIncome.recorded" = "記録済み";
+"asset.saleIncome.description" = "売却: %@";
+"asset.saleLoan.banner" = "ローン「%@」はまだ完済していません。売却代金で返済しますか？";
 "asset.chart.value" = "価値";
 
 /* Assets, phase 2: rent, upkeep and net worth (docs/domains/assets.md) */

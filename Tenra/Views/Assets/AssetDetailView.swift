@@ -50,6 +50,14 @@ struct AssetDetailView: View {
     }
     /// The add form in the rent category.
     @State private var showingRentEntry = false
+    /// "Record the money" of a sale: the income category asked first, then the add form in it.
+    @State private var choosingSaleCategory = false
+    @State private var saleIncomeCategory: String?
+    /// The sales whose money the person said is recorded ("Already recorded"): asset ids, one
+    /// per line. A hint of this device, like the soft paywall's cap.
+    @AppStorage("asset.saleIncome.dismissed") private var dismissedSaleIncome = ""
+    /// The linked loan, from the "not paid off" banner of a sold asset.
+    @State private var showingLoan = false
     /// Bumped by a valuation above the value: one burst of sparkles over the hero.
     @State private var valuationSparkles = 0
     /// Bumped by a sale above the purchase price: one confetti burst.
@@ -64,6 +72,8 @@ struct AssetDetailView: View {
         /// Newest first.
         var transactions: [Transaction] = []
         var income = AssetValuationMath.IncomeSummary(hasRent: false)
+        /// A sold asset's money is recorded as an income (`AssetSale`).
+        var saleRecorded = true
         /// Gathered at least once: until then the "no rent yet" banner waits.
         var isLoaded = false
     }
@@ -209,6 +219,31 @@ struct AssetDetailView: View {
                 hero(for: asset, summary: summary, history: history)
             },
             customSections: {
+                if linked.isLoaded, asset.isSold, !linked.saleRecorded, !isSaleIncomeDismissed(asset) {
+                    // Selling makes no transaction: the money, filled in, one tap away (2.4).
+                    StatusBanner(
+                        String(localized: "asset.saleIncome.banner"),
+                        status: .info,
+                        systemImage: "banknote",
+                        action: {
+                            HapticManager.light()
+                            choosingSaleCategory = true
+                        }
+                    )
+                    .screenPadding()
+                }
+                if let loanName = unpaidLoanName(of: asset) {
+                    // Sold with the loan still owed: its screen, to repay it from the money.
+                    StatusBanner(
+                        String(format: String(localized: "asset.saleLoan.banner"), loanName),
+                        status: .warning,
+                        action: {
+                            HapticManager.light()
+                            showingLoan = true
+                        }
+                    )
+                    .screenPadding()
+                }
                 if isStale {
                     // The value was set too long ago: one tap to a new valuation.
                     StatusBanner(
@@ -385,6 +420,46 @@ struct AssetDetailView: View {
                 .environment(timeFilterManager)
             }
         }
+        .confirmationDialog(
+            String(localized: "asset.saleIncome.choose"),
+            isPresented: $choosingSaleCategory,
+            titleVisibility: .visible
+        ) {
+            ForEach(incomeCategories, id: \.id) { category in
+                Button(category.name) {
+                    saleIncomeCategory = category.name
+                }
+            }
+            Button(String(localized: "asset.saleIncome.recorded")) {
+                dismissSaleIncome(asset)
+            }
+            Button(String(localized: "button.cancel"), role: .cancel) {}
+        }
+        .navigationDestination(item: $saleIncomeCategory) { category in
+            TransactionAddModal(
+                category: category,
+                type: .income,
+                currency: asset.currency,
+                accounts: coordinator.accountsViewModel.accounts,
+                transactionsViewModel: coordinator.transactionsViewModel,
+                categoriesViewModel: coordinator.categoriesViewModel,
+                accountsViewModel: coordinator.accountsViewModel,
+                transactionStore: coordinator.transactionStore,
+                prefill: saleIncomePrefill(of: asset),
+                onDismiss: { saleIncomeCategory = nil }
+            )
+            .environment(timeFilterManager)
+        }
+        .navigationDestination(isPresented: $showingLoan) {
+            if let loanId = asset.linkedLoanAccountId {
+                LoanDetailView(
+                    loansViewModel: coordinator.loansViewModel,
+                    transactionsViewModel: coordinator.transactionsViewModel,
+                    balanceCoordinator: coordinator.balanceCoordinator,
+                    accountId: loanId
+                )
+            }
+        }
         .alert(String(localized: "asset.undoSale.title"), isPresented: $showingUndoSale) {
             Button(String(localized: "asset.undoSale"), role: .destructive) {
                 undoSale(asset)
@@ -414,9 +489,41 @@ struct AssetDetailView: View {
             linked = Linked(
                 transactions: ((gathered.rent ?? []) + (gathered.upkeep ?? [])).sorted { $0.date > $1.date },
                 income: assetStore.incomeSummary(for: asset, linked: gathered, today: today),
+                saleRecorded: assetStore.isSaleIncomeRecorded(asset),
                 isLoaded: true
             )
         }
+    }
+
+    // MARK: - Sale
+
+    /// The income categories, in the person's order: where the sale's money can go.
+    private var incomeCategories: [CustomCategory] {
+        coordinator.categoriesViewModel.customCategories.filter { $0.type == .income }
+    }
+
+    /// The income form of the sale: the price at the person's share, the sale day, "Sale: …".
+    private func saleIncomePrefill(of asset: Asset) -> TransactionAddModal.Prefill? {
+        guard let proceeds = AssetSale.proceeds(of: asset), let soldAt = asset.soldAt else { return nil }
+        return TransactionAddModal.Prefill(amount: proceeds, date: soldAt, description: AssetSale.incomeDescription(of: asset))
+    }
+
+    private func isSaleIncomeDismissed(_ asset: Asset) -> Bool {
+        dismissedSaleIncome.split(separator: "\n").contains { $0 == asset.id }
+    }
+
+    private func dismissSaleIncome(_ asset: Asset) {
+        HapticManager.selection()
+        guard !isSaleIncomeDismissed(asset) else { return }
+        dismissedSaleIncome = (dismissedSaleIncome.split(separator: "\n").map(String.init) + [asset.id]).joined(separator: "\n")
+    }
+
+    /// A sold asset's linked loan while something is still owed on it: its name.
+    private func unpaidLoanName(of asset: Asset) -> String? {
+        guard asset.isSold, let loanId = asset.linkedLoanAccountId,
+              let loan = assetStore.loan(for: asset), loan.amount > PersonalDebt.centTolerance,
+              let account = coordinator.transactionStore.accountById[loanId] else { return nil }
+        return account.name
     }
 
     /// A held asset, and Ten's server values assets from listings.
@@ -661,6 +768,8 @@ struct AssetDetailView: View {
 
     private func undoSale(_ asset: Asset) {
         HapticManager.selection()
+        // Sold again later, its money is offered again.
+        dismissedSaleIncome = dismissedSaleIncome.split(separator: "\n").filter { $0 != asset.id }.joined(separator: "\n")
         Task { await assetStore.undoSale(assetId: asset.id) }
     }
 }

@@ -2448,6 +2448,11 @@
 "assistant.notice.asset.stale" = "Valutato %1$@ il %2$@. I prezzi cambiano: aggiorna il valore perché il tuo patrimonio netto sia preciso.";
 "assistant.notice.loanAsset" = "Se con questo prestito hai comprato una casa o un’auto, aggiungila ai tuoi beni: il patrimonio mostrerà quanto è denaro tuo.";
 "asset.saleHint" = "A quanto l’hai venduto?";
+"asset.saleIncome.banner" = "Registra il denaro della vendita come entrata: prezzo e data sono già compilati.";
+"asset.saleIncome.choose" = "In quale categoria va il denaro?";
+"asset.saleIncome.recorded" = "Già registrato";
+"asset.saleIncome.description" = "Vendita: %@";
+"asset.saleLoan.banner" = "Il prestito «%@» non è ancora estinto. Estinguerlo con il denaro della vendita?";
 "asset.chart.value" = "Valore";
 
 /* Assets, phase 2: rent, upkeep and net worth (docs/domains/assets.md) */

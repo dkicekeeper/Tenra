@@ -2448,6 +2448,11 @@
 "assistant.notice.asset.stale" = "Bewertet mit %1$@ am %2$@. Preise ändern sich: Aktualisieren Sie den Wert, damit Ihr Nettovermögen stimmt.";
 "assistant.notice.loanAsset" = "Wenn mit diesem Kredit eine Wohnung oder ein Auto gekauft wurde, fügen Sie sie zu Ihren Vermögenswerten hinzu: Das Nettovermögen zeigt, wie viel davon Ihr eigenes Geld ist.";
 "asset.saleHint" = "Für wie viel haben Sie verkauft?";
+"asset.saleIncome.banner" = "Erfassen Sie das Geld aus dem Verkauf als Einnahme: Preis und Datum sind schon ausgefüllt.";
+"asset.saleIncome.choose" = "In welche Kategorie kommt das Geld?";
+"asset.saleIncome.recorded" = "Schon erfasst";
+"asset.saleIncome.description" = "Verkauf: %@";
+"asset.saleLoan.banner" = "Der Kredit „%@“ ist noch nicht abbezahlt. Mit dem Geld aus dem Verkauf tilgen?";
 "asset.chart.value" = "Wert";
 
 /* Assets, phase 2: rent, upkeep and net worth (docs/domains/assets.md) */

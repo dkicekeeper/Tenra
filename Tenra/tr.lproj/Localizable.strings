@@ -2448,6 +2448,11 @@
 "assistant.notice.asset.stale" = "Değerleme: %1$@, %2$@. Fiyatlar değişir: net varlığın doğru olsun diye değeri güncelle.";
 "assistant.notice.loanAsset" = "Bu krediyle bir ev ya da araba aldıysan varlıklarına ekle: net varlık, içinde ne kadar kendi paran olduğunu gösterir.";
 "asset.saleHint" = "Kaça sattın?";
+"asset.saleIncome.banner" = "Satıştan gelen parayı gelir olarak kaydet: fiyat ve tarih zaten dolu.";
+"asset.saleIncome.choose" = "Para hangi kategoriye girsin?";
+"asset.saleIncome.recorded" = "Zaten kaydedildi";
+"asset.saleIncome.description" = "Satış: %@";
+"asset.saleLoan.banner" = "“%@” kredisi henüz kapanmadı. Satıştan gelen parayla kapatmak ister misin?";
 "asset.chart.value" = "Değer";
 
 /* Assets, phase 2: rent, upkeep and net worth (docs/domains/assets.md) */

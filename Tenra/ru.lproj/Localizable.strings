@@ -2448,6 +2448,11 @@
 "assistant.notice.asset.stale" = "Оценка %1$@ от %2$@. Цены меняются: обновите её, чтобы капитал был точным.";
 "assistant.notice.loanAsset" = "Если на этот кредит куплены квартира или машина, добавьте их в активы: капитал покажет, сколько в них ваших денег.";
 "asset.saleHint" = "За сколько продали?";
+"asset.saleIncome.banner" = "Запишите деньги от продажи как доход: цена и дата уже заполнены.";
+"asset.saleIncome.choose" = "В какую категорию записать деньги?";
+"asset.saleIncome.recorded" = "Уже записано";
+"asset.saleIncome.description" = "Продажа: %@";
+"asset.saleLoan.banner" = "Кредит «%@» ещё не погашен. Погасить его из денег от продажи?";
 "asset.chart.value" = "Стоимость";
 
 /* Assets, phase 2: rent, upkeep and net worth (docs/domains/assets.md) */

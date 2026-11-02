@@ -2448,6 +2448,11 @@
 "assistant.notice.asset.stale" = "Estimé à %1$@ le %2$@. Les prix changent : mettez la valeur à jour pour que votre patrimoine net soit juste.";
 "assistant.notice.loanAsset" = "Si ce prêt a servi à acheter un logement ou une voiture, ajoutez-le à vos biens : le patrimoine montrera la part qui vous appartient.";
 "asset.saleHint" = "Vendu combien ?";
+"asset.saleIncome.banner" = "Enregistrez l’argent de la vente comme revenu : le prix et la date sont déjà remplis.";
+"asset.saleIncome.choose" = "Dans quelle catégorie va l’argent ?";
+"asset.saleIncome.recorded" = "Déjà enregistré";
+"asset.saleIncome.description" = "Vente : %@";
+"asset.saleLoan.banner" = "Le prêt « %@ » n’est pas encore remboursé. Le solder avec l’argent de la vente ?";
 "asset.chart.value" = "Valeur";
 
 /* Assets, phase 2: rent, upkeep and net worth (docs/domains/assets.md) */

@@ -2448,6 +2448,11 @@
 "assistant.notice.asset.stale" = "Valued at %1$@ on %2$@. Prices change: update the value to keep your net worth accurate.";
 "assistant.notice.loanAsset" = "If this loan bought a flat or a car, add it to your assets: net worth will show how much of it is your own money.";
 "asset.saleHint" = "What did you sell it for?";
+"asset.saleIncome.banner" = "Record the money from the sale as income: the price and the day are already filled in.";
+"asset.saleIncome.choose" = "Which category does the money go to?";
+"asset.saleIncome.recorded" = "Already recorded";
+"asset.saleIncome.description" = "Sale: %@";
+"asset.saleLoan.banner" = "The loan “%@” is not paid off yet. Repay it from the sale money?";
 "asset.chart.value" = "Value";
 
 /* Assets, phase 2: rent, upkeep and net worth (docs/domains/assets.md) */

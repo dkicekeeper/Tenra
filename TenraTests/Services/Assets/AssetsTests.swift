@@ -175,6 +175,40 @@ struct AssetsTests {
         #expect(points.map(\.value) == [25_000_000, 30_000_000, 76_000_000])
     }
 
+    /// Charts run evenly in time (D3): a point a month apart (three over eight years, at most
+    /// 48 points) from the first dated point to today; the value on each is the latest point up
+    /// to it, a sold asset ends on its sale.
+    @Test func chartsRunEvenlyInTime() {
+        let calendar = Self.calendar
+        let days = AssetValuationMath.chartDays(from: Self.day(2018, 10, 29), to: Self.day(2026, 10, 29), calendar: calendar)
+        #expect(days.first == Self.day(2018, 10, 29))
+        #expect(days.last == Self.day(2026, 10, 29))
+        #expect(days.count <= 48)
+        #expect(days[1] == Self.day(2019, 1, 29))
+        #expect(AssetValuationMath.chartDays(from: Self.day(2026, 1, 1), to: Self.day(2026, 4, 15), calendar: calendar)
+            == [Self.day(2026, 1, 1), Self.day(2026, 2, 1), Self.day(2026, 3, 1), Self.day(2026, 4, 1), Self.day(2026, 4, 15)])
+        #expect(AssetValuationMath.chartDays(from: Self.day(2026, 1, 1), to: Self.day(2026, 1, 1), calendar: calendar) == [Self.day(2026, 1, 1)])
+
+        let flat = Self.flat()  // 24M in 2018, 70M on 16 Oct 2026
+        let points = AssetValuationMath.chartHistory(of: flat, today: Self.day(2026, 10, 29), calendar: calendar)
+        #expect(points.first?.value == 24_000_000)
+        #expect(points.last == AssetValuationMath.DatedValue(date: Self.day(2026, 10, 29), value: 70_000_000))
+        #expect(points.dropLast().allSatisfy { $0.value == 24_000_000 })
+
+        var sold = flat
+        sold.valuations.append(AssetValuation(id: "sale", date: Self.day(2026, 11, 1), value: 75_000_000, source: .sale))
+        sold.soldAt = Self.day(2026, 11, 1)
+        let soldPoints = AssetValuationMath.chartHistory(of: sold, today: Self.day(2027, 6, 1), calendar: calendar)
+        #expect(soldPoints.last == AssetValuationMath.DatedValue(date: Self.day(2026, 11, 1), value: 75_000_000))
+        #expect(soldPoints.filter { $0.date >= Self.day(2026, 11, 1) }.count == 1)
+
+        let car = Asset(name: "Car", kind: .vehicle, currency: "KZT", purchaseDate: Self.day(2026, 1, 1), purchasePrice: 10_000_000)
+        let total = AssetValuationMath.totalChartHistory(of: [flat, car], today: Self.day(2026, 10, 29), calendar: calendar) { amount, _ in amount }
+        #expect(total.first?.value == 24_000_000)
+        #expect(total.last?.value == 80_000_000)
+        #expect(AssetValuationMath.chartHistory(of: Asset(name: "Watch", kind: .other, currency: "KZT", purchasePrice: 1), calendar: calendar).isEmpty)
+    }
+
     // MARK: - AssetStore
 
     @Test func totalsCountHeldAssetsAtTheirShare() async {

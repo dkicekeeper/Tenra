@@ -4,8 +4,8 @@
 //
 //  An asset in the assets list: adapter over DesignKit's HoldingCard (8.2.0). The value large,
 //  rolling up as the list opens; its change over the purchase price as a trend pill with the
-//  gain ("+46 000 000 ₸ since purchase"); the purchase and every valuation as the sparkline,
-//  ending on today's estimate when its depreciation counts the value down (as on its screen);
+//  gain ("+46 000 000 ₸ since purchase"); its value over time as the sparkline, evenly in time
+//  (AssetValuationMath.chartHistory, D3) and ending today or on the sale, as on its screen;
 //  when it was valued under the name ("≈ estimate" when its depreciation counts the value down
 //  since), or when it was sold with a "Sold" badge; an "Out of date" badge once the valuation
 //  is older than its kind allows (AssetValuationMath.isStale). Without a purchase price there is
@@ -41,10 +41,9 @@ struct AssetCard: View {
         }
     }
 
-    /// The purchase and every valuation; with a depreciation rule, today's estimate after them.
+    /// The value a month apart from the first point to today or the sale.
     private var history: [Double] {
-        let points = AssetValuationMath.history(of: asset).map(\.value)
-        return summary.isEstimate ? points + [summary.value] : points
+        AssetValuationMath.chartHistory(of: asset, today: today).map(\.value)
     }
 
     private var subtitle: String? {

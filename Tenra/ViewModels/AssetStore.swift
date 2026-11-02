@@ -134,9 +134,9 @@ final class AssetStore {
     }
 
     /// What the held assets counted in net worth were worth over time, at their share, in
-    /// `currency` (the list's hero chart).
-    func valueHistory(in currency: String) -> [AssetValuationMath.DatedValue] {
-        AssetValuationMath.totalHistory(of: held.filter(\.includeInNetWorth)) { [self] amount, asset in
+    /// `currency` (the list's hero chart), evenly in time up to `today` (D3).
+    func valueHistory(in currency: String, today: Date = Date()) -> [AssetValuationMath.DatedValue] {
+        AssetValuationMath.totalChartHistory(of: held.filter(\.includeInNetWorth), today: today) { [self] amount, asset in
             convert(amount, from: asset.currency, to: currency)
         }
     }

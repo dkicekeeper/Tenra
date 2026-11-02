@@ -394,7 +394,8 @@ struct AssetDetailView: View {
             // A valuation above the value: a burst of sparkles over it (DesignKit).
             .sparkleBurst(trigger: valuationSparkles, tint: AppColors.income)
 
-            let points = chartPoints(history: history, summary: summary)
+            // Evenly in time (D3): a month apart from the first point to today or the sale.
+            let points = AssetValuationMath.chartHistory(of: asset, today: today)
             if points.count >= 2 {
                 HeroSparkline(
                     dataPoints: AssetChartPoints.points(points, estimateLast: summary.isEstimate),
@@ -404,15 +405,6 @@ struct AssetDetailView: View {
                 )
             }
         }
-    }
-
-    /// The purchase and every valuation; with a depreciation rule, today's estimate after them.
-    private func chartPoints(history: [AssetValuation], summary: AssetValuationMath.Summary) -> [AssetValuationMath.DatedValue] {
-        var points = history.map { AssetValuationMath.DatedValue(date: $0.date, value: $0.value) }
-        if summary.isEstimate {
-            points.append(AssetValuationMath.DatedValue(date: today, value: summary.value))
-        }
-        return points
     }
 
     private func subtitle(for asset: Asset, summary: AssetValuationMath.Summary) -> String? {

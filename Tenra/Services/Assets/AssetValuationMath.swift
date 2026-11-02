@@ -185,6 +185,65 @@ nonisolated enum AssetValuationMath {
         return Array(points.suffix(limit))
     }
 
+    // MARK: - Charts by time (D3)
+
+    /// The days of a chart that runs evenly in time: DesignKit's sparklines space their points
+    /// evenly, so a purchase in 2018 and two valuations in 2026 took a third of the width each
+    /// (the owner's decision D3, 2026-11-02: resample here). `start`, then a month apart (a few
+    /// months when the span is long, at most `limit` days), then `end`.
+    static func chartDays(from start: Date, to end: Date, limit: Int = 48, calendar: Calendar = .current) -> [Date] {
+        let first = calendar.startOfDay(for: start)
+        let last = calendar.startOfDay(for: end)
+        guard last > first else { return [first] }
+        let months = max(1, calendar.dateComponents([.month], from: first, to: last).month ?? 1)
+        let step = max(1, Int((Double(months) / Double(max(1, limit - 1))).rounded(.up)))
+        var days = [first]
+        var index = 1
+        while let next = calendar.date(byAdding: .month, value: step * index, to: first), next < last {
+            days.append(next)
+            index += 1
+        }
+        days.append(last)
+        return days
+    }
+
+    /// An asset's value over time on `chartDays`, from its first dated point to today: its value
+    /// on each day (less the depreciation, with a rule); a sold one ends on its sale price on the
+    /// sale day. Empty without a dated point.
+    static func chartHistory(of asset: Asset, today: Date = Date(), limit: Int = 48, calendar: Calendar = .current) -> [DatedValue] {
+        let line = timeline(of: asset, calendar: calendar)
+        guard let first = line.points.first?.date else { return [] }
+        let end = asset.soldAt ?? today
+        var points = chartDays(from: first, to: end, limit: limit, calendar: calendar).compactMap { day in
+            estimate(line, on: day, calendar: calendar).map { DatedValue(date: day, value: $0.value) }
+        }
+        if asset.isSold, let sale = asset.sale {
+            points.append(DatedValue(date: calendar.startOfDay(for: sale.date), value: sale.value))
+        }
+        return points
+    }
+
+    /// The assets' total over time on `chartDays`, from the first dated point of any of them to
+    /// today, each at its share and in the total's currency (`convert`); an asset counts from its
+    /// first point on, one without a dated point throughout (as `totalHistory`).
+    static func totalChartHistory(
+        of assets: [Asset],
+        today: Date = Date(),
+        limit: Int = 48,
+        calendar: Calendar = .current,
+        convert: (Double, Asset) -> Double
+    ) -> [DatedValue] {
+        let timelines = assets.map { (asset: $0, timeline: timeline(of: $0, calendar: calendar)) }
+        guard let first = timelines.compactMap({ $0.timeline.points.first?.date }).min() else { return [] }
+        return chartDays(from: first, to: today, limit: limit, calendar: calendar).map { day in
+            let total = timelines.reduce(0.0) { sum, item in
+                let value = estimate(item.timeline, on: day, calendar: calendar)?.value ?? 0
+                return sum + convert(value * item.timeline.share, item.asset)
+            }
+            return DatedValue(date: day, value: total)
+        }
+    }
+
     // MARK: - Value on a day (phase 3)
 
     /// What an asset is worth on any day, without the asset itself (net worth's history reads it

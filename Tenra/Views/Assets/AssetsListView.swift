@@ -159,7 +159,7 @@ struct AssetsListView: View {
     /// time, on the colour of the gain.
     private var hero: some View {
         let totals = assetStore.totals(in: baseCurrency)
-        let history = assetStore.valueHistory(in: baseCurrency)
+        let history = assetStore.valueHistory(in: baseCurrency, today: today)
         return VStack(spacing: AppSpacing.xl) {
             HeroSection(
                 icon: nil,
@@ -190,8 +190,8 @@ struct AssetsListView: View {
         .heroBackground(heroColor(gain: totals.gain))
     }
 
-    /// The total's last point is today's, added for an asset that loses value by its rule
-    /// (AssetValuationMath.totalHistory): an estimate.
+    /// The total's last point is today's (AssetValuationMath.totalChartHistory): an estimate
+    /// when an asset loses value by its rule.
     private func endsOnEstimate(_ history: [AssetValuationMath.DatedValue]) -> Bool {
         guard let last = history.last, Calendar.current.isDateInToday(last.date) else { return false }
         return assetStore.held.contains { AssetValuationMath.depreciationRate(of: $0) != nil }

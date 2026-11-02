@@ -356,15 +356,6 @@ extension FinanceToolkit {
 
     // MARK: - Estimate from listings
 
-    /// The asset fields `POST /v1/valuation` reads (server/assistant/src/valuation.ts), passed on
-    /// as the model gave them: the server checks each against the asset's kind. The name never
-    /// goes, nor anything else the model adds.
-    static let valuationFields: Set<String> = [
-        "city", "region", "district", "complex", "area_m2", "rooms", "year_built", "building", "floor", "floors",
-        "condition", "land_ares", "land_use", "utilities", "commercial_type", "make", "model", "generation", "year",
-        "engine_l", "fuel", "transmission", "drive", "mileage_km", "customs_cleared", "steering", "description",
-    ]
-
     /// Listings of an estimate the model sees.
     static let valuationListingsListed = 6
 
@@ -390,23 +381,14 @@ extension FinanceToolkit {
         // region. The characteristics saved in its form (v19), with what the user said in the
         // chat over them; a value of the wrong type or range, or of another kind, is left out:
         // the server would refuse the whole request.
-        let country = fields["country"]?.stringValue?.uppercased() ?? asset.attributes.country
-            ?? Locale.current.region?.identifier.uppercased() ?? "KZ"
-        var merged = asset.attributes
-        for field in AssetAttributes.Field.fields(for: asset.kind) where Self.valuationFields.contains(field.rawValue) {
-            if let given = fields[field.rawValue].flatMap(Self.attributeValue), field.accepts(given) {
-                merged[field] = given
-            }
-        }
+        let country = AssetEstimateRequest.country(fields["country"]?.stringValue, attributes: asset.attributes)
+        let merged = AssetEstimateRequest.attributes(asset.attributes, kind: asset.kind, overrides: fields)
         let missing = merged.missing(for: asset.kind)
         guard missing.isEmpty else {
             let names = missing.map { $0.map(\.rawValue).joined(separator: " or ") }.joined(separator: ", ")
             throw FinanceToolError(message: "To estimate \(asset.name) the search needs \(names). Ask the user for it in one short question, then call estimate_asset_value again with it.")
         }
-        var description: [String: JSONValue] = ["kind": .string(asset.kind.rawValue), "country": .string(country)]
-        for (key, value) in merged.request(for: asset.kind) {
-            description[key] = Self.jsonValue(value)
-        }
+        let description = AssetEstimateRequest.body(kind: asset.kind, attributes: merged, country: country)
 
         let answer: JSONValue
         do {
@@ -493,35 +475,12 @@ extension FinanceToolkit {
     static func characteristics(of asset: Asset) -> [String: JSONValue] {
         var result: [String: JSONValue] = [:]
         for (key, value) in asset.attributes.request(for: asset.kind) {
-            result[key] = jsonValue(value)
+            result[key] = AssetEstimateRequest.jsonValue(value)
         }
         if let country = asset.attributes.country, !result.isEmpty {
             result["country"] = .string(country)
         }
         return result
-    }
-
-    static func jsonValue(_ value: AssetAttributes.Value) -> JSONValue {
-        switch value {
-        case .text(let text): return .string(text)
-        case .number(let number): return .number(number)
-        case .flag(let flag): return .bool(flag)
-        case .list(let list): return .array(list.map(JSONValue.string))
-        }
-    }
-
-    /// A value from the model's input as a characteristic; nil for null, an object or a list
-    /// with anything but strings in it.
-    static func attributeValue(_ value: JSONValue) -> AssetAttributes.Value? {
-        switch value {
-        case .string(let text): return .text(text)
-        case .number(let number): return .number(number)
-        case .bool(let flag): return .flag(flag)
-        case .array(let items):
-            let texts = items.compactMap(\.stringValue)
-            return texts.count == items.count ? .list(texts) : nil
-        case .null, .object: return nil
-        }
     }
 
     /// What the model is told when the server refuses an estimate, with what to do instead.

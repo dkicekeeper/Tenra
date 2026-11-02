@@ -361,6 +361,11 @@ What an asset is worth by comparable listings found with web search, in any coun
   never counted), `excluded` (counts by reason), `searched_at`, `searches`, `model`, `prompt`
   (`VALUATION_PROMPT_VERSION`), `tier`, `quota`. Errors: 503 `disabled`, 429 `quota` or `busy`,
   422 `refused`, 502 `upstream` with `code` and `retryable`.
+- The asset screen's "Estimate from listings" (`AssetEstimateSheet`, [assets.md](assets.md)) calls the
+  same endpoint with the same request (`AssetEstimateRequest`) through the chat's
+  `AgentServerClient`, which `AppCoordinator` keeps once (one App Attest key); it shows only
+  once `GET /v1/health` names a valuation prompt (`valuationAvailable()`, once a launch). The
+  month's estimates are the same count for both.
 - In the chat it is Ten's read tool `estimate_asset_value` (`FinanceToolkit+Assets.swift`), which
   the server offers only while `VALUATION_ENABLED` is on (`toolsFor`; the name stays valid in a
   history) and the prompt only when `<app_context>` has `valuation: listings` (this app version

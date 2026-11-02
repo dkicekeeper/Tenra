@@ -128,6 +128,17 @@ nonisolated final class AgentServerClient: AgentTransport, AgentValuationTranspo
         return try JSONDecoder().decode(JSONValue.self, from: answer.get())
     }
 
+    /// Whether the server values assets from listings (`GET /v1/health` names the valuation
+    /// prompt, or null while `VALUATION_ENABLED` is off). Unsigned; false when it cannot be reached.
+    func valuationAvailable() async -> Bool {
+        var request = URLRequest(url: baseURL.appending(path: "v1/health"))
+        request.timeoutInterval = 15
+        guard let answer = try? await session.data(for: request),
+              (answer.1 as? HTTPURLResponse)?.statusCode == 200,
+              let health = try? JSONDecoder().decode(JSONValue.self, from: answer.0) else { return false }
+        return health["valuation"]?.stringValue != nil
+    }
+
     /// One signed POST that answers in JSON: its body on 200, the server's error otherwise. A
     /// valuation searches the web first: tens of seconds, a minute and more with the fallback.
     private static func post(

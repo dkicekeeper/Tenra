@@ -298,16 +298,8 @@ struct AssetEditView: View {
         }
     }
 
-    /// The phone's country: where a new asset most likely is.
-    private static var phoneCountry: String? {
-        guard let code = Locale.current.region?.identifier, code.count == 2, code.allSatisfy({ $0.isASCII && $0.isLetter }) else {
-            return nil
-        }
-        return code.uppercased()
-    }
-
     private func fill() {
-        attributesDraft = AssetAttributesDraft(asset?.attributes ?? AssetAttributes(), defaultCountry: Self.phoneCountry)
+        attributesDraft = AssetAttributesDraft(asset?.attributes ?? AssetAttributes(), defaultCountry: AssetAttributesDraft.phoneCountry)
         guard let asset else {
             currency = baseCurrency
             return

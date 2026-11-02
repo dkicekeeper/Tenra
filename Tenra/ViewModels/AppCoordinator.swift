@@ -132,17 +132,49 @@ class AppCoordinator {
         }
     }
 
+    /// Ten's server (Info.plist `TenraAssistantURL`): one client, so the chat and the asset
+    /// screen's estimate share its App Attest key; nil while it is not configured.
+    @ObservationIgnored private var agentServerClient: AgentServerClient?
+
+    private func agentServer() -> AgentServerClient? {
+        if let agentServerClient { return agentServerClient }
+        guard let url = AgentConfig.serverURL else { return nil }
+        let attestation = AgentAttestation.isSupported ? AgentAttestation(baseURL: url) : nil
+        let server = AgentServerClient(baseURL: url, attestation: attestation) {
+            await MainActor.run { PremiumManager.shared.appUserID }
+        }
+        agentServerClient = server
+        return server
+    }
+
+    /// The asset screen's "Estimate from listings" (docs/domains/assets.md): shown once the
+    /// server says it values assets (`checkAssetEstimates`, once a launch).
+    private(set) var assetEstimatesAvailable = false
+    @ObservationIgnored private var assetEstimatesChecked = false
+
+    /// The estimate's transport; nil without a server and in the screenshot demo.
+    var assetEstimateTransport: AgentValuationTransport? {
+        #if DEBUG
+        if ScreenshotDemoMode.isActive { return nil }
+        #endif
+        return agentServer()
+    }
+
+    /// Asks the server's health whether estimates are on, once a launch.
+    func checkAssetEstimates() async {
+        guard !assetEstimatesChecked else { return }
+        assetEstimatesChecked = true
+        guard assetEstimateTransport != nil, let server = agentServer() else { return }
+        assetEstimatesAvailable = await server.valuationAvailable()
+    }
+
     /// The AI assistant's thread, made on first use; nil while its server is not configured
     /// (Info.plist `TenraAssistantURL`, docs/domains/assistant.md §12). Without Pro it spends
     /// the free allowance, and the server needs App Attest (§8).
     func assistant() -> AssistantViewModel? {
         if let assistantModel { return assistantModel }
-        guard let url = AgentConfig.serverURL else { return nil }
+        guard let server = agentServer() else { return nil }
         observeStoreResetForAssistant()
-        let attestation = AgentAttestation.isSupported ? AgentAttestation(baseURL: url) : nil
-        let server = AgentServerClient(baseURL: url, attestation: attestation) {
-            await MainActor.run { PremiumManager.shared.appUserID }
-        }
         var client: AgentTransport = server
         // estimate_asset_value asks the same server (POST /v1/valuation).
         var valuation: AgentValuationTransport? = server

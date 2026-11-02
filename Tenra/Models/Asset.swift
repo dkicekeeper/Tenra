@@ -57,19 +57,31 @@ nonisolated struct AssetValuation: Codable, Equatable, Hashable, Identifiable, S
         }
     }
 
+    /// An estimate by listings of comparable ones for sale (AssetEstimate): their quartiles and
+    /// how many there were, in the asset's currency. A version without it skips the key.
+    struct Listings: Codable, Equatable, Hashable, Sendable {
+        var low: Double
+        var high: Double
+        var count: Int
+        var sites: [String]
+    }
+
     var id: String
     var date: Date
     var value: Double
     var source: Source
     /// Where the figure came from: "listings on krisha.kz", "the bank's valuer".
     var note: String?
+    /// Set when the value is the median of listings; nil for a value by hand.
+    var listings: Listings?
 
-    init(id: String = UUID().uuidString, date: Date, value: Double, source: Source = .manual, note: String? = nil) {
+    init(id: String = UUID().uuidString, date: Date, value: Double, source: Source = .manual, note: String? = nil, listings: Listings? = nil) {
         self.id = id
         self.date = date
         self.value = value
         self.source = source
         self.note = note
+        self.listings = listings
     }
 }
 

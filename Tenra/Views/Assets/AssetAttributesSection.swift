@@ -20,6 +20,14 @@ struct AssetAttributesDraft: Equatable {
 
     init() {}
 
+    /// The phone's country: where an asset most likely is.
+    static var phoneCountry: String? {
+        guard let code = Locale.current.region?.identifier, code.count == 2, code.allSatisfy({ $0.isASCII && $0.isLetter }) else {
+            return nil
+        }
+        return code.uppercased()
+    }
+
     /// The asset's characteristics; a country it has none for is `defaultCountry` (the phone's).
     init(_ attributes: AssetAttributes, defaultCountry: String?) {
         for field in Field.allCases {

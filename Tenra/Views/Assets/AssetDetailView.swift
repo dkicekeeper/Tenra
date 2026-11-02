@@ -13,7 +13,9 @@
 //  category and no rent yet, a banner opens the add form in it. A valuation older than its kind
 //  allows puts a banner on top that opens "Update value"; with a depreciation rule the value is
 //  an estimate ("≈"), and the chart ends on it today. A valuation above the value bursts
-//  sparkles over the hero; a sale above the purchase price celebrates.
+//  sparkles over the hero; a sale above the purchase price celebrates. Once Ten's server values
+//  assets, "Estimate from listings" (the menu, and the out-of-date banner) opens
+//  AssetEstimateSheet.
 //
 
 import SwiftUI
@@ -28,6 +30,10 @@ struct AssetDetailView: View {
     @Environment(\.amountsHidden) private var amountsHidden
     @State private var showingEdit = false
     @State private var showingValuation = false
+    /// "Estimate from listings" (AssetEstimateSheet).
+    @State private var showingEstimate = false
+    /// "Enter by hand" in the estimate sheet: the money sheet, once that one is gone.
+    @State private var valuationAfterEstimate = false
     @State private var showingSale = false
     @State private var showingDelete = false
     /// "Link payments", "Remove payments" or "Removed payments" (the owner's car, 2026-11-02).
@@ -175,7 +181,12 @@ struct AssetDetailView: View {
                         status: .warning,
                         action: {
                             HapticManager.light()
-                            showingValuation = true
+                            // From listings once the server values assets; by hand otherwise.
+                            if canEstimate(asset) {
+                                showingEstimate = true
+                            } else {
+                                showingValuation = true
+                            }
                         }
                     )
                     .screenPadding()
@@ -198,6 +209,14 @@ struct AssetDetailView: View {
             },
             toolbarMenu: {
                 AskAssistantMenuItem(topic: .asset(name: asset.name))
+                if canEstimate(asset) {
+                    Button {
+                        HapticManager.selection()
+                        showingEstimate = true
+                    } label: {
+                        Label(String(localized: "asset.estimate.action"), systemImage: "magnifyingglass")
+                    }
+                }
                 Button {
                     HapticManager.selection()
                     showingEdit = true
@@ -266,6 +285,27 @@ struct AssetDetailView: View {
                 }
             }
         }
+        .sheet(isPresented: $showingEstimate, onDismiss: {
+            if valuationAfterEstimate {
+                valuationAfterEstimate = false
+                showingValuation = true
+            }
+        }) {
+            if let transport = coordinator.assetEstimateTransport {
+                AssetEstimateSheet(
+                    model: AssetEstimateViewModel(
+                        asset: asset,
+                        assets: assetStore,
+                        transport: transport,
+                        defaultCountry: AssetAttributesDraft.phoneCountry
+                    ),
+                    onManual: { valuationAfterEstimate = true },
+                    onSaved: { value in
+                        if value > summary.value { valuationSparkles += 1 }
+                    }
+                )
+            }
+        }
         .sheet(isPresented: $showingSale) {
             MoneyEntrySheet(
                 title: asset.name,
@@ -313,6 +353,14 @@ struct AssetDetailView: View {
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.significantTimeChangeNotification)) { _ in
             today = Date()
         }
+        .task {
+            await coordinator.checkAssetEstimates()
+        }
+    }
+
+    /// A held asset, and Ten's server values assets from listings.
+    private func canEstimate(_ asset: Asset) -> Bool {
+        !asset.isSold && coordinator.assetEstimatesAvailable && coordinator.assetEstimateTransport != nil
     }
 
     // MARK: - Hero

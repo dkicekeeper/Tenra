@@ -8,8 +8,11 @@ phone found the 15 points of "After the device check" below, fixed in #113 with 
 owner's second look on build 63 found four more, fixed in #115 with DesignKit 8.4.1
 (dkicekeeper/DesignKit#96), both in `main` since 2026-10-31, in 1.8 build 64 (2026-10-31). The
 third look on build 64 found three more, fixed in #117 with DesignKit 8.4.2
-(dkicekeeper/DesignKit#97), both in `main` since 2026-10-31; 1.8 build 65 (2026-10-31) has them
-and waits on the owner's check on the phone. The What's New below
+(dkicekeeper/DesignKit#97), both in `main` since 2026-10-31, in 1.8 build 65 (2026-10-31). The
+fourth look on build 65 found six more: five fixed in #119 with DesignKit 8.5.0
+(dkicekeeper/DesignKit#98) and the assets' held days, in `main` since 2026-11-02, in 1.8 build 66
+(2026-11-02); the assets' payments by hand (point 6, CoreData v18) are #120, for build 67. The
+What's New below
 goes into 1.8's `release-notes.md` once 1.7.1's notes move to the archive; then this file moves to
 `archive/plans/`.
 
@@ -70,7 +73,8 @@ second look (2026-10-31) found four more, fixed in #115 and DesignKit 8.4.1 (bui
 4. Its rows are the Wallet merchants list's (`UniversalRow`, `SelectionIndicator`): the form
    row with a hint under the title was too tall.
 
-Device check on build 65 (2026-11-02), the owner's fourth look:
+Device check on build 65 (2026-11-02), the owner's fourth look, fixed in #119 and DesignKit 8.5.0
+(build 66) and #120 (build 67):
 
 1. Loans did not reorder (the drag saved `Account.order`, `LoansViewModel.loans` ignored it);
    deposits, goals, debts and assets move at once too.

@@ -2461,6 +2461,11 @@
 "asset.yield" = "임대 수익률";
 "asset.fullResult" = "전체 결과";
 "asset.rent.empty" = "‘%@’에 아직 임대 수입이 없어요. 첫 입금을 기록하고 매월 반복으로 설정하세요.";
+"asset.payments.link" = "결제 연결";
+"asset.payments.remove" = "결제 제외";
+"asset.payments.removed" = "제외한 결제";
+"asset.payments.removeCount" = "%d건 제외";
+"asset.payments.returnCount" = "%d건 되돌리기";
 "insights.netWorth.title" = "순자산";
 "insights.netWorth.subtitle" = "돈, 자산, 빚";
 "insights.formula.netWorth.title" = "순자산";

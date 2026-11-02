@@ -2461,6 +2461,11 @@
 "asset.yield" = "Rendimento do aluguel";
 "asset.fullResult" = "Resultado total";
 "asset.rent.empty" = "Ainda não há aluguel em “%@”. Registre o primeiro pagamento e torne-o mensal.";
+"asset.payments.link" = "Vincular pagamentos";
+"asset.payments.remove" = "Remover pagamentos";
+"asset.payments.removed" = "Pagamentos removidos";
+"asset.payments.removeCount" = "Remover %d";
+"asset.payments.returnCount" = "Restaurar %d";
 "insights.netWorth.title" = "Patrimônio líquido";
 "insights.netWorth.subtitle" = "Dinheiro, bens e dívidas";
 "insights.formula.netWorth.title" = "Patrimônio líquido";

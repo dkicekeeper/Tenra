@@ -2461,6 +2461,11 @@
 "asset.yield" = "Rental yield";
 "asset.fullResult" = "Total result";
 "asset.rent.empty" = "No rent in “%@” yet. Record the first payment and make it monthly.";
+"asset.payments.link" = "Link payments";
+"asset.payments.remove" = "Remove payments";
+"asset.payments.removed" = "Removed payments";
+"asset.payments.removeCount" = "Remove %d";
+"asset.payments.returnCount" = "Return %d";
 "insights.netWorth.title" = "Net Worth";
 "insights.netWorth.subtitle" = "Money, assets and debts";
 "insights.formula.netWorth.title" = "Net Worth";

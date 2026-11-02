@@ -2461,6 +2461,11 @@
 "asset.yield" = "Rendimento da affitto";
 "asset.fullResult" = "Risultato totale";
 "asset.rent.empty" = "Ancora nessun affitto in «%@». Registra il primo pagamento e rendilo mensile.";
+"asset.payments.link" = "Collega pagamenti";
+"asset.payments.remove" = "Togli pagamenti";
+"asset.payments.removed" = "Pagamenti tolti";
+"asset.payments.removeCount" = "Togli %d";
+"asset.payments.returnCount" = "Ripristina %d";
 "insights.netWorth.title" = "Patrimonio netto";
 "insights.netWorth.subtitle" = "Denaro, beni e debiti";
 "insights.formula.netWorth.title" = "Patrimonio netto";

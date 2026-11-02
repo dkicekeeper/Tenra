@@ -7,7 +7,7 @@
 //  remaining principal is read live from the loan account (`loanBalance`, wired by
 //  AppCoordinator).
 //
-//  Kept in CoreData v17 through AssetRepository; nil keeps the assets in memory only
+//  Kept in CoreData (v17, v18) through AssetRepository; nil keeps the assets in memory only
 //  (previews, tests). The list reloads when the store is replaced (delete all data, a restored
 //  backup).
 //
@@ -37,6 +37,9 @@ final class AssetStore {
     /// The transactions of a category link of one type (rent `.income`, upkeep `.expense`), from
     /// TransactionStore's category index; none once the category is gone. Set by AppCoordinator.
     @ObservationIgnored var transactionsOfLink: (AssetCategoryLink, TransactionType) -> [Transaction] = { _, _ in [] }
+    /// The transactions of these ids that still exist (the payments linked or removed by hand),
+    /// from TransactionStore's id index. Set by AppCoordinator.
+    @ObservationIgnored var transactionsWithIds: ([String]) -> [Transaction] = { _ in [] }
     /// Called after the assets change (and once they are read): net worth is recomputed. Set by
     /// AppCoordinator.
     @ObservationIgnored var didChange: () -> Void = {}
@@ -142,17 +145,71 @@ final class AssetStore {
 
     /// The rent (`.income` of the income link) and the upkeep (`.expense` of the expense link)
     /// of the days the asset is held (from its purchase to its sale,
-    /// `AssetValuationMath.HeldPeriod`), newest first; nil for a kind without a link.
+    /// `AssetValuationMath.HeldPeriod`), without the payments removed by hand and with the ones
+    /// linked by hand (an expense is upkeep, an income rent, whatever its day), newest first;
+    /// nil for a kind without a link or a payment linked by hand.
     func linkedTransactions(of asset: Asset) -> (rent: [Transaction]?, upkeep: [Transaction]?) {
-        let held = AssetValuationMath.heldPeriod(of: asset)
-        func whileHeld(_ transactions: [Transaction]) -> [Transaction] {
-            transactions
-                .filter { tx in FastDateParser.date(from: tx.date).map { held.contains($0) } ?? false }
+        let excluded = Set(asset.excludedTransactionIds)
+        let included = transactionsWithIds(asset.includedTransactionIds)
+        let byLink = transactionsOfLinks(of: asset)
+        func counted(_ link: AssetCategoryLink?, _ byLink: [Transaction], _ type: TransactionType) -> [Transaction]? {
+            let byHand = included.filter { $0.type == type }
+            guard link != nil || !byHand.isEmpty else { return nil }
+            var seen = Set<String>()
+            return (byLink.filter { !excluded.contains($0.id) } + byHand)
+                .filter { seen.insert($0.id).inserted }
                 .sorted { $0.date > $1.date }
         }
-        let rent = asset.incomeLink.map { whileHeld(transactionsOfLink($0, .income)) }
-        let upkeep = asset.expenseLink.map { whileHeld(transactionsOfLink($0, .expense)) }
-        return (rent, upkeep)
+        return (counted(asset.incomeLink, byLink.rent, .income), counted(asset.expenseLink, byLink.upkeep, .expense))
+    }
+
+    /// What the category links alone count: their payments of the days the asset is held, with
+    /// none removed by hand.
+    private func transactionsOfLinks(of asset: Asset) -> (rent: [Transaction], upkeep: [Transaction]) {
+        let held = AssetValuationMath.heldPeriod(of: asset)
+        func whileHeld(_ link: AssetCategoryLink?, _ type: TransactionType) -> [Transaction] {
+            (link.map { transactionsOfLink($0, type) } ?? []).filter { tx in
+                FastDateParser.date(from: tx.date).map { held.contains($0) } ?? false
+            }
+        }
+        return (whileHeld(asset.incomeLink, .income), whileHeld(asset.expenseLink, .expense))
+    }
+
+    /// The payments removed from the asset by hand that still exist, newest first.
+    func excludedTransactions(of asset: Asset) -> [Transaction] {
+        transactionsWithIds(asset.excludedTransactionIds).sorted { $0.date > $1.date }
+    }
+
+    /// Links payments to the asset by hand ("Link payments"): they count whatever their
+    /// category or day, and are no longer removed.
+    func include(_ transactionIds: [String], in assetId: String) async {
+        guard var asset = asset(id: assetId), !transactionIds.isEmpty else { return }
+        let ids = Set(transactionIds)
+        asset.excludedTransactionIds.removeAll { ids.contains($0) }
+        asset.includedTransactionIds += transactionIds.filter { !asset.includedTransactionIds.contains($0) }
+        await update(asset)
+    }
+
+    /// Removes payments from the asset ("Remove payments"): one linked by hand is unlinked, and
+    /// one its category links count is excluded (then listed under "Removed payments").
+    func exclude(_ transactionIds: [String], from assetId: String) async {
+        guard var asset = asset(id: assetId), !transactionIds.isEmpty else { return }
+        let ids = Set(transactionIds)
+        let byLink = transactionsOfLinks(of: asset)
+        let countedByLink = Set((byLink.rent + byLink.upkeep).map(\.id))
+        asset.includedTransactionIds.removeAll { ids.contains($0) }
+        asset.excludedTransactionIds += transactionIds.filter {
+            countedByLink.contains($0) && !asset.excludedTransactionIds.contains($0)
+        }
+        await update(asset)
+    }
+
+    /// Gives removed payments back to the asset ("Removed payments").
+    func restore(_ transactionIds: [String], to assetId: String) async {
+        guard var asset = asset(id: assetId), !transactionIds.isEmpty else { return }
+        let ids = Set(transactionIds)
+        asset.excludedTransactionIds.removeAll { ids.contains($0) }
+        await update(asset)
     }
 
     func incomeSummary(for asset: Asset, today: Date = Date()) -> AssetValuationMath.IncomeSummary {

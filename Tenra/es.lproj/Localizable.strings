@@ -2461,6 +2461,11 @@
 "asset.yield" = "Rentabilidad del alquiler";
 "asset.fullResult" = "Resultado total";
 "asset.rent.empty" = "Aún no hay alquiler en «%@». Registra el primer pago y hazlo mensual.";
+"asset.payments.link" = "Vincular pagos";
+"asset.payments.remove" = "Quitar pagos";
+"asset.payments.removed" = "Pagos quitados";
+"asset.payments.removeCount" = "Quitar %d";
+"asset.payments.returnCount" = "Devolver %d";
 "insights.netWorth.title" = "Patrimonio neto";
 "insights.netWorth.subtitle" = "Dinero, activos y deudas";
 "insights.formula.netWorth.title" = "Patrimonio neto";

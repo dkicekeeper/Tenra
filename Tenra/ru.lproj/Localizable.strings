@@ -2566,6 +2566,10 @@
 "asset.estimate.failed" = "Не удалось добраться до объявлений. Попробуйте чуть позже.";
 "asset.estimate.more" = "Больше с Tenra Pro";
 "asset.estimate.note" = "Объявлений: %1$d (%2$@)";
+"asset.valuation.editTitle" = "Изменить оценку";
+"asset.valuation.day" = "Дата оценки";
+"asset.includeInNetWorth" = "Учитывать в капитале";
+"asset.note" = "Заметка";
 "insights.netWorth.title" = "Чистый капитал";
 "insights.netWorth.subtitle" = "Деньги, активы и долги";
 "insights.formula.netWorth.title" = "Чистый капитал";

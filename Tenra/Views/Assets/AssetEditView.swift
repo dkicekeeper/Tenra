@@ -4,7 +4,8 @@
 //
 //  A new asset, or changes to one (docs/domains/assets.md): icon, name, what it is worth today
 //  and its currency in the hero; its kind; the purchase price and day (empty for an
-//  inheritance or a gift); the person's share and the loan it was bought with; the categories of
+//  inheritance or a gift); the person's share, the loan it was bought with and whether it counts
+//  in net worth; the categories of
 //  its rent and its upkeep, each with any of its subcategories, never the transactions another
 //  asset already counts; for transport and other things, the depreciation a year (off by
 //  default: the person sets it); its characteristics for an estimate by listings
@@ -43,6 +44,9 @@ struct AssetEditView: View {
     @State private var depreciationPercent = 0
     /// Empty: no loan.
     @State private var loanAccountId = ""
+    /// Off: the asset stays in its list but out of net worth and the totals.
+    @State private var includeInNetWorth = true
+    @State private var note = ""
     /// Empty: no link; a subcategory left empty takes the whole category.
     @State private var incomeCategoryId = ""
     @State private var incomeSubcategoryIds: Set<String> = []
@@ -120,6 +124,11 @@ struct AssetEditView: View {
                                     + loanAccounts.map { (label: $0.name, value: $0.id) })
                             )
                         }
+                        UniversalRow(
+                            String(localized: "asset.includeInNetWorth"),
+                            icon: "chart.pie",
+                            accessory: .toggle($includeInNetWorth)
+                        )
                     }
 
                     if hasDepreciation {
@@ -159,6 +168,15 @@ struct AssetEditView: View {
                     }
 
                     AssetAttributesSection(kind: kind, draft: $attributesDraft)
+
+                    // The row names it: a header with the same word would repeat it.
+                    FormSection {
+                        UniversalRow(
+                            String(localized: "asset.note"),
+                            icon: "text.alignleft",
+                            accessory: .textField($note, placeholder: String(localized: "moneyEntry.notePlaceholder"))
+                        )
+                    }
                 }
                 .screenPadding()
                 .padding(.top, AppSpacing.md)
@@ -319,6 +337,8 @@ struct AssetEditView: View {
         sharePercent = min(100, max(5, Int((asset.ownershipShare * 100).rounded())))
         depreciationPercent = min(50, max(0, Int(((asset.depreciationPerYear ?? 0) * 100).rounded())))
         loanAccountId = asset.linkedLoanAccountId ?? ""
+        includeInNetWorth = asset.includeInNetWorth
+        note = asset.note ?? ""
         incomeCategoryId = asset.incomeLink?.categoryId ?? ""
         incomeSubcategoryIds = Set(asset.incomeLink?.subcategoryIds ?? [])
         expenseCategoryId = asset.expenseLink?.categoryId ?? ""
@@ -338,6 +358,9 @@ struct AssetEditView: View {
         result.ownershipShare = Double(sharePercent) / 100
         result.depreciationPerYear = hasDepreciation && depreciationPercent > 0 ? Double(depreciationPercent) / 100 : nil
         result.linkedLoanAccountId = loanAccountId.isEmpty ? nil : loanAccountId
+        result.includeInNetWorth = includeInNetWorth
+        let trimmedNote = note.trimmingCharacters(in: .whitespacesAndNewlines)
+        result.note = trimmedNote.isEmpty ? nil : trimmedNote
         result.incomeLink = incomeLink
         result.expenseLink = expenseLink
         result.attributes = attributesDraft.attributes(for: kind, over: asset?.attributes ?? AssetAttributes())

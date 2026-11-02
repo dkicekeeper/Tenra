@@ -343,6 +343,17 @@ final class AssetStore {
         await update(asset)
     }
 
+    /// A valuation changed in place (its value, day or note); the sale's day is the asset's
+    /// sale day.
+    func updateValuation(_ valuation: AssetValuation, in assetId: String) async {
+        guard var asset = asset(id: assetId), let index = asset.valuations.firstIndex(where: { $0.id == valuation.id }) else { return }
+        asset.valuations[index] = valuation
+        if valuation.source == .sale {
+            asset.soldAt = valuation.date
+        }
+        await update(asset)
+    }
+
     /// Deleting the sale's valuation puts the asset back among the held ones.
     func deleteValuation(id: String, from assetId: String) async {
         guard var asset = asset(id: assetId) else { return }

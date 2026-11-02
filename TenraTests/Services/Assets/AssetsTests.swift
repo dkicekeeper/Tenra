@@ -309,6 +309,26 @@ struct AssetsTests {
         #expect(!AssetValuationMath.overlaps(transport, held: Held(start: nil, end: nil), AssetCategoryLink(categoryId: "home"), held: newCar))
     }
 
+    /// A valuation changed in place (plan 2.1) keeps its id; the sale's new day is the asset's
+    /// sale day.
+    @Test func aValuationIsChangedInPlace() async throws {
+        let store = AssetStore(repository: nil)
+        await store.add(Self.flat())
+        var valuation = try #require(store.asset(id: "flat")?.valuations.first)
+        valuation.value = 72_000_000
+        valuation.note = "Valuer"
+        await store.updateValuation(valuation, in: "flat")
+        #expect(store.asset(id: "flat")?.valuations == [valuation])
+        let changed = try #require(store.asset(id: "flat"))
+        #expect(store.summary(for: changed, today: Self.day(2026, 10, 29)).value == 72_000_000)
+
+        await store.sell(assetId: "flat", price: 75_000_000, date: Self.day(2026, 10, 30))
+        var sale = try #require(store.asset(id: "flat")?.sale)
+        sale.date = Self.day(2026, 10, 31)
+        await store.updateValuation(sale, in: "flat")
+        #expect(store.asset(id: "flat")?.soldAt == Self.day(2026, 10, 31))
+    }
+
     @Test func aDragGivesTheSectionsAssetsItsPlaces() async {
         let store = AssetStore(repository: nil)
         await store.add(Asset(id: "a", name: "A", kind: .apartment, currency: "KZT"))

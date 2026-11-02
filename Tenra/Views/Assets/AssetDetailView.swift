@@ -8,8 +8,9 @@
 //  "Update value" (a valuation, MoneyEntrySheet) and "Sell" (the sale price and day), or
 //  "Undo sale" once sold. Info rows: the purchase, the gain, the growth a year, the
 //  person's share, the linked loan and their own money in it, the rent and upkeep of the last 12
-//  months, the yield and the full result. Then the valuations, newest first (a long press deletes
-//  one, which breaks into dust), and the rent and upkeep transactions by day; with a rent
+//  months, the yield and the full result. Then the valuations, newest first (a tap changes one,
+//  the purchase in the asset's form; a long press deletes one, which breaks into dust), and the
+//  rent and upkeep transactions by day; with a rent
 //  category and no rent yet, a banner opens the add form in it. A valuation older than its kind
 //  allows puts a banner on top that opens "Update value"; with a depreciation rule the value is
 //  an estimate ("≈"), and the chart ends on it today. A valuation above the value bursts
@@ -36,6 +37,8 @@ struct AssetDetailView: View {
     /// "Enter by hand" in the estimate sheet: the money sheet, once that one is gone.
     @State private var valuationAfterEstimate = false
     @State private var showingSale = false
+    /// A valuation changed in place (AssetValuationEditView).
+    @State private var editingValuation: AssetValuation?
     @State private var showingDelete = false
     /// "Link payments", "Remove payments" or "Removed payments" (the owner's car, 2026-11-02).
     @State private var paymentsScreen: PaymentsScreen?
@@ -307,6 +310,11 @@ struct AssetDetailView: View {
                 )
             }
         }
+        .sheet(item: $editingValuation) { valuation in
+            AssetValuationEditView(valuation: valuation, currency: asset.currency) { updated in
+                Task { await assetStore.updateValuation(updated, in: asset.id) }
+            }
+        }
         .sheet(isPresented: $showingSale) {
             MoneyEntrySheet(
                 title: asset.name,
@@ -511,6 +519,17 @@ struct AssetDetailView: View {
                 iconColor: AppColors.income
             ))
         }
+        if !asset.includeInNetWorth, !asset.isSold {
+            rows.append(InfoRowConfig(
+                icon: "chart.pie",
+                label: String(localized: "asset.includeInNetWorth"),
+                value: String(localized: "asset.attr.no"),
+                iconColor: AppColors.textSecondary
+            ))
+        }
+        if let note = asset.note, !note.isEmpty {
+            rows.append(InfoRowConfig(icon: "text.alignleft", label: String(localized: "asset.note"), value: note, iconColor: AppColors.textSecondary))
+        }
         return rows
     }
 
@@ -528,17 +547,33 @@ struct AssetDetailView: View {
             VStack(spacing: 0) {
                 ForEach(entries) { entry in
                     VStack(spacing: 0) {
-                        HistoryEntryRow(
-                            date: entry.date,
-                            note: entry.note.flatMap { $0.isEmpty ? nil : $0 } ?? Self.sourceTitle(entry.source),
-                            amount: entry.value,
-                            currency: asset.currency,
-                            symbol: Self.symbol(of: entry.source)
-                        )
-                        .contentShape(Rectangle())
-                        .contextMenu {
+                        Button {
+                            HapticManager.selection()
                             // The purchase is the asset's own price and day: changed in Edit.
+                            if entry.source == .purchase {
+                                showingEdit = true
+                            } else {
+                                editingValuation = entry
+                            }
+                        } label: {
+                            HistoryEntryRow(
+                                date: entry.date,
+                                note: entry.note.flatMap { $0.isEmpty ? nil : $0 } ?? Self.sourceTitle(entry.source),
+                                amount: entry.value,
+                                currency: asset.currency,
+                                symbol: Self.symbol(of: entry.source)
+                            )
+                            .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .contextMenu {
                             if entry.source != .purchase {
+                                Button {
+                                    HapticManager.selection()
+                                    editingValuation = entry
+                                } label: {
+                                    Label(String(localized: "button.edit"), systemImage: "pencil")
+                                }
                                 Button(role: .destructive) {
                                     HapticManager.warning()
                                     Task { await assetStore.deleteValuation(id: entry.id, from: asset.id) }

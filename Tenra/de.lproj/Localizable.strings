@@ -2566,6 +2566,10 @@
 "asset.estimate.failed" = "Die Anzeigen waren nicht erreichbar. Versuchen Sie es gleich noch einmal.";
 "asset.estimate.more" = "Mehr mit Tenra Pro";
 "asset.estimate.note" = "Anzeigen: %1$d (%2$@)";
+"asset.valuation.editTitle" = "Bewertung bearbeiten";
+"asset.valuation.day" = "Bewertet am";
+"asset.includeInNetWorth" = "Im Nettovermögen zählen";
+"asset.note" = "Notiz";
 "insights.netWorth.title" = "Nettovermögen";
 "insights.netWorth.subtitle" = "Geld, Vermögenswerte und Schulden";
 "insights.formula.netWorth.title" = "Nettovermögen";

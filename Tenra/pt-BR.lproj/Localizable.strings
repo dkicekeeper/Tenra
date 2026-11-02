@@ -2566,6 +2566,10 @@
 "asset.estimate.failed" = "Não foi possível acessar os anúncios. Tente de novo daqui a pouco.";
 "asset.estimate.more" = "Mais com o Tenra Pro";
 "asset.estimate.note" = "Anúncios: %1$d (%2$@)";
+"asset.valuation.editTitle" = "Editar avaliação";
+"asset.valuation.day" = "Data da avaliação";
+"asset.includeInNetWorth" = "Contar no patrimônio";
+"asset.note" = "Nota";
 "insights.netWorth.title" = "Patrimônio líquido";
 "insights.netWorth.subtitle" = "Dinheiro, bens e dívidas";
 "insights.formula.netWorth.title" = "Patrimônio líquido";

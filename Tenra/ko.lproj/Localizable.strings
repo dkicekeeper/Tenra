@@ -2566,6 +2566,10 @@
 "asset.estimate.failed" = "매물 정보를 가져오지 못했습니다. 잠시 후 다시 시도해 주세요.";
 "asset.estimate.more" = "Tenra Pro로 더 많이";
 "asset.estimate.note" = "매물 %1$d건 (%2$@)";
+"asset.valuation.editTitle" = "평가액 수정";
+"asset.valuation.day" = "평가일";
+"asset.includeInNetWorth" = "순자산에 포함";
+"asset.note" = "메모";
 "insights.netWorth.title" = "순자산";
 "insights.netWorth.subtitle" = "돈, 자산, 빚";
 "insights.formula.netWorth.title" = "순자산";

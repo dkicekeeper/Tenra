@@ -260,7 +260,12 @@ dragging and adds; no swipe actions.
   crosses, with indices of the last render. `LoansViewModel.loans` once filtered the accounts
   without sorting, so a drag saved the order and the list drew the old one again; goals, debts
   and assets move through their store's synchronous `move(_:)` (saved after), not a
-  `Task { await reorder }` a turn later. Goals and debts show three
+  `Task { await reorder }` a turn later. **A tap anywhere opens an item** (the owner's check of
+  build 65): the `.cards` lists (accounts, deposits, categories) pass `onOpen:` (DesignKit
+  8.5.0) and their rows (`AccountRow`, `CategoryRow`, `onEdit: nil`) have no button of their
+  own, so the card's padding opens it too; a row of Tenra's own in a button puts
+  `.contentShape(Rectangle())` inside the label (`MerchantChoiceRow`, the Wallet merchants,
+  the Support ID row), never after `.buttonStyle`, where it widens nothing. Goals and debts show three
   `PayoffProgressCardSkeleton`s until their store loads, replaced through `.skeletonReveal` (§7).
 - **Assets** (`AssetsListView`): a hero on `.heroBackground` with the total, its gain and its
   worth over time (`HeroSparkline`), the screen's title inline, `.heroScrollEdge()` on the scroll

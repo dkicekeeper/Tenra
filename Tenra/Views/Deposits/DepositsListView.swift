@@ -86,10 +86,11 @@ struct DepositsListView: View {
                 // A card per deposit (DesignKit 8.0.0's `CardList`): a tap opens it, a long press
                 // shows Edit and Delete; the toolbar selects, reorders and adds.
                 ScrollView {
-                    CardList(deposits, mode: mode, selection: $selection, onMove: moveDeposit) { deposit in
+                    // A tap anywhere on a card opens it (DesignKit 8.5.0's `onOpen`), its padding too.
+                    CardList(deposits, mode: mode, selection: $selection, onMove: moveDeposit, onOpen: { navigatingDeposit = $0 }) { deposit in
                         AccountRow(
                             account: deposit,
-                            onEdit: { navigatingDeposit = deposit },
+                            onEdit: nil,
                             balanceCoordinator: coordinator,
                             interestToday: depositsViewModel.interestToday(for: deposit),
                             nextPostingDate: depositsViewModel.nextPostingDate(for: deposit),

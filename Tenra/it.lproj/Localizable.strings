@@ -377,6 +377,13 @@
 "iconPicker.title" = "Seleziona immagine";
 "iconPicker.iconsTab" = "Icone";
 "iconPicker.logosTab" = "Loghi";
+"iconPicker.photoTab" = "Foto";
+"iconPicker.photoHint" = "Il tuo logo da un'immagine, ritagliata a quadrato.";
+"iconPicker.photoFailed" = "Impossibile usare l'immagine. Prova con un'altra.";
+"iconPicker.choosePhoto" = "Scegli foto";
+"imageCropper.title" = "Sposta e ridimensiona";
+"imageCropper.cancel" = "Annulla";
+"imageCropper.choose" = "Scegli";
 "iconPicker.frequentlyUsed" = "Usate di frequente";
 "iconPicker.foodAndDrinks" = "Cibo e bevande";
 "iconPicker.transport" = "Trasporti";

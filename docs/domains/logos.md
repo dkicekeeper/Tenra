@@ -2,6 +2,21 @@
 
 Logo provider chain (`Services/Core/`), `ServiceLogoRegistry`, and brand icon resolution. `Icon`, `IconSource` (`.brandService(domain)`) and `IconStyle` are DesignKit's (`DesignSupport`); DesignKit asks `LogoService` for the image through `DesignKitLogoLoader.loader`, set in `DesignKitBridge.swift`, which also adds `IconSource.brandDomain`.
 
+## The person's own pictures
+
+DesignKit's `IconPicker` has a Photo tab (DesignKit 8.5.0) once `DesignKitBridge` sets
+`DesignKitIconPhotos.save` / `.isPhoto` (the owner's request, 2026-11-02): the photo library,
+`SquareImageCropper` (drag, pinch, a 512 px square), then `UserLogoStore.save` keeps a PNG in
+Application Support/UserLogos (never the logos cache, which `cacheVersion` wipes) and the icon
+is `.brandService("photo:<uuid>")`. Every icon store keeps it as it is, with no schema change:
+accounts, deposits, loans, goals and assets (IconSource JSON), subscriptions (`brandId`),
+merchants (`MerchantLogoStore`). `LogoService.logoImage` answers a `photo:` key from the file
+(memory cache, read off the main actor) before `resolveDomain`, the disk cache and the chain,
+so it never goes to the network or becomes a lettermark; a missing file shows `Icon`'s fallback.
+Cloud backups copy the folder and a restore copies back the pictures this phone lacks
+(`CloudBackupService`, best effort). Categories stay symbols only (`allowsLogos: false`). Files
+of icons no longer used are not removed yet. Pinned by `UserLogoStoreTests`.
+
 ## Provider Chain
 
 ```

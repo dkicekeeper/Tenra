@@ -1006,6 +1006,13 @@ struct ImportTransactionPreviewRow: View {
                     targetAccount: transferAccount == nil ? nil : (isOutgoing ? transferAccount : ownAccount),
                     linkedSubcategories: transferAccount == nil ? (subcategory.map { [$0] } ?? []) : []
                 )
+                // The whole row picks the operation, not only its checkbox (the checkbox stays
+                // the VoiceOver control).
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    guard !hasNoMatchingAccount else { return }
+                    onToggle()
+                }
             }
 
             // No account in this currency: tell the user why the row cannot

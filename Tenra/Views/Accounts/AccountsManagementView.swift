@@ -85,7 +85,8 @@ struct AccountsManagementView: View {
     /// Edit and Delete; the toolbar selects several to delete and changes the order by dragging.
     private func accountsList(coordinator: BalanceCoordinator) -> some View {
         ScrollView {
-            CardList(sortedAccounts, mode: mode, selection: $selection, onMove: moveAccount) { account in
+            // A tap anywhere on a card opens it (DesignKit 8.5.0's `onOpen`), its padding too.
+            CardList(sortedAccounts, mode: mode, selection: $selection, onMove: moveAccount, onOpen: { navigatingAccount = $0 }) { account in
                 accountCard(account, coordinator: coordinator)
             }
             .screenPadding()
@@ -96,7 +97,7 @@ struct AccountsManagementView: View {
     private func accountCard(_ account: Account, coordinator: BalanceCoordinator) -> some View {
         AccountRow(
             account: account,
-            onEdit: { navigatingAccount = account },
+            onEdit: nil,
             balanceCoordinator: coordinator,
             interestToday: depositsViewModel.interestToday(for: account),
             nextPostingDate: depositsViewModel.nextPostingDate(for: account),

@@ -377,6 +377,13 @@
 "iconPicker.title" = "Виберіть зображення";
 "iconPicker.iconsTab" = "Іконки";
 "iconPicker.logosTab" = "Логотипи";
+"iconPicker.photoTab" = "Фото";
+"iconPicker.photoHint" = "Власний логотип із картинки, обрізаної під квадрат.";
+"iconPicker.photoFailed" = "Не вдалося використати картинку. Спробуйте іншу.";
+"iconPicker.choosePhoto" = "Вибрати фото";
+"imageCropper.title" = "Переміщення і масштаб";
+"imageCropper.cancel" = "Скасувати";
+"imageCropper.choose" = "Вибрати";
 "iconPicker.frequentlyUsed" = "Часто використовувані";
 "iconPicker.foodAndDrinks" = "Їжа та напої";
 "iconPicker.transport" = "Транспорт";

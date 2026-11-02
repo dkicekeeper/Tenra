@@ -377,6 +377,13 @@
 "iconPicker.title" = "Сурет таңдау";
 "iconPicker.iconsTab" = "Белгішелер";
 "iconPicker.logosTab" = "Логотиптер";
+"iconPicker.photoTab" = "Фото";
+"iconPicker.photoHint" = "Шаршыға қиылған суреттен өз логотипіңіз.";
+"iconPicker.photoFailed" = "Суретті пайдалану мүмкін болмады. Басқасын көріңіз.";
+"iconPicker.choosePhoto" = "Фото таңдау";
+"imageCropper.title" = "Жылжыту және масштаб";
+"imageCropper.cancel" = "Бас тарту";
+"imageCropper.choose" = "Таңдау";
 "iconPicker.frequentlyUsed" = "Жиі қолданылатын";
 "iconPicker.foodAndDrinks" = "Тамақ және сусындар";
 "iconPicker.transport" = "Көлік";

@@ -457,7 +457,7 @@ const renderReply: Tool = {
             draft_id: { type: "string", description: "A draft_id a draft tool returned to you; never a draft from <draft_status>, whose card is already in the chat" },
           }),
           block("open", {
-            destination: { type: "string", enum: ["category", "account", "analytics", "history", "budgets", "subscriptions"] },
+            destination: { type: "string", enum: ["category", "account", "analytics", "history", "budgets", "subscriptions", "assets", "asset"] },
             target_id: nullable({ type: "string" }),
             label: { type: "string" },
           }),

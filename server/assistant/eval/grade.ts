@@ -1,7 +1,7 @@
 // Grades one assistant turn. Universal checks run on every case; each case adds its own.
 // Every check is mechanical: the numbers the user sees must resolve from tool results.
 
-import { ACCOUNTS, CATEGORIES } from "./fixture";
+import { ACCOUNTS, ASSETS, CATEGORIES } from "./fixture";
 
 export interface ToolCall {
   id: string;
@@ -114,7 +114,7 @@ const BLOCK_FIELDS: Record<string, Record<string, (v: unknown) => boolean>> = {
   insight: { source: STRING, insight_id: STRING },
   confirm: { draft_id: STRING },
   open: {
-    destination: oneOf(["category", "account", "analytics", "history", "budgets", "subscriptions"]),
+    destination: oneOf(["category", "account", "analytics", "history", "budgets", "subscriptions", "assets", "asset"]),
     target_id: OPTIONAL_STRING,
     label: STRING,
   },
@@ -163,8 +163,9 @@ export function universalChecks(record: RunRecord, locale: "ru" | "en", prompt =
     if (block.type === "open") {
       // The app opens nothing for an id it does not know.
       const id = block.target_id;
-      const known = block.destination === "account" ? ACCOUNTS.map((a) => a.id) : CATEGORIES.map((c) => c.id);
-      const needsId = block.destination === "account" || block.destination === "category";
+      const known =
+        block.destination === "account" ? ACCOUNTS.map((a) => a.id) : block.destination === "asset" ? ASSETS.map((a) => a.id) : CATEGORIES.map((c) => c.id);
+      const needsId = block.destination === "account" || block.destination === "category" || block.destination === "asset";
       if (needsId && typeof id !== "string") broken.push(`open: ${String(block.destination)} without target_id`);
       else if (typeof id === "string" && (needsId || block.destination === "history") && !known.includes(id)) broken.push(`open: unknown ${String(block.destination)} ${id}`);
     }

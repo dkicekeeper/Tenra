@@ -168,7 +168,10 @@ enum AgentBlock {                // AgentReply.swift; source = a tool result's r
 - `open` leads to the app's screens inside the assistant's stack (`AssistantDestinationView`): a
   category or an account by id from `<app_context>` (an account opens by kind: deposit, loan,
   ordinary), History (filtered by category when an id is given), Analytics, budgets,
-  subscriptions. An id that does not exist shows an empty state, never another screen.
+  subscriptions, the assets list (its cards open an asset in the same stack) or an asset by id.
+  An id that does not exist shows an empty state, never another screen. A destination the app
+  version does not know decodes as unsupported and is left out (`LenientBlock`). Goals and debts
+  have no button.
 
 ## 5. Threads and memory
 

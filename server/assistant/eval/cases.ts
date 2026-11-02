@@ -565,4 +565,12 @@ export const CASES: EvalCase[] = [
       { kind: "blockWith", type: "open", match: (b) => b.destination === "category" && b.target_id === "cat_cafe", label: "opens the cafe category" },
     ],
   },
+  {
+    id: "ru-open-asset",
+    locale: "ru",
+    prompt: "Как дела у моей квартиры на Абая? Хочу открыть её экран",
+    checks: [
+      { kind: "blockWith", type: "open", match: (b) => b.destination === "asset" && b.target_id === "asset_flat", label: "opens the flat's screen" },
+    ],
+  },
 ];

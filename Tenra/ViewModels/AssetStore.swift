@@ -31,6 +31,8 @@ final class AssetStore {
     private(set) var assets: [Asset] = []
     /// The kept assets have been read: an empty list means there are none.
     private(set) var isLoaded: Bool
+    /// The repository's writes in the order they were asked for (SerialTaskQueue).
+    @ObservationIgnored private let writes = SerialTaskQueue()
 
     /// A loan account's remaining principal; nil when the account is gone. Set by AppCoordinator.
     @ObservationIgnored var loanBalance: (String) -> AssetValuationMath.LoanBalance? = { _ in nil }
@@ -177,6 +179,23 @@ final class AssetStore {
         return (whileHeld(asset.incomeLink.map { [$0] } ?? [], .income), whileHeld(asset.expenseLinks, .expense))
     }
 
+    /// A link's transactions among its category's (`bucket`): of `type`, and with any of the
+    /// link's subcategories unless it takes the whole category (finding A8 of the assets audit:
+    /// AppCoordinator wires it to TransactionStore's indexes).
+    static func transactions(
+        ofLink link: AssetCategoryLink,
+        type: TransactionType,
+        in bucket: [Transaction],
+        subcategories: (String) -> [String]?
+    ) -> [Transaction] {
+        bucket.filter { tx in
+            guard tx.type == type else { return false }
+            guard !link.isWholeCategory else { return true }
+            guard let linked = subcategories(tx.id) else { return false }
+            return link.subcategoryIds.contains { linked.contains($0) }
+        }
+    }
+
     /// The payments removed from the asset by hand that still exist, newest first.
     func excludedTransactions(of asset: Asset) -> [Transaction] {
         transactionsWithIds(asset.excludedTransactionIds).sorted { $0.date > $1.date }
@@ -215,8 +234,17 @@ final class AssetStore {
     }
 
     func incomeSummary(for asset: Asset, today: Date = Date()) -> AssetValuationMath.IncomeSummary {
-        let linked = linkedTransactions(of: asset)
-        return AssetValuationMath.income(
+        incomeSummary(for: asset, linked: linkedTransactions(of: asset), today: today)
+    }
+
+    /// The same from rent and upkeep already gathered (`linkedTransactions(of:)`), so a screen
+    /// that shows both gathers them once.
+    func incomeSummary(
+        for asset: Asset,
+        linked: (rent: [Transaction]?, upkeep: [Transaction]?),
+        today: Date = Date()
+    ) -> AssetValuationMath.IncomeSummary {
+        AssetValuationMath.income(
             rent: linked.rent.map { dated($0, in: asset.currency) },
             upkeep: linked.upkeep.map { dated($0, in: asset.currency) },
             summary: summary(for: asset, today: today),
@@ -285,7 +313,7 @@ final class AssetStore {
         var asset = asset
         asset.order = (assets.map(\.order).max() ?? -1) + 1
         assets.append(asset)
-        await repository?.save(asset)
+        await writes.run { [repository] in await repository?.save(asset) }
         didChange()
     }
 
@@ -293,13 +321,13 @@ final class AssetStore {
     func update(_ asset: Asset) async {
         guard let index = assets.firstIndex(where: { $0.id == asset.id }) else { return }
         assets[index] = asset
-        await repository?.save(asset)
+        await writes.run { [repository] in await repository?.save(asset) }
         didChange()
     }
 
     func delete(id: String) async {
         assets.removeAll { $0.id == id }
-        await repository?.delete(id: id)
+        await writes.run { [repository] in await repository?.delete(id: id) }
         didChange()
     }
 
@@ -334,7 +362,7 @@ final class AssetStore {
     private func save(_ ids: [String]) async {
         for id in ids {
             if let asset = assets.first(where: { $0.id == id }) {
-                await repository?.save(asset)
+                await writes.run { [repository] in await repository?.save(asset) }
             }
         }
     }

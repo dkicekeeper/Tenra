@@ -2433,6 +2433,8 @@
 "asset.updateValue" = "Wert aktualisieren";
 "asset.sell" = "Verkaufen";
 "asset.undoSale" = "Verkauf zurücknehmen";
+"asset.undoSale.title" = "Verkauf rückgängig machen?";
+"asset.undoSale.message" = "Der Vermögenswert kehrt zurück, Verkaufspreis, Datum und Notiz werden gelöscht.";
 "asset.valuationHint" = "Was ist es jetzt wert?";
 "asset.staleBadge" = "Veraltet";
 "asset.estimatedFrom" = "≈ Schätzung, bewertet am %@";

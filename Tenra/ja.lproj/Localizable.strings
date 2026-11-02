@@ -2433,6 +2433,8 @@
 "asset.updateValue" = "評価を更新";
 "asset.sell" = "売却";
 "asset.undoSale" = "売却を取り消す";
+"asset.undoSale.title" = "売却を取り消しますか？";
+"asset.undoSale.message" = "資産は保有中に戻り、売却価格・日付・メモは削除されます。";
 "asset.valuationHint" = "今の価値は？";
 "asset.staleBadge" = "古い評価";
 "asset.estimatedFrom" = "≈ 推計、%@時点の評価から";

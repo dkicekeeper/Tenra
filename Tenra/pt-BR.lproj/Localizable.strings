@@ -2433,6 +2433,8 @@
 "asset.updateValue" = "Atualizar valor";
 "asset.sell" = "Vender";
 "asset.undoSale" = "Desfazer venda";
+"asset.undoSale.title" = "Desfazer a venda?";
+"asset.undoSale.message" = "O bem volta para os seus bens, e o preço, a data e a nota da venda são apagados.";
 "asset.valuationHint" = "Quanto vale agora?";
 "asset.staleBadge" = "Desatualizado";
 "asset.estimatedFrom" = "≈ Estimativa, avaliado em %@";

@@ -2433,6 +2433,8 @@
 "asset.updateValue" = "Оновити оцінку";
 "asset.sell" = "Продати";
 "asset.undoSale" = "Скасувати продаж";
+"asset.undoSale.title" = "Скасувати продаж?";
+"asset.undoSale.message" = "Актив повернеться до решти, а ціну, дату й нотатку продажу буде видалено.";
 "asset.valuationHint" = "Скільки коштує зараз?";
 "asset.staleBadge" = "Застаріла";
 "asset.estimatedFrom" = "≈ Розрахунок, оцінка від %@";

@@ -209,6 +209,47 @@ struct AssetsTests {
         #expect(AssetValuationMath.chartHistory(of: Asset(name: "Watch", kind: .other, currency: "KZT", purchasePrice: 1), calendar: calendar).isEmpty)
     }
 
+    /// The form's and Ten's rules (finding A7): a value typed is a valuation of today, except a
+    /// new asset bought today at that price; a sold asset's is its sale price; a new currency
+    /// moves every amount, or none of them without a rate.
+    @Test func aValueTypedIsAValuationOfTodayButNotThePurchase() {
+        let today = Self.day(2026, 11, 2)
+        let new = Asset(name: "Car", kind: .vehicle, currency: "KZT", purchaseDate: today, purchasePrice: 10_000_000)
+        #expect(AssetEditing.applying(value: 10_000_000, to: new, isNew: true, today: today, calendar: Self.calendar).valuations.isEmpty)
+        #expect(AssetEditing.applying(value: 10_500_000, to: new, isNew: true, today: today, calendar: Self.calendar).valuations.map(\.value) == [10_500_000])
+        #expect(AssetEditing.applying(value: 10_000_000, to: new, isNew: false, today: today, calendar: Self.calendar).valuations.count == 1)
+        #expect(AssetEditing.applying(value: 9_000_000, to: new, isNew: true, today: today, source: .assistant, calendar: Self.calendar).valuations.first?.source == .assistant)
+
+        var sold = new
+        sold.valuations = [AssetValuation(id: "sale", date: today, value: 9_000_000, source: .sale)]
+        sold.soldAt = today
+        #expect(AssetEditing.applying(value: 9_500_000, to: sold, isNew: false, today: today, calendar: Self.calendar).valuations.map(\.value) == [9_500_000])
+
+        let flat = Self.flat()
+        let moved = AssetEditing.moved(flat) { $0 / 500 }
+        #expect(moved?.purchasePrice == 48_000)
+        #expect(moved?.valuations.map(\.value) == [140_000])
+        #expect(AssetEditing.moved(flat) { _ in nil } == nil)
+    }
+
+    /// A link's transactions (finding A8): its category's of its type, and with one of its
+    /// subcategories unless it takes the whole category.
+    @Test func aLinkTakesItsCategorysTransactionsOfItsType() {
+        func tx(_ id: String, _ type: TransactionType) -> Transaction {
+            Transaction(id: id, date: "2026-10-01", description: "", amount: 1, currency: "KZT", type: type, category: "Home", accountId: "card")
+        }
+        let bucket = [tx("repairs", .expense), tx("tax", .expense), tx("refund", .income)]
+        let subcategories: [String: [String]] = ["repairs": ["sub_repairs"], "tax": ["sub_tax"]]
+        let whole = AssetStore.transactions(ofLink: AssetCategoryLink(categoryId: "home"), type: .expense, in: bucket) { subcategories[$0] }
+        #expect(whole.map(\.id) == ["repairs", "tax"])
+        let repairs = AssetStore.transactions(
+            ofLink: AssetCategoryLink(categoryId: "home", subcategoryIds: ["sub_repairs"]), type: .expense, in: bucket
+        ) { subcategories[$0] }
+        #expect(repairs.map(\.id) == ["repairs"])
+        let rent = AssetStore.transactions(ofLink: AssetCategoryLink(categoryId: "home"), type: .income, in: bucket) { subcategories[$0] }
+        #expect(rent.map(\.id) == ["refund"])
+    }
+
     // MARK: - AssetStore
 
     @Test func totalsCountHeldAssetsAtTheirShare() async {

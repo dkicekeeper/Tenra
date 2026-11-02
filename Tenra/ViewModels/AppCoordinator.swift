@@ -570,13 +570,13 @@ class AppCoordinator {
         // subcategories), from the category index.
         assetStore.transactionsOfLink = { [weak self] link, type in
             guard let self, let category = self.transactionStore.categoryById[link.categoryId] else { return [] }
-            let bucket = self.transactionStore.transactionsByCategoryName[category.name] ?? []
-            return bucket.filter { tx in
-                guard tx.type == type else { return false }
-                guard !link.isWholeCategory else { return true }
-                guard let linked = self.transactionStore.subcategoryIdsByTransactionId[tx.id] else { return false }
-                return link.subcategoryIds.contains { linked.contains($0) }
-            }
+            let store = self.transactionStore
+            return AssetStore.transactions(
+                ofLink: link,
+                type: type,
+                in: store.transactionsByCategoryName[category.name] ?? [],
+                subcategories: { store.subcategoryIdsByTransactionId[$0] }
+            )
         }
         // Net worth counts the assets and the personal debts: Insights reads them when a pass
         // starts, and recomputes when they change.

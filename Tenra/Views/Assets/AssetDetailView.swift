@@ -40,6 +40,8 @@ struct AssetDetailView: View {
     /// A valuation changed in place (AssetValuationEditView).
     @State private var editingValuation: AssetValuation?
     @State private var showingDelete = false
+    /// "Undo sale" asks first: it drops the sale's price, day and note (finding A14).
+    @State private var showingUndoSale = false
     /// "Link payments", "Remove payments" or "Removed payments" (the owner's car, 2026-11-02).
     @State private var paymentsScreen: PaymentsScreen?
 
@@ -54,6 +56,28 @@ struct AssetDetailView: View {
     @State private var celebrations = 0
     /// The growth a year depends on the day: moved at midnight.
     @State private var today = Date()
+    /// The rent and upkeep and what they come to, gathered once per change rather than on every
+    /// pass of the body (finding A6 of the assets audit).
+    @State private var linked = Linked()
+
+    struct Linked {
+        /// Newest first.
+        var transactions: [Transaction] = []
+        var income = AssetValuationMath.IncomeSummary(hasRent: false)
+        /// Gathered at least once: until then the "no rent yet" banner waits.
+        var isLoaded = false
+    }
+
+    /// What the rent and upkeep depend on: the transactions, the categories and their
+    /// subcategory links, the rates, the asset and the day.
+    private struct LinkedKey: Hashable {
+        let asset: Asset
+        let transactions: Int
+        let categories: Int
+        let subcategories: Int
+        let rates: Int
+        let day: Date
+    }
 
     private var appSettings: AppSettings { coordinator.transactionsViewModel.appSettings }
 
@@ -125,9 +149,16 @@ struct AssetDetailView: View {
         let _ = coordinator.transactionStore.categoriesMutationVersion
         let _ = coordinator.transactionStore.subcategoriesMutationVersion
         let summary = assetStore.summary(for: asset, today: today)
-        let income = assetStore.incomeSummary(for: asset, today: today)
-        let linked = assetStore.linkedTransactions(of: asset)
-        let linkedTransactions = ((linked.rent ?? []) + (linked.upkeep ?? [])).sorted { $0.date > $1.date }
+        let income = linked.income
+        let linkedTransactions = linked.transactions
+        let linkedKey = LinkedKey(
+            asset: asset,
+            transactions: coordinator.transactionStore.mutationVersion,
+            categories: coordinator.transactionStore.categoriesMutationVersion,
+            subcategories: coordinator.transactionStore.subcategoriesMutationVersion,
+            rates: coordinator.transactionStore.currencyRatesVersion,
+            day: Calendar.current.startOfDay(for: today)
+        )
         let history = AssetValuationMath.history(of: asset)
         let isStale = AssetValuationMath.isStale(asset, today: today)
         EntityDetailScaffold(
@@ -146,7 +177,10 @@ struct AssetDetailView: View {
                 ? ActionConfig(
                     title: String(localized: "asset.undoSale"),
                     systemImage: "arrow.uturn.backward",
-                    action: { undoSale(asset) }
+                    action: {
+                        HapticManager.warning()
+                        showingUndoSale = true
+                    }
                 )
                 : ActionConfig(
                     title: String(localized: "asset.sell"),
@@ -195,7 +229,7 @@ struct AssetDetailView: View {
                     )
                     .screenPadding()
                 }
-                if let category = rentCategory(of: asset), !income.hasRent, !asset.isSold {
+                if linked.isLoaded, let category = rentCategory(of: asset), !income.hasRent, !asset.isSold {
                     // A rent category without rent: the first payment, made monthly in the form.
                     StatusBanner(
                         String(format: String(localized: "asset.rent.empty"), category.name),
@@ -351,6 +385,14 @@ struct AssetDetailView: View {
                 .environment(timeFilterManager)
             }
         }
+        .alert(String(localized: "asset.undoSale.title"), isPresented: $showingUndoSale) {
+            Button(String(localized: "asset.undoSale"), role: .destructive) {
+                undoSale(asset)
+            }
+            Button(String(localized: "button.cancel"), role: .cancel) {}
+        } message: {
+            Text(String(localized: "asset.undoSale.message"))
+        }
         .alert(String(localized: "asset.deleteTitle"), isPresented: $showingDelete) {
             Button(String(localized: "button.delete"), role: .destructive) {
                 HapticManager.warning()
@@ -366,6 +408,14 @@ struct AssetDetailView: View {
         }
         .task {
             await coordinator.checkAssetEstimates()
+        }
+        .task(id: linkedKey) {
+            let gathered = assetStore.linkedTransactions(of: asset)
+            linked = Linked(
+                transactions: ((gathered.rent ?? []) + (gathered.upkeep ?? [])).sorted { $0.date > $1.date },
+                income: assetStore.incomeSummary(for: asset, linked: gathered, today: today),
+                isLoaded: true
+            )
         }
     }
 

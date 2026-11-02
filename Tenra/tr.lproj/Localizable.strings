@@ -2433,6 +2433,8 @@
 "asset.updateValue" = "Değeri güncelle";
 "asset.sell" = "Sat";
 "asset.undoSale" = "Satışı geri al";
+"asset.undoSale.title" = "Satış geri alınsın mı?";
+"asset.undoSale.message" = "Varlık geri döner; satış fiyatı, tarihi ve notu silinir.";
 "asset.valuationHint" = "Şimdi ne kadar ediyor?";
 "asset.staleBadge" = "Eski";
 "asset.estimatedFrom" = "≈ Tahmin, değerleme: %@";

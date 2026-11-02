@@ -428,7 +428,10 @@ struct AssetEditView: View {
         // one at today's rate, or the currency stays when there is no rate to move them at.
         result.currency = currency
         if let asset, asset.currency != currency {
-            if let moved = Self.amounts(of: asset, in: currency) {
+            let moved = AssetEditing.moved(asset) { amount in
+                CurrencyConverter.convertSync(amount: amount, from: asset.currency, to: currency)
+            }
+            if let moved {
                 result.valuations = moved.valuations
                 result.purchasePrice = moved.purchasePrice
             } else {
@@ -443,43 +446,11 @@ struct AssetEditView: View {
         result.purchaseDate = result.purchasePrice == nil ? nil : Calendar.current.startOfDay(for: purchaseDate)
 
         if let value, valueText != initialValueText {
-            if result.isSold, let index = result.valuations.lastIndex(where: { $0.source == .sale }) {
-                // A sold asset's value is its sale price.
-                result.valuations[index].value = value
-            } else if asset != nil || !isPurchaseToday(value: value, price: result.purchasePrice, date: result.purchaseDate, today: today) {
-                result.valuations.append(AssetValuation(date: today, value: value, source: .manual))
-            }
+            result = AssetEditing.applying(value: value, to: result, isNew: asset == nil, today: today)
         }
         HapticManager.success()
         onSave(result)
         dismiss()
-    }
-
-    /// A new asset bought today at the value typed: the purchase is the only point.
-    private func isPurchaseToday(value: Double, price: Double?, date: Date?, today: Date) -> Bool {
-        guard let price, let date else { return false }
-        return abs(price - value) < PersonalDebt.centTolerance && Calendar.current.isDate(date, inSameDayAs: today)
-    }
-
-    /// The asset's valuations and purchase price in another currency at today's rate; nil when
-    /// one of them has no rate.
-    private static func amounts(of asset: Asset, in currency: String) -> (valuations: [AssetValuation], purchasePrice: Double?)? {
-        func convert(_ amount: Double) -> Double? {
-            CurrencyConverter.convertSync(amount: amount, from: asset.currency, to: currency).map { ($0 * 100).rounded() / 100 }
-        }
-        var valuations: [AssetValuation] = []
-        for valuation in asset.valuations {
-            guard let value = convert(valuation.value) else { return nil }
-            var copy = valuation
-            copy.value = value
-            valuations.append(copy)
-        }
-        var price: Double?
-        if let purchase = asset.purchasePrice {
-            guard let converted = convert(purchase) else { return nil }
-            price = converted
-        }
-        return (valuations, price)
     }
 }
 

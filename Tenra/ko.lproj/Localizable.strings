@@ -2433,6 +2433,8 @@
 "asset.updateValue" = "가치 업데이트";
 "asset.sell" = "판매";
 "asset.undoSale" = "판매 취소";
+"asset.undoSale.title" = "판매를 취소할까요?";
+"asset.undoSale.message" = "자산이 다시 보유 목록으로 돌아가고 판매 가격, 날짜, 메모는 삭제됩니다.";
 "asset.valuationHint" = "지금 가치는 얼마인가요?";
 "asset.staleBadge" = "오래됨";
 "asset.estimatedFrom" = "≈ 추정, %@ 평가 기준";

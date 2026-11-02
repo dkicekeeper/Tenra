@@ -261,11 +261,7 @@ extension FinanceToolkit {
         // What it is worth now is a valuation of today, unless it is the price of a purchase
         // made today (as the form does).
         if let value {
-            let boughtToday = price.map { abs($0 - value) < PersonalDebt.centTolerance } == true
-                && purchaseDate.map { calendar.isDate($0, inSameDayAs: now()) } == true
-            if !boughtToday {
-                asset.valuations = [AssetValuation(date: now(), value: value, source: .assistant)]
-            }
+            asset = AssetEditing.applying(value: value, to: asset, isNew: true, today: now(), source: .assistant, calendar: calendar)
         }
         let summary = AssetValuationMath.summary(of: asset, today: now(), calendar: calendar)
         let id = drafts.add([.asset(asset)])

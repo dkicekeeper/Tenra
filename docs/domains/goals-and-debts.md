@@ -24,7 +24,8 @@ people and has no account.
   (`Services/Goals/`) and `DebtRepository` (`Services/Debts/`), outside the
   `DataRepositoryProtocol` facade like the assistant's threads and facts. A goal's
   contributions and a debt's repayments are JSON on their row; the icon is `IconSource` JSON as
-  on `AccountEntity`.
+  on `AccountEntity`. The stores write one after another in the order asked for (`SerialTaskQueue`),
+  each on a fresh background context.
 - Backups carry them (the store file is copied whole), "delete all data" destroys them with the
   store, and both stores reload on `CoreDataStack.storeDidResetNotification`.
 - Amounts are Doubles, so a debt counts as covered and a goal as reached within half a cent

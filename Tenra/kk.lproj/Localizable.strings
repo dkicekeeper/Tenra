@@ -2433,6 +2433,8 @@
 "asset.updateValue" = "Бағалауды жаңарту";
 "asset.sell" = "Сату";
 "asset.undoSale" = "Сатуды болдырмау";
+"asset.undoSale.title" = "Сатуды болдырмау керек пе?";
+"asset.undoSale.message" = "Актив қайтадан активтерге оралады, ал сату бағасы, күні мен жазбасы жойылады.";
 "asset.valuationHint" = "Қазір қанша тұрады?";
 "asset.staleBadge" = "Ескірген";
 "asset.estimatedFrom" = "≈ Есеп, бағалау: %@";

@@ -2433,6 +2433,8 @@
 "asset.updateValue" = "Обновить оценку";
 "asset.sell" = "Продать";
 "asset.undoSale" = "Отменить продажу";
+"asset.undoSale.title" = "Отменить продажу?";
+"asset.undoSale.message" = "Актив вернётся к остальным, а цена, дата и заметка продажи будут удалены.";
 "asset.valuationHint" = "Сколько стоит сейчас?";
 "asset.staleBadge" = "Устарела";
 "asset.estimatedFrom" = "≈ Расчёт, оценка от %@";

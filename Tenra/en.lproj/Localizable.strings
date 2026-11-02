@@ -2433,6 +2433,8 @@
 "asset.updateValue" = "Update value";
 "asset.sell" = "Sell";
 "asset.undoSale" = "Undo sale";
+"asset.undoSale.title" = "Undo the sale?";
+"asset.undoSale.message" = "The asset goes back to your assets, and the sale price, day and note are deleted.";
 "asset.valuationHint" = "What is it worth now?";
 "asset.staleBadge" = "Out of date";
 "asset.estimatedFrom" = "≈ Estimate, valued %@";

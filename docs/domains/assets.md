@@ -128,6 +128,10 @@ and the gain in the base currency; `get_net_worth` gives net worth's parts and i
 (the monthly net worth insight's points, when computed). `draft_asset` (Pro) files a new asset,
 its value now as a valuation of today; `draft_asset_valuation` a value, or an area times a price
 per unit from listings, multiplied on the phone. Both are `source: .assistant`, saved and undone
-through `AssetStore` on the confirm card. "Ask Ten" is in an asset's "…" menu ("How much is it
-worth now?", "Does it pay off?"). The out-of-date message keeps its button to the valuation
+through `AssetStore` on the confirm card. `estimate_asset_value` values a held asset by comparable
+listings found by a web search on Ten's server (`POST /v1/valuation`, [assistant.md](assistant.md)
+§8; off until the version that ships it): Ten asks for what the kind needs (a flat's city,
+district, area and rooms; a car's make, model, year and mileage), shows the median and range in
+the asset's currency against its value in the app, and offers `draft_asset_valuation` with it.
+"Ask Ten" is in an asset's "…" menu ("How much is it worth now?", "Does it pay off?"). The out-of-date message keeps its button to the valuation
 sheet: the quickest way to a new value.

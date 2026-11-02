@@ -81,7 +81,7 @@ database, only the results of the tools it asked for.
 
 | Group | Tools | Built on |
 |---|---|---|
-| Read | `get_spending_summary`, `compare_periods`, `search_transactions`, `get_accounts`, `get_budgets`, `list_recurring`, `get_insights` (+ health score), `get_goals`, `get_debts`, `get_assets`, `get_net_worth`, `convert_currency` | `SummaryCalculator` / `TransactionType.summaryContribution`, `TransactionQueryService`, `BalanceCoordinator`, `CategoryBudgetService.budgetProgress`, `InsightsService`, `SpendingQueryService`, `AssetValuationMath` through `AssetStore`, `NetWorthCalculator` (and the net worth insight's months) |
+| Read | `get_spending_summary`, `compare_periods`, `search_transactions`, `get_accounts`, `get_budgets`, `list_recurring`, `get_insights` (+ health score), `get_goals`, `get_debts`, `get_assets`, `get_net_worth`, `estimate_asset_value`, `convert_currency` | `SummaryCalculator` / `TransactionType.summaryContribution`, `TransactionQueryService`, `BalanceCoordinator`, `CategoryBudgetService.budgetProgress`, `InsightsService`, `SpendingQueryService`, `AssetValuationMath` through `AssetStore`, `NetWorthCalculator` (and the net worth insight's months), `POST /v1/valuation` through `AgentServerClient` (§8) |
 | Draft | `draft_transactions`, `draft_budget`, `draft_recurring`, `draft_goal`, `draft_goal_contribution`, `draft_debt`, `draft_debt_repayment`, `draft_asset`, `draft_asset_valuation`, `draft_fact` | `TransactionDraftService.makeDraft` → `commit`, `CategoriesViewModel.setBudget`, `SubscriptionCreationService` + `linkSubcategoriesToTransaction` (red flag 5), `GoalStore`, `DebtStore`, `AssetStore`, `AgentMemory` |
 | Plan | `forecast_balance` (a daily limit until a date, what-ifs), `simulate_loan` (refinancing, early repayment, an extra payment each month), `project_savings` | the Forecasting insight, `RecurringStore`, `LoanInfo` + `LoanWhatIf`, `SavingsProjection` |
 
@@ -292,7 +292,8 @@ The app runs the agent loop, because the tools run on the phone: one server call
 - The first message of a thread carries `<app_context>`: today's date, locale, base currency,
   accounts and categories with ids, the held assets with ids (always a line, "none" when empty: it
   tells the prompt this app version has assets, and an older one, with no line, gets no asset
-  tools), the facts, the goals and open debts (format: `eval/fixture.ts`, `appContext`). A new one
+  tools), `valuation: listings` (this version runs `estimate_asset_value`), the facts, the goals
+  and open debts (format: `eval/fixture.ts`, `appContext`). A new one
   is sent when the date or the lists change.
 - Errors before the stream: 400 `invalid`, 401 `user`, 401 `attest` (with `reason`), 429 `quota`
   or `busy`, 451 `region_unavailable` (the app shows `assistant.error.region`), 502
@@ -360,6 +361,17 @@ What an asset is worth by comparable listings found with web search, in any coun
   never counted), `excluded` (counts by reason), `searched_at`, `searches`, `model`, `prompt`
   (`VALUATION_PROMPT_VERSION`), `tier`, `quota`. Errors: 503 `disabled`, 429 `quota` or `busy`,
   422 `refused`, 502 `upstream` with `code` and `retryable`.
+- In the chat it is Ten's read tool `estimate_asset_value` (`FinanceToolkit+Assets.swift`), which
+  the server offers only while `VALUATION_ENABLED` is on (`toolsFor`; the name stays valid in a
+  history) and the prompt only when `<app_context>` has `valuation: listings` (this app version
+  and later). The phone sends the asset's kind, the country (the model's, else the phone's
+  region) and the fields the model gave from a fixed list, never the name; it returns the value,
+  the quartiles and the same in the asset's currency, `current_value` and `change_percent`,
+  `count`, `accuracy`, `sites` and up to six listings without links, `estimates_left`; the
+  server's refusals (off, the month's limit, a missing field, the region, busy) come back as
+  what to tell the user and the way to value it instead (the area times a price per unit). Ten
+  then offers `draft_asset_valuation` with the value. The chat step reads "Looking at listings"
+  (`AssistantStep.valuing`, `assistant.step.valuing`).
 - Its model is its own (`VALUATION_MODEL`, `VALUATION_EFFORT`), chosen by the valuation eval
   (§12): Haiku 5.5, and `VALUATION_FALLBACK_MODEL` (Sonnet 5.5) asked again when Haiku finds
   too few listings or declines, its result then standing (`valuate`; the response's `model` and
@@ -436,8 +448,10 @@ spending, no em dashes, in all 11 languages.
 - **Pro for a person on the server**: the server sees only RevenueCat, so a Founding User (kept on
   the phone) needs `pro` granted there (Actions → RevenueCat → `grant`).
 - **Eval** (`server/assistant/eval/`): a synthetic user (`fixture.ts`; never real statements), a
-  tool simulator, 49 cases in Russian and English (`cases.ts`; assets: `ru-asset-new`,
-  `ru-asset-valuation`, `ru-asset-worth-asks`, `ru-net-worth`, `en-rental-yield`), checks: the right tool, figures
+  tool simulator, 51 cases in Russian and English (`cases.ts`; assets: `ru-asset-new`,
+  `ru-asset-valuation`, `ru-asset-worth-asks`, `ru-asset-worth-listings`, `en-car-worth-listings`,
+  `ru-net-worth`, `en-rental-yield`; the eval offers `estimate_asset_value` and the fixture's
+  context has its line), checks: the right tool, figures
   only by reference, no amounts in text, a draft instead of "saved", the language, prompt
   injection in a note, `blocks_decode`, `no_refusal`, `noPick`. A prompt change bumps
   `PROMPT_VERSION` and runs the eval before the deploy.

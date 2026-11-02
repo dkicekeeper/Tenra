@@ -2274,6 +2274,7 @@
 /* Ten and goals and debts */
 "assistant.step.plans" = "Hedeflere ve borçlara bakıyorum…";
 "assistant.step.assets" = "Varlıklara bakıyorum…";
+"assistant.step.valuing" = "İlanlara bakıyorum…";
 "assistant.topic.asset.worth" = "“%@” şimdi ne kadar eder?";
 "assistant.topic.asset.payoff" = "“%@” kendini amorti ediyor mu?";
 "assistant.notice.debt.owedToMe" = "Yarın %@ geri gelmeli";

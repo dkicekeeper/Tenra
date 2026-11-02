@@ -33,6 +33,9 @@ final class FinanceToolkit: AgentToolExecuting {
     let goals: GoalStore?
     let debts: DebtStore?
     let assets: AssetStore?
+    /// `estimate_asset_value` asks the server (POST /v1/valuation); without it the tool is not
+    /// available.
+    let valuation: AgentValuationTransport?
     /// Debts and assets are Tenra Pro: `draft_debt` and `draft_asset` ask before filing one.
     let isPro: () -> Bool
     private let learned: VoiceLearningStore
@@ -50,6 +53,7 @@ final class FinanceToolkit: AgentToolExecuting {
     ///     answers "not available".
     ///   - goals, debts, assets: the savings goals, personal debts and assets; without them
     ///     their tools answer "not available".
+    ///   - valuation: the server's valuation from listings (`estimate_asset_value`).
     ///   - isPro: whether the person has Tenra Pro (new debts and assets need it).
     ///   - learned: the accounts the person confirmed per category in the voice flow.
     ///   - suggestAccount: the account the history suggests for a category (by name), as the
@@ -63,6 +67,7 @@ final class FinanceToolkit: AgentToolExecuting {
         goals: GoalStore? = nil,
         debts: DebtStore? = nil,
         assets: AssetStore? = nil,
+        valuation: AgentValuationTransport? = nil,
         isPro: @escaping () -> Bool = { true },
         learned: VoiceLearningStore? = nil,
         suggestAccount: ((String) -> String?)? = nil,
@@ -77,6 +82,7 @@ final class FinanceToolkit: AgentToolExecuting {
         self.goals = goals
         self.debts = debts
         self.assets = assets
+        self.valuation = valuation
         self.isPro = isPro
         self.learned = learned ?? .shared
         self.suggestAccount = suggestAccount
@@ -116,6 +122,7 @@ final class FinanceToolkit: AgentToolExecuting {
             case "get_net_worth": return try await netWorthResult()
             case "draft_asset": return try await draftAsset(input)
             case "draft_asset_valuation": return try await draftAssetValuation(input)
+            case "estimate_asset_value": return try await estimateAssetValue(input)
             case _ where Self.laterPhaseTools.contains(name):
                 return .failure(Self.notYet(name))
             default:

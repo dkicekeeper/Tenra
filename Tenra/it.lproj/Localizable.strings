@@ -2274,6 +2274,7 @@
 /* Ten and goals and debts */
 "assistant.step.plans" = "Guardo obiettivi e debiti…";
 "assistant.step.assets" = "Guardo i beni…";
+"assistant.step.valuing" = "Guardo gli annunci…";
 "assistant.topic.asset.worth" = "Quanto vale «%@» adesso?";
 "assistant.topic.asset.payoff" = "«%@» rende?";
 "assistant.notice.debt.owedToMe" = "Domani devono restituirti %@";

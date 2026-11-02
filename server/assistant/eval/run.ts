@@ -46,7 +46,8 @@ interface Outcome {
 }
 
 async function runCase(client: Anthropic, model: string, effort: Effort, testCase: EvalCase): Promise<{ outcome: Outcome; transcript: MessageParam[] }> {
-  const config = readConfig({ ASSISTANT_MODEL: model, ASSISTANT_EFFORT: effort });
+  // estimate_asset_value is offered, as it will be once POST /v1/valuation is on.
+  const config = readConfig({ ASSISTANT_MODEL: model, ASSISTANT_EFFORT: effort, VALUATION_ENABLED: "true" });
   const messages: MessageParam[] = [
     {
       role: "user",

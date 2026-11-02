@@ -2274,6 +2274,7 @@
 /* Ten and goals and debts */
 "assistant.step.plans" = "Дивлюся цілі та борги…";
 "assistant.step.assets" = "Дивлюся активи…";
+"assistant.step.valuing" = "Дивлюся оголошення…";
 "assistant.topic.asset.worth" = "Скільки зараз коштує «%@»?";
 "assistant.topic.asset.payoff" = "Чи окупається «%@»?";
 "assistant.notice.debt.owedToMe" = "Завтра мають повернути %@";

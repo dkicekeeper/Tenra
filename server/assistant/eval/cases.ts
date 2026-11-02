@@ -368,8 +368,38 @@ export const CASES: EvalCase[] = [
     locale: "ru",
     prompt: "Сколько сейчас может стоить моя квартира на Абая?",
     checks: [
-      // No market prices: it asks for the area and listings, never values the flat itself.
-      { kind: "notCalled", tools: ["draft_asset_valuation", "draft_asset"] },
+      // It asks for what the estimate needs (the city, the district, the area, the rooms) before
+      // spending one, and never values the flat itself.
+      { kind: "notCalled", tools: ["draft_asset_valuation", "draft_asset", "estimate_asset_value"] },
+    ],
+  },
+  {
+    id: "ru-asset-worth-listings",
+    locale: "ru",
+    prompt: "Сколько сейчас может стоить моя квартира на Абая? Двушка 64 метра в Бостандыкском районе Алматы, дом 2012 года, ремонт хороший",
+    checks: [
+      {
+        kind: "toolArgs",
+        tool: "estimate_asset_value",
+        match: (i) => i.asset === "asset_flat" && i.area_m2 === 64 && i.rooms === 2 && /алмат|almaty/i.test(String(i.city ?? "")),
+        label: "the flat estimated from listings with its area, rooms and city",
+      },
+      { kind: "metricFrom", tool: "estimate_asset_value", pathEnds: "value_in_asset_currency", label: "the value from the estimate" },
+      { kind: "notCalled", tools: ["draft_asset"] },
+    ],
+  },
+  {
+    id: "en-car-worth-listings",
+    locale: "en",
+    prompt: "What could I sell my Camry for? It's a 2019 with 110,000 km, 2.5 automatic",
+    checks: [
+      {
+        kind: "toolArgs",
+        tool: "estimate_asset_value",
+        match: (i) => i.asset === "asset_car" && i.year === 2019 && i.mileage_km === 110_000,
+        label: "the car estimated from listings with its year and mileage",
+      },
+      { kind: "metricFrom", tool: "estimate_asset_value", pathEnds: "value_in_asset_currency", label: "the value from the estimate" },
     ],
   },
   {

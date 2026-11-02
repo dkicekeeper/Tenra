@@ -140,12 +140,18 @@ class AppCoordinator {
         guard let url = AgentConfig.serverURL else { return nil }
         observeStoreResetForAssistant()
         let attestation = AgentAttestation.isSupported ? AgentAttestation(baseURL: url) : nil
-        var client: AgentTransport = AgentServerClient(baseURL: url, attestation: attestation) {
+        let server = AgentServerClient(baseURL: url, attestation: attestation) {
             await MainActor.run { PremiumManager.shared.appUserID }
         }
+        var client: AgentTransport = server
+        // estimate_asset_value asks the same server (POST /v1/valuation).
+        var valuation: AgentValuationTransport? = server
         #if DEBUG
         // Screenshot capture: no App Attest and no network in the Simulator.
-        if ScreenshotDemoMode.isActive { client = ScreenshotDemoTransport(reply: .current()) }
+        if ScreenshotDemoMode.isActive {
+            client = ScreenshotDemoTransport(reply: .current())
+            valuation = nil
+        }
         #endif
         let store = transactionStore
         let accounts = accountsViewModel
@@ -170,6 +176,7 @@ class AppCoordinator {
             goals: goals,
             debts: debts,
             assets: assets,
+            valuation: valuation,
             isPro: { PremiumManager.shared.isPro },
             suggestAccount: { category in accounts.suggestedAccount(forCategory: category, transactions: store.transactions)?.id }
         )

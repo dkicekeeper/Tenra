@@ -790,6 +790,51 @@ function draftAsset(input: Input) {
   };
 }
 
+// estimate_asset_value as the phone answers it (FinanceToolkit+Assets.swift) after POST
+// /v1/valuation: the fields each kind needs or the server's 400, then a fixed market answer.
+function estimateAssetValue(input: Input) {
+  const ref = (str(input, "asset", true) ?? "").trim();
+  const asset = ASSETS.find((a) => a.id === ref);
+  if (!asset) throw new ToolInputError(`Unknown asset ${ref}. Use an asset id from <app_context>.`);
+  const missing = (key: string, what: string) => {
+    if (input[key] === undefined || input[key] === null) throw new ToolInputError(`${key} is needed (${what}): ask the user for it, then call estimate_asset_value again.`);
+  };
+  if (asset.kind === "apartment") {
+    missing("city", "the city");
+    missing("area_m2", "the area in square metres");
+  } else if (asset.kind === "vehicle") {
+    missing("make", "the make");
+    missing("model", "the model");
+    missing("year", "the model year");
+  }
+  const market =
+    asset.kind === "apartment"
+      ? { value: 72_500_000, low: 67_800_000, high: 76_100_000, count: 14, accuracy: "medium", sites: ["krisha.kz", "olx.kz"] }
+      : { value: 13_400_000, low: 12_700_000, high: 13_900_000, count: 9, accuracy: "medium", sites: ["kolesa.kz"] };
+  return {
+    status: "ok",
+    asset_id: asset.id,
+    name: asset.name[caseLocale],
+    market_currency: "KZT",
+    value: market.value,
+    low: market.low,
+    high: market.high,
+    asset_currency: asset.currency,
+    value_in_asset_currency: market.value,
+    low_in_asset_currency: market.low,
+    high_in_asset_currency: market.high,
+    current_value: asset.value,
+    change_percent: round(((market.value - asset.value) / asset.value) * 100),
+    count: market.count,
+    accuracy: market.accuracy,
+    basis: asset.kind === "apartment" ? "per_unit" : "price",
+    sites: market.sites,
+    asking_prices: true,
+    searched_at: `${TODAY}T10:00:00Z`,
+    estimates_left: 29,
+  };
+}
+
 function draftAssetValuation(input: Input) {
   const ref = (str(input, "asset", true) ?? "").trim();
   const asset = ASSETS.find((a) => a.id === ref || a.name.ru.toLowerCase() === ref.toLowerCase() || a.name.en.toLowerCase() === ref.toLowerCase());
@@ -865,6 +910,7 @@ const HANDLERS: Record<string, (input: Input) => unknown> = {
   get_net_worth: getNetWorth,
   draft_asset: draftAsset,
   draft_asset_valuation: draftAssetValuation,
+  estimate_asset_value: estimateAssetValue,
   convert_currency: convertCurrency,
 };
 

@@ -10,7 +10,9 @@
 //  `draft_asset_valuation` file drafts the person saves on the confirm card, through AssetStore.
 //  New assets are Tenra Pro: without it `draft_asset` says so. A valuation can come from an area
 //  and a price per unit the person found in listings: the phone multiplies them, never the
-//  model. Input shapes are the contract in server/assistant/src/tools.ts.
+//  model; or from `estimate_asset_value`, which asks the server to find comparable listings
+//  (POST /v1/valuation, AgentValuationTransport) and gives the median and range in the asset's
+//  currency. Input shapes are the contract in server/assistant/src/tools.ts.
 //
 
 import Foundation
@@ -343,6 +345,144 @@ extension FinanceToolkit {
             "note": note.map(JSONValue.string) ?? .null,
             "saved": false,
         ])
+    }
+
+    // MARK: - Estimate from listings
+
+    /// The asset fields `POST /v1/valuation` reads (server/assistant/src/valuation.ts), passed on
+    /// as the model gave them: the server checks each against the asset's kind. The name never
+    /// goes, nor anything else the model adds.
+    static let valuationFields: Set<String> = [
+        "city", "region", "district", "complex", "area_m2", "rooms", "year_built", "building", "floor", "floors",
+        "condition", "land_ares", "land_use", "utilities", "commercial_type", "make", "model", "generation", "year",
+        "engine_l", "fuel", "transmission", "drive", "mileage_km", "customs_cleared", "steering", "description",
+    ]
+
+    /// Listings of an estimate the model sees.
+    static let valuationListingsListed = 6
+
+    /// `estimate_asset_value`: what a held asset is worth by comparable listings, from the server
+    /// (a web search, the median and quartiles in code), in the market's currency and in the
+    /// asset's, against its value in the app. Nothing is saved: the model offers
+    /// `draft_asset_valuation` with the value.
+    func estimateAssetValue(_ input: JSONValue) async throws -> AgentToolOutput {
+        guard let assets, let valuation else { return .failure(Self.notYet("estimate_asset_value")) }
+        await assets.load()
+        guard let fields = input.objectValue,
+              let reference = fields["asset"]?.stringValue?.trimmingCharacters(in: .whitespacesAndNewlines), !reference.isEmpty else {
+            throw FinanceToolError(message: "asset is required: an asset id from <app_context>.")
+        }
+        guard let asset = assets.asset(id: reference) ?? assets.assets.first(where: { $0.name.lowercased() == reference.lowercased() }) else {
+            throw FinanceToolError(message: "Unknown asset \(reference). Use an asset id from <app_context>.")
+        }
+        guard !asset.isSold else {
+            throw FinanceToolError(message: "\(asset.name) is sold: its value is the sale price, changed on its screen.")
+        }
+
+        // The kind is the asset's; the country the model's, else the phone's region.
+        let country = fields["country"]?.stringValue?.uppercased() ?? Locale.current.region?.identifier.uppercased() ?? "KZ"
+        var description: [String: JSONValue] = ["kind": .string(asset.kind.rawValue), "country": .string(country)]
+        for (key, value) in fields where Self.valuationFields.contains(key) && value != .null {
+            description[key] = value
+        }
+
+        let answer: JSONValue
+        do {
+            answer = try await valuation.valuation(asset: description)
+        } catch let error as AgentServerError {
+            throw FinanceToolError(message: Self.valuationRefusal(error))
+        } catch {
+            throw FinanceToolError(message: "The search for listings could not be reached (\(error.localizedDescription)). Say so in one sentence and suggest trying again later.")
+        }
+
+        let market = answer["currency"]?.stringValue
+        await loadMissingRates([asset.currency] + (market.map { [$0] } ?? []))
+        let rates = RateSnapshot()
+        func inAssetCurrency(_ key: String) -> JSONValue {
+            guard let amount = answer[key]?.numberValue, let market else { return .null }
+            let converted = market == asset.currency ? amount : rates.convert(amount, from: market, to: asset.currency)
+            return converted.map { JSONValue.number(FinanceToolkitCompute.round2($0)) } ?? .null
+        }
+        let value = inAssetCurrency("value")
+        let current = assets.summary(for: asset, today: now()).value
+        var change: JSONValue = .null
+        if let estimated = value.numberValue, current > 0 {
+            change = .number(((estimated - current) / current * 1000).rounded() / 10)
+        }
+        // A market currency the phone has no rate for: its figures stay in it.
+        var missingRates: [JSONValue] = []
+        if let market, answer["value"]?.numberValue != nil, value == .null {
+            missingRates = [.string(market)]
+        }
+
+        let found = answer["listings"]?.arrayValue ?? []
+        let sites = Array(Set(found.compactMap { $0["site"]?.stringValue })).sorted()
+        let listings: [JSONValue] = found.prefix(Self.valuationListingsListed).map { item -> JSONValue in
+            let row: [String: JSONValue] = [
+                "site": item["site"] ?? .null,
+                "price": item["price"] ?? .null,
+                "currency": item["currency"] ?? .null,
+                "size_m2": item["size_m2"] ?? .null,
+                "land_ares": item["land_ares"] ?? .null,
+                "rooms": item["rooms"] ?? .null,
+                "year": item["year"] ?? .null,
+                "mileage_km": item["mileage_km"] ?? .null,
+            ]
+            return .object(row)
+        }
+        var left: JSONValue = .null
+        if let limit = answer.value(atPath: "quota.limit")?.numberValue, let used = answer.value(atPath: "quota.used")?.numberValue {
+            left = .number(max(0, limit - used))
+        }
+
+        // Typed up front: a literal this long is slow to infer from the return alone.
+        let row: [String: JSONValue] = [
+            "status": answer["status"] ?? "insufficient",
+            "reason": answer["reason"] ?? .null,
+            "asset_id": .string(asset.id),
+            "name": .string(asset.name),
+            "market_currency": market.map(JSONValue.string) ?? .null,
+            "value": answer["value"] ?? .null,
+            "low": answer["low"] ?? .null,
+            "high": answer["high"] ?? .null,
+            "asset_currency": .string(asset.currency),
+            "value_in_asset_currency": value,
+            "low_in_asset_currency": inAssetCurrency("low"),
+            "high_in_asset_currency": inAssetCurrency("high"),
+            "current_value": .number(FinanceToolkitCompute.round2(current)),
+            "change_percent": change,
+            "count": answer["count"] ?? 0,
+            "accuracy": answer["accuracy"] ?? .null,
+            "basis": answer["basis"] ?? .null,
+            "per_unit": answer["per_unit"] ?? .null,
+            "sites": .array(sites.map(JSONValue.string)),
+            "listings": .array(listings),
+            // Asking prices: a sale usually goes for less.
+            "asking_prices": true,
+            "searched_at": answer["searched_at"] ?? .null,
+            "estimates_left": left,
+            "missing_rates": .array(missingRates),
+        ]
+        return .success(.object(row))
+    }
+
+    /// What the model is told when the server refuses an estimate, with what to do instead.
+    static func valuationRefusal(_ error: AgentServerError) -> String {
+        switch error {
+        case .disabled:
+            return "Estimating from listings is not switched on yet. Say so in one sentence and value it the other way: the area and a price per square metre from listings (draft_asset_valuation)."
+        case .quotaExceeded(let limit):
+            let count = limit.map { " (\($0))" } ?? ""
+            return "The user has used this month's estimates from listings\(count). Say so in one sentence and offer the other way: the area and a price per square metre from listings."
+        case .invalidRequest(let reason):
+            return "The estimate needs \(reason ?? "more about the asset"), or that field does not fit this kind of asset: ask the user for what is missing, then call estimate_asset_value again."
+        case .regionUnavailable:
+            return "Estimating from listings is not available in the user's region. Offer the other way: the area and a price per square metre from listings."
+        case .busy, .http, .entitlementUnavailable:
+            return "The search for listings failed for now. Say so in one sentence and suggest trying again later."
+        case .notConfigured, .unauthorized, .attestation:
+            return "Estimating from listings is not available on this device right now. Offer the other way: the area and a price per square metre from listings."
+        }
     }
 
     // MARK: - Describe

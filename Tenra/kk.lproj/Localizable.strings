@@ -2274,6 +2274,7 @@
 /* Ten and goals and debts */
 "assistant.step.plans" = "Мақсаттар мен қарыздарды қарап жатырмын…";
 "assistant.step.assets" = "Активтерді қарап жатырмын…";
+"assistant.step.valuing" = "Хабарландыруларды қарап жатырмын…";
 "assistant.topic.asset.worth" = "«%@» қазір қанша тұрады?";
 "assistant.topic.asset.payoff" = "«%@» өзін ақтай ма?";
 "assistant.notice.debt.owedToMe" = "Ертең %@ қайтарылуы керек";

@@ -8,7 +8,10 @@
 //  currency; get_net_worth gives its lines (NetWorthCalculator); draft_asset files a new asset
 //  (Tenra Pro, a valuation of today for what it is worth now) and draft_asset_valuation a value,
 //  given or multiplied from an area and a price per unit on the phone; both save through
-//  AssetStore and undo. Amounts are KZT, so no shared FX state is involved.
+//  AssetStore and undo. estimate_asset_value sends the asset's kind, the country and the
+//  characteristics the model gave (never the name) to the server's valuation, and gives its
+//  value against the app's; the server's refusals become what to tell the user. Amounts are KZT,
+//  so no shared FX state is involved.
 //
 
 import Foundation
@@ -29,7 +32,34 @@ struct AssetToolsTests {
         let debts: DebtStore
     }
 
-    private static func make(isPro: Bool = true) -> Setup {
+    /// The server's `POST /v1/valuation`, answering what it is given.
+    private nonisolated final class FakeValuation: AgentValuationTransport, @unchecked Sendable {
+        private(set) var sent: [[String: JSONValue]] = []
+        private let answer: Result<JSONValue, AgentServerError>
+
+        init(_ answer: Result<JSONValue, AgentServerError>) {
+            self.answer = answer
+        }
+
+        func valuation(asset: [String: JSONValue]) async throws -> JSONValue {
+            sent.append(asset)
+            return try answer.get()
+        }
+    }
+
+    /// The server's answer for a flat priced by 14 listings.
+    private static let estimate: JSONValue = [
+        "status": "ok", "currency": "KZT", "value": 72_500_000, "low": 67_800_000, "high": 76_100_000,
+        "accuracy": "medium", "basis": "per_unit", "count": 14,
+        "per_unit": ["unit": "m2", "median": 1_130_000, "low": 1_060_000, "high": 1_190_000],
+        "listings": [
+            ["title": "Listings", "url": "https://krisha.kz/prodazha/kvartiry/almaty/", "site": "krisha.kz", "price": 70_000_000, "currency": "KZT", "size_m2": 62, "rooms": 2],
+            ["title": "Listings", "url": "https://olx.kz/nedvizhimost/", "site": "olx.kz", "price": 74_000_000, "currency": "KZT", "size_m2": 66, "rooms": 2],
+        ],
+        "searched_at": "2026-10-28T10:00:00Z", "searches": 2, "model": "claude-haiku-5-5", "quota": ["used": 1, "limit": 30],
+    ]
+
+    private static func make(isPro: Bool = true, valuation: AgentValuationTransport? = nil) -> Setup {
         let defaults = UserDefaults(suiteName: "tests.\(UUID().uuidString)")!
         let repo = UserDefaultsRepository(userDefaults: defaults)
         let store = TransactionStore(
@@ -51,6 +81,7 @@ struct AssetToolsTests {
             drafts: book,
             debts: debts,
             assets: assets,
+            valuation: valuation,
             isPro: { isPro },
             learned: VoiceLearningStore(defaults: defaults),
             now: { now }
@@ -190,6 +221,77 @@ struct AssetToolsTests {
         await setup.assets.sell(assetId: "a_flat", price: 75_000_000, date: Self.day("2026-10-27"))
         let sold = await setup.toolkit.execute(name: "draft_asset_valuation", input: ["asset": "a_flat", "value": 80_000_000])
         #expect(sold.error != nil)
+    }
+
+    // MARK: - Estimate from listings
+
+    @Test func anEstimateSendsTheKindAndPlaceNeverTheNameAndComparesWithTheAppsValue() async throws {
+        let server = FakeValuation(.success(Self.estimate))
+        let setup = Self.make(valuation: server)
+        await setup.assets.add(Self.flat)
+
+        let output = await setup.toolkit.execute(name: "estimate_asset_value", input: [
+            "asset": "a_flat", "country": "kz", "city": "Алматы", "district": "Бостандыкский", "area_m2": 64, "rooms": 2,
+            "name": "Квартира на Абая", "notes": "anything else",
+        ])
+        let result = try #require(output.value, "\(output.error ?? "")")
+        let sent = try #require(server.sent.first)
+        #expect(sent["kind"] == "apartment")
+        #expect(sent["country"] == "KZ")
+        #expect(sent["area_m2"]?.numberValue == 64)
+        #expect(sent["district"] == "Бостандыкский")
+        #expect(!sent.keys.contains("name") && !sent.keys.contains("notes") && !sent.keys.contains("asset"))
+
+        #expect(result["status"] == "ok")
+        #expect(result["value_in_asset_currency"]?.numberValue == 72_500_000)
+        #expect(result["low_in_asset_currency"]?.numberValue == 67_800_000)
+        #expect(result["current_value"]?.numberValue == 70_000_000)
+        #expect(result["change_percent"]?.numberValue == 3.6)
+        #expect(result["count"]?.numberValue == 14)
+        #expect(result["sites"] == ["krisha.kz", "olx.kz"])
+        #expect(result["estimates_left"]?.numberValue == 29)
+        // The model sees no links.
+        #expect(result.value(atPath: "listings.0")?.objectValue?.keys.contains("url") == false)
+        // Nothing is saved: the model offers draft_asset_valuation.
+        #expect(setup.assets.asset(id: "a_flat")?.valuations.count == 1)
+    }
+
+    @Test func theServersRefusalsSayWhatToDoInstead() async throws {
+        let cases: [(AgentServerError, String)] = [
+            (.disabled, "not switched on"),
+            (.quotaExceeded(limit: 30), "(30)"),
+            (.invalidRequest(reason: "area_m2"), "area_m2"),
+            (.regionUnavailable, "region"),
+            (.busy, "try"),
+        ]
+        for (error, words) in cases {
+            let setup = Self.make(valuation: FakeValuation(.failure(error)))
+            await setup.assets.add(Self.flat)
+            let output = await setup.toolkit.execute(name: "estimate_asset_value", input: ["asset": "a_flat", "city": "Алматы", "area_m2": 64])
+            #expect(output.error?.contains(words) == true, "\(error): \(output.error ?? "no error")")
+        }
+
+        // Without the server, an unknown asset, a sold one: refused before any search.
+        let offline = Self.make()
+        await offline.assets.add(Self.flat)
+        let unavailable = await offline.toolkit.execute(name: "estimate_asset_value", input: ["asset": "a_flat"])
+        #expect(unavailable.error?.contains("not available") == true)
+        let server = FakeValuation(.success(Self.estimate))
+        let setup = Self.make(valuation: server)
+        let unknown = await setup.toolkit.execute(name: "estimate_asset_value", input: ["asset": "a_none"])
+        #expect(unknown.error != nil)
+        await setup.assets.add(Self.flat)
+        await setup.assets.sell(assetId: "a_flat", price: 75_000_000, date: Self.day("2026-10-27"))
+        let sold = await setup.toolkit.execute(name: "estimate_asset_value", input: ["asset": "a_flat"])
+        #expect(sold.error != nil)
+        #expect(server.sent.isEmpty)
+    }
+
+    @Test func theContextSaysThisVersionEstimatesFromListings() {
+        let setup = Self.make()
+        let text = AgentContextBuilder.text(for: AgentContextSnapshot(store: setup.store, now: Self.now))
+        #expect(text.contains("\nvaluation: listings\n"))
+        #expect(AssistantStep(tool: "estimate_asset_value") == .valuing)
     }
 
     @Test func describeNamesWhatAnAssetDraftWrites() {

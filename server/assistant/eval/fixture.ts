@@ -249,6 +249,7 @@ export function appContext(locale: "ru" | "en"): string {
     `expense categories: ${expense}`,
     `income categories: ${income}`,
     `assets: ${assets}`,
+    "valuation: listings",
     `facts you remember about the user: ${facts}`,
     `savings goals: ${goals}`,
     `open debts: ${debts}`,

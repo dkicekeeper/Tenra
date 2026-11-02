@@ -30,7 +30,7 @@ export const VALUATION_CASES: ValuationCase[] = [
       currency: "KZT",
       value: 50_300_000,
       tolerance: 0.15,
-      source: "BNS: resale in Almaty 756 164 KZT/m2 (September 2026); six two-room listings of the Bostandyk district, median 773 511 KZT/m2",
+      source: "BNS: resale in Almaty 756 164 KZT/m2 (September 2026); six two-room listings of the Bostandyk district, median 773 511 KZT/m2; Krisha: two-room flats of the district at 52 million on average (June 2026)",
       asOf: "2026-11-02",
     },
   },

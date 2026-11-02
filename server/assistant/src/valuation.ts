@@ -10,7 +10,7 @@ import { isValidUserId, PROTOCOL_VERSION, ValidationError } from "./validate";
 // request carries the asset's kind, place and characteristics, never its name or an address,
 // and nothing of it is logged.
 
-export const VALUATION_PROMPT_VERSION = "2026-11-02.3";
+export const VALUATION_PROMPT_VERSION = "2026-11-02.4";
 export const REPORT_LISTINGS = "report_listings";
 
 type Params = Anthropic.Beta.Messages.MessageCreateParamsNonStreaming;
@@ -250,7 +250,7 @@ export function webSearchTool(model: string, maxUses: number, asset: AssetDescri
 
 const nullable = (schema: Record<string, unknown>) => ({ anyOf: [schema, { type: "null" }] });
 
-// Strict: the input always parses. Seven nullables, under the API's limit of 16 per request.
+// Strict: the input always parses. Eight nullables, under the API's limit of 16 per request.
 export const REPORT_LISTINGS_TOOL: Anthropic.Beta.BetaTool = {
   name: REPORT_LISTINGS,
   description:
@@ -266,7 +266,7 @@ export const REPORT_LISTINGS_TOOL: Anthropic.Beta.BetaTool = {
         items: {
           type: "object",
           additionalProperties: false,
-          required: ["source_url", "price", "currency", "deal", "size_m2", "land_ares", "rooms", "year", "mileage_km", "district", "new_building"],
+          required: ["source_url", "price", "currency", "deal", "size_m2", "land_ares", "rooms", "rooms_text", "year", "mileage_km", "district", "new_building"],
           properties: {
             source_url: { type: "string", description: "The URL of the search result the listing was seen in, copied exactly" },
             price: { type: "number", description: "The asking price as written, in its currency" },
@@ -275,6 +275,7 @@ export const REPORT_LISTINGS_TOOL: Anthropic.Beta.BetaTool = {
             size_m2: nullable({ type: "number", description: "Floor area in square metres (square feet × 0.0929)" }),
             land_ares: nullable({ type: "number", description: "Land in ares: one sotka is one are, a hectare is 100" }),
             rooms: nullable({ type: "integer" }),
+            rooms_text: nullable({ type: "string", description: "The rooms as the listing writes them: \"2+1\", \"2 bed\", \"2-комнатная\"" }),
             year: nullable({ type: "integer", description: "Year built, or a vehicle's model year" }),
             mileage_km: nullable({ type: "number", description: "Kilometres (miles × 1.609)" }),
             district: nullable({ type: "string" }),
@@ -337,7 +338,9 @@ export function buildValuationParams(
   const tools: Anthropic.Beta.BetaToolUnion[] = [webSearchTool(config.model, Math.max(1, searchesLeft), asset, withLocation), REPORT_LISTINGS_TOOL];
   return {
     model: config.model,
-    max_tokens: 8000,
+    // Haiku's adaptive thinking spent all of 8 000 on a long results page and cut the report
+    // off (eval run 122).
+    max_tokens: 16000,
     system: [{ type: "text", text: VALUATION_SYSTEM_PROMPT }],
     tools,
     // Forced tool choice is a 400 on the current models: the prompt asks for report_listings.
@@ -372,6 +375,8 @@ export interface SearchOutcome {
   calls: number;
   /** The model declined (stop_reason "refusal"). */
   refused: boolean;
+  /** The output hit max_tokens before the report was whole. */
+  truncated: boolean;
   /** Each call's stop reason and any text the model wrote (it should write none): for the eval,
    * never sent to the phone or logged. */
   trace: { stop_reason: string | null; text: string }[];
@@ -389,6 +394,7 @@ export async function searchListings(call: ModelCall, config: ValuationConfig, a
   let calls = 0;
   let nudged = false;
   let refused = false;
+  let truncated = false;
   let report: Report | undefined;
   const trace: SearchOutcome["trace"] = [];
 
@@ -418,6 +424,12 @@ export async function searchListings(call: ModelCall, config: ValuationConfig, a
       refused = true;
       break;
     }
+    // A report cut off by max_tokens can still parse, short of its listings: it is no report.
+    // Its tool call can't be sent back either, so the search stops (the fallback, if any, goes on).
+    if (message.stop_reason === "max_tokens") {
+      truncated = true;
+      break;
+    }
     report = reportOf(message.content);
     if (report) break;
     messages.push({ role: "assistant", content: message.content as Anthropic.Beta.BetaContentBlockParam[] });
@@ -426,7 +438,7 @@ export async function searchListings(call: ModelCall, config: ValuationConfig, a
     nudged = true;
     messages.push({ role: "user", content: [{ type: "text", text: NUDGE }] });
   }
-  return { report, results: searchResults(content), queries: queriesOf(content), usage, calls, refused, trace };
+  return { report, results: searchResults(content), queries: queriesOf(content), usage, calls, refused, truncated, trace };
 }
 
 export interface Valuation {
@@ -472,6 +484,7 @@ export interface ReportedListing {
   size_m2: number | null;
   land_ares: number | null;
   rooms: number | null;
+  rooms_text: string | null;
   year: number | null;
   mileage_km: number | null;
   district: string | null;
@@ -601,6 +614,13 @@ export function densestGroup(values: number[]): [number, number] {
   return best;
 }
 
+/** Rooms as the code counts them: the first number of Turkey's "2+1" (a model counts it as 3 as
+ * often as 2, eval run 122), else the model's figure. */
+export function roomsOf(listing: Pick<ReportedListing, "rooms" | "rooms_text">): number | null {
+  const plus = /^\s*(\d{1,2})\s*\+\s*\d/.exec(listing.rooms_text ?? "");
+  return plus ? Number(plus[1]) : listing.rooms;
+}
+
 export function quantile(sorted: number[], p: number): number {
   if (!sorted.length) return Number.NaN;
   const index = (sorted.length - 1) * p;
@@ -674,7 +694,7 @@ export function computeValuation(asset: AssetDescription, report: Report | undef
       continue;
     }
     seen.add(identity);
-    candidates.push({ listing: { ...listing, currency }, result });
+    candidates.push({ listing: { ...listing, currency, rooms: roomsOf(listing) }, result });
   }
 
   // The market's currency: the one most listings are priced in.
@@ -804,15 +824,16 @@ function comparables(asset: AssetDescription, candidates: Candidate[], drop: (re
   const size = asset.kind === "land" ? asset.land_ares : asset.area_m2;
   const sizeOf = (c: Candidate) => (unit === "are" ? c.listing.land_ares : c.listing.size_m2);
 
-  // Rooms count when both sides know them.
-  const sameRooms = candidates.filter((c) => {
-    if (asset.rooms === undefined || c.listing.rooms === null || c.listing.rooms === asset.rooms) return true;
-    drop("rooms");
-    return false;
-  });
+  // Rooms count when both sides know them, unless that leaves too few: a country that counts
+  // rooms otherwise than the asset was described (bedrooms, living room or not) would leave
+  // nothing, while the size still tells comparables apart.
+  const matching = candidates.filter((c) => asset.rooms === undefined || c.listing.rooms === null || c.listing.rooms === asset.rooms);
+  const roomsIgnored = asset.rooms !== undefined && matching.length < MIN_COMPARABLES && candidates.length >= MIN_COMPARABLES;
+  const sameRooms = roomsIgnored ? candidates : matching;
+  for (let i = sameRooms.length; i < candidates.length; i++) drop("rooms");
 
   // The listings that name the same rooms, priced as a whole: what is left when sizes are few.
-  const sameRoomsKnown = asset.rooms === undefined ? sameRooms : sameRooms.filter((c) => c.listing.rooms === asset.rooms);
+  const sameRoomsKnown = asset.rooms === undefined || roomsIgnored ? sameRooms : sameRooms.filter((c) => c.listing.rooms === asset.rooms);
 
   if (size !== undefined) {
     for (const [share, relaxed] of [
@@ -828,7 +849,7 @@ function comparables(asset: AssetDescription, candidates: Candidate[], drop: (re
       const fewOfMany = sameRoomsKnown.length >= 5 && close.length * 2 < sameRoomsKnown.length;
       if (close.length >= MIN_COMPARABLES && !fewOfMany) {
         for (let i = close.length; i < sameRooms.length; i++) drop("size");
-        return { chosen: close, values: close.map((c) => c.listing.price / sizeOf(c)!), basis: "per_unit", unit, size, relaxed };
+        return { chosen: close, values: close.map((c) => c.listing.price / sizeOf(c)!), basis: "per_unit", unit, size, relaxed: relaxed || roomsIgnored };
       }
     }
   }
@@ -836,7 +857,7 @@ function comparables(asset: AssetDescription, candidates: Candidate[], drop: (re
   // Sizes too few (listings abroad often give bedrooms, not square metres): by price, among
   // the same rooms when the asset's are known.
   const byPrice = sameRooms.filter((c) => {
-    if (asset.rooms === undefined || c.listing.rooms === asset.rooms) return true;
+    if (asset.rooms === undefined || roomsIgnored || c.listing.rooms === asset.rooms) return true;
     drop("rooms");
     return false;
   });

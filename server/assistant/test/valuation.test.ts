@@ -56,6 +56,7 @@ const listing = (over: Partial<ReportedListing>): ReportedListing => ({
   size_m2: null,
   land_ares: null,
   rooms: null,
+  rooms_text: null,
   year: null,
   mileage_km: null,
   district: null,
@@ -301,6 +302,21 @@ describe("computeValuation", () => {
     expect(densestGroup([100])).toEqual([100, 100]);
   });
 
+  it("counts Turkey's 2+1 as two rooms whatever the model wrote, and ignores rooms that would leave nothing", () => {
+    // As in eval run 122: Haiku wrote 3 for every 2+1, and the rooms filter left none of 18.
+    const url = "https://www.hepsiemlak.com/kadikoy-satilik/daire-2-1";
+    const results = searchResults(searched("s", "Kadıköy satılık daire 2+1", [url]));
+    const kadikoy: AssetDescription = { kind: "apartment", country: "TR", city: "İstanbul", district: "Kadıköy", area_m2: 100, rooms: 2 };
+    const prices = [25_950_000, 22_500_000, 15_950_000, 12_650_000, 17_300_000];
+    const asWritten = computeValuation(kadikoy, { listings: prices.map((price) => listing({ source_url: url, price, currency: "TRY", size_m2: 100, rooms: 3, rooms_text: "2+1" })), site_averages: [] }, results, now);
+    expect(asWritten).toMatchObject({ status: "ok", count: 5 });
+    expect(asWritten.excluded).toEqual({});
+    const unwritten = computeValuation(kadikoy, { listings: prices.map((price) => listing({ source_url: url, price, currency: "TRY", size_m2: 100, rooms: 3 })), site_averages: [] }, results, now);
+    expect(unwritten).toMatchObject({ status: "ok", count: 5 });
+    // A wider match: at most medium.
+    expect(unwritten.accuracy).not.toBe("high");
+  });
+
   it("prices by the many same-room listings when only a few give a size", () => {
     // As in the eval's London run: five sizes among twenty two-bedroom listings, all cheap ones.
     const url = "https://www.rightmove.co.uk/property-for-sale/Lewisham/2-bed-flats.htm";
@@ -388,6 +404,13 @@ describe("searchListings", () => {
     expect(sent[1]!.tools?.[0]).not.toHaveProperty("user_location");
     // Another error is not retried.
     await expect(searchListings(async () => Promise.reject(Object.assign(new Error("400 max_tokens"), { status: 400 })), config, istanbul, now)).rejects.toThrow("max_tokens");
+  });
+
+  it("takes no report from a turn cut off by max_tokens", async () => {
+    const cut = message([...searched("s1", "q", [KRISHA]), reported({ listings: [], site_averages: [] })], "max_tokens");
+    const outcome = await searchListings(async () => cut, config, flat, now);
+    expect(outcome).toMatchObject({ truncated: true, calls: 1, report: undefined });
+    expect(buildValuationParams(config, flat, now).max_tokens).toBe(16000);
   });
 
   it("stops on a refusal", async () => {

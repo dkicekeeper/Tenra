@@ -331,7 +331,7 @@ What an asset is worth by comparable listings found with web search, in any coun
   no name, no address, no text with seven digits or more (a phone, an IIN, a VIN). A bad field is
   400 `invalid` with its name as the reason.
 - One model call (up to three: a paused turn goes on, a turn without the report is asked for it
-  once) with the server tool `web_search` (`VALUATION_MAX_SEARCHES`, 3; `web_search_20260209` for
+  once; a turn cut off by `max_tokens`, 16 000, gives no report) with the server tool `web_search` (`VALUATION_MAX_SEARCHES`, 3; `web_search_20260209` for
   models with dynamic filtering, `web_search_20250305` for Haiku) and the strict client tool
   `report_listings`: every listing for sale the model saw, with the URL of the search result it
   saw it in. No `web_fetch`: listing sites' pages are never read. `user_location` comes from the
@@ -342,8 +342,9 @@ What an asset is worth by comparable listings found with web search, in any coun
   auctions or "from" prices.
 - The arithmetic is code, never the model: a listing counts only when its URL is one of the search
   results (normalized: no `www.`/`m.`, decoded, no trailing slash); rents, duplicates and other
-  currencies than the most common one are left out; comparables by kind (real estate: the same
-  rooms, size within 25%, then 40%, then by price among the same rooms, also when sizes are on
+  currencies than the most common one are left out; rooms are the first number of a written
+  "2+1" (`rooms_text`, Turkey's way), else the model's figure; comparables by kind (real estate:
+  the same rooms unless that leaves fewer than three, size within 25%, then 40%, then by price among the same rooms, also when sizes are on
   fewer than half of five or more same-room listings; a vehicle: the year ±1, the mileage
   ±40 000 km when three are close); only the largest group of prices within 6.25 times of each
   other (`outside_cluster`: prices misread by a power of ten make a group of their own, at times

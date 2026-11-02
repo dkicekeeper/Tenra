@@ -4,7 +4,7 @@
 //
 //  Assets in CoreData v17 (`AssetEntity`), outside the DataRepositoryProtocol facade like the
 //  goals and debts (GoalRepository, DebtRepository): AssetStore is the only caller. An asset's
-//  valuations and category links are kept as JSON on its row. Backups carry the assets with
+//  valuations, category links and (v18) payments by hand are kept as JSON on its row. Backups carry the assets with
 //  the rest of the store, "delete all data" removes them, and AssetStore reads them again when
 //  the store is replaced.
 //
@@ -67,6 +67,8 @@ nonisolated final class AssetRepository: @unchecked Sendable {
                 entity.expenseLinkData = try asset.expenseLink.map { try encoder.encode($0) }
                 entity.includeInNetWorth = asset.includeInNetWorth
                 entity.soldAt = asset.soldAt
+                let links = AssetTransactionLinks(excluded: asset.excludedTransactionIds, included: asset.includedTransactionIds)
+                entity.transactionLinksData = links.excluded.isEmpty && links.included.isEmpty ? nil : try encoder.encode(links)
                 entity.note = asset.note
                 entity.order = Int32(clamping: asset.order)
                 entity.createdAt = asset.createdAt
@@ -96,6 +98,7 @@ nonisolated final class AssetRepository: @unchecked Sendable {
     private static func asset(_ entity: AssetEntity) -> Asset? {
         guard let id = entity.id, !id.isEmpty, let name = entity.name else { return nil }
         let decoder = JSONDecoder()
+        let links = entity.transactionLinksData.flatMap { try? decoder.decode(AssetTransactionLinks.self, from: $0) }
         return Asset(
             id: id,
             name: name,
@@ -114,7 +117,9 @@ nonisolated final class AssetRepository: @unchecked Sendable {
             soldAt: entity.soldAt,
             note: entity.note,
             order: Int(entity.order),
-            createdAt: entity.createdAt ?? .distantPast
+            createdAt: entity.createdAt ?? .distantPast,
+            excludedTransactionIds: links?.excluded ?? [],
+            includedTransactionIds: links?.included ?? []
         )
     }
 }

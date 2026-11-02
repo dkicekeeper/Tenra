@@ -2461,6 +2461,11 @@
 "asset.yield" = "Жалдау табыстылығы";
 "asset.fullResult" = "Толық нәтиже";
 "asset.rent.empty" = "«%@» санатында әлі жалдау ақысы жоқ. Алғашқы төлемді жазып, оны ай сайынғы етіңіз.";
+"asset.payments.link" = "Төлемдерді байланыстыру";
+"asset.payments.remove" = "Төлемдерді алып тастау";
+"asset.payments.removed" = "Алынған төлемдер";
+"asset.payments.removeCount" = "Алып тастау (%d)";
+"asset.payments.returnCount" = "Қайтару (%d)";
 "insights.netWorth.title" = "Таза капитал";
 "insights.netWorth.subtitle" = "Ақша, активтер және қарыздар";
 "insights.formula.netWorth.title" = "Таза капитал";

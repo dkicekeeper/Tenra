@@ -223,6 +223,49 @@ struct AssetsTests {
         #expect(store.linkedTransactions(of: undated).upkeep?.count == 5)
     }
 
+    /// Payments by hand (v18): one its link counts taken out, one of another category or day
+    /// linked in; taking out a payment linked by hand unlinks it; a removed one comes back.
+    @Test func paymentsByHand() async {
+        func payment(_ id: String, _ day: String, type: TransactionType = .expense) -> Transaction {
+            Transaction(id: id, date: day, description: "", amount: 10_000, currency: "KZT",
+                        type: type, category: "Transport", accountId: "card")
+        }
+        let all = [payment("repair", "2024-03-10"), payment("fine", "2024-04-02"),
+                   payment("tyres", "2023-11-20"), payment("old", "2019-01-01"), payment("sold parts", "2024-05-01", type: .income)]
+        let store = AssetStore(repository: nil)
+        store.transactionsOfLink = { _, type in all.filter { $0.type == type && ["repair", "fine"].contains($0.id) } }
+        store.transactionsWithIds = { ids in ids.compactMap { id in all.first { $0.id == id } } }
+        await store.add(Asset(id: "car", name: "Car", kind: .vehicle, currency: "KZT",
+                              expenseLink: AssetCategoryLink(categoryId: "transport")))
+
+        await store.exclude(["fine"], from: "car")
+        await store.include(["tyres", "old", "sold parts"], in: "car")
+        var car = store.asset(id: "car")!
+        #expect(store.linkedTransactions(of: car).upkeep?.map(\.id) == ["repair", "tyres", "old"])
+        #expect(store.linkedTransactions(of: car).rent?.map(\.id) == ["sold parts"])
+        #expect(store.excludedTransactions(of: car).map(\.id) == ["fine"])
+
+        await store.exclude(["old"], from: "car")
+        await store.restore(["fine"], to: "car")
+        car = store.asset(id: "car")!
+        #expect(car.includedTransactionIds == ["tyres", "sold parts"])
+        #expect(car.excludedTransactionIds.isEmpty)
+        #expect(store.linkedTransactions(of: car).upkeep?.map(\.id) == ["fine", "repair", "tyres"])
+    }
+
+    /// The payments by hand are kept with the asset (v18's `transactionLinksData`).
+    @Test func paymentsByHandAreKept() async throws {
+        let stack = try makeStack()
+        let store = AssetStore(repository: AssetRepository(stack: stack))
+        await store.load()
+        await store.add(Asset(id: "car", name: "Car", kind: .vehicle, currency: "KZT",
+                              excludedTransactionIds: ["fine"], includedTransactionIds: ["tyres"]))
+        let reopened = AssetStore(repository: AssetRepository(stack: stack))
+        await reopened.load()
+        #expect(reopened.asset(id: "car")?.excludedTransactionIds == ["fine"])
+        #expect(reopened.asset(id: "car")?.includedTransactionIds == ["tyres"])
+    }
+
     /// A car sold before the next one was bought may keep the same "Transport"; two held at
     /// once may not.
     @Test func carsOneAfterAnotherMayShareTheirUpkeep() {
@@ -343,6 +386,53 @@ struct AssetsTests {
             // Defaults of a new row: a whole asset, counted in net worth.
             #expect(asset.value(forKey: "ownershipShare") as? Double == 1)
             #expect(asset.value(forKey: "includeInNetWorth") as? Bool == true)
+        }
+    }
+
+    /// v18 added the payments by hand (`AssetEntity.transactionLinksData`): a v17 store with an
+    /// asset opens, the asset keeps everything, and its payments by hand start empty.
+    @Test func aV17StoreOpensWithPaymentsByHand() throws {
+        let momd = try #require(Bundle.main.url(forResource: "Tenra", withExtension: "momd"))
+        let v17 = try #require(NSManagedObjectModel(contentsOf: momd.appendingPathComponent("Tenra v17.mom")))
+        let current = try #require(NSManagedObjectModel(contentsOf: momd))
+        #expect(v17.entitiesByName["AssetEntity"]?.attributesByName["transactionLinksData"] == nil)
+        #expect(current.entitiesByName["AssetEntity"]?.attributesByName["transactionLinksData"] != nil)
+        #expect((try? NSMappingModel.inferredMappingModel(forSourceModel: v17, destinationModel: current)) != nil)
+
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent("AssetLinksMigration-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let url = directory.appendingPathComponent("Tenra.sqlite")
+
+        // A v17 store with a car in it.
+        let oldCoordinator = NSPersistentStoreCoordinator(managedObjectModel: v17)
+        let oldStore = try oldCoordinator.addPersistentStore(ofType: NSSQLiteStoreType, configurationName: nil, at: url, options: nil)
+        let oldContext = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
+        oldContext.persistentStoreCoordinator = oldCoordinator
+        let oldAssetEntity = try #require(v17.entitiesByName["AssetEntity"])
+        try oldContext.performAndWait {
+            let car = NSManagedObject(entity: oldAssetEntity, insertInto: oldContext)
+            car.setValue("car", forKey: "id")
+            car.setValue("Car", forKey: "name")
+            car.setValue("vehicle", forKey: "kind")
+            try oldContext.save()
+        }
+        try oldCoordinator.remove(oldStore)
+
+        // The same file under the current model.
+        let coordinator = NSPersistentStoreCoordinator(managedObjectModel: current)
+        _ = try coordinator.addPersistentStore(
+            ofType: NSSQLiteStoreType,
+            configurationName: nil,
+            at: url,
+            options: [NSMigratePersistentStoresAutomaticallyOption: true, NSInferMappingModelAutomaticallyOption: true]
+        )
+        let context = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
+        context.persistentStoreCoordinator = coordinator
+        try context.performAndWait {
+            let assets = try context.fetch(NSFetchRequest<NSManagedObject>(entityName: "AssetEntity"))
+            #expect(assets.compactMap { $0.value(forKey: "name") as? String } == ["Car"])
+            #expect(assets.first?.value(forKey: "transactionLinksData") == nil)
         }
     }
 }

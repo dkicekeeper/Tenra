@@ -2461,6 +2461,11 @@
 "asset.yield" = "Kira getirisi";
 "asset.fullResult" = "Toplam sonuç";
 "asset.rent.empty" = "“%@” içinde henüz kira yok. İlk ödemeyi kaydet ve aylık yap.";
+"asset.payments.link" = "Ödemeleri bağla";
+"asset.payments.remove" = "Ödemeleri çıkar";
+"asset.payments.removed" = "Çıkarılan ödemeler";
+"asset.payments.removeCount" = "Çıkar (%d)";
+"asset.payments.returnCount" = "Geri al (%d)";
 "insights.netWorth.title" = "Net varlık";
 "insights.netWorth.subtitle" = "Para, varlıklar ve borçlar";
 "insights.formula.netWorth.title" = "Net varlık";

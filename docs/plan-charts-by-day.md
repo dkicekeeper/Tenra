@@ -81,6 +81,11 @@ Device check on build 65 (2026-11-02), the owner's fourth look:
    report (the month before, at rest). DesignKit 8.5.0 reads the period from the exact offset.
 4. The whole row or card takes the tap (DesignKit 8.5.0's rows and `CardList(onOpen:)`).
 5. "Combine points" searches merchants by their payments' categories and subcategories.
+6. An asset counted the payments of its category from before it was bought (the owner's car,
+   bought on 1 June 2021, took the repairs of the car before it): it counts the days it is held,
+   and two assets held one after another may share a category (build 66). Its menu links any
+   payment by hand, removes one and gives removed ones back ("Link payments", "Remove payments",
+   "Removed payments", CoreData v18, build 67; [domains/assets.md](domains/assets.md)).
 
 Device check on build 64: the owner's third look (2026-10-31) found three more, fixed in #117
 and DesignKit 8.4.2 (build 65):

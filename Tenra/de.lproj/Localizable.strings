@@ -2461,6 +2461,11 @@
 "asset.yield" = "Mietrendite";
 "asset.fullResult" = "Gesamtergebnis";
 "asset.rent.empty" = "In „%@“ gibt es noch keine Miete. Erfassen Sie die erste Zahlung und machen Sie sie monatlich.";
+"asset.payments.link" = "Zahlungen verknüpfen";
+"asset.payments.remove" = "Zahlungen entfernen";
+"asset.payments.removed" = "Entfernte Zahlungen";
+"asset.payments.removeCount" = "%d entfernen";
+"asset.payments.returnCount" = "%d zurückholen";
 "insights.netWorth.title" = "Nettovermögen";
 "insights.netWorth.subtitle" = "Geld, Vermögenswerte und Schulden";
 "insights.formula.netWorth.title" = "Nettovermögen";

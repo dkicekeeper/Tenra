@@ -2461,6 +2461,11 @@
 "asset.yield" = "Дохідність оренди";
 "asset.fullResult" = "Повний результат";
 "asset.rent.empty" = "У «%@» ще немає оренди. Запишіть перший платіж і зробіть його щомісячним.";
+"asset.payments.link" = "Прив'язати платежі";
+"asset.payments.remove" = "Прибрати платежі";
+"asset.payments.removed" = "Прибрані платежі";
+"asset.payments.removeCount" = "Прибрати %d";
+"asset.payments.returnCount" = "Повернути %d";
 "insights.netWorth.title" = "Чистий капітал";
 "insights.netWorth.subtitle" = "Гроші, активи та борги";
 "insights.formula.netWorth.title" = "Чистий капітал";

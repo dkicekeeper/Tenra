@@ -258,13 +258,27 @@ struct AssetEditView: View {
         categoryId.isEmpty ? nil : AssetCategoryLink(categoryId: categoryId, subcategoryIds: subcategoryIds.sorted())
     }
 
-    /// Another asset counts these transactions already (AssetValuationMath.overlaps).
+    /// The days this asset is held as the form stands: from the purchase day (with a purchase
+    /// price) to its sale.
+    private var heldPeriod: AssetValuationMath.HeldPeriod {
+        AssetValuationMath.HeldPeriod(
+            start: purchasePrice == nil ? nil : Calendar.current.startOfDay(for: purchaseDate),
+            end: asset?.soldAt
+        )
+    }
+
+    /// Another asset held on the same days counts these transactions already
+    /// (AssetValuationMath.overlaps): a car sold before this one was bought does not.
     private var incomeOverlaps: Bool {
-        incomeLink.map { link in linkOptions.takenIncome.contains { AssetValuationMath.overlaps($0, link) } } ?? false
+        incomeLink.map { link in
+            linkOptions.takenIncome.contains { AssetValuationMath.overlaps($0.link, held: $0.held, link, held: heldPeriod) }
+        } ?? false
     }
 
     private var expenseOverlaps: Bool {
-        expenseLink.map { link in linkOptions.takenExpense.contains { AssetValuationMath.overlaps($0, link) } } ?? false
+        expenseLink.map { link in
+            linkOptions.takenExpense.contains { AssetValuationMath.overlaps($0.link, held: $0.held, link, held: heldPeriod) }
+        } ?? false
     }
 
     static func title(of kind: AssetKind) -> String {
@@ -395,8 +409,14 @@ struct AssetLinkOptions {
     var expenseCategories: [Item] = []
     /// By category id, in the category's own order.
     var subcategories: [String: [Item]] = [:]
-    var takenIncome: [AssetCategoryLink] = []
-    var takenExpense: [AssetCategoryLink] = []
+    var takenIncome: [Taken] = []
+    var takenExpense: [Taken] = []
+
+    /// Another asset's link and the days it holds it.
+    struct Taken {
+        let link: AssetCategoryLink
+        let held: AssetValuationMath.HeldPeriod
+    }
 
     static let empty = AssetLinkOptions()
 

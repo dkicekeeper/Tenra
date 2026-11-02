@@ -71,13 +71,17 @@ with `CurrencyConverter.convertSync`, the amount itself as the cold-cache fallba
   `TransactionStore`'s category index, filtered by the transaction links of its subcategories:
   any of `AssetCategoryLink.subcategoryIds`, none for the whole category; a link saved with one
   `subcategoryId` before 2026-10-30 reads as a list of one, and a link is written with both), each in
-  the asset's currency. Realized only: up to today, up to the sale for a sold asset. Over the 12
+  the asset's currency. **Only the days the asset is held** count (`AssetValuationMath.HeldPeriod`:
+  from the purchase day, any day without one, to the sale day, `AssetStore.linkedTransactions`):
+  the owner's car bought in June 2021 counted the repairs of the car before it (2026-11-02). Realized only: up to today, up to the sale for a sold asset. Over the 12
   months before that day, the rent, the upkeep and the yield, (rent − upkeep) ÷ value; since the
   purchase, the full result, gain + every rent − every upkeep (`AssetValuationMath.income`). A
   link whose category is gone reads as empty.
 - **No double counting**: two assets' links overlap when they share a category and either takes
-  the whole of it or they take a subcategory in common (`AssetValuationMath.overlaps`); the form
-  refuses one that overlaps another asset's (`InlineStatusText`, Save off).
+  the whole of it or they take a subcategory in common (`AssetValuationMath.overlaps`), and the
+  days they are held overlap (`overlaps(_:held:_:held:)`: a car sold before, or on the day, the
+  next was bought may keep the same "Transport"); the form refuses one that overlaps another
+  asset's (`InlineStatusText`, Save off; `AssetLinkOptions.Taken` carries each link's days).
 - **Net worth** (`NetWorthCalculator`, `Services/Assets/`): money (accounts that are not loans,
   in the balance) + assets (held, `includeInNetWorth`, at their share) + what others owe −
   loans (remaining principal of loans in the balance, not paid off) − what the person owes,

@@ -196,6 +196,50 @@ struct AssetsTests {
         #expect(store.asset(id: "flat")?.isSold == false)
     }
 
+    /// The owner's car (2026-11-02): bought on 1 June 2021, it counted the repairs of the car
+    /// before it. The upkeep is the payments of the days it is held, the sale day included.
+    @Test func paymentsCountOnlyWhileTheAssetIsHeld() {
+        let local = Calendar.current
+        func date(_ year: Int, _ month: Int, _ day: Int) -> Date {
+            local.date(from: DateComponents(year: year, month: month, day: day))!
+        }
+        func payment(_ id: String, _ day: String) -> Transaction {
+            Transaction(id: id, date: day, description: "", amount: 10_000, currency: "KZT",
+                        type: .expense, category: "Transport", accountId: "card")
+        }
+        let store = AssetStore(repository: nil)
+        store.transactionsOfLink = { _, _ in
+            [payment("old car", "2021-05-20"), payment("first", "2021-06-01"),
+             payment("later", "2024-03-10"), payment("sale day", "2025-01-15"), payment("after", "2025-02-01")]
+        }
+        let car = Asset(name: "Car", kind: .vehicle, currency: "KZT",
+                        purchaseDate: date(2021, 6, 1), purchasePrice: 9_000_000,
+                        expenseLink: AssetCategoryLink(categoryId: "transport", subcategoryIds: ["repair"]),
+                        soldAt: date(2025, 1, 15))
+        #expect(store.linkedTransactions(of: car).upkeep?.map(\.id) == ["sale day", "later", "first"])
+
+        let undated = Asset(name: "Car", kind: .vehicle, currency: "KZT",
+                            expenseLink: AssetCategoryLink(categoryId: "transport"))
+        #expect(store.linkedTransactions(of: undated).upkeep?.count == 5)
+    }
+
+    /// A car sold before the next one was bought may keep the same "Transport"; two held at
+    /// once may not.
+    @Test func carsOneAfterAnotherMayShareTheirUpkeep() {
+        let local = Calendar.current
+        func date(_ year: Int, _ month: Int, _ day: Int) -> Date {
+            local.date(from: DateComponents(year: year, month: month, day: day))!
+        }
+        typealias Held = AssetValuationMath.HeldPeriod
+        let transport = AssetCategoryLink(categoryId: "transport")
+        let newCar = Held(start: date(2021, 6, 1), end: nil)
+        #expect(!AssetValuationMath.overlaps(transport, held: Held(start: date(2015, 3, 1), end: date(2021, 5, 31)), transport, held: newCar))
+        #expect(!AssetValuationMath.overlaps(transport, held: Held(start: date(2015, 3, 1), end: date(2021, 6, 1)), transport, held: newCar))
+        #expect(AssetValuationMath.overlaps(transport, held: Held(start: date(2015, 3, 1), end: date(2021, 7, 1)), transport, held: newCar))
+        #expect(AssetValuationMath.overlaps(transport, held: Held(start: nil, end: nil), transport, held: newCar))
+        #expect(!AssetValuationMath.overlaps(transport, held: Held(start: nil, end: nil), AssetCategoryLink(categoryId: "home"), held: newCar))
+    }
+
     @Test func aDragGivesTheSectionsAssetsItsPlaces() async {
         let store = AssetStore(repository: nil)
         await store.add(Asset(id: "a", name: "A", kind: .apartment, currency: "KZT"))

@@ -345,9 +345,10 @@ What an asset is worth by comparable listings found with web search, in any coun
   currencies than the most common one are left out; comparables by kind (real estate: the same
   rooms, size within 25%, then 40%, then by price among the same rooms, also when sizes are on
   fewer than half of five or more same-room listings; a vehicle: the year ±1, the mileage
-  ±40 000 km when three are close); a comparable more than 2.5 times off the median dropped
-  (`far_from_median`: a misread price, which can make a cluster of its own); outliers by Tukey's
-  fences from four listings on;
+  ±40 000 km when three are close); only the largest group of prices within 6.25 times of each
+  other (`outside_cluster`: prices misread by a power of ten make a group of their own, at times
+  as large as the real one; of two as large, the dearer); outliers by Tukey's fences from four
+  listings on;
   the median and the quartiles, to three significant digits. Accuracy: `high` from 8 comparables
   with quartiles within ±10% of the median, `medium` from 5 within ±20% (at most `medium` for a
   widened match or `other`), `low` below; fewer than 3: `insufficient`.
@@ -359,7 +360,9 @@ What an asset is worth by comparable listings found with web search, in any coun
   (`VALUATION_PROMPT_VERSION`), `tier`, `quota`. Errors: 503 `disabled`, 429 `quota` or `busy`,
   422 `refused`, 502 `upstream` with `code` and `retryable`.
 - Its model is its own (`VALUATION_MODEL`, `VALUATION_EFFORT`), chosen by the valuation eval
-  (§12). `/v1/health` gives the valuation prompt's version while it is on, else `null`.
+  (§12): Haiku 5.5, and `VALUATION_FALLBACK_MODEL` (Sonnet 5.5) asked again when Haiku finds
+  too few listings or declines, its result then standing (`valuate`; the response's `model` and
+  `fallback` say which). `/v1/health` gives the valuation prompt's version while it is on, else `null`.
 
 ## 9. The mascot
 
@@ -406,8 +409,9 @@ spending, no em dashes, in all 11 languages.
   included.
 - **Valuations** (`POST /v1/valuation`) count apart: `FREE_MONTHLY_VALUATIONS` (2) per attested
   key, `PRO_MONTHLY_VALUATIONS` (30) per customer, and each weighs `VALUATION_CALL_WEIGHT` (25)
-  calls in `GLOBAL_DAILY_CALLS`. Cost: web search is $10 per 1 000 searches, so with three
-  searches and their results a valuation is about $0.035 on Haiku 5.5 and $0.14 on Sonnet 5.5. No separate AI subscription ([promotion-plan.md](../promotion-plan.md) §2).
+  calls in `GLOBAL_DAILY_CALLS` (40). Cost (eval run 120): about $0.025 a valuation on Haiku 5.5
+  and $0.15 on Sonnet 5.5 (web search is $10 per 1 000 searches); with the Sonnet fallback about
+  a quarter of the time, some $0.06 on average. No separate AI subscription ([promotion-plan.md](../promotion-plan.md) §2).
 - **Cost** (Anthropic prices per 1M tokens, 2026-10: Haiku 5.5 $0.10 / $0.50, Sonnet 5.5 $2 / $10,
   Opus 5.5 $4 / $20; a message ≈ 2 model calls, ~16k input tokens half cached, ~1k output): Haiku
   ≈ $0.002 a message, ≈ $0.12 for 60 a month, against ≈ $0.67 a month net of an annual Pro.
@@ -441,7 +445,8 @@ spending, no em dashes, in all 11 languages.
   Almaty, Astana, Shymkent and Karaganda, a Camry and a Cobalt, land in Kaskelen, flats in
   Istanbul, Madrid and London, a Golf in Germany, a Civic in the US, and a handmade thing whose
   answer is "too few"), each with a dated reference from official statistics, market reports or
-  price guides and a tolerance. Reports passes, the median deviation, comparables kept of those
+  price guides and a tolerance; `--fallback <model>` (the workflow's `fallback` input) runs the
+  production pair. Reports passes, the median deviation, comparables kept of those
   reported, links dropped as not in the results, searches, cost and time. About $0.46 a run on
   Haiku 5.5 and $1.82 on Sonnet 5.5; references older than three months are refreshed, never
   widened. A change to the valuation prompt bumps `VALUATION_PROMPT_VERSION` and runs it.

@@ -32,6 +32,9 @@ on:
       cases:
         description: "eval, eval-valuation: comma-separated case ids, or all"
         default: "all"
+      fallback:
+        description: "eval-valuation: the model asked again when the first finds too few listings, or none"
+        default: "none"
 
 defaults:
   run:
@@ -127,7 +130,8 @@ jobs:
           MODELS: ${{ inputs.models }}
           EFFORT: ${{ inputs.effort }}
           CASES: ${{ inputs.cases }}
-        run: npm run eval:valuation -- --models "$MODELS" --effort "$EFFORT" --cases "$CASES" --yes
+          FALLBACK: ${{ inputs.fallback }}
+        run: npm run eval:valuation -- --models "$MODELS" --effort "$EFFORT" --cases "$CASES" --fallback "$FALLBACK" --yes
       - name: Summary
         if: always()
         run: cat eval/out/valuation-*/summary.md >> "$GITHUB_STEP_SUMMARY" || true

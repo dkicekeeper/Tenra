@@ -6,12 +6,14 @@ import { consumeValuation } from "../src/quota";
 import {
   buildValuationParams,
   computeValuation,
+  densestGroup,
   normalizeUrl,
   parseValuationRequest,
   REPORT_LISTINGS,
   REPORT_LISTINGS_TOOL,
   searchListings,
   searchResults,
+  valuate,
   VALUATION_SYSTEM_PROMPT,
   valuationConfig,
   type AssetDescription,
@@ -286,10 +288,17 @@ describe("computeValuation", () => {
     const report: Report = { listings: [...real, ...misread].map((price, i) => listing({ source_url: url, price, currency: "TRY", size_m2: 100 + (i % 3), rooms: 2 })), site_averages: [] };
     const kadikoy: AssetDescription = { kind: "apartment", country: "TR", city: "İstanbul", district: "Kadıköy", area_m2: 100, rooms: 2 };
     const value = computeValuation(kadikoy, report, results, now);
-    expect(value.excluded).toEqual({ far_from_median: 8 });
+    expect(value.excluded).toEqual({ outside_cluster: 8 });
     expect(value).toMatchObject({ status: "ok", currency: "TRY", count: 9 });
     expect(value.value! / 15_950_000).toBeGreaterThan(0.95);
     expect(value.value! / 15_950_000).toBeLessThan(1.05);
+  });
+
+  it("keeps the dearer of two groups as large as each other", () => {
+    // As in run 120's Istanbul search: eight real prices and eight read ten times too low.
+    expect(densestGroup([126_500, 159_500, 203_500, 225_000, 253_000, 259_500, 267_700, 132_400, 5_150, 9_200, 4_780, 6_220, 10_900, 9_500, 6_670, 5_590])).toEqual([126_500, 267_700]);
+    expect(densestGroup([100, 120, 130])).toEqual([100, 130]);
+    expect(densestGroup([100])).toEqual([100, 100]);
   });
 
   it("prices by the many same-room listings when only a few give a size", () => {
@@ -387,6 +396,40 @@ describe("searchListings", () => {
   });
 });
 
+describe("valuate", () => {
+  const listings = (n: number) =>
+    reported({ listings: Array.from({ length: n }, (_, i) => listing({ source_url: KRISHA, price: 48_000_000 + i * 1_000_000, size_m2: 62 + i, rooms: 2 })), site_averages: [] });
+
+  it("asks the fallback model again when the first finds too few listings", async () => {
+    const config = valuationConfig(readConfig({ VALUATION_FALLBACK_MODEL: "claude-sonnet-5-5" }));
+    const models: string[] = [];
+    const valuation = await valuate(
+      async (params) => {
+        models.push(params.model);
+        return params.model === "claude-haiku-5-5"
+          ? message([...searched("s1", "q", [KRISHA]), reported({ listings: [], site_averages: [] })], "tool_use")
+          : message([...searched("s2", "q", [KRISHA]), listings(5)], "tool_use");
+      },
+      config,
+      flat,
+      now,
+    );
+    expect(models).toEqual(["claude-haiku-5-5", "claude-sonnet-5-5"]);
+    expect(valuation).toMatchObject({ model: "claude-sonnet-5-5", usedFallback: true, result: { status: "ok", count: 5 } });
+    expect(valuation.searches.map((s) => s.model)).toEqual(["claude-haiku-5-5", "claude-sonnet-5-5"]);
+  });
+
+  it("keeps the first model's value when it found enough, and without a fallback", async () => {
+    const answer = async () => message([...searched("s1", "q", [KRISHA]), listings(5)], "tool_use");
+    const withFallback = await valuate(answer, valuationConfig(readConfig({ VALUATION_FALLBACK_MODEL: "claude-sonnet-5-5" })), flat, now);
+    expect(withFallback).toMatchObject({ model: "claude-haiku-5-5", usedFallback: false });
+    const empty = async () => message([reported({ listings: [], site_averages: [] })], "tool_use");
+    const alone = await valuate(empty, valuationConfig(readConfig({})), flat, now);
+    expect(alone).toMatchObject({ usedFallback: false, result: { status: "insufficient" } });
+    expect(alone.searches).toHaveLength(1);
+  });
+});
+
 describe("POST /v1/valuation", () => {
   const ctx = { waitUntil() {}, passThroughOnException() {} } as never;
   const env = (overrides: Record<string, string>, kv = new MemoryKV()) => ({ QUOTA: kv, ANTHROPIC_API_KEY: "test", REVENUECAT_SECRET_KEY: "test", ...overrides }) as never;
@@ -434,7 +477,7 @@ describe("consumeValuation", () => {
     expect((await consumeValuation(kv, "p", "pro", config, now)).allowed).toBe(true);
     // A third would take the day to 75 of 60.
     expect(await consumeValuation(kv, "p", "pro", config, now)).toMatchObject({ allowed: false, reason: "global" });
-    expect(readConfig({})).toMatchObject({ valuationEnabled: false, freeMonthlyValuations: 2, proMonthlyValuations: 30, valuationMaxSearches: 3 });
+    expect(readConfig({})).toMatchObject({ valuationEnabled: false, freeMonthlyValuations: 2, proMonthlyValuations: 30, valuationMaxSearches: 3, valuationFallbackModel: "" });
   });
 });
 

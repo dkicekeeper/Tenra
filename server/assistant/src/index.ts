@@ -7,7 +7,7 @@ import { PROMPT_VERSION } from "./prompt";
 import { RENDER_REPLY } from "./tools";
 import { consumeCall, consumeValuation, type Tier } from "./quota";
 import { isValidUserId, parseTurnRequest, PROTOCOL_VERSION, ValidationError } from "./validate";
-import { computeValuation, parseValuationRequest, searchListings, VALUATION_PROMPT_VERSION, valuationConfig } from "./valuation";
+import { parseValuationRequest, valuate, VALUATION_PROMPT_VERSION, valuationConfig } from "./valuation";
 
 // POST /v1/turn — one model call of the assistant loop. The app runs the loop: it sends the
 // conversation, executes the tools Claude asks for on the phone, and calls again with the
@@ -186,13 +186,13 @@ async function valuation(request: Request, env: Env, config: Config): Promise<Re
   const client = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY, maxRetries: 1 });
   const now = new Date();
   try {
-    const outcome = await searchListings((params) => client.beta.messages.stream(params).finalMessage(), valuationConfig(config), body.asset, now);
-    if (outcome.refused) return fail(422, "refused");
-    const result = computeValuation(body.asset, outcome.report, outcome.results, now);
+    const valuation = await valuate((params) => client.beta.messages.stream(params).finalMessage(), valuationConfig(config), body.asset, now);
+    if (valuation.searches.every((s) => s.outcome.refused)) return fail(422, "refused");
     return json({
-      ...result,
-      searches: outcome.usage.searches,
-      model: config.valuationModel,
+      ...valuation.result,
+      searches: valuation.searches.reduce((n, s) => n + s.outcome.usage.searches, 0),
+      model: valuation.model,
+      fallback: valuation.usedFallback,
       prompt: VALUATION_PROMPT_VERSION,
       tier,
       quota: { used: quota.used, limit: quota.limit },

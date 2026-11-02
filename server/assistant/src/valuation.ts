@@ -10,7 +10,7 @@ import { isValidUserId, PROTOCOL_VERSION, ValidationError } from "./validate";
 // request carries the asset's kind, place and characteristics, never its name or an address,
 // and nothing of it is logged.
 
-export const VALUATION_PROMPT_VERSION = "2026-11-02.2";
+export const VALUATION_PROMPT_VERSION = "2026-11-02.3";
 export const REPORT_LISTINGS = "report_listings";
 
 type Params = Anthropic.Beta.Messages.MessageCreateParamsNonStreaming;
@@ -309,13 +309,20 @@ export const VALUATION_SYSTEM_PROMPT = `You find listings for sale that are comp
 5. If nothing relevant was found, call report_listings with empty lists. Write no other text.`;
 
 export interface ValuationConfig {
+  /** Asked again when the first model finds too few listings or declines; none when empty. */
+  fallbackModel?: string;
   model: string;
   effort: Config["effort"];
   maxSearches: number;
 }
 
 export function valuationConfig(config: Config): ValuationConfig {
-  return { model: config.valuationModel, effort: config.valuationEffort, maxSearches: config.valuationMaxSearches };
+  return {
+    model: config.valuationModel,
+    effort: config.valuationEffort,
+    maxSearches: config.valuationMaxSearches,
+    ...(config.valuationFallbackModel && config.valuationFallbackModel !== config.valuationModel ? { fallbackModel: config.valuationFallbackModel } : {}),
+  };
 }
 
 /** `searchesLeft`: a later call of the same valuation keeps the search tool (its earlier calls are
@@ -365,6 +372,9 @@ export interface SearchOutcome {
   calls: number;
   /** The model declined (stop_reason "refusal"). */
   refused: boolean;
+  /** Each call's stop reason and any text the model wrote (it should write none): for the eval,
+   * never sent to the phone or logged. */
+  trace: { stop_reason: string | null; text: string }[];
 }
 
 const NUDGE = "Call report_listings now with the listings you found.";
@@ -380,6 +390,7 @@ export async function searchListings(call: ModelCall, config: ValuationConfig, a
   let nudged = false;
   let refused = false;
   let report: Report | undefined;
+  const trace: SearchOutcome["trace"] = [];
 
   while (calls < 3) {
     const params = { ...buildValuationParams(config, asset, now, config.maxSearches - usage.searches, withLocation), messages };
@@ -399,6 +410,10 @@ export async function searchListings(call: ModelCall, config: ValuationConfig, a
     usage.cache_creation_input_tokens += message.usage.cache_creation_input_tokens ?? 0;
     usage.searches += message.usage.server_tool_use?.web_search_requests ?? 0;
     content.push(...message.content);
+    trace.push({
+      stop_reason: message.stop_reason,
+      text: message.content.flatMap((b) => (b.type === "text" ? [b.text] : [])).join("\n").slice(0, 2000),
+    });
     if (message.stop_reason === "refusal") {
       refused = true;
       break;
@@ -411,7 +426,35 @@ export async function searchListings(call: ModelCall, config: ValuationConfig, a
     nudged = true;
     messages.push({ role: "user", content: [{ type: "text", text: NUDGE }] });
   }
-  return { report, results: searchResults(content), queries: queriesOf(content), usage, calls, refused };
+  return { report, results: searchResults(content), queries: queriesOf(content), usage, calls, refused, trace };
+}
+
+export interface Valuation {
+  result: ValuationResult;
+  /** The model whose search the result comes from. */
+  model: string;
+  /** Every search made, the first model's first. */
+  searches: { model: string; outcome: SearchOutcome }[];
+  usedFallback: boolean;
+}
+
+/** The value of an asset: the first model's search, and when it finds too few listings (or
+ * declines) the fallback model's, whose result then stands. */
+export async function valuate(call: ModelCall, config: ValuationConfig, asset: AssetDescription, now: Date): Promise<Valuation> {
+  const first = await searchListings(call, config, asset, now);
+  const firstResult = computeValuation(asset, first.report, first.results, now);
+  const searches = [{ model: config.model, outcome: first }];
+  if (!config.fallbackModel || (firstResult.status === "ok" && !first.refused)) {
+    return { result: firstResult, model: config.model, searches, usedFallback: false };
+  }
+  const second = await searchListings(call, { ...config, model: config.fallbackModel }, asset, now);
+  searches.push({ model: config.fallbackModel, outcome: second });
+  const secondResult = computeValuation(asset, second.report, second.results, now);
+  // A refused or empty second search does not hide what the first one found.
+  const useSecond = !second.refused && (secondResult.status === "ok" || first.refused);
+  return useSecond
+    ? { result: secondResult, model: config.fallbackModel, searches, usedFallback: true }
+    : { result: firstResult, model: config.model, searches, usedFallback: true };
 }
 
 // MARK: - Reading the response
@@ -529,13 +572,33 @@ export interface ValuationResult {
 }
 
 export const MIN_COMPARABLES = 3;
-/** A comparable this many times above or below the median is a misread, not a market price. */
-const FAR_FROM_MEDIAN = 2.5;
+/** Prices of comparable things span less than this from the cheapest to the dearest; a group
+ * this far from the main one is misread (a power of ten) or another kind of thing. */
+const CLUSTER_SPAN = 6.25;
 const LISTINGS_RETURNED = 12;
 
 interface Candidate {
   listing: ReportedListing;
   result: SearchResult;
+}
+
+/** The bounds of the largest group of values within CLUSTER_SPAN of each other; of two as large,
+ * the dearer (misreads drop digits far more often than they add them). */
+export function densestGroup(values: number[]): [number, number] {
+  const sorted = [...values].sort((a, b) => a - b);
+  let best: [number, number] = [sorted[0]!, sorted[0]!];
+  let bestCount = 0;
+  let end = 0;
+  for (let start = 0; start < sorted.length; start++) {
+    end = Math.max(end, start);
+    while (end + 1 < sorted.length && sorted[end + 1]! <= sorted[start]! * CLUSTER_SPAN) end++;
+    const count = end - start + 1;
+    if (count >= bestCount) {
+      bestCount = count;
+      best = [sorted[start]!, sorted[end]!];
+    }
+  }
+  return best;
 }
 
 export function quantile(sorted: number[], p: number): number {
@@ -627,13 +690,14 @@ export function computeValuation(asset: AssetDescription, report: Report | undef
   const { chosen, values, basis, unit, size, relaxed } = comparables(asset, candidates, drop);
 
   let kept = chosen.map((c, i) => ({ c, v: values[i]! }));
-  // A price misread by a power of ten, or another kind of thing: more than 2.5 times off the
-  // median. Tukey's fences miss it when such prices are many (they make their own cluster).
+  // Prices misread by a power of ten, or another kind of thing, make a group of their own, as
+  // large as the real one at times (Tukey's fences and the median then fail): the largest group
+  // within CLUSTER_SPAN is the market.
   if (kept.length >= MIN_COMPARABLES) {
-    const middle = quantile(kept.map((k) => Math.log(k.v)).sort((a, b) => a - b), 0.5);
+    const [lo, hi] = densestGroup(kept.map((k) => k.v));
     kept = kept.filter((k) => {
-      if (Math.abs(Math.log(k.v) - middle) <= Math.log(FAR_FROM_MEDIAN)) return true;
-      drop("far_from_median");
+      if (k.v >= lo && k.v <= hi) return true;
+      drop("outside_cluster");
       return false;
     });
   }

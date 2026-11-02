@@ -13,6 +13,7 @@ export interface Env {
   APP_ID?: string;
   VALUATION_ENABLED?: string;
   VALUATION_MODEL?: string;
+  VALUATION_FALLBACK_MODEL?: string;
   VALUATION_EFFORT?: string;
   VALUATION_MAX_SEARCHES?: string;
   FREE_MONTHLY_VALUATIONS?: string;
@@ -39,6 +40,8 @@ export interface Config {
   valuationEnabled: boolean;
   /** Its own model: an eval (eval/valuation.ts) chooses it, apart from the chat's. */
   valuationModel: string;
+  /** Asked again when the first model finds too few listings or declines; "" for none. */
+  valuationFallbackModel: string;
   valuationEffort: Effort;
   /** Web searches per valuation, each about $0.01. */
   valuationMaxSearches: number;
@@ -75,10 +78,11 @@ export function readConfig(env: Partial<Env>): Config {
     appId: env.APP_ID || "SY2L2VMQP7.dakacom.Tenra",
     valuationEnabled: env.VALUATION_ENABLED === "true",
     valuationModel: env.VALUATION_MODEL || "claude-haiku-5-5",
+    valuationFallbackModel: env.VALUATION_FALLBACK_MODEL ?? "",
     valuationEffort: effortOf(env.VALUATION_EFFORT),
     valuationMaxSearches: Math.max(1, Math.min(int(env.VALUATION_MAX_SEARCHES, 3), 10)),
     freeMonthlyValuations: int(env.FREE_MONTHLY_VALUATIONS, 2),
     proMonthlyValuations: int(env.PRO_MONTHLY_VALUATIONS, 30),
-    valuationCallWeight: Math.max(1, int(env.VALUATION_CALL_WEIGHT, 25)),
+    valuationCallWeight: Math.max(1, int(env.VALUATION_CALL_WEIGHT, 40)),
   };
 }

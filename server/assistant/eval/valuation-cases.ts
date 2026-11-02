@@ -46,8 +46,17 @@ export const VALUATION_CASES: ValuationCase[] = [
   },
   {
     id: "kz-karaganda-flat-2r-panel",
-    asset: { kind: "apartment", country: "KZ", city: "Караганда", area_m2: 48, rooms: 2, year_built: 1975, building: "panel", condition: "standard" },
-    expect: { status: "ok", currency: "KZT", value: 19_600_000, tolerance: 0.25, source: "BNS: resale in Karaganda 408 119 KZT/m2 (September 2026), every kind of building", asOf: "2026-10-09" },
+    // The app's form asks for the district: without it the search found mostly Maikuduk, the
+    // cheapest part of the city (run 120).
+    asset: { kind: "apartment", country: "KZ", city: "Караганда", district: "Казыбек би", area_m2: 48, rooms: 2, year_built: 1975, building: "panel", condition: "standard" },
+    expect: {
+      status: "ok",
+      currency: "KZT",
+      value: 19_100_000,
+      tolerance: 0.25,
+      source: "Four old-stock two-room listings of the Kazybek bi district read by hand, median 397 thousand KZT/m2; BNS resale in Karaganda 408 119 KZT/m2 (September 2026)",
+      asOf: "2026-11-02",
+    },
   },
   {
     id: "kz-camry-2019",
@@ -79,7 +88,7 @@ export const VALUATION_CASES: ValuationCase[] = [
   {
     id: "es-madrid-chamberi",
     asset: { kind: "apartment", country: "ES", city: "Madrid", district: "Chamberí", area_m2: 80, rooms: 2 },
-    expect: { status: "ok", currency: "EUR", value: 733_000, tolerance: 0.15, source: "idealista: Chamberí 9 159 EUR/m2 (September 2026)", asOf: "2026-10-02" },
+    expect: { status: "ok", currency: "EUR", value: 775_000, tolerance: 0.15, source: "idealista: two-bedroom listings in Chamberí at 9 684 EUR/m2 on average (the district's all flats: 9 159)", asOf: "2026-11-02" },
   },
   {
     id: "gb-london-lewisham",

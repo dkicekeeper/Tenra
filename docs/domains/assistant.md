@@ -330,8 +330,8 @@ The app runs the agent loop, because the tools run on the phone: one server call
 ### Valuation from listings (`POST /v1/valuation`)
 
 What an asset is worth by comparable listings found with web search, in any country
-([plan-assets-roadmap.md](../plan-assets-roadmap.md) §3; the app does not call it yet, so
-`VALUATION_ENABLED` is `false`). Code: `src/valuation.ts`.
+([plan-assets-roadmap.md](../plan-assets-roadmap.md) §3; on since 2026-11-03, `VALUATION_ENABLED`
+`true`, for Tenra Pro only, 10 a month). Code: `src/valuation.ts`.
 
 - Same gates as a turn: the country, `x-tenra-user`, the App Attest assertion over the body, Pro
   for the `user` inside it. Body (8 KB at most): `{"protocol": 1, "user": "...", "asset": {...}}`,
@@ -378,8 +378,10 @@ What an asset is worth by comparable listings found with web search, in any coun
   once `GET /v1/health` names a valuation prompt (`valuationAvailable()`, once a launch). The
   month's estimates are the same count for both.
 - In the chat it is Ten's read tool `estimate_asset_value` (`FinanceToolkit+Assets.swift`), which
-  the server offers only while `VALUATION_ENABLED` is on (`toolsFor`; the name stays valid in a
-  history) and the prompt only when `<app_context>` has `valuation: listings` (this app version
+  the server offers only while `VALUATION_ENABLED` is on and only to Pro while
+  `FREE_MONTHLY_VALUATIONS` is 0 (`toolsFor(config, tier)`; the name stays valid in a history;
+  without it and with the valuation line, Ten says the estimate comes with Tenra Pro) and the
+  prompt only when `<app_context>` has `valuation: listings` (this app version
   and later). The phone sends the asset's kind, the country (the model's, else the one saved,
   else the phone's region) and its characteristics, saved in its form (`AssetAttributes`, v19)
   with the fields the model gave over them, only the kind's and only values the server takes,
@@ -439,8 +441,9 @@ spending, no em dashes, in all 11 languages.
   reset it. A device without App Attest gets no assistant.
 - **Pro**: no allowance within fair use (`PRO_MONTHLY_CALLS`), Founding Users and lifetime
   included.
-- **Valuations** (`POST /v1/valuation`) count apart: `FREE_MONTHLY_VALUATIONS` (2) per attested
-  key, `PRO_MONTHLY_VALUATIONS` (30) per customer, and each weighs `VALUATION_CALL_WEIGHT` (25)
+- **Valuations** (`POST /v1/valuation`) count apart, Pro only (the owner's decision,
+  2026-11-03): `FREE_MONTHLY_VALUATIONS` (0) per attested key, `PRO_MONTHLY_VALUATIONS` (10) per
+  customer, and each weighs `VALUATION_CALL_WEIGHT` (25)
   calls in `GLOBAL_DAILY_CALLS` (40, on the safe side). Cost: about $0.025 a valuation on Haiku
   5.5 and $0.15 on Sonnet 5.5 (web search is $10 per 1 000 searches); the Sonnet fallback ran for
   4 of 13 cases in eval run 122 and none in run 124. No separate AI subscription ([promotion-plan.md](../promotion-plan.md) §2).
@@ -478,12 +481,18 @@ spending, no em dashes, in all 11 languages.
   injection in a note, `blocks_decode`, `no_refusal`, `noPick`. A prompt change bumps
   `PROMPT_VERSION` and runs the eval before the deploy.
 - **Valuation eval** (`eval/valuation.ts`, `npm run eval:valuation -- --models ... --yes`): the
-  endpoint's own code with live web search on 13 cases (`eval/valuation-cases.ts`: flats in
-  Almaty, Astana, Shymkent and Karaganda, a Camry and a Cobalt, land in Kaskelen, flats in
-  Istanbul, Madrid and London, a Golf in Germany, a Civic in the US, and a handmade thing whose
-  answer is "too few"), each with a dated reference from official statistics, market reports or
+  endpoint's own code with live web search on 21 cases in 10 countries (`eval/valuation-cases.ts`:
+  flats in Almaty, Astana, Shymkent, Karaganda, Kyiv (in US dollars), Seoul, Berlin, Lyon, São
+  Paulo, Istanbul, Madrid and London, a Camry, a Cobalt and an Elantra in Kazakhstan, a Clio in
+  Turkey, a Golf in Germany, a Civic in the US, land in Kaskelen, and a handmade box and a
+  one-off sculpture whose answer is "too few"), each with a dated reference from official statistics, market reports or
   price guides and a tolerance; `--fallback <model>` (the workflow's `fallback` input) runs the
-  production pair. Reports passes, the median deviation, comparables kept of those
+  production pair, `--repeat N` (`repeat`) each case N times with a table of passes per case
+  (the search results change from run to run). `npm run eval:replay -- <records dirs>`
+  (`eval/replay.ts`) re-grades saved records with the code as it is now, without the API: a
+  change to the filters or the grouping is checked against real searches for free. The price
+  group that counts is the one seen on the most results pages, then with the most listings
+  (`densestGroup`). Reports passes, the median deviation, comparables kept of those
   reported, links dropped as not in the results, searches, cost and time. About $0.46 a run on
   Haiku 5.5 and $1.82 on Sonnet 5.5; references older than three months are refreshed, never
   widened. A change to the valuation prompt bumps `VALUATION_PROMPT_VERSION` and runs it.

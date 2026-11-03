@@ -12,10 +12,9 @@ third look on build 64 found three more, fixed in #117 with DesignKit 8.4.2
 fourth look on build 65 found six more: five fixed in #119 with DesignKit 8.5.0
 (dkicekeeper/DesignKit#98) and the assets' held days, in `main` since 2026-11-02, in 1.8 build 66
 (2026-11-02); the assets' payments by hand (point 6, CoreData v18) came in #120, in `main` since
-2026-11-02, in 1.8 build 67 (2026-11-02), which waits on the owner's check on the phone. The
-What's New below
-goes into 1.8's `release-notes.md` once 1.7.1's notes move to the archive; then this file moves to
-`archive/plans/`.
+2026-11-02, in 1.8 build 67 (2026-11-02). The owner checked builds 66-69 on the phone on
+2026-11-03 (everything fine); the What's New below went into 1.8's `release-notes.md`, and 1.7.1
+goes out with 1.8 (the owner's decision, 2026-11-03). Landed; archived 2026-11-03.
 
 ## What it does
 
@@ -23,14 +22,14 @@ goes into 1.8's `release-notes.md` once 1.7.1's notes move to the archive; then 
   not over ("so far"); the banner names the series and gives the change from the period before
   (green the better way); a long press and a drag sum up a stretch; the axis always labels its
   periods
-  ([domains/charts.md](domains/charts.md)).
+  ([domains/charts.md](../../domains/charts.md)).
 - The chart options menu by every chart's zoom (`ChartOptionsHost`): the spending forecast, the
   same period a year ago, the average line, highs and lows, a ruler the chart scrolls under, kept
   for every chart; all off until the person turns one on.
 - The category screen: its months as bars with a monthly budget as a line, and from the
   menu the same month a year ago and this month's forecast (`CategoryDetailView.monthlyChart`). The
   merchant screen's and Ten's charts mark this month as not over.
-- The "By day" insight in Spending (`spending_by_day`, [domains/insights.md](domains/insights.md)).
+- The "By day" insight in Spending (`spending_by_day`, [domains/insights.md](../../domains/insights.md)).
 
 ## After the device check (2026-10-30)
 
@@ -39,7 +38,7 @@ The owner's list from build 62, each point and what changed:
 1. Points of one brand ("ZARA MEGA", "ZARA DOSTYK PLAZA") merge into one merchant
    (`MerchantGroupStore`, "Combine points" in the merchant's menu, `MerchantMergeView`); its
    screen counts every point and filters by point with chips under the hero; Insights' top
-   merchant counts the brand ([domains/intents.md](domains/intents.md) §6.1).
+   merchant counts the brand ([domains/intents.md](../../domains/intents.md) §6.1).
 2. Payments entered by hand link to a merchant ("Link payments", `LinkPaymentsView` with
    `.merchant`); a link glyph on the row unlinks one.
 3. The merchant's chart opens on this month in the middle: two years of months, the category
@@ -65,7 +64,7 @@ Device check on build 63: the points above on the phone, in light and dark. The 
 second look (2026-10-31) found four more, fixed in #115 and DesignKit 8.4.1 (build 64):
 
 1. The keyboard hides on a tap off a text field, everywhere (`KeyboardDismissal`,
-   [design-system.md](design-system.md) §5 "The keyboard").
+   [design-system.md](../../design-system.md) §5 "The keyboard").
 2. The ruler option: 8.4.0 drew the selection over the plot at the ruler, so it rode with the
    ruler, off the line and the bar; DesignKit 8.4.1 selects the period on the chart once the
    scroll rests.
@@ -80,7 +79,7 @@ Device check on build 65 (2026-11-02), the owner's fourth look, fixed in #119 an
 1. Loans did not reorder (the drag saved `Account.order`, `LoansViewModel.loans` ignored it);
    deposits, goals, debts and assets move at once too.
 2. A logo from one's own picture, cropped to a square (DesignKit 8.5.0's `SquareImageCropper`,
-   `IconPicker`'s Photo tab; `UserLogoStore`, [domains/logos.md](domains/logos.md)).
+   `IconPicker`'s Photo tab; `UserLogoStore`, [domains/logos.md](../../domains/logos.md)).
 3. The chart still jumped to another month after a scroll: a probe showed SwiftUI re-applies a
    scroll position binding that differs from the offset, and the binding held Swift Charts'
    report (the month before, at rest). DesignKit 8.5.0 reads the period from the exact offset.
@@ -90,7 +89,7 @@ Device check on build 65 (2026-11-02), the owner's fourth look, fixed in #119 an
    bought on 1 June 2021, took the repairs of the car before it): it counts the days it is held,
    and two assets held one after another may share a category (build 66). Its menu links any
    payment by hand, removes one and gives removed ones back ("Link payments", "Remove payments",
-   "Removed payments", CoreData v18, build 67; [domains/assets.md](domains/assets.md)).
+   "Removed payments", CoreData v18, build 67; [domains/assets.md](../../domains/assets.md)).
 
 Device check on build 64: the owner's third look (2026-10-31) found three more, fixed in #117
 and DesignKit 8.4.2 (build 65):
@@ -101,7 +100,7 @@ and DesignKit 8.4.2 (build 65):
    in bar and line charts.
 2. A payment entered by hand had a merchant only through its description: the transaction forms
    have a "Merchant" row (`TransactionMerchantRow`, `MerchantPickerView`) that links it; the
-   description stays a free note ([domains/intents.md](domains/intents.md) §6).
+   description stays a free note ([domains/intents.md](../../domains/intents.md) §6).
 3. Old payments entered by hand could not be found to link to a merchant: "Link payments" filtered
    and searched only the legacy subcategory field, so Transport → Taxi found nothing; it reads the
    linked subcategories now.
@@ -117,7 +116,7 @@ from build 62 (the owner's call, 2026-10-30); build 60 opened with the forecast 
 
 ## What's New (draft, 13 storefront locales)
 
-No em dashes. en-GB takes ru's text, as in [release-notes.md](release-notes.md).
+No em dashes. en-GB takes ru's text, as in [release-notes.md](../../release-notes.md).
 
 ### en-US
 

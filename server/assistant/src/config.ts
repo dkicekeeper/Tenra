@@ -81,8 +81,8 @@ export function readConfig(env: Partial<Env>): Config {
     valuationFallbackModel: env.VALUATION_FALLBACK_MODEL ?? "",
     valuationEffort: effortOf(env.VALUATION_EFFORT),
     valuationMaxSearches: Math.max(1, Math.min(int(env.VALUATION_MAX_SEARCHES, 3), 10)),
-    freeMonthlyValuations: int(env.FREE_MONTHLY_VALUATIONS, 2),
-    proMonthlyValuations: int(env.PRO_MONTHLY_VALUATIONS, 30),
+    freeMonthlyValuations: int(env.FREE_MONTHLY_VALUATIONS, 0),
+    proMonthlyValuations: int(env.PRO_MONTHLY_VALUATIONS, 10),
     valuationCallWeight: Math.max(1, int(env.VALUATION_CALL_WEIGHT, 40)),
   };
 }

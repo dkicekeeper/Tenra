@@ -1,6 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import type { Config } from "./config";
 import { SYSTEM_PROMPT } from "./prompt";
+import type { Tier } from "./quota";
 import { toolsFor } from "./tools";
 
 type Params = Anthropic.Beta.Messages.MessageCreateParamsStreaming;
@@ -18,13 +19,13 @@ const SERVER_FALLBACK_MODELS = new Set(["claude-opus-5-5", "claude-sonnet-5-5", 
 // without that reasoning.
 const THINKING_BINDING_BETA = "thinking-binding-controls-2026-08-01";
 
-export function buildParams(config: Config, messages: Anthropic.Beta.BetaMessageParam[]): Params {
+export function buildParams(config: Config, messages: Anthropic.Beta.BetaMessageParam[], tier: Tier = "pro"): Params {
   const params: Params = {
     model: config.model,
     max_tokens: config.maxTokens,
     // Stable prefix: tools, then this system text. Per-user context lives in the messages.
     system: [{ type: "text", text: SYSTEM_PROMPT }],
-    tools: toolsFor(config),
+    tools: toolsFor(config, tier),
     // Forced tool choice is a 400 on the current models: render_reply is required by the prompt.
     tool_choice: { type: "auto" },
     thinking: { type: "adaptive", block_binding: { prefix_mismatch_behavior: "drop_block" } },

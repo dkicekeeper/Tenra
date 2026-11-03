@@ -89,6 +89,7 @@ struct ScreenMockupTests {
             .environment(coordinator)
             .environment(coordinator.transactionStore)
             .environment(TimeFilterManager())
+            .environment(PremiumManager.shared)
         }
     }
 
@@ -102,6 +103,7 @@ struct ScreenMockupTests {
             .environment(coordinator)
             .environment(coordinator.transactionStore)
             .environment(TimeFilterManager())
+            .environment(PremiumManager.shared)
         }
     }
 
@@ -115,6 +117,7 @@ struct ScreenMockupTests {
             .environment(coordinator)
             .environment(coordinator.transactionStore)
             .environment(TimeFilterManager())
+            .environment(PremiumManager.shared)
         }
     }
 

@@ -20,6 +20,9 @@ New since 1.7 (in the store since 2026-10-24):
 - Charts on DesignKit 8.4 (the current period in the middle, the options menu), a category's
   months with its budget, the "By day" insight for a year, merchants that join a brand's points
   ([plan-charts-by-day.md](archive/plans/plan-charts-by-day.md)).
+- Rows on DesignKit 8.6.0: 12 pt above and below every row, a divider between rows on every
+  list, a section's header 12 pt above its card (the row audit, PR #127). Not in the store
+  texts: a polish, not a feature.
 - From 1.7.1: bank notification capture announced (iOS 27, in the app since 1.7), goals follow
   rates and the day, debts' repayment above what is left asks, Ten's drafts checked again at
   Save, the permission texts name Ten, quicker deposit and loan edits.

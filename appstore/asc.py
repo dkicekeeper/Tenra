@@ -367,8 +367,9 @@ def release_notes(version: str, path: Path = NOTES) -> dict[str, str]:
 
 def prepare_version(app: str, version: str, number: str | None, minutes: int) -> None:
     """Create the App Store version (released after approval) if it is missing, set What's New for
-    every locale in docs/release-notes.md and select build `number` once it is processed. It never
-    submits for review."""
+    every locale in docs/release-notes.md and select build `number` once it is processed. A version
+    already in a draft review submission (prepare-review, READY_FOR_REVIEW) keeps its texts and only
+    takes the new build. It never submits for review."""
     notes = release_notes(version)
     found, _ = get_all(f"/v1/apps/{app}/appStoreVersions",
                        {"filter[versionString]": version, "filter[platform]": "IOS"})
@@ -384,6 +385,12 @@ def prepare_version(app: str, version: str, number: str | None, minutes: int) ->
         print(f"Version {version} created (released after approval).")
     version_id = record["id"]
     state = record["attributes"].get("appVersionState") or record["attributes"].get("appStoreState")
+    if state == "READY_FOR_REVIEW" and number:
+        # In a draft review submission, not sent yet: the build can still change, the texts stay.
+        print(f"Version {version} is in a draft review submission: What's New left as is, "
+              f"only the build changes.")
+        select_build(app, version_id, version, number, minutes)
+        return
     if state not in EDITABLE:
         sys.exit(f"Version {version} is {state}: its metadata can't be edited now.")
 
@@ -408,6 +415,11 @@ def prepare_version(app: str, version: str, number: str | None, minutes: int) ->
 
     if not number:
         return
+    select_build(app, version_id, version, number, minutes)
+
+
+def select_build(app: str, version_id: str, version: str, number: str, minutes: int) -> None:
+    """Select build `number` of `version` for the App Store version once it is processed."""
     deadline = time.time() + minutes * 60
     while True:
         build = next((b for b in builds(app, 20) if b["number"] == number and b["version"] == version), None)

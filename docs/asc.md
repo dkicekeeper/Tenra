@@ -114,7 +114,9 @@ python3 appstore/asc.py builds [--limit 15]
 python3 appstore/asc.py wait-build --build 12 --version 1.5 --wait 40
 python3 appstore/asc.py prepare-version --version 1.5 --build 6 [--wait 30]
                                                 # создать версию (выпуск после одобрения), What's New
-                                                # из docs/release-notes.md, выбрать сборку; без отправки
+                                                # из docs/release-notes.md, выбрать сборку; без отправки.
+                                                # Версия уже в черновике отправки (prepare-review):
+                                                # только меняет сборку, тексты не трогает
 python3 appstore/asc.py keywords --locale ru,en-US   # слова из поля Keywords: к ним привязываются спец. страницы
 python3 appstore/asc.py metadata [--version 1.7]
                                                 # по локалям: название, подзаголовок, Promotional Text,

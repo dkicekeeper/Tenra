@@ -2485,6 +2485,9 @@
 "asset.attr.no" = "Жоқ";
 "asset.attr.country" = "Ел";
 "asset.attr.city" = "Қала немесе ауыл";
+"asset.attr.region" = "Облыс немесе өңір";
+"asset.attr.complex" = "Тұрғын үй кешені";
+"asset.attr.new_building" = "Жаңа үй";
 "asset.attr.district" = "Аудан";
 "asset.attr.area_m2" = "Ауданы, м²";
 "asset.attr.rooms" = "Бөлме саны";

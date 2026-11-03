@@ -2485,6 +2485,9 @@
 "asset.attr.no" = "아니요";
 "asset.attr.country" = "국가";
 "asset.attr.city" = "도시";
+"asset.attr.region" = "지역";
+"asset.attr.complex" = "단지";
+"asset.attr.new_building" = "신축";
 "asset.attr.district" = "구·동";
 "asset.attr.area_m2" = "면적 (m²)";
 "asset.attr.rooms" = "방 개수";

@@ -2485,6 +2485,9 @@
 "asset.attr.no" = "いいえ";
 "asset.attr.country" = "国";
 "asset.attr.city" = "市区町村";
+"asset.attr.region" = "地域";
+"asset.attr.complex" = "マンション名";
+"asset.attr.new_building" = "新築";
 "asset.attr.district" = "地区";
 "asset.attr.area_m2" = "面積 (m²)";
 "asset.attr.rooms" = "部屋数";

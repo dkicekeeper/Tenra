@@ -2485,6 +2485,9 @@
 "asset.attr.no" = "Nein";
 "asset.attr.country" = "Land";
 "asset.attr.city" = "Stadt oder Ort";
+"asset.attr.region" = "Region";
+"asset.attr.complex" = "Wohnanlage";
+"asset.attr.new_building" = "Neubau";
 "asset.attr.district" = "Stadtteil";
 "asset.attr.area_m2" = "Fläche, m²";
 "asset.attr.rooms" = "Zimmer";

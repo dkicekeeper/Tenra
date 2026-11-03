@@ -2485,6 +2485,9 @@
 "asset.attr.no" = "Нет";
 "asset.attr.country" = "Страна";
 "asset.attr.city" = "Город или посёлок";
+"asset.attr.region" = "Область или регион";
+"asset.attr.complex" = "Жилой комплекс";
+"asset.attr.new_building" = "Новостройка";
 "asset.attr.district" = "Район";
 "asset.attr.area_m2" = "Площадь, м²";
 "asset.attr.rooms" = "Комнат";

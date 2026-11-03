@@ -224,7 +224,7 @@ struct AssetAttributesSection: View {
         return String(localized: String.LocalizationValue(key))
     }
 
-    private static func icon(of field: Field) -> String {
+    static func icon(of field: Field) -> String {
         switch field {
         case .country: return "globe"
         case .city, .region: return "building.2"

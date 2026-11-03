@@ -66,6 +66,12 @@ struct AssetEditView: View {
     /// Where it is and what it is like, as typed.
     @State private var attributesDraft = AssetAttributesDraft()
 
+    /// A home or a car kept in the local currency (plan A8): they are often priced in dollars, and
+    /// an asset in USD has its value in the base currency follow the rate every day.
+    private var showsDollarHint: Bool {
+        (kind.group == .realEstate || kind == .vehicle) && currency != "USD" && baseCurrency != "USD" && asset?.isSold != true
+    }
+
     var body: some View {
         EditSheetContainer(
             title: asset == nil ? String(localized: "asset.new") : String(localized: "asset.editTitle"),
@@ -89,6 +95,12 @@ struct AssetEditView: View {
                             .font(AppTypography.caption)
                             .foregroundStyle(AppColors.textSecondary)
                             .multilineTextAlignment(.center)
+                        if showsDollarHint {
+                            Text(String(format: String(localized: "asset.dollarHint"), baseCurrency))
+                                .font(AppTypography.caption)
+                                .foregroundStyle(AppColors.textSecondary)
+                                .multilineTextAlignment(.center)
+                        }
                     }
 
                     // The row names the kind: a header with the same word would repeat it.

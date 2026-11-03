@@ -2397,6 +2397,7 @@
 "asset.notFoundDescription" = "Er wurde möglicherweise gelöscht.";
 "asset.namePlaceholder" = "Was ist es?";
 "asset.valueHint" = "Was es heute wert ist";
+"asset.dollarHint" = "Wohnungen und Autos werden oft in Dollar bewertet: Wählen Sie oben USD, dann folgt der Wert in %@ täglich dem Kurs.";
 "asset.salePriceHint" = "Verkaufspreis";
 "asset.kind" = "Art";
 "asset.kind.apartment" = "Wohnung";
@@ -2446,6 +2447,8 @@
 "asset.depreciation.off" = "Aus";
 "asset.depreciationValue" = "%@ pro Jahr";
 "asset.forecast" = "In 3 Jahren";
+"asset.pricePerM2" = "Preis pro m²";
+"asset.pricePerAre" = "Preis pro Ar";
 "assistant.notice.asset.stale" = "Bewertet mit %1$@ am %2$@. Preise ändern sich: Aktualisieren Sie den Wert, damit Ihr Nettovermögen stimmt.";
 "assistant.notice.loanAsset" = "Wenn mit diesem Kredit eine Wohnung oder ein Auto gekauft wurde, fügen Sie sie zu Ihren Vermögenswerten hinzu: Das Nettovermögen zeigt, wie viel davon Ihr eigenes Geld ist.";
 "asset.saleHint" = "Für wie viel haben Sie verkauft?";

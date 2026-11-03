@@ -2397,6 +2397,7 @@
 "asset.notFoundDescription" = "It may have been deleted.";
 "asset.namePlaceholder" = "What is it?";
 "asset.valueHint" = "What it is worth today";
+"asset.dollarHint" = "Homes and cars are often priced in dollars: pick USD above, and the value in %@ follows the rate every day.";
 "asset.salePriceHint" = "What it sold for";
 "asset.kind" = "Type";
 "asset.kind.apartment" = "Apartment";
@@ -2446,6 +2447,8 @@
 "asset.depreciation.off" = "Off";
 "asset.depreciationValue" = "%@ a year";
 "asset.forecast" = "In 3 years";
+"asset.pricePerM2" = "Price per m²";
+"asset.pricePerAre" = "Price per are";
 "assistant.notice.asset.stale" = "Valued at %1$@ on %2$@. Prices change: update the value to keep your net worth accurate.";
 "assistant.notice.loanAsset" = "If this loan bought a flat or a car, add it to your assets: net worth will show how much of it is your own money.";
 "asset.saleHint" = "What did you sell it for?";

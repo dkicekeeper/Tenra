@@ -236,6 +236,10 @@ Tenra 1.8의 새로운 기능:
 
 ## Submission checklist (1.8)
 
+Status 2026-11-03: steps 1-4 and 7-8's code side done (build 71, version 1.8 with What's New,
+Promotional Text, review notes, the draft submission); left to the founder: step 6 (App
+Privacy), step 8 (RevenueCat paywall item) and step 9's button.
+
 1. **CI green** on the branch, then a TestFlight build from `main` (Actions → TestFlight,
    [asc.md](asc.md)).
 2. **Device check**: builds 66-69 checked by the founder (2026-11-03: everything is fine). The

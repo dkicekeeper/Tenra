@@ -266,10 +266,11 @@ Vendor number для отчётов о продажах — 94171379 (`ASC_VENDO
 
 - **«Add the ASC_KEY_ID, ASC_ISSUER_ID and ASC_KEY_P8 repository secrets»** — нет секретов
   (шаг 2), имена с учётом регистра.
-- **«exportArchive The data couldn’t be read because it isn’t in the correct format»** на шаге
-  загрузки, при `ARCHIVE SUCCEEDED` выше: сбой облачной подписи Apple, код ни при чём. Повторить
-  упавшее задание (Re-run failed jobs, тот же номер сборки); 03.11.2026 сборка 69 прошла со
-  второго раза.
+- **«The data couldn’t be read because it isn’t in the correct format»**: сбой подписи Apple, код
+  ни при чём. Бывает на шаге загрузки (`exportArchive …` при `ARCHIVE SUCCEEDED` выше) и на
+  архиве, где за ним идёт «No profiles for 'dakacom.Tenra' were found»: профили не пришли из
+  того же сервиса. Повторить упавшее задание (Re-run failed jobs, тот же номер сборки); 03.11.2026
+  так прошли сборки 69 и 71.
 - **«HTTP 401»** — неверный Key ID, Issuer ID или текст ключа, либо ключ отозван.
 - **«HTTP 403»** — у ключа нет нужной роли (продажам нужна Sales, Finance или Admin).
 - **Ошибка подписи / «Cloud signing permission error»** при сборке — у ключа в секретах роль ниже

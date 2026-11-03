@@ -500,7 +500,7 @@ describe("consumeValuation", () => {
     expect((await consumeValuation(kv, "p", "pro", config, now)).allowed).toBe(true);
     // A third would take the day to 75 of 60.
     expect(await consumeValuation(kv, "p", "pro", config, now)).toMatchObject({ allowed: false, reason: "global" });
-    expect(readConfig({})).toMatchObject({ valuationEnabled: false, freeMonthlyValuations: 2, proMonthlyValuations: 30, valuationMaxSearches: 3, valuationFallbackModel: "" });
+    expect(readConfig({})).toMatchObject({ valuationEnabled: false, freeMonthlyValuations: 0, proMonthlyValuations: 10, valuationMaxSearches: 3, valuationFallbackModel: "" });
   });
 });
 

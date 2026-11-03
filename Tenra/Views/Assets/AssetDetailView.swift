@@ -30,10 +30,14 @@ struct AssetDetailView: View {
     @Environment(TimeFilterManager.self) private var timeFilterManager
     @Environment(\.dismiss) private var dismiss
     @Environment(\.amountsHidden) private var amountsHidden
+    /// The estimate from listings is Tenra Pro's (the owner's decision, 2026-11-03).
+    @Environment(PremiumManager.self) private var premium
     @State private var showingEdit = false
     @State private var showingValuation = false
     /// "Estimate from listings" (AssetEstimateSheet).
     @State private var showingEstimate = false
+    /// "Estimate from listings" without Pro: the paywall, then the estimate.
+    @State private var showingEstimatePaywall = false
     /// "Enter by hand" in the estimate sheet: the money sheet, once that one is gone.
     @State private var valuationAfterEstimate = false
     @State private var showingSale = false
@@ -254,8 +258,8 @@ struct AssetDetailView: View {
                         status: .warning,
                         action: {
                             HapticManager.light()
-                            // From listings once the server values assets; by hand otherwise.
-                            if canEstimate(asset) {
+                            // From listings once the server values assets (Pro); by hand otherwise.
+                            if canEstimate(asset) && premium.isPro {
                                 showingEstimate = true
                             } else {
                                 showingValuation = true
@@ -285,7 +289,11 @@ struct AssetDetailView: View {
                 if canEstimate(asset) {
                     Button {
                         HapticManager.selection()
-                        showingEstimate = true
+                        if premium.isPro {
+                            showingEstimate = true
+                        } else {
+                            showingEstimatePaywall = true
+                        }
                     } label: {
                         Label(String(localized: "asset.estimate.action"), systemImage: "magnifyingglass")
                     }
@@ -378,6 +386,9 @@ struct AssetDetailView: View {
                     }
                 )
             }
+        }
+        .paywallSheet(isPresented: $showingEstimatePaywall, source: .assetEstimate) {
+            showingEstimate = true
         }
         .sheet(item: $editingValuation) { valuation in
             AssetValuationEditView(valuation: valuation, currency: asset.currency) { updated in
@@ -795,4 +806,5 @@ struct AssetDetailView: View {
     .environment(coordinator)
     .environment(coordinator.transactionStore)
     .environment(TimeFilterManager())
+    .environment(PremiumManager.shared)
 }

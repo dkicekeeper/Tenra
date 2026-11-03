@@ -194,6 +194,7 @@ struct GroupedTransactionList<Overlay: View>: View {
                 ForEach(cachedSections) { section in
                     // DesignKit 8.0.0: a glass card per day, as in History: the day and its
                     // total on top, the transactions under it, a divider under each row's text.
+                    // 8.6.0: 12 pt above the day, the rows' own 12 pt under it and at the bottom.
                     VStack(alignment: .leading, spacing: 0) {
                         HStack {
                             SectionHeader(section.displayLabel)
@@ -210,8 +211,7 @@ struct GroupedTransactionList<Overlay: View>: View {
                                 )
                             }
                         }
-                        .padding(.top, AppSpacing.lg)
-                        .padding(.bottom, AppSpacing.xs)
+                        .padding(.top, AppSpacing.md)
 
                         ForEach(Array(section.transactions.enumerated()), id: \.element.id) { index, transaction in
                             let sourceAccount = transaction.accountId.flatMap { accountsById[$0] }
@@ -272,7 +272,6 @@ struct GroupedTransactionList<Overlay: View>: View {
                         }
                     }
                     .padding(.horizontal, AppSpacing.lg)
-                    .padding(.bottom, AppSpacing.sm)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .cardStyle()
                 }

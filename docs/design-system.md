@@ -224,8 +224,8 @@ ScrollView
 └── VStack(spacing: AppSpacing.lg)
     ├── hero (HeroSection)         .screenPadding().scrollHero()
     ├── actions bar                primary + secondary DSButton
-    ├── info rows card             UniversalRow(config: .info) + InfoRowLayout list in .cardStyle()
-    ├── custom sections            the screen's own cards
+    ├── info rows card             UniversalRow(config: .info) + InfoRowLayout rows in a FormSection
+    ├── custom sections            the screen's own cards (FormSection for a list of rows)
     └── GroupedTransactionList     day headers SectionHeader (default style), TransactionCard rows
 + .heroAccentGlow(icon:tint:) on the screen; the title and amount appear in the nav bar once the
   hero scrolls out; the toolbar menu (edit, delete, …)
@@ -233,10 +233,23 @@ ScrollView
 
 - A hero with a progress passes a word as `ProgressConfig.label` ("Paid off", "Saved",
   "Returned"): `HeroSection` draws "label · NN%" itself.
+- **One rhythm for every list of rows (DesignKit 8.6.0, the owner's call after the row audit of
+  2026-11-03):** each row pads itself 12 pt above and below (`.standard` and `.info` alike,
+  `TransactionRow`, `ScheduleRow`, `ItemRow`, a custom row's `.padding(.vertical, AppSpacing.md)`),
+  a divider under each row's text (`RowDivider`), a section's header 12 pt above its card. A list
+  of rows in a card is a `FormSection` (it draws the dividers); a card stacked by hand is
+  `VStack(spacing: 0)` with a `RowDivider` between rows, padded only at the sides
+  (`.padding(.horizontal, AppSpacing.lg)`), so the rows' 12 pt are its edges too. Never rows in
+  a spaced stack without dividers. The loan's Statistics and Schedule, the deposit's interest
+  card (its accrual a row of its own), the Insights detail lists, the category deep dive's
+  subcategories, Ten's cards and recent chats and the CSV import result are `FormSection`s; a
+  card's title is the section's header above it, not a line inside it (the loan's breakdown
+  too).
 - A goal's contributions and a debt's repayments (no transactions behind them) are a custom
-  section: `SectionHeader` over a card of `HistoryEntryRow`s (DesignKit's `AmountRow`, info style:
-  the note as the title, the date under it) padded `AppSpacing.lg` like the info rows card,
-  dividers inset past the row's icon, a deleted entry dissolving (§7).
+  section: `SectionHeader` 12 pt over a card of `HistoryEntryRow`s (DesignKit's `AmountRow`, info
+  style: the note as the title, the date under it) padded `AppSpacing.lg` at the sides only, the
+  rows' own 12 pt at its edges, dividers inset past the row's icon, a deleted entry dissolving
+  (§7).
 
 ### Lists
 
@@ -283,7 +296,8 @@ dragging and adds; no swipe actions.
 `HistoryTransactionsList` (DesignKit 8.0.0): a `ScrollView` of a `LazyVStack` of day cards, each
 one glass card with the day and its total (`SectionHeader(day) { day total }`) on top and its
 `TransactionCard(…).equatable()` rows under it, a `RowDivider` under each row's text (past the
-44 pt icon). Entity detail screens and link payments show their days the same way
+44 pt icon). The card is padded at the sides; 12 pt above the day, then the rows' own 12 pt
+(`TransactionRow`, DesignKit 8.6.0) under it and at the bottom. Entity detail screens and link payments show their days the same way
 (`GroupedTransactionList`). `TransactionCard` adds the edit sheet and the context menu (Edit,
 Delete, the recurring series' Stop or Resume; no swipe actions) to `TransactionCardView`, which
 maps the transaction onto DesignKit's `TransactionRow`. Sections are sliced with an
@@ -299,8 +313,9 @@ with a `footer:` of plain `Text` when it has one) with `UniversalRow(config: .se
 `accessory: .navigation {}`, `.action {}` (with `role: .destructive` for a destructive one),
 `.toggle($value)` or `.picker`, `.menu` (DesignKit 7.0.0: one row with an accessory instead of
 the twelve rows before). The list insets the rows, so `.settings` has no horizontal padding of
-its own. A form card's rows keep the default `config: .standard`: 16 pt above and below, and
-the `FormSection` card pads them at the sides (DesignKit 8.0.0).
+its own. A form card's rows keep the default `config: .standard`: 12 pt above and below
+(DesignKit 8.6.0; 16 in 8.0.0), and the `FormSection` card pads them at the sides, its header
+12 pt above it.
 
 The sections go from the app as a whole to its features, then the data, then what can't be
 undone: the Tenra Pro hero, General (base currency, background, voice language), insight

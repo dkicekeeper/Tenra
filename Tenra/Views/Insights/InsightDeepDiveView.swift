@@ -184,10 +184,12 @@ struct InsightDeepDiveView: View {
         }
     }
 
+    /// The subcategories in a `FormSection` (DesignKit 8.6.0): each row pads itself 12 pt, the
+    /// section's divider under its name, past the logo or the dot.
     private func subcategorySection(_ items: [SubcategoryBreakdownItem], colorByID: [String: Color]) -> some View {
-        VStack(alignment: .leading, spacing: AppSpacing.lg) {
+        FormSection {
             ForEach(items) { item in
-                HStack (alignment:.top){
+                HStack(alignment: .top, spacing: AppSpacing.md) {
                     // Entity rows (a loan, a deposit) show the account's own logo;
                     // plain subcategory rows keep the slice-colored dot.
                     if let itemIcon = item.iconSource {
@@ -211,7 +213,8 @@ struct InsightDeepDiveView: View {
                             .foregroundStyle(AppColors.textSecondary)
                     }
                 }
-                .padding(.vertical, AppSpacing.xs)
+                .padding(.vertical, AppSpacing.md)
+                .rowDividerInset((item.iconSource == nil ? AppIconSize.lg : AppIconSize.Tile.sm) + AppSpacing.md)
             }
         }
         .screenPadding()

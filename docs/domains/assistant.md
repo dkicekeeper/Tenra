@@ -164,7 +164,10 @@ enum AgentBlock {                // AgentReply.swift; source = a tool result's r
 - `AssistantReplyView` maps blocks onto the app's cards: `TransactionCardView`,
   `BudgetProgressRow`, `SubscriptionCard`, `InsightsCardView`, `MetricCard`, `CategoryBreakdownRow`,
   the charts through `PeriodChartAdapters`, drafts as `AssistantDraftCard` (on `AssistantCard` and
-  `TransactionCardView`).
+  `TransactionCardView`). `AssistantCard` is a `FormSection` (DesignKit 8.6.0): its title 12 pt
+  above the card, a divider between its pieces, and every piece pads itself 12 pt (the rows do;
+  a chart, a status line or a button takes `.padding(.vertical, AppSpacing.md)`). The recent
+  chats are a `FormSection` of `ItemRow`s too.
 - `open` leads to the app's screens inside the assistant's stack (`AssistantDestinationView`): a
   category or an account by id from `<app_context>` (an account opens by kind: deposit, loan,
   ordinary), History (filtered by category when an id is given), Analytics, budgets,

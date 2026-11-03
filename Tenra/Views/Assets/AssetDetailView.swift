@@ -759,7 +759,9 @@ struct AssetDetailView: View {
 
     private func historySection(for asset: Asset, history: [AssetValuation]) -> some View {
         let entries = Array(history.reversed())
-        return VStack(alignment: .leading, spacing: AppSpacing.sm) {
+        // The header 12 pt above the card; the card padded only at the sides, the rows' own 12 pt
+        // above and below each (DesignKit 8.6.0).
+        return VStack(alignment: .leading, spacing: AppSpacing.md) {
             SectionHeader(String(localized: "asset.history"))
             VStack(spacing: 0) {
                 ForEach(entries) { entry in
@@ -807,7 +809,7 @@ struct AssetDetailView: View {
                     .transition(AsymmetricTransition(insertion: OpacityTransition(), removal: DissolveTransition()))
                 }
             }
-            .padding(AppSpacing.lg)
+            .padding(.horizontal, AppSpacing.lg)
             .cardStyle()
             .animation(AppAnimation.gentleSpring, value: entries.map(\.id))
         }

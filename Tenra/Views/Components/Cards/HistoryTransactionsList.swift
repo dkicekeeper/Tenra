@@ -193,7 +193,8 @@ struct HistoryTransactionsList: View {
 
     // MARK: - Day card
 
-    /// One day: its date and total, then its transactions, in one glass card.
+    /// One day: its date and total, then its transactions, in one glass card: 12 pt above the
+    /// day, the rows' own 12 pt under it and at the bottom (DesignKit 8.6.0).
     private func dayCard(
         isoDate: String,
         displayLabel: String,
@@ -202,8 +203,7 @@ struct HistoryTransactionsList: View {
     ) -> some View {
         VStack(alignment: .leading, spacing: 0) {
             dateHeader(isoDate: isoDate, displayLabel: displayLabel, transactions: rows)
-                .padding(.top, AppSpacing.lg)
-                .padding(.bottom, AppSpacing.xs)
+                .padding(.top, AppSpacing.md)
             ForEach(Array(rows.enumerated()), id: \.element.id) { index, transaction in
                 // Pre-resolve per-transaction data so that changes to OTHER accounts
                 // or OTHER categories do not force a re-render of this row.
@@ -233,7 +233,6 @@ struct HistoryTransactionsList: View {
             }
         }
         .padding(.horizontal, AppSpacing.lg)
-        .padding(.bottom, AppSpacing.sm)
         .frame(maxWidth: .infinity, alignment: .leading)
         .cardStyle()
     }

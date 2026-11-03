@@ -36,6 +36,7 @@ struct AssistantAttachmentCard: View {
                 }
             case .statement:
                 MetaLine(statementItems)
+                    .padding(.vertical, AppSpacing.md)
                 if let expenses = summary.expenses {
                     UniversalRow(
                         String(localized: "insights.expenses"),
@@ -52,9 +53,11 @@ struct AssistantAttachmentCard: View {
                 }
                 if summary.uncategorized > 0 {
                     InlineStatusText(message: String(format: String(localized: "assistant.attachment.uncategorized"), summary.uncategorized), type: .info)
+                        .padding(.vertical, AppSpacing.md)
                 }
                 if summary.skipped > 0 {
                     InlineStatusText(message: String(format: String(localized: "assistant.attachment.skipped"), summary.skipped), type: .warning)
+                        .padding(.vertical, AppSpacing.md)
                 }
             }
             DSButton(String(localized: "assistant.attachment.review"), systemImage: "checklist", fullWidth: true) {
@@ -64,6 +67,7 @@ struct AssistantAttachmentCard: View {
                     showingPaywall = true
                 }
             }
+            .padding(.vertical, AppSpacing.md)
         }
         .paywallSheet(isPresented: $showingPaywall, source: .assistantAttachment) {
             model.refreshAllowance()

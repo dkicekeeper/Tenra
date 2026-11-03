@@ -191,9 +191,11 @@ struct EntityDetailScaffold<Hero: View, CustomSections: View, MenuContent: View,
         }
     }
 
+    /// The detail rows in a `FormSection`: 12 pt above and below each row (the `.info` preset),
+    /// the section's divider under each row's text (DesignKit 8.6.0, one rhythm for every card).
     @ViewBuilder
     private var infoRowsCard: some View {
-        VStack(spacing: 0) {
+        FormSection {
             ForEach(infoRows) { row in
                 UniversalRow(
                     config: .info,
@@ -222,14 +224,8 @@ struct EntityDetailScaffold<Hero: View, CustomSections: View, MenuContent: View,
                 } trailing: {
                     row.trailing ?? AnyView(EmptyView())
                 }
-                if row.id != infoRows.last?.id {
-                    // DesignKit 8.0.0's one divider: under the row's text, past its icon.
-                    RowDivider(inset: row.icon == nil ? 0 : AppIconSize.lg + AppSpacing.md)
-                }
             }
         }
-        .padding(AppSpacing.lg)
-        .cardStyle()
     }
 }
 

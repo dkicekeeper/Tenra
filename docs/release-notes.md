@@ -239,8 +239,7 @@ Tenra 1.8의 새로운 기능:
 
 ## Submission checklist (1.8)
 
-Status 2026-11-03: steps 1-4 and 7-8's code side done (build 72 from main after PR #127, in
-place of build 71; version 1.8 with What's New,
+Status 2026-11-03: steps 1-4 and 7-8's code side done (build 71, version 1.8 with What's New,
 Promotional Text, review notes, the draft submission); left to the founder: step 6 (App
 Privacy), step 8 (RevenueCat paywall item) and step 9's button.
 

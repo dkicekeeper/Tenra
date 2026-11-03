@@ -30,6 +30,8 @@ const searches = arg("searches", "3");
 // "none": each model alone; a model id: asked again when the first finds too few listings.
 const fallback = arg("fallback", "none");
 const concurrency = Number(arg("concurrency", "3"));
+// Each case this many times: the search results change from one run to the next.
+const repeat = Math.max(1, Math.floor(Number(arg("repeat", "1"))) || 1);
 const confirmed = process.argv.includes("--yes");
 const cases = caseFilter === "all" ? VALUATION_CASES : VALUATION_CASES.filter((c) => caseFilter.split(",").includes(c.id));
 
@@ -54,6 +56,8 @@ export function grade(testCase: ValuationCase, result: ValuationResult): Grade {
 }
 
 interface Outcome {
+  /** 1 to `repeat`. */
+  attempt?: number;
   model: string;
   effort: Effort;
   testCase: ValuationCase;
@@ -118,7 +122,7 @@ const median = (xs: number[]) => {
 };
 
 function summarize(outcomes: Outcome[]): string {
-  const lines = ["# Valuation eval", "", `Cases: ${cases.length}. Searches per valuation: up to ${searches}. Code and prompt: production (src/valuation.ts).`, ""];
+  const lines = ["# Valuation eval", "", `Cases: ${cases.length}${repeat > 1 ? `, each ${repeat} times` : ""}. Searches per valuation: up to ${searches}. Code and prompt: production (src/valuation.ts).`, ""];
   if (fallback !== "none") lines.push(`Fallback: ${fallback}, asked again when the first model finds too few listings or declines.`, "");
   lines.push("| Model | Effort | Passed | Median abs deviation | Comparables (median) | Unverified links | Fallback used | Searches (avg) | Cost per valuation | Latency (avg) |");
   lines.push("|---|---|---|---|---|---|---|---|---|---|");
@@ -132,6 +136,19 @@ function summarize(outcomes: Outcome[]): string {
       lines.push(
         `| ${model} | ${effort} | ${group.filter((o) => o.grade.pass).length}/${group.length} | ${deviations.length ? pct(median(deviations)) : "-"} | ${median(group.map((o) => o.result?.count ?? 0))} | ${unverified}/${reported} | ${group.filter((o) => o.valuation?.usedFallback).length} | ${(group.reduce((n, o) => n + o.searches, 0) / group.length).toFixed(1)} | ${usd(group.reduce((n, o) => n + o.usd, 0) / group.length)} | ${(group.reduce((n, o) => n + o.ms, 0) / group.length / 1000).toFixed(1)} s |`,
       );
+    }
+  }
+  if (repeat > 1) {
+    // How steady a case is across runs: passes of the repeats and every deviation.
+    lines.push("", "## Repeats", "", "| Case | Model | Effort | Passed | Deviations |", "|---|---|---|---|---|");
+    for (const model of models) {
+      for (const effort of efforts) {
+        for (const testCase of cases) {
+          const runs = outcomes.filter((o) => o.model === model && o.effort === effort && o.testCase.id === testCase.id);
+          const deviations = runs.map((o) => (o.grade.deviation === undefined ? o.grade.detail.split(" ")[0] : pct(o.grade.deviation))).join(", ");
+          lines.push(`| ${testCase.id} | ${model} | ${effort} | ${runs.filter((o) => o.grade.pass).length}/${runs.length} | ${deviations} |`);
+        }
+      }
     }
   }
   lines.push("", "## Cases", "", "| Case | Model | Effort | Value | Reference | Result | Comparables | Accuracy | By |", "|---|---|---|---|---|---|---|---|---|");
@@ -155,14 +172,14 @@ function estimate(): number {
     const backup =
       fallback === "none" ? 0 : cost(fallback, { input_tokens: 40_000, output_tokens: 3_000, cache_read_input_tokens: 0, cache_creation_input_tokens: 0 }) + Number(searches) * WEB_SEARCH_USD;
     // The fallback runs for about a third of the cases.
-    return total + (tokens + Number(searches) * WEB_SEARCH_USD + backup / 3) * cases.length * efforts.length;
+    return total + (tokens + Number(searches) * WEB_SEARCH_USD + backup / 3) * cases.length * efforts.length * repeat;
   }, 0);
 }
 
 async function main() {
   const unknown = models.filter((m) => !PRICING[m]);
   if (unknown.length) console.warn(`No price for ${unknown.join(", ")}: cost shows NaN.`);
-  console.log(`${cases.length} cases x ${models.length} models x ${efforts.length} effort levels. Cost estimate: ${usd(estimate())}.`);
+  console.log(`${cases.length} cases x ${repeat} x ${models.length} models x ${efforts.length} effort levels. Cost estimate: ${usd(estimate())}.`);
   if (!confirmed) {
     console.log("Re-run with --yes to spend it.");
     return;
@@ -171,7 +188,11 @@ async function main() {
 
   const client = new Anthropic({ maxRetries: 3 });
   const outDir = `eval/out/valuation-${new Date().toISOString().replace(/[:.]/g, "-")}`;
-  const jobs = models.flatMap((model) => efforts.flatMap((effort) => cases.map((c) => () => runCase(client, model, effort, c))));
+  const jobs = models.flatMap((model) =>
+    efforts.flatMap((effort) =>
+      cases.flatMap((c) => Array.from({ length: repeat }, (_, i) => () => runCase(client, model, effort, c).then((o) => ({ ...o, attempt: i + 1 })))),
+    ),
+  );
   const outcomes = await pool(jobs, concurrency);
 
   for (const o of outcomes) {
@@ -191,7 +212,7 @@ async function main() {
       })),
       usd: o.usd,
     };
-    writeFileSync(`${dir}/${o.testCase.id}.json`, JSON.stringify(record, null, 2));
+    writeFileSync(`${dir}/${o.testCase.id}${repeat > 1 ? `-${o.attempt}` : ""}.json`, JSON.stringify(record, null, 2));
     console.log(`${o.grade.pass ? "PASS" : "FAIL"} ${o.model} ${o.effort} ${o.testCase.id}: ${o.grade.detail}`);
   }
   const summary = summarize(outcomes);

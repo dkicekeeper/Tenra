@@ -10,7 +10,7 @@ import { isValidUserId, PROTOCOL_VERSION, ValidationError } from "./validate";
 // request carries the asset's kind, place and characteristics, never its name or an address,
 // and nothing of it is logged.
 
-export const VALUATION_PROMPT_VERSION = "2026-11-02.4";
+export const VALUATION_PROMPT_VERSION = "2026-11-03.1";
 export const REPORT_LISTINGS = "report_listings";
 
 type Params = Anthropic.Beta.Messages.MessageCreateParamsNonStreaming;
@@ -307,7 +307,8 @@ export const VALUATION_SYSTEM_PROMPT = `You find listings for sale that are comp
 2. Then call report_listings once, with every listing for sale you saw in the results that is the same kind of asset, close or not: the app filters them. For each listing: the asking price and its currency as written, sale or rent, the size in square metres, land in ares, rooms as that country's listings count them (the first number of 2+1 in Turkey, bedrooms in the UK and the US), year, mileage in kilometres, the district when shown, and source_url: the URL of the search result you saw it in, copied exactly. One results page can hold several listings: report each one with that page's URL.
 3. Report only what the results show. Never invent a listing, a price, a size or a URL. Copy each price in full as a number, minding the country's thousands separators ("5.150.000 TL" is 5150000, "1,250,000" is 1250000); never shorten it. Skip listings without a price, and those that are not a whole asset for sale at a fixed price: a share or shared ownership, an auction, rent to own, a new development's "from" price. Never report sellers' names, phone numbers or exact addresses.
 4. A site's own average or index ("average price of a two-room flat in the district", "price per m² in the city") is not a listing: put it in site_averages.
-5. If nothing relevant was found, call report_listings with empty lists. Write no other text.`;
+5. If nothing relevant was found, call report_listings with empty lists. Write no other text.
+6. A thing that is one of a kind (handmade or custom-made, a work by an artist with no market, an heirloom) has no comparable listings: other things of its type are not comparables. Call report_listings with empty lists.`;
 
 export interface ValuationConfig {
   /** Asked again when the first model finds too few listings or declines; none when empty. */

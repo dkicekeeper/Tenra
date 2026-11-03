@@ -484,7 +484,8 @@ spending, no em dashes, in all 11 languages.
   Turkey, a Golf in Germany, a Civic in the US, land in Kaskelen, and a handmade box and a
   one-off sculpture whose answer is "too few"), each with a dated reference from official statistics, market reports or
   price guides and a tolerance; `--fallback <model>` (the workflow's `fallback` input) runs the
-  production pair. Reports passes, the median deviation, comparables kept of those
+  production pair, `--repeat N` (`repeat`) each case N times with a table of passes per case
+  (the search results change from run to run). Reports passes, the median deviation, comparables kept of those
   reported, links dropped as not in the results, searches, cost and time. About $0.46 a run on
   Haiku 5.5 and $1.82 on Sonnet 5.5; references older than three months are refreshed, never
   widened. A change to the valuation prompt bumps `VALUATION_PROMPT_VERSION` and runs it.

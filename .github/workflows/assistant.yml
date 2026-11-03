@@ -35,6 +35,9 @@ on:
       fallback:
         description: "eval-valuation: the model asked again when the first finds too few listings, or none"
         default: "none"
+      repeat:
+        description: "eval-valuation: how many times each case runs (the search results change between runs)"
+        default: "1"
 
 defaults:
   run:
@@ -131,7 +134,8 @@ jobs:
           EFFORT: ${{ inputs.effort }}
           CASES: ${{ inputs.cases }}
           FALLBACK: ${{ inputs.fallback }}
-        run: npm run eval:valuation -- --models "$MODELS" --effort "$EFFORT" --cases "$CASES" --fallback "$FALLBACK" --yes
+          REPEAT: ${{ inputs.repeat }}
+        run: npm run eval:valuation -- --models "$MODELS" --effort "$EFFORT" --cases "$CASES" --fallback "$FALLBACK" --repeat "$REPEAT" --yes
       - name: Summary
         if: always()
         run: cat eval/out/valuation-*/summary.md >> "$GITHUB_STEP_SUMMARY" || true

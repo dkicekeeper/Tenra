@@ -87,7 +87,7 @@
 
 | # | Что | Почему | Где |
 |---|---|---|---|
-| 0.1 | Строка об активах и капитале в «Что нового» 1.8, 13 витрин (черновик ниже), при подготовке релиза | главная фича релиза не названа | черновик в [plan-charts-by-day.md](plan-charts-by-day.md), потом `release-notes.md` |
+| 0.1 | ✅ (03.11, `release-notes.md`) Строка об активах и капитале в «Что нового» 1.8, 13 витрин (черновик ниже), при подготовке релиза | главная фича релиза не названа | черновик в [plan-charts-by-day.md](archive/plans/plan-charts-by-day.md), потом `release-notes.md` |
 | 0.2 | Пункт «Активы и чистый капитал / Assets and net worth» в списке пейволла RevenueCat, 12 локалей; место по ценности для KZ (решение D4) | «+» в активах открывает пейволл, где активов нет | дашборд RevenueCat, [promotion-plan.md](promotion-plan.md) §2 |
 | 0.3 | ✅ Баннер «нет аренды» открывает форму с подкатегориями связи | A1 | `TransactionAddModal`, `TransactionAddCoordinator`, `AssetDetailView` |
 | 0.4 | ✅ История и стоимость: покупка и оценки сливаются по дате, стоимость из последней точки; тест на оценку до покупки | A2 | `AssetValuationMath.history`, `latestValuation` / `currentValue`, `AssetsTests` |

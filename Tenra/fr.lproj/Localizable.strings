@@ -2397,6 +2397,7 @@
 "asset.notFoundDescription" = "Il a peut-être été supprimé.";
 "asset.namePlaceholder" = "Qu’est-ce que c’est ?";
 "asset.valueHint" = "Ce qu’il vaut aujourd’hui";
+"asset.dollarHint" = "Les logements et les voitures s’estiment souvent en dollars : choisissez USD ci-dessus, et la valeur en %@ suivra le taux chaque jour.";
 "asset.salePriceHint" = "Prix de vente";
 "asset.kind" = "Type";
 "asset.kind.apartment" = "Appartement";
@@ -2446,6 +2447,8 @@
 "asset.depreciation.off" = "Désactivé";
 "asset.depreciationValue" = "%@ par an";
 "asset.forecast" = "Dans 3 ans";
+"asset.pricePerM2" = "Prix au m²";
+"asset.pricePerAre" = "Prix à l’are";
 "assistant.notice.asset.stale" = "Estimé à %1$@ le %2$@. Les prix changent : mettez la valeur à jour pour que votre patrimoine net soit juste.";
 "assistant.notice.loanAsset" = "Si ce prêt a servi à acheter un logement ou une voiture, ajoutez-le à vos biens : le patrimoine montrera la part qui vous appartient.";
 "asset.saleHint" = "Vendu combien ?";

@@ -2397,6 +2397,7 @@
 "asset.notFoundDescription" = "Silinmiş olabilir.";
 "asset.namePlaceholder" = "Bu ne?";
 "asset.valueHint" = "Bugünkü değeri";
+"asset.dollarHint" = "Konut ve arabalar çoğu zaman dolarla değerlenir: yukarıda USD seç, %@ cinsinden değer her gün kura göre değişsin.";
 "asset.salePriceHint" = "Satış fiyatı";
 "asset.kind" = "Tür";
 "asset.kind.apartment" = "Daire";
@@ -2446,6 +2447,8 @@
 "asset.depreciation.off" = "Kapalı";
 "asset.depreciationValue" = "Yılda %@";
 "asset.forecast" = "3 yıl sonra";
+"asset.pricePerM2" = "m² fiyatı";
+"asset.pricePerAre" = "Ar fiyatı";
 "assistant.notice.asset.stale" = "Değerleme: %1$@, %2$@. Fiyatlar değişir: net varlığın doğru olsun diye değeri güncelle.";
 "assistant.notice.loanAsset" = "Bu krediyle bir ev ya da araba aldıysan varlıklarına ekle: net varlık, içinde ne kadar kendi paran olduğunu gösterir.";
 "asset.saleHint" = "Kaça sattın?";

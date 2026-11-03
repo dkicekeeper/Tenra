@@ -2397,6 +2397,7 @@
 "asset.notFoundDescription" = "Puede que se haya eliminado.";
 "asset.namePlaceholder" = "¿Qué es?";
 "asset.valueHint" = "Cuánto vale hoy";
+"asset.dollarHint" = "Las viviendas y los coches suelen valorarse en dólares: elige USD arriba y el valor en %@ seguirá el tipo de cambio cada día.";
 "asset.salePriceHint" = "Precio de venta";
 "asset.kind" = "Tipo";
 "asset.kind.apartment" = "Apartamento";
@@ -2446,6 +2447,8 @@
 "asset.depreciation.off" = "Desactivado";
 "asset.depreciationValue" = "%@ al año";
 "asset.forecast" = "En 3 años";
+"asset.pricePerM2" = "Precio por m²";
+"asset.pricePerAre" = "Precio por área";
 "assistant.notice.asset.stale" = "Valorado en %1$@ el %2$@. Los precios cambian: actualiza el valor para que tu patrimonio neto sea exacto.";
 "assistant.notice.loanAsset" = "Si con este préstamo compraste un piso o un coche, añádelo a tus activos: el patrimonio mostrará cuánto es dinero tuyo.";
 "asset.saleHint" = "¿Por cuánto lo vendiste?";

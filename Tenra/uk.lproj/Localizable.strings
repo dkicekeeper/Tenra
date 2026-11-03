@@ -2397,6 +2397,7 @@
 "asset.notFoundDescription" = "Можливо, його було видалено.";
 "asset.namePlaceholder" = "Що це?";
 "asset.valueHint" = "Скільки коштує сьогодні";
+"asset.dollarHint" = "Житло й автомобілі часто рахують у доларах: оберіть USD вище, і вартість у %@ щодня йтиме за курсом.";
 "asset.salePriceHint" = "За скільки продано";
 "asset.kind" = "Тип";
 "asset.kind.apartment" = "Квартира";
@@ -2446,6 +2447,8 @@
 "asset.depreciation.off" = "Ні";
 "asset.depreciationValue" = "%@ на рік";
 "asset.forecast" = "Через 3 роки";
+"asset.pricePerM2" = "Ціна за м²";
+"asset.pricePerAre" = "Ціна за сотку";
 "assistant.notice.asset.stale" = "Оцінка %1$@ від %2$@. Ціни змінюються: оновіть її, щоб капітал був точним.";
 "assistant.notice.loanAsset" = "Якщо на цей кредит куплено квартиру чи машину, додайте їх до активів: капітал покаже, скільки в них ваших грошей.";
 "asset.saleHint" = "За скільки продали?";

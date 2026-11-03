@@ -1,10 +1,10 @@
 {
-  "comment": "Store texts per locale for `asc.py push-metadata` (docs/asc.md): name and subtitle (30 characters, app info, only while a version is in preparation), promotionalText (170, any time), keywords (100, the whole field) or keywordsAdd / keywordsRemove (words changed in the field as it is), description. copyFrom fills what a new localization needs (description, support and marketing URLs, What's New, privacy policy URL) from another locale and takes its screenshots and iOS 27 art, unless screenshotsFrom names the folder of screenshots/final and screenshots/art to take them from (asc.py screenshot_source). en-GB: texts from ru, frames and art from kk, the Kazakh set composed only for it (App Store Connect has no Kazakh; decision D9, docs/archive/plans/plan-ads-readiness.md A6 item 0). No em dashes. Status: applied to version 1.7, in the store since 2026-10-24.",
-  "version": "1.7",
+  "comment": "Store texts per locale for `asc.py push-metadata` (docs/asc.md): name and subtitle (30 characters, app info, only while a version is in preparation), promotionalText (170, any time), keywords (100, the whole field) or keywordsAdd / keywordsRemove (words changed in the field as it is), description. copyFrom fills what a new localization needs (description, support and marketing URLs, What's New, privacy policy URL) from another locale and takes its screenshots and iOS 27 art, unless screenshotsFrom names the folder of screenshots/final and screenshots/art to take them from (asc.py screenshot_source). en-GB: texts from ru, frames and art from kk, the Kazakh set composed only for it (App Store Connect has no Kazakh; decision D9, docs/archive/plans/plan-ads-readiness.md A6 item 0). No em dashes. Status: 1.7's texts in the store since 2026-10-24; the promotional texts are 1.8's (2026-11-03), applied to version 1.8 once it is created (push-metadata --apply), not to the live 1.7.",
+  "version": "1.8",
   "locales": {
     "en-US": {
       "subtitle": "Expenses that log themselves",
-      "promotionalText": "New in 1.7: Apple Pay payments log themselves, with the merchant and its logo. A widget shows what you can spend today, and Ten, the assistant, answers about your money.",
+      "promotionalText": "New in 1.8: your flat, house or car in Tenra, with its value, growth, rent and upkeep. Net worth adds up all you have. With Pro, Ten estimates it from listings.",
       "keywordsAdd": [
         "money",
         "manager",
@@ -13,7 +13,7 @@
     },
     "ru": {
       "subtitle": "Расходы записываются сами",
-      "promotionalText": "Новое в 1.7: оплаты Apple Pay записываются сами, с продавцом и логотипом. Виджет показывает, сколько можно потратить сегодня, а Тэн, помощник, ответит про ваши деньги.",
+      "promotionalText": "Новое в 1.8: квартира, дом или машина в Tenra, с их стоимостью, ростом, арендой и содержанием. Чистый капитал складывает всё ваше. С Pro Тэн оценит их по объявлениям.",
       "keywordsRemove": [
         "семейный"
       ],
@@ -25,7 +25,7 @@
     },
     "uk": {
       "subtitle": "Витрати записуються самі",
-      "promotionalText": "Нове в 1.7: оплати Apple Pay записуються самі, з продавцем і логотипом. Віджет показує, скільки можна витратити сьогодні, а Тен, помічник, відповість про ваші гроші.",
+      "promotionalText": "Нове в 1.8: квартира, будинок чи авто в Tenra, з їхньою вартістю, ростом, орендою та утриманням. Чистий капітал складає все ваше. З Pro Тен оцінить їх за оголошеннями.",
       "keywordsAdd": [
         "фінанси",
         "підписки",
@@ -34,7 +34,7 @@
     },
     "de-DE": {
       "subtitle": "Ausgaben erfassen sich selbst",
-      "promotionalText": "Neu in 1.7: Apple-Pay-Zahlungen erfassen sich selbst, mit Händler und Logo. Ein Widget zeigt, was Sie heute ausgeben können, und Ten beantwortet Ihre Fragen zum Geld.",
+      "promotionalText": "Neu in 1.8: Wohnung, Haus oder Auto in Tenra, mit Wert, Zuwachs, Miete und Unterhalt. Das Nettovermögen zählt alles zusammen. Mit Pro schätzt Ten den Wert aus Inseraten.",
       "keywordsAdd": [
         "abos",
         "finanzplaner"
@@ -42,7 +42,7 @@
     },
     "es-ES": {
       "subtitle": "Gastos que se anotan solos",
-      "promotionalText": "Novedad en 1.7: los pagos con Apple Pay se anotan solos, con el comercio y su logo. Un widget muestra cuánto puedes gastar hoy, y Ten responde sobre tu dinero.",
+      "promotionalText": "Novedad en 1.8: tu piso, casa o coche en Tenra, con su valor, revalorización, alquiler y gastos. El patrimonio neto lo suma todo. Con Pro, Ten lo valora con anuncios.",
       "keywordsAdd": [
         "finanzas",
         "suscripciones"
@@ -50,7 +50,7 @@
     },
     "es-MX": {
       "subtitle": "Gastos que se anotan solos",
-      "promotionalText": "Novedad en 1.7: los pagos con Apple Pay se anotan solos, con el comercio y su logo. Un widget muestra cuánto puedes gastar hoy, y Ten responde sobre tu dinero.",
+      "promotionalText": "Novedad en 1.8: tu departamento, casa o auto en Tenra, con su valor, plusvalía, renta y gastos. El patrimonio neto lo suma todo. Con Pro, Ten lo valúa con anuncios.",
       "keywordsAdd": [
         "finanzas",
         "suscripciones"
@@ -58,7 +58,7 @@
     },
     "fr-FR": {
       "subtitle": "Les dépenses se notent seules",
-      "promotionalText": "Nouveau en 1.7 : les paiements Apple Pay se notent seuls, avec le commerçant et son logo. Un widget indique combien dépenser aujourd’hui, et Ten répond sur votre argent.",
+      "promotionalText": "Nouveau en 1.8 : votre logement ou votre voiture dans Tenra, avec sa valeur, sa hausse, le loyer et l'entretien. Le patrimoine net fait le total. Avec Pro, Ten l'estime.",
       "keywordsAdd": [
         "gestion",
         "argent",
@@ -67,7 +67,7 @@
     },
     "fr-CA": {
       "subtitle": "Les dépenses se notent seules",
-      "promotionalText": "Nouveau en 1.7 : les paiements Apple Pay se notent seuls, avec le commerçant et son logo. Un widget indique combien dépenser aujourd’hui, et Ten répond sur votre argent.",
+      "promotionalText": "Nouveau en 1.8 : votre condo, maison ou auto dans Tenra, avec sa valeur, sa hausse, le loyer et l'entretien. Le patrimoine net additionne tout. Avec Pro, Ten l'évalue.",
       "keywordsAdd": [
         "gestion",
         "argent",
@@ -76,7 +76,7 @@
     },
     "it": {
       "subtitle": "Spese registrate da sole",
-      "promotionalText": "Novità in 1.7: i pagamenti Apple Pay si registrano da soli, con esercente e logo. Un widget mostra quanto puoi spendere oggi, e Ten risponde sui tuoi soldi.",
+      "promotionalText": "Novità in 1.8: casa o auto in Tenra, con valore, rivalutazione, affitto e spese. Il patrimonio netto somma tutto ciò che hai. Con Pro, Ten lo stima dagli annunci.",
       "keywordsAdd": [
         "soldi",
         "abbonamenti",
@@ -85,7 +85,7 @@
     },
     "pt-BR": {
       "subtitle": "Gastos registrados sozinhos",
-      "promotionalText": "Novo no 1.7: pagamentos com Apple Pay se registram sozinhos, com a loja e o logo. Um widget mostra quanto você pode gastar hoje, e o Ten responde sobre seu dinheiro.",
+      "promotionalText": "Novo no 1.8: seu apartamento, casa ou carro no Tenra, com valor, valorização, aluguel e manutenção. O patrimônio líquido soma tudo. Com Pro, o Ten avalia por anúncios.",
       "keywordsAdd": [
         "orçamento",
         "finanças",
@@ -94,7 +94,7 @@
     },
     "tr": {
       "subtitle": "Harcamalar kendini kaydeder",
-      "promotionalText": "1.7'de yeni: Apple Pay ödemeleri işyeri ve logosuyla kendiliğinden kaydedilir. Widget bugün ne kadar harcayabileceğini gösterir, Ten de paranla ilgili soruları yanıtlar.",
+      "promotionalText": "1.8'de yeni: dairen, evin ya da araban Tenra'da; değeri, değer artışı, kirası ve bakımıyla. Net varlık sahip olduğun her şeyi toplar. Pro ile Ten ilanlardan değerler.",
       "keywordsAdd": [
         "para",
         "yönetimi",
@@ -104,7 +104,7 @@
     },
     "ja": {
       "subtitle": "支出が自動で記録される家計簿",
-      "promotionalText": "1.7 の新機能: Apple Pay の支払いが店舗とロゴ付きで自動記録されます。ウィジェットで今日使える金額がわかり、アシスタントのテンがお金の質問に答えます。",
+      "promotionalText": "1.8 の新機能: マンション、家、車を Tenra に追加して、価値、値上がり、家賃、維持費を確認。純資産ですべてを合計します。Pro ではテンが掲載から評価します。",
       "keywordsAdd": [
         "サブスク",
         "節約"
@@ -112,7 +112,7 @@
     },
     "ko": {
       "subtitle": "지출이 저절로 기록되는 가계부",
-      "promotionalText": "1.7의 새로운 기능: Apple Pay 결제가 가맹점과 로고와 함께 저절로 기록돼요. 위젯으로 오늘 쓸 수 있는 금액을 보고, 어시스턴트 텐이 돈에 대한 질문에 답해요.",
+      "promotionalText": "1.8의 새로운 기능: 아파트, 집, 자동차를 Tenra에 넣고 가치, 상승, 임대 수입, 유지비를 확인하세요. 순자산이 모두 더해요. Pro에서는 텐이 매물로 평가해요.",
       "keywordsAdd": [
         "구독",
         "저축",
@@ -125,7 +125,7 @@
       "name": "Tenra: Учёт расходов и бюджет",
       "subtitle": "Траты записываются сами",
       "keywords": "финансы,деньги,доходы,кошелек,трекер,выписка,подписки,долги,копилка,кредит,ии,помощник,қаржы,шығын",
-      "promotionalText": "Новое в 1.7: оплаты Apple Pay записываются сами, с продавцом и логотипом. Виджет показывает, сколько можно потратить сегодня, а Тэн, помощник, ответит про ваши деньги."
+      "promotionalText": "Новое в 1.8: квартира, дом или машина в Tenra, с их стоимостью, ростом, арендой и содержанием. Чистый капитал складывает всё ваше. С Pro Тэн оценит их по объявлениям."
     }
   }
 }

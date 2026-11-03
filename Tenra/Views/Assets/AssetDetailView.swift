@@ -30,10 +30,14 @@ struct AssetDetailView: View {
     @Environment(TimeFilterManager.self) private var timeFilterManager
     @Environment(\.dismiss) private var dismiss
     @Environment(\.amountsHidden) private var amountsHidden
+    /// The estimate from listings is Tenra Pro's (the owner's decision, 2026-11-03).
+    @Environment(PremiumManager.self) private var premium
     @State private var showingEdit = false
     @State private var showingValuation = false
     /// "Estimate from listings" (AssetEstimateSheet).
     @State private var showingEstimate = false
+    /// "Estimate from listings" without Pro: the paywall, then the estimate.
+    @State private var showingEstimatePaywall = false
     /// "Enter by hand" in the estimate sheet: the money sheet, once that one is gone.
     @State private var valuationAfterEstimate = false
     @State private var showingSale = false
@@ -254,8 +258,8 @@ struct AssetDetailView: View {
                         status: .warning,
                         action: {
                             HapticManager.light()
-                            // From listings once the server values assets; by hand otherwise.
-                            if canEstimate(asset) {
+                            // From listings once the server values assets (Pro); by hand otherwise.
+                            if canEstimate(asset) && premium.isPro {
                                 showingEstimate = true
                             } else {
                                 showingValuation = true
@@ -285,7 +289,11 @@ struct AssetDetailView: View {
                 if canEstimate(asset) {
                     Button {
                         HapticManager.selection()
-                        showingEstimate = true
+                        if premium.isPro {
+                            showingEstimate = true
+                        } else {
+                            showingEstimatePaywall = true
+                        }
                     } label: {
                         Label(String(localized: "asset.estimate.action"), systemImage: "magnifyingglass")
                     }
@@ -378,6 +386,9 @@ struct AssetDetailView: View {
                     }
                 )
             }
+        }
+        .paywallSheet(isPresented: $showingEstimatePaywall, source: .assetEstimate) {
+            showingEstimate = true
         }
         .sheet(item: $editingValuation) { valuation in
             AssetValuationEditView(valuation: valuation, currency: asset.currency) { updated in
@@ -591,6 +602,7 @@ struct AssetDetailView: View {
         var rows: [InfoRowConfig] = [
             InfoRowConfig(icon: "square.grid.2x2", label: String(localized: "asset.kind"), value: AssetEditView.title(of: asset.kind))
         ]
+        rows += characteristicRows(for: asset, value: summary.value)
         if let price = asset.purchasePrice {
             rows.append(InfoRowConfig(icon: "cart", label: String(localized: "asset.purchasePrice"), amount: price, currency: asset.currency))
         }
@@ -695,6 +707,49 @@ struct AssetDetailView: View {
         return rows
     }
 
+    /// The characteristics saved in the form that say most about it (plan 3.2): the area and the
+    /// price of one square metre, the land and the price of one are of it, the rooms, the year and
+    /// the mileage; only its kind's, only the ones filled in.
+    private func characteristicRows(for asset: Asset, value: Double) -> [InfoRowConfig] {
+        typealias Field = AssetAttributes.Field
+        let fields = Set(Field.fields(for: asset.kind))
+        func number(_ field: Field) -> Double? {
+            guard fields.contains(field), let number = asset.attributes.number(field), number > 0 else { return nil }
+            return number
+        }
+        func row(_ field: Field, _ text: String) -> InfoRowConfig {
+            InfoRowConfig(icon: AssetAttributesSection.icon(of: field), label: AssetAttributesSection.title(of: field), value: text, iconColor: AppColors.textSecondary)
+        }
+        var rows: [InfoRowConfig] = []
+        if let area = number(.areaM2) {
+            rows.append(row(.areaM2, area.formatted(.number.precision(.fractionLength(0...1)))))
+            if value > 0 {
+                rows.append(InfoRowConfig(icon: "square.grid.3x3", label: String(localized: "asset.pricePerM2"), amount: value / area, currency: asset.currency))
+            }
+        }
+        if let ares = number(.landAres) {
+            rows.append(row(.landAres, ares.formatted(.number.precision(.fractionLength(0...1)))))
+            // Land is priced by the are (the sotka); a house by its floor area.
+            if asset.kind == .land, value > 0 {
+                rows.append(InfoRowConfig(icon: "square.grid.3x3", label: String(localized: "asset.pricePerAre"), amount: value / ares, currency: asset.currency))
+            }
+        }
+        if let rooms = number(.rooms) {
+            rows.append(row(.rooms, Int(rooms).formatted()))
+        }
+        // A year has no grouping: "2015", not "2 015".
+        if let year = number(.yearBuilt) {
+            rows.append(row(.yearBuilt, String(Int(year))))
+        }
+        if let year = number(.year) {
+            rows.append(row(.year, String(Int(year))))
+        }
+        if let mileage = number(.mileageKm) {
+            rows.append(row(.mileageKm, mileage.formatted(.number.precision(.fractionLength(0)))))
+        }
+        return rows
+    }
+
     /// "50%" (or "8.6%" with one fraction digit) in the app's locale.
     static func percentText(_ share: Double, fractionDigits: Int = 0) -> String {
         share.formatted(.percent.precision(.fractionLength(fractionDigits)))
@@ -795,4 +850,5 @@ struct AssetDetailView: View {
     .environment(coordinator)
     .environment(coordinator.transactionStore)
     .environment(TimeFilterManager())
+    .environment(PremiumManager.shared)
 }

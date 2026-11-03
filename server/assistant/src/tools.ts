@@ -1,5 +1,6 @@
 import type Anthropic from "@anthropic-ai/sdk";
 import type { Config } from "./config";
+import type { Tier } from "./quota";
 
 // Tool definitions sent to Claude. The phone executes every tool (FinanceToolkit in the
 // app) and returns the result; this server only describes them. Names and shapes are the
@@ -473,8 +474,10 @@ export const TOOLS: Tool[] = [...readTools, ...draftTools, renderReply];
 /** Every tool name a history may hold, estimate_asset_value included while it is off. */
 export const TOOL_NAMES: ReadonlySet<string> = new Set(TOOLS.map((t) => t.name));
 
-/** The tools of a turn: estimate_asset_value only while POST /v1/valuation is on. */
-export function toolsFor(config: Pick<Config, "valuationEnabled">): Tool[] {
-  return config.valuationEnabled ? TOOLS : TOOLS.filter((t) => t.name !== ESTIMATE_ASSET_VALUE);
+/** The tools of a turn: estimate_asset_value only while POST /v1/valuation is on, and for a
+ * caller without Pro only while free valuations exist (none since 2026-11-03: Pro only). */
+export function toolsFor(config: Pick<Config, "valuationEnabled" | "freeMonthlyValuations">, tier: Tier = "pro"): Tool[] {
+  const valuates = config.valuationEnabled && (tier === "pro" || config.freeMonthlyValuations > 0);
+  return valuates ? TOOLS : TOOLS.filter((t) => t.name !== ESTIMATE_ASSET_VALUE);
 }
 export const DRAFT_TOOLS: ReadonlySet<string> = new Set(draftTools.map((t) => t.name));

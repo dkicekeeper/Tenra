@@ -10,7 +10,7 @@ import { isValidUserId, PROTOCOL_VERSION, ValidationError } from "./validate";
 // request carries the asset's kind, place and characteristics, never its name or an address,
 // and nothing of it is logged.
 
-export const VALUATION_PROMPT_VERSION = "2026-11-02.4";
+export const VALUATION_PROMPT_VERSION = "2026-11-03.1";
 export const REPORT_LISTINGS = "report_listings";
 
 type Params = Anthropic.Beta.Messages.MessageCreateParamsNonStreaming;
@@ -307,7 +307,8 @@ export const VALUATION_SYSTEM_PROMPT = `You find listings for sale that are comp
 2. Then call report_listings once, with every listing for sale you saw in the results that is the same kind of asset, close or not: the app filters them. For each listing: the asking price and its currency as written, sale or rent, the size in square metres, land in ares, rooms as that country's listings count them (the first number of 2+1 in Turkey, bedrooms in the UK and the US), year, mileage in kilometres, the district when shown, and source_url: the URL of the search result you saw it in, copied exactly. One results page can hold several listings: report each one with that page's URL.
 3. Report only what the results show. Never invent a listing, a price, a size or a URL. Copy each price in full as a number, minding the country's thousands separators ("5.150.000 TL" is 5150000, "1,250,000" is 1250000); never shorten it. Skip listings without a price, and those that are not a whole asset for sale at a fixed price: a share or shared ownership, an auction, rent to own, a new development's "from" price. Never report sellers' names, phone numbers or exact addresses.
 4. A site's own average or index ("average price of a two-room flat in the district", "price per m² in the city") is not a listing: put it in site_averages.
-5. If nothing relevant was found, call report_listings with empty lists. Write no other text.`;
+5. If nothing relevant was found, call report_listings with empty lists. Write no other text.
+6. A thing that is one of a kind (handmade or custom-made, a work by an artist with no market, an heirloom) has no comparable listings: other things of its type are not comparables. Call report_listings with empty lists.`;
 
 export interface ValuationConfig {
   /** Asked again when the first model finds too few listings or declines; none when empty. */
@@ -595,20 +596,26 @@ interface Candidate {
   result: SearchResult;
 }
 
-/** The bounds of the largest group of values within CLUSTER_SPAN of each other; of two as large,
- * the dearer (misreads drop digits far more often than they add them). */
-export function densestGroup(values: number[]): [number, number] {
-  const sorted = [...values].sort((a, b) => a - b);
-  let best: [number, number] = [sorted[0]!, sorted[0]!];
+/** The bounds of the group of values within CLUSTER_SPAN of each other seen on the most pages
+ * (`pages`, one per value; each value its own page without them), then with the most values; of
+ * two alike, the dearer (misreads drop digits far more often than they add them). One results
+ * page can hold many listings of another kind or stale prices: two sahibinden.com pages gave eight
+ * prices of 430-950 thousand TRY against six real ones of 12-26 million (eval run 145). */
+export function densestGroup(values: number[], pages?: string[]): [number, number] {
+  const items = values.map((value, i) => ({ value, page: pages?.[i] ?? `#${i}` })).sort((a, b) => a.value - b.value);
+  let best: [number, number] = [items[0]!.value, items[0]!.value];
+  let bestPages = 0;
   let bestCount = 0;
   let end = 0;
-  for (let start = 0; start < sorted.length; start++) {
+  for (let start = 0; start < items.length; start++) {
     end = Math.max(end, start);
-    while (end + 1 < sorted.length && sorted[end + 1]! <= sorted[start]! * CLUSTER_SPAN) end++;
+    while (end + 1 < items.length && items[end + 1]!.value <= items[start]!.value * CLUSTER_SPAN) end++;
     const count = end - start + 1;
-    if (count >= bestCount) {
+    const distinct = new Set(items.slice(start, end + 1).map((item) => item.page)).size;
+    if (distinct > bestPages || (distinct === bestPages && count >= bestCount)) {
+      bestPages = distinct;
       bestCount = count;
-      best = [sorted[start]!, sorted[end]!];
+      best = [items[start]!.value, items[end]!.value];
     }
   }
   return best;
@@ -714,7 +721,10 @@ export function computeValuation(asset: AssetDescription, report: Report | undef
   // large as the real one at times (Tukey's fences and the median then fail): the largest group
   // within CLUSTER_SPAN is the market.
   if (kept.length >= MIN_COMPARABLES) {
-    const [lo, hi] = densestGroup(kept.map((k) => k.v));
+    const [lo, hi] = densestGroup(
+      kept.map((k) => k.v),
+      kept.map((k) => k.c.result.url),
+    );
     kept = kept.filter((k) => {
       if (k.v >= lo && k.v <= hi) return true;
       drop("outside_cluster");

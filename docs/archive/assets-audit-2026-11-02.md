@@ -57,7 +57,7 @@
 
 | Что | Состояние |
 |---|---|
-| «Что нового» 1.8 | черновик в [plan-charts-by-day.md](../plan-charts-by-day.md) без строки об активах и капитале; [promotion-plan.md](../promotion-plan.md) §7 утверждал, что не хватает только фаз 3 и 4 |
+| «Что нового» 1.8 | черновик в [plan-charts-by-day.md](plans/plan-charts-by-day.md) без строки об активах и капитале; [promotion-plan.md](../promotion-plan.md) §7 утверждал, что не хватает только фаз 3 и 4 |
 | Пейволл (RevenueCat) | семь пунктов, активов нет ([promotion-plan.md](../promotion-plan.md) §2); человек жмёт «+» в активах и видит экран, где о них ни слова |
 | Метаданные стора | `appstore/metadata.json`, `product-pages.json`: ни «активов», ни «капитала» |
 | Скриншоты | макеты активов есть в `ScreenMockupTests`, в наборе стора нет |

@@ -2397,6 +2397,7 @@
 "asset.notFoundDescription" = "삭제되었을 수 있어요.";
 "asset.namePlaceholder" = "무엇인가요?";
 "asset.valueHint" = "오늘의 가치";
+"asset.dollarHint" = "집과 자동차는 달러로 가격을 매기는 경우가 많아요. 위에서 USD를 고르면 %@ 기준 가치가 매일 환율을 따라가요.";
 "asset.salePriceHint" = "판매 가격";
 "asset.kind" = "종류";
 "asset.kind.apartment" = "아파트";
@@ -2446,6 +2447,8 @@
 "asset.depreciation.off" = "끔";
 "asset.depreciationValue" = "연 %@";
 "asset.forecast" = "3년 후";
+"asset.pricePerM2" = "m²당 가격";
+"asset.pricePerAre" = "아르당 가격";
 "assistant.notice.asset.stale" = "%2$@ 평가 %1$@. 가격은 변해요. 순자산이 정확하도록 가치를 업데이트하세요.";
 "assistant.notice.loanAsset" = "이 대출로 집이나 차를 샀다면 자산에 추가해 보세요. 순자산에서 내 돈이 얼마인지 볼 수 있습니다.";
 "asset.saleHint" = "얼마에 팔았나요?";

@@ -91,7 +91,7 @@ export default {
     ctx.waitUntil(
       (async () => {
         try {
-          const stream = client.beta.messages.stream(buildParams(config, turn.messages));
+          const stream = client.beta.messages.stream(buildParams(config, turn.messages, tier));
           // The content block that is render_reply's call, while it streams.
           let replyIndex: number | undefined;
           for await (const event of stream) {

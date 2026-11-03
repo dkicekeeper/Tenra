@@ -596,20 +596,26 @@ interface Candidate {
   result: SearchResult;
 }
 
-/** The bounds of the largest group of values within CLUSTER_SPAN of each other; of two as large,
- * the dearer (misreads drop digits far more often than they add them). */
-export function densestGroup(values: number[]): [number, number] {
-  const sorted = [...values].sort((a, b) => a - b);
-  let best: [number, number] = [sorted[0]!, sorted[0]!];
+/** The bounds of the group of values within CLUSTER_SPAN of each other seen on the most pages
+ * (`pages`, one per value; each value its own page without them), then with the most values; of
+ * two alike, the dearer (misreads drop digits far more often than they add them). One results
+ * page can hold many listings of another kind or stale prices: two sahibinden.com pages gave eight
+ * prices of 430-950 thousand TRY against six real ones of 12-26 million (eval run 145). */
+export function densestGroup(values: number[], pages?: string[]): [number, number] {
+  const items = values.map((value, i) => ({ value, page: pages?.[i] ?? `#${i}` })).sort((a, b) => a.value - b.value);
+  let best: [number, number] = [items[0]!.value, items[0]!.value];
+  let bestPages = 0;
   let bestCount = 0;
   let end = 0;
-  for (let start = 0; start < sorted.length; start++) {
+  for (let start = 0; start < items.length; start++) {
     end = Math.max(end, start);
-    while (end + 1 < sorted.length && sorted[end + 1]! <= sorted[start]! * CLUSTER_SPAN) end++;
+    while (end + 1 < items.length && items[end + 1]!.value <= items[start]!.value * CLUSTER_SPAN) end++;
     const count = end - start + 1;
-    if (count >= bestCount) {
+    const distinct = new Set(items.slice(start, end + 1).map((item) => item.page)).size;
+    if (distinct > bestPages || (distinct === bestPages && count >= bestCount)) {
+      bestPages = distinct;
       bestCount = count;
-      best = [sorted[start]!, sorted[end]!];
+      best = [items[start]!.value, items[end]!.value];
     }
   }
   return best;
@@ -715,7 +721,10 @@ export function computeValuation(asset: AssetDescription, report: Report | undef
   // large as the real one at times (Tukey's fences and the median then fail): the largest group
   // within CLUSTER_SPAN is the market.
   if (kept.length >= MIN_COMPARABLES) {
-    const [lo, hi] = densestGroup(kept.map((k) => k.v));
+    const [lo, hi] = densestGroup(
+      kept.map((k) => k.v),
+      kept.map((k) => k.c.result.url),
+    );
     kept = kept.filter((k) => {
       if (k.v >= lo && k.v <= hi) return true;
       drop("outside_cluster");

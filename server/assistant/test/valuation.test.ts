@@ -300,6 +300,12 @@ describe("computeValuation", () => {
     expect(densestGroup([126_500, 159_500, 203_500, 225_000, 253_000, 259_500, 267_700, 132_400, 5_150, 9_200, 4_780, 6_220, 10_900, 9_500, 6_670, 5_590])).toEqual([126_500, 267_700]);
     expect(densestGroup([100, 120, 130])).toEqual([100, 130]);
     expect(densestGroup([100])).toEqual([100, 100]);
+    // Pages, not listings: eight stale prices of two results pages lose to six real ones of four.
+    const stale = [4_780, 5_150, 5_590, 6_220, 6_670, 9_200, 9_500, 10_900];
+    const real = [126_500, 159_500, 203_500, 225_000, 253_000, 259_500];
+    const pages = [...stale.map((_, i) => (i % 2 ? "sahibinden-a" : "sahibinden-b")), "p1", "p2", "p3", "p4", "p1", "p2"];
+    expect(densestGroup([...stale, ...real], pages)).toEqual([126_500, 259_500]);
+    expect(densestGroup([...stale, ...real])).toEqual([4_780, 10_900]);
   });
 
   it("counts Turkey's 2+1 as two rooms whatever the model wrote, and ignores rooms that would leave nothing", () => {

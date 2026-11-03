@@ -485,7 +485,11 @@ spending, no em dashes, in all 11 languages.
   one-off sculpture whose answer is "too few"), each with a dated reference from official statistics, market reports or
   price guides and a tolerance; `--fallback <model>` (the workflow's `fallback` input) runs the
   production pair, `--repeat N` (`repeat`) each case N times with a table of passes per case
-  (the search results change from run to run). Reports passes, the median deviation, comparables kept of those
+  (the search results change from run to run). `npm run eval:replay -- <records dirs>`
+  (`eval/replay.ts`) re-grades saved records with the code as it is now, without the API: a
+  change to the filters or the grouping is checked against real searches for free. The price
+  group that counts is the one seen on the most results pages, then with the most listings
+  (`densestGroup`). Reports passes, the median deviation, comparables kept of those
   reported, links dropped as not in the results, searches, cost and time. About $0.46 a run on
   Haiku 5.5 and $1.82 on Sonnet 5.5; references older than three months are refreshed, never
   widened. A change to the valuation prompt bumps `VALUATION_PROMPT_VERSION` and runs it.

@@ -9,7 +9,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "eval": "tsx eval/run.ts",
-    "eval:valuation": "tsx eval/valuation.ts"
+    "eval:valuation": "tsx eval/valuation.ts",
+    "eval:replay": "tsx eval/replay.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "0.133.0"

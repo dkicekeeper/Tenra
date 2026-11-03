@@ -160,6 +160,7 @@ private struct AssistantChartCard: View {
                     MiniDonut(slices: DonutSlice.from(items))
                         .frame(width: AppIconSize.Tile.xxxl, height: AppIconSize.Tile.xxxl)
                         .frame(maxWidth: .infinity)
+                        .padding(.vertical, AppSpacing.md)
                 }
                 ForEach(items.prefix(Self.rowLimit)) { item in
                     CategoryBreakdownRow(item: item, currency: chart.currency)
@@ -174,11 +175,15 @@ private struct AssistantChartCard: View {
     /// bars otherwise (a donut of periods says nothing). A tap shows a period's amount.
     @ViewBuilder
     private var timeline: some View {
-        if kind == .line {
-            LineChart(dataPoints: timelinePoints, series: timelineSeries, valueFormat: .currency(chart.currency))
-        } else {
-            BarChart(dataPoints: timelinePoints, series: timelineSeries, valueFormat: .currency(chart.currency))
+        // A piece of the card's section pads itself (AssistantCard).
+        Group {
+            if kind == .line {
+                LineChart(dataPoints: timelinePoints, series: timelineSeries, valueFormat: .currency(chart.currency))
+            } else {
+                BarChart(dataPoints: timelinePoints, series: timelineSeries, valueFormat: .currency(chart.currency))
+            }
         }
+        .padding(.vertical, AppSpacing.md)
     }
 
     private static let seriesId = "value"
@@ -484,6 +489,8 @@ private struct AssistantDraftCard: View {
                         }
                         .buttonStyle(.bounce)
                         .accessibilityHint(String(localized: "assistant.draft.editHint"))
+                        // The button keeps the row's divider inset to itself: the 44 pt icon.
+                        .rowDividerInset(AppIconSize.Tile.sm + AppSpacing.md)
                     } else {
                         row
                     }
@@ -510,13 +517,16 @@ private struct AssistantDraftCard: View {
             if state == .pending {
                 ForEach(guesses, id: \.self) { guess in
                     InlineStatusText(message: guess, type: .warning)
+                        .padding(.vertical, AppSpacing.md)
                 }
                 // A guess is what an edit fixes: say where.
                 if !guesses.isEmpty, draft.operations.contains(where: { if case .single = $0 { true } else { false } }) {
                     InlineStatusText(message: String(localized: "assistant.draft.editTip"), type: .info)
+                        .padding(.vertical, AppSpacing.md)
                 }
                 if let editError {
                     InlineStatusText(message: editError, type: .error)
+                        .padding(.vertical, AppSpacing.md)
                 }
             }
             footer(state)
@@ -575,6 +585,7 @@ private struct AssistantDraftCard: View {
                     if case .saved? = book.states[draft.id] { HapticManager.success() } else { HapticManager.error() }
                 }
             }
+            .padding(.vertical, AppSpacing.md)
         case .saved:
             HStack {
                 InlineStatusText(message: String(localized: "assistant.draft.saved"), type: .success)
@@ -583,13 +594,17 @@ private struct AssistantDraftCard: View {
                     Task { await book.undo(draft.id) }
                 }
             }
+            .padding(.vertical, AppSpacing.md)
         case .undone:
             InlineStatusText(message: String(localized: "assistant.draft.undone"), type: .info)
+                .padding(.vertical, AppSpacing.md)
         case .failed:
             InlineStatusText(message: String(localized: "assistant.draft.failed"), type: .error)
+                .padding(.vertical, AppSpacing.md)
             DSButton(String(localized: "assistant.draft.save"), systemImage: "arrow.clockwise", fullWidth: true) {
                 Task { await book.save(draft.id) }
             }
+            .padding(.vertical, AppSpacing.md)
         }
     }
 
@@ -637,9 +652,8 @@ private struct AssistantDraftCard: View {
             fact.text ?? fact.replaces?.text ?? "",
             meta: [MetaLine([.text(note)])],
             leading: .symbol(fact.text == nil ? "eraser" : "brain"),
-            style: .large,
-            // The card spaces its pieces (AssistantCard), not a glass section (DesignKit 8.1.0).
-            verticalPadding: 0
+            // A row of the card's section: it pads itself 12 pt (AssistantCard, DesignKit 8.6.0).
+            style: .large
         )
         .accessibilityElement(children: .combine)
     }

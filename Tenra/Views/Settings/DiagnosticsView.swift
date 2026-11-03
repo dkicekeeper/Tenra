@@ -229,7 +229,7 @@ struct DiagnosticsView: View {
                 Text(String(localized: "diagnostics.reports.empty"))
                     .font(AppTypography.body)
                     .foregroundStyle(AppColors.textSecondary)
-                    .padding(.vertical, AppSpacing.lg)
+                    .padding(.vertical, AppSpacing.md)
             } else {
                 ForEach(payloads) { payload in
                     UniversalRow(

@@ -25,37 +25,41 @@ struct CSVImportResultView: View {
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: AppSpacing.xxl) {
-                CSVImportSteps(current: CSVImportSteps.done)
+            // A scroll view: the sections' rows pad themselves 12 pt (DesignKit 8.6.0), and the
+            // results with every count, the timing and the errors outgrow a small screen.
+            ScrollView {
+                VStack(spacing: AppSpacing.xxl) {
+                    CSVImportSteps(current: CSVImportSteps.done)
 
-                // Persistence failure banner — shown above everything else
-                if let persistenceError = statistics.persistenceError {
-                    StatusBanner(
-                        String(localized: "csvImport.error.persistenceFailed") + " \(persistenceError)",
-                        status: .negative
-                    )
+                    // Persistence failure banner — shown above everything else
+                    if let persistenceError = statistics.persistenceError {
+                        StatusBanner(
+                            String(localized: "csvImport.error.persistenceFailed") + " \(persistenceError)",
+                            status: .negative
+                        )
+                    }
+
+                    // Result icon
+                    resultIcon
+
+                    // Statistics section
+                    statisticsSection
+
+                    // Performance metrics section
+                    performanceSection
+
+                    // Errors section
+                    if statistics.hasErrors {
+                        errorsSection
+                    }
                 }
-
-                // Result icon
-                resultIcon
-
-                // Statistics section
-                statisticsSection
-
-                // Performance metrics section
-                performanceSection
-
-                // Errors section
-                if statistics.hasErrors {
-                    errorsSection
-                }
-
-                Spacer()
-
-                // Done button
-                doneButton
+                .screenPadding()
             }
-            .screenPadding()
+            // Done button, at the bottom of the screen as before
+            .safeAreaInset(edge: .bottom) {
+                doneButton
+                    .screenPadding()
+            }
             .navigationTitle(String(localized: "csvImport.result.title"))
             .navigationBarTitleDisplayMode(.inline)
         }
@@ -83,97 +87,91 @@ struct CSVImportResultView: View {
         )
     }
 
+    /// The counts in `FormSection`s (DesignKit 8.6.0): what was imported, then what was created,
+    /// each row padded 12 pt, the section's divider between them.
     private var statisticsSection: some View {
         VStack(spacing: AppSpacing.lg) {
-            StatRow(
-                label: String(format: String(localized: "csvImport.result.imported"), statistics.importedCount),
-                value: "",
-                color: AppColors.success,
-                icon: "checkmark.circle"
-            )
-
-            if statistics.duplicatesSkipped > 0 {
+            FormSection {
                 StatRow(
-                    label: String(format: String(localized: "csvImport.result.duplicates"), statistics.duplicatesSkipped),
+                    label: String(format: String(localized: "csvImport.result.imported"), statistics.importedCount),
                     value: "",
-                    color: .purple,
-                    icon: "arrow.triangle.2.circlepath"
+                    color: AppColors.success,
+                    icon: "checkmark.circle"
                 )
+
+                if statistics.duplicatesSkipped > 0 {
+                    StatRow(
+                        label: String(format: String(localized: "csvImport.result.duplicates"), statistics.duplicatesSkipped),
+                        value: "",
+                        color: .purple,
+                        icon: "arrow.triangle.2.circlepath"
+                    )
+                }
+
+                if statistics.skippedCount - statistics.duplicatesSkipped > 0 {
+                    StatRow(
+                        label: String(format: String(localized: "csvImport.result.skipped"), statistics.skippedCount - statistics.duplicatesSkipped),
+                        value: "",
+                        color: AppColors.warning,
+                        icon: "exclamationmark.circle"
+                    )
+                }
             }
 
-            if statistics.skippedCount - statistics.duplicatesSkipped > 0 {
-                StatRow(
-                    label: String(format: String(localized: "csvImport.result.skipped"), statistics.skippedCount - statistics.duplicatesSkipped),
-                    value: "",
-                    color: AppColors.warning,
-                    icon: "exclamationmark.circle"
-                )
-            }
+            if statistics.createdAccounts > 0 || statistics.createdCategories > 0 || statistics.createdSubcategories > 0 {
+                FormSection {
+                    if statistics.createdAccounts > 0 {
+                        StatRow(
+                            label: String(format: String(localized: "csvImport.result.createdAccounts"), statistics.createdAccounts),
+                            value: "",
+                            color: AppColors.accent,
+                            icon: "plus.circle"
+                        )
+                    }
 
-            Divider()
+                    if statistics.createdCategories > 0 {
+                        StatRow(
+                            label: String(format: String(localized: "csvImport.result.createdCategories"), statistics.createdCategories),
+                            value: "",
+                            color: AppColors.accent,
+                            icon: "plus.circle"
+                        )
+                    }
 
-            if statistics.createdAccounts > 0 {
-                StatRow(
-                    label: String(format: String(localized: "csvImport.result.createdAccounts"), statistics.createdAccounts),
-                    value: "",
-                    color: AppColors.accent,
-                    icon: "plus.circle"
-                )
-            }
-
-            if statistics.createdCategories > 0 {
-                StatRow(
-                    label: String(format: String(localized: "csvImport.result.createdCategories"), statistics.createdCategories),
-                    value: "",
-                    color: AppColors.accent,
-                    icon: "plus.circle"
-                )
-            }
-
-            if statistics.createdSubcategories > 0 {
-                StatRow(
-                    label: String(format: String(localized: "csvImport.result.createdSubcategories"), statistics.createdSubcategories),
-                    value: "",
-                    color: AppColors.accent,
-                    icon: "plus.circle"
-                )
+                    if statistics.createdSubcategories > 0 {
+                        StatRow(
+                            label: String(format: String(localized: "csvImport.result.createdSubcategories"), statistics.createdSubcategories),
+                            value: "",
+                            color: AppColors.accent,
+                            icon: "plus.circle"
+                        )
+                    }
+                }
             }
         }
-        .cardContentPadding()
-        .background(AppColors.bgCard)
-        .clipShape(.rect(cornerRadius: AppRadius.card))
     }
 
+    /// The timing in a `FormSection` (DesignKit 8.6.0): the header 12 pt above, detail rows.
     private var performanceSection: some View {
-        VStack(spacing: AppSpacing.md) {
-            Text(String(localized: "csvImport.result.performance"))
-                .font(AppTypography.h4)
-
-            HStack {
-                Text(String(localized: "csvImport.result.duration"))
-                Spacer()
-                Text(String(format: "%.1fs", statistics.duration))
-                    .fontWeight(.semibold)
-            }
-
-            HStack {
-                Text(String(localized: "csvImport.result.speed"))
-                Spacer()
-                Text(String(format: "%.0f rows/s", statistics.rowsPerSecond))
-                    .fontWeight(.semibold)
-            }
-
-            HStack {
-                Text(String(localized: "csvImport.result.successRate"))
-                Spacer()
-                Text("\(statistics.successPercentage)%")
-                    .fontWeight(.semibold)
-                    .foregroundStyle(statistics.successRate > 0.8 ? AppColors.success : AppColors.warning)
+        FormSection(header: String(localized: "csvImport.result.performance")) {
+            UniversalRow(
+                String(localized: "csvImport.result.duration"),
+                config: .info,
+                accessory: .info(String(format: "%.1fs", statistics.duration))
+            )
+            UniversalRow(
+                String(localized: "csvImport.result.speed"),
+                config: .info,
+                accessory: .info(String(format: "%.0f rows/s", statistics.rowsPerSecond))
+            )
+            UniversalRow(config: .info) {
+                InfoRowLayout(label: String(localized: "csvImport.result.successRate")) {
+                    Text("\(statistics.successPercentage)%")
+                        .font(AppTypography.bodyEmphasis)
+                        .foregroundStyle(statistics.successRate > 0.8 ? AppColors.success : AppColors.warning)
+                }
             }
         }
-        .cardContentPadding()
-        .background(AppColors.bgCard)
-        .clipShape(.rect(cornerRadius: AppRadius.card))
     }
 
     private var errorsSection: some View {
@@ -250,8 +248,9 @@ struct StatRow: View {
         self.icon = icon
     }
 
+    /// A row of a `FormSection`: it pads itself 12 pt and starts the divider at its text.
     var body: some View {
-        HStack {
+        HStack(spacing: AppSpacing.md) {
             if let icon = icon {
                 Icon(icon, size: AppIconSize.md)
                     .foregroundStyle(color)
@@ -261,8 +260,9 @@ struct StatRow: View {
             Spacer()
             Text(value)
                 .font(AppTypography.bodyEmphasis)
-                .fontWeight(.semibold)
                 .foregroundStyle(color)
         }
+        .padding(.vertical, AppSpacing.md)
+        .rowDividerInset(icon == nil ? 0 : AppIconSize.md + AppSpacing.md)
     }
 }

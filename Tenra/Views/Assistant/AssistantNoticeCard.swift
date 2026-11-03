@@ -122,7 +122,8 @@ struct AssistantNoticesSection: View {
 
     private func section(notice: AssistantNotice, count: Int) -> some View {
         let title = String(localized: "assistant.notice.title")
-        return VStack(alignment: .leading, spacing: AppSpacing.sm) {
+        // The header 12 pt above the card, as a `FormSection`'s (DesignKit 8.6.0).
+        return VStack(alignment: .leading, spacing: AppSpacing.md) {
             SectionHeader(count > 1 ? "\(title) · \(count)" : title)
             AssistantNoticeCard(
                 notice: notice,

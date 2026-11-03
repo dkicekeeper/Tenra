@@ -200,7 +200,9 @@ struct GoalDetailView: View {
 
     private func contributionsSection(for goal: SavingsGoal) -> some View {
         let contributions = Array(goal.contributions.reversed())
-        return VStack(alignment: .leading, spacing: AppSpacing.sm) {
+        // The header 12 pt above the card; the card padded only at the sides, the rows' own 12 pt
+        // above and below each (DesignKit 8.6.0).
+        return VStack(alignment: .leading, spacing: AppSpacing.md) {
             SectionHeader(String(localized: "goal.contributions"))
             VStack(spacing: 0) {
                 ForEach(contributions) { contribution in
@@ -232,7 +234,7 @@ struct GoalDetailView: View {
                     .transition(AsymmetricTransition(insertion: OpacityTransition(), removal: DissolveTransition()))
                 }
             }
-            .padding(AppSpacing.lg)
+            .padding(.horizontal, AppSpacing.lg)
             .cardStyle()
             .animation(AppAnimation.gentleSpring, value: contributions.map(\.id))
         }

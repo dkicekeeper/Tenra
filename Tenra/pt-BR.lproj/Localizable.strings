@@ -2485,6 +2485,9 @@
 "asset.attr.no" = "Não";
 "asset.attr.country" = "País";
 "asset.attr.city" = "Cidade";
+"asset.attr.region" = "Estado ou região";
+"asset.attr.complex" = "Condomínio";
+"asset.attr.new_building" = "Imóvel novo";
 "asset.attr.district" = "Bairro";
 "asset.attr.area_m2" = "Área, m²";
 "asset.attr.rooms" = "Quartos";

@@ -212,12 +212,16 @@ struct AssetAttributesSection: View {
         return result
     }
 
+    // The key is built as a String first: an interpolated literal passed to LocalizationValue
+    // becomes the format key "asset.attr.%@", which no table has, and the raw key shows.
     static func title(of field: Field) -> String {
-        String(localized: String.LocalizationValue("asset.attr.\(field.rawValue)"))
+        let key = "asset.attr.\(field.rawValue)"
+        return String(localized: String.LocalizationValue(key))
     }
 
     static func title(of field: Field, option: String) -> String {
-        String(localized: String.LocalizationValue("asset.attr.\(field.rawValue).\(option)"))
+        let key = "asset.attr.\(field.rawValue).\(option)"
+        return String(localized: String.LocalizationValue(key))
     }
 
     private static func icon(of field: Field) -> String {

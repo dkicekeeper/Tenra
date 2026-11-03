@@ -505,6 +505,29 @@ struct AssetsTests {
         #expect(reopened.asset(id: "car")?.attributes.isEmpty == true)
     }
 
+    /// Every characteristic and option reads as its text, never as its key: a key interpolated
+    /// into `LocalizationValue` became "asset.attr.%@" and the form showed "asset.attr.country"
+    /// (build 68); a field without a key would show the same.
+    @Test func everyCharacteristicHasItsTitle() {
+        for field in AssetAttributes.Field.allCases {
+            let key = "asset.attr.\(field.rawValue)"
+            let title = AssetAttributesSection.title(of: field)
+            #expect(title == Bundle.main.localizedString(forKey: key, value: nil, table: nil), "\(key)")
+            #expect(title != key, "\(key)")
+            var options: [String] = []
+            switch field.kind {
+            case .choice(let values), .set(let values): options = values
+            default: break
+            }
+            for option in options {
+                let optionKey = "\(key).\(option)"
+                let optionTitle = AssetAttributesSection.title(of: field, option: option)
+                #expect(optionTitle == Bundle.main.localizedString(forKey: optionKey, value: nil, table: nil), "\(optionKey)")
+                #expect(optionTitle != optionKey, "\(optionKey)")
+            }
+        }
+    }
+
     /// The form saves the kind's fields as typed, keeps the kind's ones it does not show and a
     /// later version's keys, drops another kind's, and saves the country only with something else.
     @Test func theFormSavesTheKindsCharacteristics() {

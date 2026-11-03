@@ -37,6 +37,11 @@ is in [archive/localization-2026-07/](archive/localization-2026-07/).
 - **Format specifiers:** a translation that reorders arguments uses positional ones
   (`%1$@ … %2$lld`); never mix positional and plain in one string. A bare `%` in a string read
   with `String(localized:)` and no arguments stays single.
+- **A key built at run time** (`"asset.attr.\(field.rawValue)"`) goes into a `let` first, then
+  `String(localized: String.LocalizationValue(key))`. Interpolated straight into the literal it
+  becomes the format key `asset.attr.%@`, which no table has, and the raw key shows on screen
+  (the asset form in build 68). Each key it can build exists in every locale;
+  `AssetsTests.everyCharacteristicHasItsTitle` pins the asset characteristics.
 - **No em dashes** in any user-facing text: comma, colon, period, or two sentences.
 - **Quotes:** escape straight quotes (`\"`) or use the language's own (« », „ “, 「 」).
 - **Tone** (set by the existing translations; follow it, don't choose again): de *Sie*, fr *vous*,

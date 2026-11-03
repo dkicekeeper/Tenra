@@ -2485,6 +2485,9 @@
 "asset.attr.no" = "Ні";
 "asset.attr.country" = "Країна";
 "asset.attr.city" = "Місто чи селище";
+"asset.attr.region" = "Область або регіон";
+"asset.attr.complex" = "Житловий комплекс";
+"asset.attr.new_building" = "Новобудова";
 "asset.attr.district" = "Район";
 "asset.attr.area_m2" = "Площа, м²";
 "asset.attr.rooms" = "Кімнат";

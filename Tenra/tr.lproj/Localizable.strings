@@ -2485,6 +2485,9 @@
 "asset.attr.no" = "Hayır";
 "asset.attr.country" = "Ülke";
 "asset.attr.city" = "Şehir veya kasaba";
+"asset.attr.region" = "Bölge";
+"asset.attr.complex" = "Site";
+"asset.attr.new_building" = "Yeni bina";
 "asset.attr.district" = "İlçe veya semt";
 "asset.attr.area_m2" = "Alan, m²";
 "asset.attr.rooms" = "Oda sayısı";

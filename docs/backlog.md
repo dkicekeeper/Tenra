@@ -11,6 +11,37 @@ with the commit of every fix, are in
 
 ## Open
 
+- **First run, as a newcomer sees it** (walkthrough 2026-11-04, iPhone 17 Pro Simulator, iOS 26.5,
+  Russian, fresh install; 80% of new users open Tenra once, promotion-plan §6). From launch to the
+  first saved expense: 6 screens, about 12 taps. By likely weight:
+  1. *Nothing brings a manual user back.* Notifications are only provisional (weekly digest and
+     insight signals land silently in Notification Center); there is no daily "log today's
+     spending" reminder; the Wallet automation, the "writes itself" promise, is 10 pages and 8
+     steps in Shortcuts. Candidate: after the first saved expense, offer an evening reminder
+     (opt-in, full permission prompt).
+  2. *Save is not visible in the add form.* "Вчера / Сегодня / Дата" are the save buttons
+     (`dateButtonsSafeArea`), with no "Сохранить" label or check: a newcomer can read them as a
+     date picker and leave with ← unsaved.
+  3. *The Home hint eats the first tap.* "Нажмите на категорию, чтобы добавить расход" spotlights
+     the tiles, but tapping a tile only closes the hint; the form opens on the second tap. Cause:
+     DesignKit `Spotlight` gives the dim layer `.contentShape(Rectangle())`, so the cut-out takes
+     the tap too (`onTap` or `current = nil`); fix there (let the cut-out pass the tap) or pass
+     an `onTap` from `ContentView` that opens the tile.
+  4. *The first Analytics is discouraging.* After one expense: "Финансы: Требует внимания 0/100"
+     in red, "Топ категория ↘ +100.0%" (a down arrow with a plus, no earlier period), "Среднедневные
+     расходы 116.67 ₸" (one day spread over the month; a dot decimal in ru). Hide the score and
+     trends until there is enough data.
+  5. *Account step:* the name field shows no placeholder while focused (cursor, "0" and a disabled
+     "Далее"); the "0" is the balance, with no label or ₸.
+  6. *Categories step:* 10 of 15 names cut ("Проду…", "Здоров…"), 4 per row with labels above the
+     icons, no visible selected state ("Отметьте те…" with all 15 preselected). Layout: owner's
+     call first (rule in CLAUDE.md).
+  7. *Smaller:* the currency step's title sits over the scrolling list; "Все валюты" offers ATS
+     (Austrian schilling); in the add form the date buttons cover "Добавить подкатегорию" and
+     "Останется на счёте"; the auto-capture rows have no chevron.
+  8. *Not checked (Simulator has no App Attest):* on a phone the action tab is Ten, whose field
+     says "Спросите о деньгах…", not "запишите трату"; a typed expense is drafted on the phone.
+
 - **Assistant attachments after a relaunch.** A receipt or statement attached in the chat lives
   in memory: after a relaunch its card is gone from the kept thread (drafts too, by design).
   Plan §3.8 keeps the file in the app's container with the thread; only worth it if people come

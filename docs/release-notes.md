@@ -115,6 +115,8 @@ Tenra의 새로운 기능:
    Ten's chat; "Remind me" shows the system prompt; the push at the set time on a day with
    nothing recorded, none after an entry (a manual one, Ten's draft, an Apple Pay capture); a
    tap opens Ten; Settings › Spending reminder switches it and moves the time.
+   Refuse the system prompt from quiet (provisional) notifications and check iOS Settings: if
+   Tenra stays provisional, reminders arrive quietly while the attribute says `denied`.
 3. **The store build**: `prepare-version --version X --build N`.
 4. **What's New**: this file (`prepare-version`), en-GB included.
 5. **App Privacy** (founder, in App Store Connect; not in the API): the RevenueCat attribute

@@ -436,9 +436,9 @@ extension InsightsService {
         if let gran = granularity, !periodPoints.isEmpty {
             let currentPoint = periodPoints.first(where: { $0.key == gran.currentPeriodKey })
             let prevPoint    = periodPoints.first(where: { $0.key == gran.previousPeriodKey })
-            let cal = Calendar.current
-            let currentDays = currentPoint.map { max(1, cal.dateComponents([.day], from: $0.periodStart, to: $0.periodEnd).day ?? 1) } ?? 1
-            let prevDays    = prevPoint.map    { max(1, cal.dateComponents([.day], from: $0.periodStart, to: $0.periodEnd).day ?? 1) } ?? 1
+            let now = Date()
+            let currentDays = currentPoint.map { Self.daysForDailyAverage(periodStart: $0.periodStart, periodEnd: $0.periodEnd, now: now) } ?? 1
+            let prevDays    = prevPoint.map    { Self.daysForDailyAverage(periodStart: $0.periodStart, periodEnd: $0.periodEnd, now: now) } ?? 1
             let currentAvgDaily = (currentPoint?.expenses ?? 0) / Double(currentDays)
             let prevAvgDaily    = (prevPoint?.expenses ?? 0)    / Double(prevDays)
             let changePercent   = prevAvgDaily > 0 ? ((currentAvgDaily - prevAvgDaily) / prevAvgDaily) * 100 : 0.0
@@ -504,6 +504,24 @@ extension InsightsService {
     nonisolated static let topMerchantListLimit = 10
     /// A bucket with fewer merchants tells nothing the person does not know.
     nonisolated static let topMerchantMinimumMerchants = 3
+
+    /// The days a bucket's daily average divides by: all of them once it is over, the days so
+    /// far (today included) while it is under way. Dividing the month under way by all its days
+    /// made 3 500 ₸ on the 5th read as 117 ₸ a day, and every early-month trend look like a fall.
+    nonisolated static func daysForDailyAverage(
+        periodStart: Date,
+        periodEnd: Date,
+        now: Date,
+        calendar: Calendar = .current
+    ) -> Int {
+        let end: Date
+        if now >= periodEnd {
+            end = periodEnd
+        } else {
+            end = calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: now)) ?? periodEnd
+        }
+        return max(1, calendar.dateComponents([.day], from: periodStart, to: min(end, periodEnd)).day ?? 1)
+    }
 
     /// Where the money of the current bucket went, by merchant (docs/plan-auto-capture.md §7):
     /// realized `.expense` transactions grouped by `CategorySuggestionService.normalizedMerchant`,

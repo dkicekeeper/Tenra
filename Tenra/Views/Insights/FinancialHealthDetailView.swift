@@ -12,7 +12,7 @@ struct FinancialHealthDetailView: View {
     let score: FinancialHealthScore
 
     private var isAvailable: Bool {
-        score.totalIncomeWindow > 0
+        score.isAvailable
     }
 
     var body: some View {

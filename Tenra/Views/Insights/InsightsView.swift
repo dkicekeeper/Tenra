@@ -210,10 +210,11 @@ struct InsightsView: View {
         )
     }
 
-    /// Health score as an insight-style card, navigating to the health detail.
+    /// Health score as an insight-style card, navigating to the health detail. Not before
+    /// there is income to score: the placeholder would read as "0 / 100, needs attention".
     @ViewBuilder
     private var healthScoreCard: some View {
-        if let hs = insightsViewModel.healthScore {
+        if let hs = insightsViewModel.healthScore, hs.isAvailable {
             NavigationLink(destination: FinancialHealthDetailView(score: hs)) {
                 HealthScoreCardView(score: hs)
                     .contentShape(Rectangle())
@@ -350,7 +351,7 @@ struct InsightsView: View {
         // The «Важное» filter also carries the health score card, so it isn't
         // empty just because no critical/warning insights exist right now.
         let urgentHasHealthCard = insightsViewModel.selectedFilter == .urgent
-            && insightsViewModel.healthScore != nil
+            && insightsViewModel.healthScore?.isAvailable == true
 
         if filtered.isEmpty && !urgentHasHealthCard {
             EmptyState(
@@ -468,7 +469,7 @@ struct InsightsView: View {
     @ViewBuilder
     private var urgentSection: some View {
         let urgent = insightsViewModel.urgentInsights
-        if !urgent.isEmpty || insightsViewModel.healthScore != nil {
+        if !urgent.isEmpty || insightsViewModel.healthScore?.isAvailable == true {
             VStack(alignment: .leading, spacing: AppSpacing.md) {
                 SectionHeader(
                     String(localized: "insights.urgentNow"),

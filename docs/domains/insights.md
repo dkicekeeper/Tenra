@@ -246,7 +246,7 @@ others are recomputed per granularity.
 | `top_spending` · `.topSpendingCategory` | +Spending | Largest expense category of the current bucket; metric = its amount, trend = its share of the bucket. Detail `.categoryBreakdownPaged`, one page per bucket | finite: page per bucket, opens on the current one; `.allTime`: id `top_spending_<category>`, one `.categoryBreakdown` over all history | warning if share > 50%; an empty current bucket keeps the card, neutral | no |
 | `top_merchant` · `.topMerchant` | +Spending | Merchant with the most spent in the current bucket: realized `.expense` transactions grouped by `normalizedMerchant` (store numbers merge; a description that only repeats its category's name is skipped; points merged into a brand count as the brand, under its name, and a payment linked to a merchant by hand as that merchant's: `DataSnapshot.merchantBrands`, [intents.md](intents.md) §6.1); metric = its amount, trend = its share of the bucket's realized expenses (loan payments included). Needs ≥ 3 merchants. Detail `.categoryBreakdown` of the top 10, each in its most used category's colour and icon, read-only (`InsightsView` gives it no category drill-down) | bucket (`.allTime`: whole history) | neutral | no |
 | `mom_spending` · `.monthOverMonthChange` | +Spending | Expenses of the current bucket vs the previous one; needs previous > 0 | finite: buckets; `.allTime`: this calendar month vs the previous one | warning > +20%, positive < −10% | no |
-| `avg_daily` · `.averageDailySpending` | +Spending | Current bucket expenses ÷ its days; trend vs the previous bucket's daily average | bucket (`.allTime`: whole history) | neutral | no |
+| `avg_daily` · `.averageDailySpending` | +Spending | Current bucket expenses ÷ its days so far, today included (`daysForDailyAverage`; a finished bucket: all its days); trend vs the previous bucket's daily average | bucket (`.allTime`: whole history) | neutral | no |
 | `spending_spike` · `.spendingSpike` | +Spending | Category whose spend this calendar month is > 1.5× its average over its months with spending in the 3 previous months; categories whose average is ≤ 1% of the window total are skipped; highest multiplier wins | this month + 3 previous | critical > 2×, else warning | yes |
 | `category_trend_<category>` · `.categoryTrend` | +Spending | Category with ≥ 3 consecutive monthly rises up to its latest month (needs ≥ 3 months of its own, ≥ 4 category-months overall); longest streak wins | months: `.week` 3, `.month` 6, `.quarter` 12, `.year` 24, `.allTime` 12 | warning | no |
 | `check_growth` · `.averageCheckGrowth` | +Spending | The merchant whose average check grew most in money ((now − before) × visits now): realized one-off `.expense` transactions grouped by `normalizedMerchant`, the last 90 days against the 90 before, ≥ 3 visits in each, up ≥ 15 %. Subscriptions (`recurringSeriesId`) are `subscriptionPriceIncrease`'s. Card `.barPair` (before, now), detail `.formulaBreakdown` | 90 + 90 days | neutral | yes |
@@ -294,7 +294,8 @@ price_increase_<seriesId>@<currency>:<new amount>`, so each increase pushes once
 
 `computeHealthScore` (+HealthScore), 0–100, over the `.month` buckets of the whole history:
 income and expenses summed, `avgMonthlyIncome` = income ÷ number of months. Unavailable when
-income is 0.
+income is 0. An unavailable score (`FinancialHealthScore.isAvailable` false) is not shown in the feed
+at all: its placeholder would read as "0 / 100, needs attention" after a newcomer's first expense.
 
 | Component | Weight | Weight, no budgets | Score |
 |---|:---:|:---:|---|

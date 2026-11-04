@@ -593,6 +593,12 @@ struct FinancialHealthScore {
 }
 
 extension FinancialHealthScore {
+    /// Computed from real income: a placeholder (`unavailable()`) is not a score of 0 and is
+    /// not shown as one.
+    nonisolated var isAvailable: Bool {
+        totalIncomeWindow > 0
+    }
+
     /// Returns a placeholder when there is not enough data to compute a score.
     nonisolated static func unavailable() -> FinancialHealthScore {
         FinancialHealthScore(

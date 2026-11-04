@@ -181,6 +181,15 @@ struct MainTabView: View {
             guard let seriesId = notification.userInfo?["seriesId"] as? String else { return }
             coordinator.setPendingSubscription(seriesId: seriesId)
         }
+        // Warm launch from Ten's evening reminder: the stash is this coordinator's to take.
+        .onReceive(
+            NotificationCenter.default.publisher(for: .spendingReminderTapped)
+        ) { _ in
+            AppCoordinator.pendingQuickAddOnLaunch = nil
+            if let url = URL(string: "\(AppCoordinator.urlScheme)://add") {
+                coordinator.handleDeepLink(url)
+            }
+        }
         // Single source of truth for "switch to Finances tab when a deep-link is pending".
         // `initial: true` covers cold-launch: AppCoordinator.init() has already loaded the
         // stashed seriesId from AppDelegate by the time this view first appears.
@@ -259,6 +268,8 @@ struct MainTabView: View {
             Task { await coordinator.goalStore.refreshAllReached() }
             // The next statement reminders, scheduled ahead (StatementImportReminder).
             Task { await StatementImportReminder.reschedule() }
+            // Ten's evening reminders start over from today (SpendingReminder).
+            SpendingReminder.noteAppOpened()
             // Apple Pay payments that waited for an exchange rate (LogWalletPaymentIntent).
             if !WalletCaptureStore.shared.pending.isEmpty {
                 Task { await WalletPaymentRecorder.recordPending(services: IntentServices(coordinator: coordinator)) }

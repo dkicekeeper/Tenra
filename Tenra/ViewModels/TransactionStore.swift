@@ -373,6 +373,11 @@ final class TransactionStore {
     // Coordinator for syncing changes to ViewModels (with @Observable we need manual sync)
     @ObservationIgnored weak var coordinator: AppCoordinator?
 
+    /// Every transaction added, once it is applied: one for `add`, the new ones of a batch. Set
+    /// by AppCoordinator for the spending reminder (SpendingReminder.noteRecorded), so a record
+    /// made by a background intent counts as one made in the app.
+    @ObservationIgnored var onRecorded: (([Transaction]) -> Void)?
+
 
     // MARK: - Initialization
 
@@ -1222,6 +1227,13 @@ final class TransactionStore {
         // 4b. Bulk edits/deletes write every row in ONE background save, awaited so the
         //     rows are on disk when the caller resumes, as with the per-row paths.
         await persistBulkChange(event)
+
+        // 4c. Who listens for new records (the spending reminder).
+        switch event {
+        case .added(let tx): onRecorded?([tx])
+        case .bulkAdded(let txs): onRecorded?(txs)
+        default: break
+        }
 
         // 5. Debounced sync — coalesces rapid mutations (e.g., batch adds)
         // @Observable automatically notifies SwiftUI for TransactionStore property changes.

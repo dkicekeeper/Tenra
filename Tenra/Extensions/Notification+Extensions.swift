@@ -28,6 +28,10 @@ extension Notification.Name {
     /// UserInfo: `seriesId: String`.
     static let subscriptionNotificationTapped = Notification.Name("subscriptionNotificationTapped")
 
+    /// Posted when the person taps Ten's evening spending reminder (SpendingReminder).
+    /// MainTabView opens the way to record an expense (`tenra://add`).
+    static let spendingReminderTapped = Notification.Name("spendingReminderTapped")
+
     /// Posted when user taps on an insight signal notification (audit 2026-07).
     /// MainTabView switches to the Analytics tab.
     static let insightSignalNotificationTapped = Notification.Name("insightSignalNotificationTapped")

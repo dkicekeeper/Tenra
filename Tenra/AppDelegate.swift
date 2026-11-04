@@ -96,6 +96,13 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
             WalletCaptureStore.shared.isReviewRequested = true
         }
 
+        // Ten's evening reminder → the way to record an expense. Cold launch: the coordinator
+        // takes the stash in init(); warm: MainTabView takes the notification.
+        if identifier.hasPrefix(SpendingReminder.identifierPrefix) {
+            AppCoordinator.pendingQuickAddOnLaunch = AppCoordinator.QuickAdd(category: nil)
+            NotificationCenter.default.post(name: .spendingReminderTapped, object: nil)
+        }
+
         // Parse notification ID: "subscription_{seriesId}_{offsetDays}"
         if identifier.hasPrefix("subscription_") {
             let components = identifier.components(separatedBy: "_")

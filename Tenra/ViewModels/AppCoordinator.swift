@@ -109,6 +109,10 @@ class AppCoordinator {
     /// coordinator exists. MainActor-isolated via the enclosing class isolation.
     static var pendingDeepLinkSeriesIdOnLaunch: String?
 
+    /// Cold-launch stash for a tapped spending reminder (SpendingReminder): AppDelegate writes
+    /// the add request before the coordinator exists; `init()` makes it `pendingQuickAdd`.
+    static var pendingQuickAddOnLaunch: QuickAdd?
+
     // MARK: - Assistant
 
     @ObservationIgnored private var assistantModel: AssistantViewModel?
@@ -624,6 +628,14 @@ class AppCoordinator {
             self.pendingSubscriptionSeriesId = stashed
             Self.pendingDeepLinkSeriesIdOnLaunch = nil
         }
+        // A tapped spending reminder opens the way to record an expense.
+        if let stashed = Self.pendingQuickAddOnLaunch {
+            self.pendingQuickAdd = stashed
+            Self.pendingQuickAddOnLaunch = nil
+        }
+
+        // Every record, in the app or by a background intent, reaches the evening reminder.
+        transactionStore.onRecorded = { SpendingReminder.noteRecorded($0) }
 
         // No initial sync here — TransactionStore is empty at this point. The first
         // useful sync happens in initialize() after loadData() populates the store.

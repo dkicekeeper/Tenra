@@ -2603,3 +2603,20 @@
 "insights.formula.netWorth.explainer" = "Everything you have minus everything you owe: money on the accounts, assets at your share and what others owe you, less what is left of your loans and your own debts.";
 "insights.formula.netWorth.rec.withAssets" = "Update your assets' valuations now and then so net worth stays true.";
 "insights.formula.netWorth.rec.addAssets" = "Add your home or car in Finances to see your whole net worth.";
+
+/* Ten's evening spending reminder (SpendingReminder, docs/plan-spending-reminder.md) */
+"spendingReminder.notification.title" = "Ten";
+"spendingReminder.phrase.1" = "Ten was just wondering: not a single expense today? Suspicious 🙂";
+"spendingReminder.phrase.2" = "A minute for your money: what did you buy today?";
+"spendingReminder.phrase.3" = "The day is almost over. Shall we note where the money went?";
+"spendingReminder.phrase.4" = "Ten misses your numbers. Show me what today looked like?";
+"spendingReminder.phrase.5" = "One entry a day, and the month gets clearer. What about today?";
+"spendingReminder.phrase.6" = "Coffee, a taxi, groceries? Ten is ready to note it down";
+"spendingReminder.phrase.7" = "An evening question from Ten: what did you spend on today?";
+"spendingReminder.phrase.8" = "A few seconds and your day is in order. Log today’s spending?";
+"spendingReminder.hook" = "Yesterday in Tenra: “%@”. And what about today?";
+"spendingReminder.farewell.1" = "Ten is here whenever you need. I won’t distract you for now 🙂";
+"spendingReminder.farewell.2" = "I’m here if you want to log your spending. Have a nice evening!";
+"spendingReminder.offer.title" = "Remind you in the evening?";
+"spendingReminder.offer.message" = "If a day goes by with nothing logged, Ten will remind you at %@. No spam.";
+"spendingReminder.offer.action" = "Remind me";

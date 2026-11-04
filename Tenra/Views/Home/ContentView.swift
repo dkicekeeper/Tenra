@@ -40,6 +40,9 @@ struct ContentView: View {
     @State private var quickAddCategory: String?
     /// The auto-capture card's ✕: hidden for good.
     @AppStorage(AutoCaptureSetupCard.hiddenKey) private var autoCaptureCardHidden = false
+    /// Ten's offer of the evening reminder, answered or not (SpendingReminder).
+    @AppStorage(SpendingReminder.offerKey) private var reminderOffer = SpendingReminder.OfferState.notAsked.rawValue
+    @AppStorage(SpendingReminder.enabledKey) private var reminderOn = false
     @State private var showingWalletGuide = false
     /// The iCloud ask answered now: CloudSyncViewModel keeps the answer in UserDefaults, which
     /// a view does not observe.
@@ -316,15 +319,30 @@ struct ContentView: View {
         .screenPadding()
     }
 
-    /// Under the history card: the one-time iCloud ask for an older install, and the
-    /// auto-capture card until an automation records its first payment. "For today" is on
-    /// Analytics (DailyAllowanceLink).
+    /// Under the history card: Ten's offer of the evening reminder once there is a record, the
+    /// one-time iCloud ask for an older install, and the auto-capture card until an automation
+    /// records its first payment. "For today" is on Analytics (DailyAllowanceLink).
     @ViewBuilder
     private var setupCards: some View {
+        let showsReminderOffer = !reminderOn
+            && reminderOffer == SpendingReminder.OfferState.notAsked.rawValue
+            && coordinator.transactionStore.transactionsCount > 0
         let showsICloudAsk = !iCloudAskAnswered && coordinator.cloudSyncViewModel.shouldAskForICloud
         let showsAutoCapture = !autoCaptureCardHidden && !WalletCaptureStore.shared.hasEverCaptured
-        if coordinator.isFullyInitialized, showsICloudAsk || showsAutoCapture {
+        if coordinator.isFullyInitialized, showsReminderOffer || showsICloudAsk || showsAutoCapture {
             VStack(spacing: AppSpacing.lg) {
+                if showsReminderOffer {
+                    SpendingReminderOfferCard(
+                        onAccept: {
+                            withAnimation(AppAnimation.smooth) { reminderOffer = SpendingReminder.OfferState.accepted.rawValue }
+                            Task { await SpendingReminder.acceptOffer() }
+                        },
+                        onDecline: {
+                            withAnimation(AppAnimation.smooth) { reminderOffer = SpendingReminder.OfferState.declined.rawValue }
+                            SpendingReminder.declineOffer()
+                        }
+                    )
+                }
                 if showsICloudAsk {
                     ICloudBackupAskCard(
                         onTurnOn: { answerICloudAsk(enable: true) },

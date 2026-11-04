@@ -2603,3 +2603,20 @@
 "insights.formula.netWorth.explainer" = "가진 것에서 갚아야 할 것을 뺀 금액이에요: 계좌의 돈, 내 지분만큼의 자산, 받을 돈에서 남은 대출과 갚을 돈을 빼요.";
 "insights.formula.netWorth.rec.withAssets" = "순자산이 정확하도록 가끔 자산 가치를 업데이트하세요.";
 "insights.formula.netWorth.rec.addAssets" = "집이나 차를 ‘자산’ 탭에 추가하면 순자산 전체를 볼 수 있어요.";
+
+/* Ten's evening spending reminder (SpendingReminder, docs/plan-spending-reminder.md) */
+"spendingReminder.notification.title" = "텐";
+"spendingReminder.phrase.1" = "텐이 문득 궁금해졌어요. 오늘 지출이 하나도 없나요? 수상한데요 🙂";
+"spendingReminder.phrase.2" = "돈을 위한 1분: 오늘 무엇을 사셨나요?";
+"spendingReminder.phrase.3" = "하루가 거의 끝났어요. 돈이 어디로 갔는지 기록할까요?";
+"spendingReminder.phrase.4" = "텐은 숫자가 그리워요. 오늘 어땠는지 보여 주실래요?";
+"spendingReminder.phrase.5" = "하루 한 번 기록하면 한 달이 더 잘 보여요. 오늘은요?";
+"spendingReminder.phrase.6" = "커피, 택시, 장보기? 텐이 기록할 준비가 됐어요";
+"spendingReminder.phrase.7" = "텐의 저녁 질문: 오늘 어디에 돈을 쓰셨나요?";
+"spendingReminder.phrase.8" = "몇 초면 하루가 정리돼요. 지출을 기록할까요?";
+"spendingReminder.hook" = "어제 Tenra에는 ‘%@’. 오늘은 어땠나요?";
+"spendingReminder.farewell.1" = "필요하실 때 텐은 여기 있어요. 당분간은 방해하지 않을게요 🙂";
+"spendingReminder.farewell.2" = "지출을 기록하고 싶으시면 여기 있을게요. 좋은 저녁 보내세요!";
+"spendingReminder.offer.title" = "저녁에 알려 드릴까요?";
+"spendingReminder.offer.message" = "기록 없이 하루가 지나면 %@에 텐이 알려 드려요. 스팸은 없어요.";
+"spendingReminder.offer.action" = "알림 받기";

@@ -2603,3 +2603,20 @@
 "insights.formula.netWorth.explainer" = "Sahip olduğun her şeyden borçlu olduğun her şey düşülür: hesaplardaki para, payın kadar varlıklar ve sana borçlu olunanlar, kalan krediler ve borçların hariç.";
 "insights.formula.netWorth.rec.withAssets" = "Net varlık doğru kalsın diye varlıklarının değerini ara sıra güncelle.";
 "insights.formula.netWorth.rec.addAssets" = "Tüm net varlığını görmek için evini ya da arabanı Finans’a ekle.";
+
+/* Ten's evening spending reminder (SpendingReminder, docs/plan-spending-reminder.md) */
+"spendingReminder.notification.title" = "Ten";
+"spendingReminder.phrase.1" = "Ten düşündü de: bugün hiç harcama yok mu? Şüpheli 🙂";
+"spendingReminder.phrase.2" = "Paran için bir dakika: bugün ne aldın?";
+"spendingReminder.phrase.3" = "Gün bitmek üzere. Paranın nereye gittiğini yazalım mı?";
+"spendingReminder.phrase.4" = "Ten rakamlarını özledi. Bugün neler oldu, gösterir misin?";
+"spendingReminder.phrase.5" = "Günde bir kayıt, ay daha anlaşılır olur. Bugün ne vardı?";
+"spendingReminder.phrase.6" = "Kahve, taksi, market? Ten yazmaya hazır";
+"spendingReminder.phrase.7" = "Ten'den akşam sorusu: bugün neye harcadın?";
+"spendingReminder.phrase.8" = "Birkaç saniye ve günün düzende. Harcamaları yazalım mı?";
+"spendingReminder.hook" = "Dün Tenra'da: “%@”. Peki bugün?";
+"spendingReminder.farewell.1" = "İhtiyacın olursa Ten burada. Şimdilik rahatsız etmeyeceğim 🙂";
+"spendingReminder.farewell.2" = "Harcamalarını yazmak istersen buradayım. İyi akşamlar!";
+"spendingReminder.offer.title" = "Akşam hatırlatayım mı?";
+"spendingReminder.offer.message" = "Bir gün kayıtsız geçerse Ten sana saat %@ gibi hatırlatır. Spam yok.";
+"spendingReminder.offer.action" = "Hatırlat";

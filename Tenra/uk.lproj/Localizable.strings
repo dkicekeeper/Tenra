@@ -2603,3 +2603,20 @@
 "insights.formula.netWorth.explainer" = "Усе, що у вас є, мінус усе, що ви винні: гроші на рахунках, активи за вашою часткою і те, що винні вам, без залишку кредитів і ваших боргів.";
 "insights.formula.netWorth.rec.withAssets" = "Час від часу оновлюйте оцінку активів, щоб капітал залишався чесним.";
 "insights.formula.netWorth.rec.addAssets" = "Додайте квартиру чи авто у «Фінансах», щоб побачити весь капітал.";
+
+/* Ten's evening spending reminder (SpendingReminder, docs/plan-spending-reminder.md) */
+"spendingReminder.notification.title" = "Тен";
+"spendingReminder.phrase.1" = "Тен тут подумав: сьогодні жодної витрати? Підозріло 🙂";
+"spendingReminder.phrase.2" = "Хвилинка для грошей: що сьогодні купили?";
+"spendingReminder.phrase.3" = "День майже закінчився. Запишемо, куди пішли гроші?";
+"spendingReminder.phrase.4" = "Тен сумує за цифрами. Покажете, що було сьогодні?";
+"spendingReminder.phrase.5" = "Один запис на день, і місяць стане зрозумілішим. Що сьогодні?";
+"spendingReminder.phrase.6" = "Кава, таксі, продукти? Тен готовий записати";
+"spendingReminder.phrase.7" = "Вечірнє питання від Тена: на що сьогодні витрачали?";
+"spendingReminder.phrase.8" = "Кілька секунд, і день у порядку. Запишемо витрати?";
+"spendingReminder.hook" = "Учора в Tenra: «%@». А що було сьогодні?";
+"spendingReminder.farewell.1" = "Тен на місці, якщо знадобиться. Поки не відволікатиму 🙂";
+"spendingReminder.farewell.2" = "Я тут, якщо захочете записати витрати. Гарного вечора!";
+"spendingReminder.offer.title" = "Нагадати ввечері?";
+"spendingReminder.offer.message" = "Якщо день мине без записів, Тен нагадає о %@. Без спаму.";
+"spendingReminder.offer.action" = "Нагадувати";

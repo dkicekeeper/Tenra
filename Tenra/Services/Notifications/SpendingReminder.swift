@@ -25,13 +25,15 @@ enum SpendingReminder {
     nonisolated static let defaultMinutes = 20 * 60
     /// What the person answered Ten's offer: `OfferState.rawValue`.
     nonisolated static let offerKey = "spendingReminder.offer"
+    /// When the person last recorded something, seconds since 1970 (a Double, so the offer card
+    /// in Ten's chat can watch it through `@AppStorage`).
+    nonisolated static let lastRecordedKey = "spendingReminder.lastRecorded"
 
     enum OfferState: String {
         case notAsked, accepted, declined
     }
 
     private static let lastReactionKey = "spendingReminder.lastReaction"
-    private static let lastRecordedKey = "spendingReminder.lastRecorded"
     private static let hookCategoryKey = "spendingReminder.hookCategory"
     private static let hookDayKey = "spendingReminder.hookDay"
 
@@ -58,7 +60,7 @@ enum SpendingReminder {
     }
 
     static func lastRecorded(defaults: UserDefaults = .standard) -> Date? {
-        defaults.object(forKey: lastRecordedKey) as? Date
+        (defaults.object(forKey: lastRecordedKey) as? Double).map(Date.init(timeIntervalSince1970:))
     }
 
     /// Ten offers the reminder once there is a record, until the person answers.
@@ -79,7 +81,7 @@ enum SpendingReminder {
     /// reaction: auto-capture alone never keeps the series going.
     static func noteRecorded(_ transactions: [Transaction], now: Date = Date(), defaults: UserDefaults = .standard) {
         guard transactions.contains(where: { SpendingReminderPlan.isUserRecord($0, now: now) }) else { return }
-        defaults.set(now, forKey: lastRecordedKey)
+        defaults.set(now.timeIntervalSince1970, forKey: lastRecordedKey)
         if let hook = SpendingReminderPlan.hook(from: transactions, now: now) {
             defaults.set(hook.category, forKey: hookCategoryKey)
             defaults.set(hook.day, forKey: hookDayKey)

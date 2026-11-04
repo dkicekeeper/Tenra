@@ -62,6 +62,12 @@ struct AssistantChatView: View {
     @State private var thoughtTurn = 0
     /// The entries on screen when the chat opened: they do not enter as new messages.
     @State private var openedWith: Set<UUID> = []
+    // Ten's offer of the evening reminder, under the turn once something was recorded while this
+    // chat was open (SpendingReminder, docs/plan-spending-reminder.md §3.5).
+    @AppStorage(SpendingReminder.lastRecordedKey) private var lastRecordedAt: Double = 0
+    @AppStorage(SpendingReminder.offerKey) private var reminderOffer = SpendingReminder.OfferState.notAsked.rawValue
+    @AppStorage(SpendingReminder.enabledKey) private var reminderOn = false
+    @State private var openedAt = Date().timeIntervalSince1970
 
     var body: some View {
         thread
@@ -116,6 +122,19 @@ struct AssistantChatView: View {
                             .id(entry.id)
                     }
                     turnFooter
+                    if showsReminderOffer {
+                        SpendingReminderOfferCard(
+                            onAccept: {
+                                withAnimation(AppAnimation.smooth) { reminderOffer = SpendingReminder.OfferState.accepted.rawValue }
+                                Task { await SpendingReminder.acceptOffer() }
+                            },
+                            onDecline: {
+                                withAnimation(AppAnimation.smooth) { reminderOffer = SpendingReminder.OfferState.declined.rawValue }
+                                SpendingReminder.declineOffer()
+                            }
+                        )
+                        .transition(.opacity)
+                    }
                 }
                 .frame(minHeight: currentTurn.isEmpty ? 0 : viewportHeight, alignment: .top)
             }
@@ -215,6 +234,11 @@ struct AssistantChatView: View {
 
     private var currentTurn: ArraySlice<AssistantViewModel.Entry> {
         model.entries[currentTurnStart...]
+    }
+
+    /// A record saved since this chat opened (a draft from Ten, say) and the offer unanswered.
+    private var showsReminderOffer: Bool {
+        !reminderOn && reminderOffer == SpendingReminder.OfferState.notAsked.rawValue && lastRecordedAt > openedAt
     }
 
     /// Under the latest turn: what the assistant is doing or writing, the Pro offer. The next

@@ -2603,3 +2603,20 @@
 "insights.formula.netWorth.explainer" = "持っているものから借りているものを引いた額です：口座のお金、持ち分の資産、貸しているお金から、ローン残高と借りているお金を差し引きます。";
 "insights.formula.netWorth.rec.withAssets" = "純資産が正しく保てるよう、ときどき資産の評価を更新しましょう。";
 "insights.formula.netWorth.rec.addAssets" = "家や車を「ファイナンス」に追加すると、純資産の全体が見えます。";
+
+/* Ten's evening spending reminder (SpendingReminder, docs/plan-spending-reminder.md) */
+"spendingReminder.notification.title" = "テン";
+"spendingReminder.phrase.1" = "テンはふと思いました。今日はまだ支出ゼロ？あやしいですね 🙂";
+"spendingReminder.phrase.2" = "お金のための1分。今日は何を買いましたか？";
+"spendingReminder.phrase.3" = "そろそろ一日の終わりです。お金の行き先をメモしましょうか？";
+"spendingReminder.phrase.4" = "テンは数字が恋しいです。今日のこと、見せてもらえますか？";
+"spendingReminder.phrase.5" = "1日1件の記録で、ひと月がもっと見えてきます。今日はどうでした？";
+"spendingReminder.phrase.6" = "コーヒー、タクシー、食料品？テンが記録します";
+"spendingReminder.phrase.7" = "テンから夜の質問です。今日は何にお金を使いましたか？";
+"spendingReminder.phrase.8" = "数秒で今日がすっきり。支出を記録しましょうか？";
+"spendingReminder.hook" = "昨日のTenra：「%@」。今日はどうでしたか？";
+"spendingReminder.farewell.1" = "必要なときはいつでもテンがいます。しばらくはお邪魔しませんね 🙂";
+"spendingReminder.farewell.2" = "支出を記録したくなったら、ここにいます。よい夜を！";
+"spendingReminder.offer.title" = "夜にお知らせしましょうか？";
+"spendingReminder.offer.message" = "記録のない日は、%@にテンがお知らせします。しつこい通知はしません。";
+"spendingReminder.offer.action" = "お知らせする";

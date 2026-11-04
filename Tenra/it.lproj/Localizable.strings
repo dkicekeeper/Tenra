@@ -2603,3 +2603,20 @@
 "insights.formula.netWorth.explainer" = "Tutto ciò che hai meno tutto ciò che devi: il denaro sui conti, i beni per la tua quota e ciò che ti devono, meno il residuo dei prestiti e i tuoi debiti.";
 "insights.formula.netWorth.rec.withAssets" = "Aggiorna ogni tanto la valutazione dei tuoi beni, così il patrimonio resta fedele.";
 "insights.formula.netWorth.rec.addAssets" = "Aggiungi la casa o l’auto in Finanze per vedere tutto il tuo patrimonio.";
+
+/* Ten's evening spending reminder (SpendingReminder, docs/plan-spending-reminder.md) */
+"spendingReminder.notification.title" = "Ten";
+"spendingReminder.phrase.1" = "Ten si stava chiedendo: nemmeno una spesa oggi? Sospetto 🙂";
+"spendingReminder.phrase.2" = "Un minuto per i tuoi soldi: cosa hai comprato oggi?";
+"spendingReminder.phrase.3" = "La giornata è quasi finita. Annotiamo dove sono andati i soldi?";
+"spendingReminder.phrase.4" = "A Ten mancano i tuoi numeri. Mi racconti com’è andata oggi?";
+"spendingReminder.phrase.5" = "Una voce al giorno e il mese diventa più chiaro. E oggi?";
+"spendingReminder.phrase.6" = "Caffè, taxi, spesa? Ten è pronto ad annotare";
+"spendingReminder.phrase.7" = "La domanda serale di Ten: in cosa hai speso oggi?";
+"spendingReminder.phrase.8" = "Pochi secondi e la giornata è in ordine. Annotiamo le spese?";
+"spendingReminder.hook" = "Ieri in Tenra: «%@». E oggi?";
+"spendingReminder.farewell.1" = "Ten è qui quando ti serve. Per ora non ti disturbo 🙂";
+"spendingReminder.farewell.2" = "Sono qui se vuoi annotare le spese. Buona serata!";
+"spendingReminder.offer.title" = "Te lo ricordo la sera?";
+"spendingReminder.offer.message" = "Se passa una giornata senza voci, Ten te lo ricorderà alle %@. Niente spam.";
+"spendingReminder.offer.action" = "Ricordamelo";

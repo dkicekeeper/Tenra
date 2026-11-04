@@ -2603,3 +2603,20 @@
 "insights.formula.netWorth.explainer" = "Сізде бардың бәрінен қарыз бәрі шегеріледі: шоттардағы ақша, сіздің үлесіңіздегі активтер және сізге қарыздар, несие қалдығы мен өз қарыздарыңыз шегеріліп.";
 "insights.formula.netWorth.rec.withAssets" = "Капитал шынайы болуы үшін активтердің бағасын анда-санда жаңартып тұрыңыз.";
 "insights.formula.netWorth.rec.addAssets" = "Бүкіл капиталды көру үшін пәтерді не көлікті «Қаржы» бөліміне қосыңыз.";
+
+/* Ten's evening spending reminder (SpendingReminder, docs/plan-spending-reminder.md) */
+"spendingReminder.notification.title" = "Тэн";
+"spendingReminder.phrase.1" = "Тэн ойланып қалды: бүгін бірде-бір шығын жоқ па? Күдікті 🙂";
+"spendingReminder.phrase.2" = "Ақшаға бір минут: бүгін не сатып алдыңыз?";
+"spendingReminder.phrase.3" = "Күн бітуге жақын. Ақша қайда кеткенін жазып қоямыз ба?";
+"spendingReminder.phrase.4" = "Тэн сандарды сағынды. Бүгін не болғанын көрсетесіз бе?";
+"spendingReminder.phrase.5" = "Күніне бір жазба, сонда ай түсініктірек болады. Бүгін не болды?";
+"spendingReminder.phrase.6" = "Кофе, такси, азық-түлік? Тэн жазуға дайын";
+"spendingReminder.phrase.7" = "Тэннің кешкі сұрағы: бүгін неге жұмсадыңыз?";
+"spendingReminder.phrase.8" = "Бірнеше секунд, және күн ретке келеді. Шығындарды жазамыз ба?";
+"spendingReminder.hook" = "Кеше Tenra-да: «%@». Ал бүгін не болды?";
+"spendingReminder.farewell.1" = "Қажет болса, Тэн осында. Әзірге алаңдатпаймын 🙂";
+"spendingReminder.farewell.2" = "Шығындарды жазғыңыз келсе, мен осындамын. Кешіңіз сәтті болсын!";
+"spendingReminder.offer.title" = "Кешке еске салайын ба?";
+"spendingReminder.offer.message" = "Күн жазбасыз өтсе, Тэн %@ уақытында еске салады. Спамсыз.";
+"spendingReminder.offer.action" = "Еске салу";

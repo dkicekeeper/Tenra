@@ -138,6 +138,15 @@ final class PremiumManager {
         Purchases.shared.attribution.setAttributes(["paywall_source": source.rawValue])
     }
 
+    /// Ten's evening reminder (SpendingReminder): `on`, `off`, `declined` (✕ on the offer) or
+    /// `denied` (said yes, then refused the system prompt), as the anonymous attribute
+    /// `spending_reminder`, to compare retention with and without it
+    /// (docs/plan-spending-reminder.md §3.7). No attribute: not asked yet.
+    func noteSpendingReminder(_ value: String) {
+        guard isConfigured else { return }
+        Purchases.shared.attribution.setAttributes(["spending_reminder": value])
+    }
+
     /// Record a soft-paywall impression (call when it is actually presented).
     func markSoftPaywallShown() {
         defaults.set(defaults.integer(forKey: Key.softPaywallCount) + 1, forKey: Key.softPaywallCount)

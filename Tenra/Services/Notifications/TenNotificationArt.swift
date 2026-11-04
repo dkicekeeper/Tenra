@@ -18,9 +18,17 @@ enum TenNotificationArt {
     /// A fresh attachment of Ten in `mood`, or nil when it cannot be drawn or written: the
     /// notification then goes without it.
     static func attachment(mood: ParticleCreature.Mood) -> UNNotificationAttachment? {
+        pngData(mood: mood).flatMap { attachment(png: $0) }
+    }
+
+    /// Ten in `mood` as PNG, drawn once for several notifications (SpendingReminder).
+    static func pngData(mood: ParticleCreature.Mood) -> Data? {
         let dark = UITraitCollection.current.userInterfaceStyle == .dark
-        guard let image = ParticleCreature.image(mood: mood, side: side, colorScheme: dark ? .dark : .light),
-              let data = image.pngData() else { return nil }
+        return ParticleCreature.image(mood: mood, side: side, colorScheme: dark ? .dark : .light)?.pngData()
+    }
+
+    /// An attachment of a picture `pngData(mood:)` drew.
+    static func attachment(png data: Data) -> UNNotificationAttachment? {
         // Adding the notification moves the file into the system's store: a copy of its own
         // each time.
         let url = FileManager.default.temporaryDirectory.appending(path: "ten-\(UUID().uuidString).png")

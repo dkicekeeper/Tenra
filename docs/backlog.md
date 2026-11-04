@@ -14,7 +14,8 @@ with the commit of every fix, are in
 - **First run, as a newcomer sees it** (walkthrough 2026-11-04, iPhone 17 Pro Simulator, iOS 26.5,
   Russian, fresh install; 80% of new users open Tenra once, promotion-plan §6). From launch to the
   first saved expense: 6 screens, about 12 taps. By likely weight:
-  1. *Nothing brings a manual user back.* Notifications are only provisional (weekly digest and
+  1. *Nothing brings a manual user back.* (Ten's evening reminder in main since 2026-11-05,
+     [plan-spending-reminder.md](plan-spending-reminder.md); delete this item once it ships.) Notifications are only provisional (weekly digest and
      insight signals land silently in Notification Center); there is no daily "log today's
      spending" reminder; the Wallet automation, the "writes itself" promise, is 10 pages and 8
      steps in Shortcuts. Candidate: after the first saved expense, offer an evening reminder

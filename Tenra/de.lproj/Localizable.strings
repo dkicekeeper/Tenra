@@ -2620,3 +2620,7 @@
 "spendingReminder.offer.title" = "Abends erinnern?";
 "spendingReminder.offer.message" = "Wenn ein Tag ohne Einträge vergeht, erinnert Ten Sie um %@. Kein Spam.";
 "spendingReminder.offer.action" = "Erinnern";
+"settings.spendingReminder.title" = "Ausgaben-Erinnerung";
+"settings.spendingReminder.toggle" = "Abends erinnern";
+"settings.spendingReminder.time" = "Uhrzeit";
+"settings.spendingReminder.footer" = "Ten erinnert Sie nur an Tagen, an denen in Tenra nichts eingetragen ist, und meldet sich seltener, wenn Sie nicht vorbeischauen.";

@@ -2620,3 +2620,7 @@
 "spendingReminder.offer.title" = "夜にお知らせしましょうか？";
 "spendingReminder.offer.message" = "記録のない日は、%@にテンがお知らせします。しつこい通知はしません。";
 "spendingReminder.offer.action" = "お知らせする";
+"settings.spendingReminder.title" = "支出のリマインダー";
+"settings.spendingReminder.toggle" = "夜にお知らせする";
+"settings.spendingReminder.time" = "時刻";
+"settings.spendingReminder.footer" = "Tenra に記録のない日だけテンがお知らせします。しばらく開かないと、お知らせは少なくなります。";

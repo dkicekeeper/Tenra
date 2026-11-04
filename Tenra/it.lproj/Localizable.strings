@@ -2620,3 +2620,7 @@
 "spendingReminder.offer.title" = "Te lo ricordo la sera?";
 "spendingReminder.offer.message" = "Se passa una giornata senza voci, Ten te lo ricorderà alle %@. Niente spam.";
 "spendingReminder.offer.action" = "Ricordamelo";
+"settings.spendingReminder.title" = "Promemoria delle spese";
+"settings.spendingReminder.toggle" = "Ricordamelo la sera";
+"settings.spendingReminder.time" = "Orario";
+"settings.spendingReminder.footer" = "Ten te lo ricorda solo nei giorni senza voci in Tenra, e scrive meno spesso se non passi.";

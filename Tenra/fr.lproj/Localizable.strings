@@ -2620,3 +2620,7 @@
 "spendingReminder.offer.title" = "Un rappel le soir ?";
 "spendingReminder.offer.message" = "Si une journée passe sans saisie, Ten vous le rappellera à %@. Sans spam.";
 "spendingReminder.offer.action" = "Me le rappeler";
+"settings.spendingReminder.title" = "Rappel des dépenses";
+"settings.spendingReminder.toggle" = "Me le rappeler le soir";
+"settings.spendingReminder.time" = "Heure";
+"settings.spendingReminder.footer" = "Ten vous le rappelle seulement les jours où rien n’est saisi dans Tenra, et écrit moins souvent si vous ne passez pas.";

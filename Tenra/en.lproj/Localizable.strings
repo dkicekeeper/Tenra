@@ -2620,3 +2620,7 @@
 "spendingReminder.offer.title" = "Remind you in the evening?";
 "spendingReminder.offer.message" = "If a day goes by with nothing logged, Ten will remind you at %@. No spam.";
 "spendingReminder.offer.action" = "Remind me";
+"settings.spendingReminder.title" = "Spending reminder";
+"settings.spendingReminder.toggle" = "Remind me in the evening";
+"settings.spendingReminder.time" = "Time";
+"settings.spendingReminder.footer" = "Ten reminds you only on days with nothing logged in Tenra, and writes less often if you don’t drop by.";

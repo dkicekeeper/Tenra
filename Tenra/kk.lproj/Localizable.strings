@@ -2620,3 +2620,7 @@
 "spendingReminder.offer.title" = "Кешке еске салайын ба?";
 "spendingReminder.offer.message" = "Күн жазбасыз өтсе, Тэн %@ уақытында еске салады. Спамсыз.";
 "spendingReminder.offer.action" = "Еске салу";
+"settings.spendingReminder.title" = "Шығындар туралы еске салу";
+"settings.spendingReminder.toggle" = "Кешке еске салу";
+"settings.spendingReminder.time" = "Уақыт";
+"settings.spendingReminder.footer" = "Тэн Tenra-да ештеңе жазылмаған күндері ғана еске салады, ал сіз кірмесеңіз, сиректеу жазады.";

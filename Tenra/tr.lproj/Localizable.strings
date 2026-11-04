@@ -2620,3 +2620,7 @@
 "spendingReminder.offer.title" = "Akşam hatırlatayım mı?";
 "spendingReminder.offer.message" = "Bir gün kayıtsız geçerse Ten sana saat %@ gibi hatırlatır. Spam yok.";
 "spendingReminder.offer.action" = "Hatırlat";
+"settings.spendingReminder.title" = "Harcama hatırlatıcısı";
+"settings.spendingReminder.toggle" = "Akşam hatırlat";
+"settings.spendingReminder.time" = "Saat";
+"settings.spendingReminder.footer" = "Ten yalnızca Tenra'ya hiçbir şey yazılmayan günlerde hatırlatır; uğramazsan daha seyrek yazar.";

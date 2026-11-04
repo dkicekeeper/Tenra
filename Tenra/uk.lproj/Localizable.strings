@@ -2620,3 +2620,7 @@
 "spendingReminder.offer.title" = "Нагадати ввечері?";
 "spendingReminder.offer.message" = "Якщо день мине без записів, Тен нагадає о %@. Без спаму.";
 "spendingReminder.offer.action" = "Нагадувати";
+"settings.spendingReminder.title" = "Нагадування про витрати";
+"settings.spendingReminder.toggle" = "Нагадувати ввечері";
+"settings.spendingReminder.time" = "Час";
+"settings.spendingReminder.footer" = "Тен нагадає лише в дні, коли в Tenra нічого не записано, і писатиме рідше, якщо ви не заглядаєте.";

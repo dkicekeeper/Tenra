@@ -233,6 +233,13 @@ struct SettingsView: View {
                     InsightSignalSettingsView()
                 }
             )
+            UniversalRow(
+                String(localized: "settings.spendingReminder.title"),
+                icon: "bell",
+                accessory: .navigation {
+                    SpendingReminderSettingsView()
+                }
+            )
         }
     }
 

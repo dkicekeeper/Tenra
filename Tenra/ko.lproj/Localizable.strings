@@ -2620,3 +2620,7 @@
 "spendingReminder.offer.title" = "저녁에 알려 드릴까요?";
 "spendingReminder.offer.message" = "기록 없이 하루가 지나면 %@에 텐이 알려 드려요. 스팸은 없어요.";
 "spendingReminder.offer.action" = "알림 받기";
+"settings.spendingReminder.title" = "지출 알림";
+"settings.spendingReminder.toggle" = "저녁에 알려 주기";
+"settings.spendingReminder.time" = "시간";
+"settings.spendingReminder.footer" = "Tenra에 기록이 없는 날에만 텐이 알려 드려요. 앱을 열지 않으시면 알림이 줄어들어요.";

@@ -1,6 +1,6 @@
 # План: вечернее напоминание о тратах от Тэна
 
-> Статус: дизайн утверждён основателем 2026-11-05 (вопросы проверки в §6). **В main с 2026-11-05:** задачи 1-5 §7, тесты зелёные (полный прогон 1619/1619 при 10 пропущенных), «Что нового» в [release-notes.md](release-notes.md). Дальше: проверка на телефоне, App Privacy (основатель), выпуск, через две недели после выхода сравнение удержания по метке. Когда выйдет, план уходит в `archive/plans/`. Решения основателя помечены «(основатель)»,
+> Статус: дизайн утверждён основателем 2026-11-05 (вопросы проверки в §6). **В main с 2026-11-05:** задачи 1-5 §7, тесты зелёные (полный прогон 1619/1619 при 10 пропущенных), «Что нового» в [release-notes.md](release-notes.md). После итоговой проверки (с исправлениями: склейка перестановок, id по дням и снятие напоминания дня сразу, прослойка центра уведомлений, отложенное нажатие при живом процессе, метка по разрешению iOS, демо скриншотов) полный прогон зелёный: 1631 тест, 10 пропущены. Дальше: проверка на телефоне, App Privacy (основатель), выпуск, через две недели после выхода сравнение удержания по метке. Когда выйдет, план уходит в `archive/plans/`. Решения основателя помечены «(основатель)»,
 > остальное решения ассистента «(решение ассистента)», их можно поменять при чтении.
 
 ## 1. Зачем
@@ -235,7 +235,7 @@ nonisolated enum SpendingReminderPlan {
 по модулю `count`, плюс 1. Крючок только у напоминания, чей день на 1 позже `hook.day`; иначе
 `.regular(phraseIndex)`. У прощания `.farewell(phraseIndex(count: farewellPhraseCount))`.
 
-- [ ] **Шаг 1: тесты (падают).** `SpendingReminderPlanTests` (`@Suite`, календарь
+- [x] **Шаг 1: тесты (падают).** `SpendingReminderPlanTests` (`@Suite`, календарь
   `Calendar(identifier: .gregorian)` с `TimeZone(identifier: "Asia/Almaty")`):
   - `freshReactionGivesFullSeries`: реакция и `now` 5.11 10:00, записей нет → 7 напоминаний на
     5, 6, 7, 8, 10, 12, 15.11 в 20:00; последнее `.farewell`, остальные не `.farewell`.
@@ -253,11 +253,11 @@ nonisolated enum SpendingReminderPlan {
     дата прошлого месяца → true.
   - `hookTakesLatestExpense`: доход и два расхода сегодня → категория последнего расхода; только
     доходы → nil.
-- [ ] **Шаг 2:** прогон suite, ожидается FAIL (тип не найден):
+- [x] **Шаг 2:** прогон suite, ожидается FAIL (тип не найден):
   `xcodebuild test -scheme Tenra -destination 'platform=iOS Simulator,name=iPhone 18 Pro,OS=27.0' -only-testing:TenraTests/SpendingReminderPlanTests`
-- [ ] **Шаг 3:** реализовать `SpendingReminderPlan` по интерфейсу.
-- [ ] **Шаг 4:** прогон, PASS; счёт тестов из `xcresulttool get test-results summary` (10).
-- [ ] **Шаг 5:** коммит `feat(reminder): spending reminder plan core`.
+- [x] **Шаг 3:** реализовать `SpendingReminderPlan` по интерфейсу.
+- [x] **Шаг 4:** прогон, PASS; счёт тестов из `xcresulttool get test-results summary` (10).
+- [x] **Шаг 5:** коммит `feat(reminder): spending reminder plan core`.
 
 ### Задача 2: сервис `SpendingReminder` и метка RevenueCat
 
@@ -301,7 +301,7 @@ func noteSpendingReminder(_ value: String)   // "on" | "off" | "declined" | "den
 (обычные) и `.idle` (прощание), `UNCalendarNotificationTrigger(repeats: false)`.
 `shouldOffer` = `hasRecords && offerState == .notAsked && !isEnabled`.
 
-- [ ] **Шаг 1: тесты (падают).** `SpendingReminderTests` (`@MainActor`, свой `UserDefaults(suiteName:)`
+- [x] **Шаг 1: тесты (падают).** `SpendingReminderTests` (`@MainActor`, свой `UserDefaults(suiteName:)`
   на тест, без центра уведомлений: проверяются ключи):
   - `offeredOnceAfterFirstRecord`: `shouldOffer(hasRecords: false)` false; true при записях;
     после `declineOffer` false и после пересоздания `UserDefaults` с тем же suite тоже false.
@@ -310,12 +310,12 @@ func noteSpendingReminder(_ value: String)   // "on" | "off" | "declined" | "den
     → `lastReaction` остаётся 1.11, `lastRecorded` 5.11.
   - `recurringRecordIgnored`: `noteRecorded([tx с recurringSeriesId])` не пишет `lastRecorded`.
   - `defaultsAreOffAt20`: пустые defaults → `isEnabled` false, `minutes` 1200, `offerState` `.notAsked`.
-- [ ] **Шаг 2:** прогон suite, FAIL.
-- [ ] **Шаг 3:** реализовать `SpendingReminder` и `PremiumManager.noteSpendingReminder`
+- [x] **Шаг 2:** прогон suite, FAIL.
+- [x] **Шаг 3:** реализовать `SpendingReminder` и `PremiumManager.noteSpendingReminder`
   (`guard isConfigured`, как `notePaywallShown`); `acceptOffer`, `declineOffer`, `setEnabled`
   зовут `noteSpendingReminder`.
-- [ ] **Шаг 4:** прогон, PASS (5 тестов).
-- [ ] **Шаг 5:** коммит `feat(reminder): spending reminder service and RevenueCat attribute`.
+- [x] **Шаг 4:** прогон, PASS (5 тестов).
+- [x] **Шаг 5:** коммит `feat(reminder): spending reminder service and RevenueCat attribute`.
 
 ### Задача 3: подключение (запись, открытие, нажатие)
 
@@ -335,19 +335,19 @@ func noteSpendingReminder(_ value: String)   // "on" | "off" | "declined" | "den
 - Потребляет: `SpendingReminder.noteRecorded`, `.noteAppOpened` (задача 2),
   `AppCoordinator.handleDeepLink(URL(string: "tenra://add")!)`.
 
-- [ ] **Шаг 1: тест (падает).** `SpendingReminderWiringTests` (`@MainActor`, `.sharedProcessState`,
+- [x] **Шаг 1: тест (падает).** `SpendingReminderWiringTests` (`@MainActor`, `.sharedProcessState`,
   store на in-memory репозитории, как в соседних тестах `TransactionStore`; store удерживается):
   `addCallsOnRecorded` (один `add` → замыкание получило эту операцию),
   `bulkAddPassesOnlyFresh` (повторный `addBatch` тех же id → замыкание не вызвано).
-- [ ] **Шаг 2:** прогон, FAIL.
-- [ ] **Шаг 3:** `onRecorded` в `apply`; в `AppCoordinator.init` `transactionStore.onRecorded = { SpendingReminder.noteRecorded($0) }`;
+- [x] **Шаг 2:** прогон, FAIL.
+- [x] **Шаг 3:** `onRecorded` в `apply`; в `AppCoordinator.init` `transactionStore.onRecorded = { SpendingReminder.noteRecorded($0) }`;
   в `MainTabView` при `.active` рядом с `StatementImportReminder.reschedule()` вызвать
   `SpendingReminder.noteAppOpened()`; в `AppDelegate` префикс `spendingReminder_` → стэш
   `pendingQuickAddOnLaunch = QuickAdd(category: nil)` и post `.spendingReminderTapped`;
   `MainTabView.onReceive(.spendingReminderTapped)` → `coordinator.handleDeepLink(tenra://add)`;
   init координатора забирает стэш в `pendingQuickAdd`.
-- [ ] **Шаг 4:** прогон, PASS; сборка `generic/platform=iOS Simulator` без ошибок.
-- [ ] **Шаг 5:** коммит `feat(reminder): wire records, app opens and taps`.
+- [x] **Шаг 4:** прогон, PASS; сборка `generic/platform=iOS Simulator` без ошибок.
+- [x] **Шаг 5:** коммит `feat(reminder): wire records, app opens and taps`.
 
 ### Задача 4: предложение Тэна (Главная и чат) и строки
 
@@ -388,12 +388,12 @@ ru, опорные (остальные адаптируются, не досло
 - offer.message «Если день пройдёт без записей, Тэн напомнит в %@. Без спама.»
 - offer.action «Напоминать»
 
-- [ ] **Шаг 1:** карточка и показ на Главной и в чате; превью карточки.
-- [ ] **Шаг 2:** строки в 12 локалях (python, utf-8), паритет: `diff` ключей en с каждой
+- [x] **Шаг 1:** карточка и показ на Главной и в чате; превью карточки.
+- [x] **Шаг 2:** строки в 12 локалях (python, utf-8), паритет: `diff` ключей en с каждой
   локалью пуст; `grep -c '—'` по новым строкам 0; проверка ru и ja на кракозябры.
-- [ ] **Шаг 3:** сборка без ошибок; `design-lint` (`python3 scripts/design_lint.py`) и
+- [x] **Шаг 3:** сборка без ошибок; `design-lint` (`python3 scripts/design_lint.py`) и
   `scripts/section_rows_lint.py` чисты.
-- [ ] **Шаг 4:** коммит `feat(reminder): Ten's offer on Home and in the chat, strings`.
+- [x] **Шаг 4:** коммит `feat(reminder): Ten's offer on Home and in the chat, strings`.
 
 ### Задача 5: Настройки
 
@@ -412,10 +412,10 @@ ru, опорные (остальные адаптируются, не досло
 footer «Тэн напомнит только в дни, когда в Tenra ничего не записано, и будет писать реже, если
 вы не заглядываете».
 
-- [ ] **Шаг 1:** страница, строка, превью; строки в 12 локалях с проверкой паритета.
-- [ ] **Шаг 2:** сборка без ошибок, линтеры чисты, полный прогон `TenraTests` (счёт из
+- [x] **Шаг 1:** страница, строка, превью; строки в 12 локалях с проверкой паритета.
+- [x] **Шаг 2:** сборка без ошибок, линтеры чисты, полный прогон `TenraTests` (счёт из
   `xcresulttool`).
-- [ ] **Шаг 3:** коммит `feat(reminder): settings page`.
+- [x] **Шаг 3:** коммит `feat(reminder): settings page`.
 
 ## 8. Документы (в коммите последней задачи)
 - [domains/insights.md](domains/insights.md) §Signal notifications: строка про `SpendingReminder`

@@ -218,7 +218,10 @@ without Pro). Each has a key and never repeats. They show only on Home
 (`AssistantNoticesSection`, under the accounts): the newest unread one with Ten in its mood and the
 count of the rest; "Go through it" opens the assistant with a question and a `<notice>` block (one
 free action), "Hide" shows the next. Works without notification permission. A push of an insight
-still opens Analytics.
+still opens Analytics. One exception to "only on Home": Ten's offer of the evening spending
+reminder (`SpendingReminderOfferCard`, not an `AssistantNotice`) shows where the first record was
+saved, under the turn in this chat as well as among Home's setup cards
+([plan-spending-reminder.md](../plan-spending-reminder.md) §3.5); its pushes come from Ten too.
 
 Auto-capture not set up (`Kind.setup`, `AssistantNotices.setupNudge`): once, after
 `setupAfterEntries` entries, for someone who hid Home's auto-capture card; its button is "Set

@@ -185,10 +185,7 @@ struct MainTabView: View {
         .onReceive(
             NotificationCenter.default.publisher(for: .spendingReminderTapped)
         ) { _ in
-            AppCoordinator.pendingQuickAddOnLaunch = nil
-            if let url = URL(string: "\(AppCoordinator.urlScheme)://add") {
-                coordinator.handleDeepLink(url)
-            }
+            takeReminderTap()
         }
         // Single source of truth for "switch to Finances tab when a deep-link is pending".
         // `initial: true` covers cold-launch: AppCoordinator.init() has already loaded the
@@ -270,6 +267,8 @@ struct MainTabView: View {
             Task { await StatementImportReminder.reschedule() }
             // Ten's evening reminders start over from today (SpendingReminder).
             SpendingReminder.noteAppOpened()
+            // A reminder tapped while a background intent kept this coordinator alive.
+            takeReminderTap()
             // Apple Pay payments that waited for an exchange rate (LogWalletPaymentIntent).
             if !WalletCaptureStore.shared.pending.isEmpty {
                 Task { await WalletPaymentRecorder.recordPending(services: IntentServices(coordinator: coordinator)) }
@@ -357,6 +356,13 @@ struct MainTabView: View {
                 selectedTab = previousTab     // Restore previous tab
             }
         }
+    }
+
+    /// A tapped spending reminder (AppDelegate's stash): the way to record an expense.
+    private func takeReminderTap() {
+        guard AppCoordinator.takeLaunchQuickAdd() != nil,
+              let url = URL(string: "\(AppCoordinator.urlScheme)://add") else { return }
+        coordinator.handleDeepLink(url)
     }
 
     /// Switches to the assistant's page; the tab the person was on keeps its place.

@@ -5,13 +5,16 @@
 //  Ten's evening reminder on days nothing was recorded (docs/plan-spending-reminder.md): off
 //  until the person says yes (Ten's offer after the first entry, or Settings), at 20:00 by
 //  default. iOS does not wake Tenra at that hour, so the whole series SpendingReminderPlan
-//  returns is scheduled ahead and replaced whenever Tenra comes to the front, something is
-//  recorded (in the app or by auto-capture in the background) or the setting changes.
-//  Opening Tenra is the reaction the series counts from; a background record only takes that
-//  day's reminder away. Sent only when notifications are allowed; it asks only on a yes.
+//  returns is scheduled ahead, one id per day, and replaced whenever Tenra comes to the front,
+//  something is recorded (in the app or by auto-capture in the background) or the setting
+//  changes. Replacements run one at a time and collapse (CoalescingTask): a statement import of
+//  200 rows asks 200 times and replaces once or twice. Opening Tenra is the reaction the series
+//  counts from; a record removes that day's reminder at once, before anything can suspend.
+//  Sent only when notifications are allowed; it asks only on a yes.
 //
 
 import Foundation
+import UIKit
 import UserNotifications
 
 @MainActor
@@ -36,10 +39,25 @@ enum SpendingReminder {
     private static let lastReactionKey = "spendingReminder.lastReaction"
     private static let hookCategoryKey = "spendingReminder.hookCategory"
     private static let hookDayKey = "spendingReminder.hookDay"
+    /// The RevenueCat attribute last written, so it is written only when it changes.
+    private static let attributeKey = "spendingReminder.attribute"
 
-    /// The last reschedule asked for: each one waits for the one before, so two never
-    /// interleave their removals and additions.
-    private static var rescheduling: Task<Void, Never>?
+    // Seams for the tests (SpendingReminderSchedulingTests); the app keeps the defaults.
+    static var center: SpendingReminderCenter = SystemSpendingReminderCenter()
+    static var drawArt: (ParticleCreature.Mood) -> Data? = { TenNotificationArt.pngData(mood: $0) }
+    static var writeAttribute: (String) -> Void = { PremiumManager.shared.noteSpendingReminder($0) }
+
+    /// Ten's picture per mood and appearance, drawn once a process.
+    private static var artCache: [String: Data] = [:]
+
+    private struct Request {
+        let now: Date?
+        let defaults: UserDefaults
+    }
+
+    private static let rescheduler = CoalescingTask<Request> { request in
+        await reschedule(now: request.now ?? Date(), defaults: request.defaults)
+    }
 
     // MARK: - State
 
@@ -68,6 +86,23 @@ enum SpendingReminder {
         hasRecords && offerState(defaults: defaults) == .notAsked && !isEnabled(defaults: defaults)
     }
 
+    /// The day's notification id: `spendingReminder_2026-11-05` in the phone's calendar.
+    static func identifier(for date: Date, calendar: Calendar = .current) -> String {
+        let day = calendar.dateComponents([.year, .month, .day], from: date)
+        return identifierPrefix + String(format: "%04d-%02d-%02d", day.year ?? 0, day.month ?? 0, day.day ?? 0)
+    }
+
+    /// The anonymous RevenueCat attribute for this state (docs/plan-spending-reminder.md §3.7):
+    /// `on`, `denied` (on, but iOS does not deliver), `off`, `declined`; nil while not asked.
+    static func attributeValue(enabled: Bool, offer: OfferState, status: UNAuthorizationStatus) -> String? {
+        if enabled { return status == .denied ? "denied" : "on" }
+        switch offer {
+        case .declined: return "declined"
+        case .accepted: return "off"
+        case .notAsked: return nil
+        }
+    }
+
     // MARK: - Events
 
     /// Tenra came to the front: the series starts over from today.
@@ -77,10 +112,12 @@ enum SpendingReminder {
     }
 
     /// Transactions were added (TransactionStore.onRecorded), in the app or in the background:
-    /// a record by the person takes tonight's reminder away and gives tomorrow's its hook. Not a
-    /// reaction: auto-capture alone never keeps the series going.
+    /// a record by the person takes tonight's reminder away at once and gives tomorrow's its
+    /// hook. Not a reaction: auto-capture alone never keeps the series going.
     static func noteRecorded(_ transactions: [Transaction], now: Date = Date(), defaults: UserDefaults = .standard) {
         guard transactions.contains(where: { SpendingReminderPlan.isUserRecord($0, now: now) }) else { return }
+        // Before anything async: a background intent may be suspended right after it returns.
+        center.remove([identifier(for: now)])
         defaults.set(now.timeIntervalSince1970, forKey: lastRecordedKey)
         if let hook = SpendingReminderPlan.hook(from: transactions, now: now) {
             defaults.set(hook.category, forKey: hookCategoryKey)
@@ -98,49 +135,45 @@ enum SpendingReminder {
     /// ✕ on Ten's offer: never offered again; Settings can still turn it on.
     static func declineOffer(defaults: UserDefaults = .standard) {
         defaults.set(OfferState.declined.rawValue, forKey: offerKey)
-        PremiumManager.shared.noteSpendingReminder("declined")
+        requestReschedule(defaults: defaults)
     }
 
     /// The switch in Settings (and the offer's yes). Turning it on asks for full permission
-    /// (from provisional too) and answers the offer.
+    /// (from provisional too) and answers the offer. Returns once the series is replaced.
     static func setEnabled(_ on: Bool, defaults: UserDefaults = .standard) async {
         defaults.set(on, forKey: enabledKey)
         if on {
             if offerState(defaults: defaults) == .notAsked {
                 defaults.set(OfferState.accepted.rawValue, forKey: offerKey)
             }
-            let granted = await NotificationPermissionManager.shared.requestAuthorization()
-            PremiumManager.shared.noteSpendingReminder(granted ? "on" : "denied")
-        } else {
-            PremiumManager.shared.noteSpendingReminder("off")
+            await NotificationPermissionManager.shared.requestAuthorization()
         }
-        await reschedule(defaults: defaults)
+        requestReschedule(defaults: defaults)
+        await waitUntilIdle()
     }
 
     // MARK: - Scheduling
 
-    static func requestReschedule(now: Date = Date(), defaults: UserDefaults = .standard) {
-        let previous = rescheduling
-        rescheduling = Task {
-            await previous?.value
-            await reschedule(now: now, defaults: defaults)
-        }
+    /// Replaces the series soon, after any replacement under way; `now` nil means the time it
+    /// runs.
+    static func requestReschedule(now: Date? = nil, defaults: UserDefaults = .standard) {
+        rescheduler.request(Request(now: now, defaults: defaults))
     }
 
-    /// Replaces the pending reminders with SpendingReminderPlan's series. Nothing while off or
-    /// without permission.
-    static func reschedule(now: Date = Date(), defaults: UserDefaults = .standard) async {
-        let center = UNUserNotificationCenter.current()
-        let pending = await center.pendingNotificationRequests()
-            .map(\.identifier)
-            .filter { $0.hasPrefix(identifierPrefix) }
-        center.removePendingNotificationRequests(withIdentifiers: pending)
+    static func waitUntilIdle() async {
+        await rescheduler.waitUntilIdle()
+    }
 
-        guard isEnabled(defaults: defaults) else { return }
-        let settings = await center.notificationSettings()
-        guard settings.authorizationStatus == .authorized || settings.authorizationStatus == .provisional else {
-            return
-        }
+    /// Replaces the pending reminders with SpendingReminderPlan's series and keeps the
+    /// RevenueCat attribute up to date. Nothing while off or without permission; a switch-off
+    /// during the replacement stops it.
+    static func reschedule(now: Date = Date(), defaults: UserDefaults = .standard) async {
+        let stale = await center.pendingIdentifiers().filter { $0.hasPrefix(identifierPrefix) }
+        center.remove(stale)
+
+        let status = await center.authorizationStatus()
+        syncAttribute(status: status, defaults: defaults)
+        guard isEnabled(defaults: defaults), status == .authorized || status == .provisional else { return }
 
         let time = minutes(defaults: defaults)
         let hook = (defaults.string(forKey: hookCategoryKey), defaults.object(forKey: hookDayKey) as? Date)
@@ -152,30 +185,49 @@ enum SpendingReminder {
             hour: time / 60,
             minute: time % 60
         )
-        guard !reminders.isEmpty else { return }
 
-        // Ten drawn once per mood, each notification with a copy of its own.
-        let ordinaryArt = TenNotificationArt.pngData(mood: .happy)
-        let farewellArt = TenNotificationArt.pngData(mood: .idle)
-        for (index, reminder) in reminders.enumerated() {
+        for reminder in reminders {
+            guard isEnabled(defaults: defaults) else { return }
             let content = UNMutableNotificationContent()
             content.title = String(localized: "spendingReminder.notification.title")
             content.body = body(for: reminder.phrase)
             content.threadIdentifier = "spendingReminder"
             content.sound = .default
             let isFarewell = if case .farewell = reminder.phrase { true } else { false }
-            if let data = isFarewell ? farewellArt : ordinaryArt,
+            if let data = art(mood: isFarewell ? .idle : .happy),
                let attachment = TenNotificationArt.attachment(png: data) {
                 content.attachments = [attachment]
             }
             let components = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: reminder.date)
             let request = UNNotificationRequest(
-                identifier: identifierPrefix + String(index),
+                identifier: identifier(for: reminder.date),
                 content: content,
                 trigger: UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
             )
-            try? await center.add(request)
+            await center.add(request)
         }
+    }
+
+    static func resetArtCache() {
+        artCache = [:]
+    }
+
+    private static func art(mood: ParticleCreature.Mood) -> Data? {
+        let key = "\(mood)-\(UITraitCollection.current.userInterfaceStyle == .dark)"
+        if let cached = artCache[key] { return cached }
+        let data = drawArt(mood)
+        if let data { artCache[key] = data }
+        return data
+    }
+
+    private static func syncAttribute(status: UNAuthorizationStatus, defaults: UserDefaults) {
+        guard let value = attributeValue(
+            enabled: isEnabled(defaults: defaults),
+            offer: offerState(defaults: defaults),
+            status: status
+        ), value != defaults.string(forKey: attributeKey) else { return }
+        defaults.set(value, forKey: attributeKey)
+        writeAttribute(value)
     }
 
     private static func body(for phrase: SpendingReminderPlan.Phrase) -> String {

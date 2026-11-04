@@ -71,6 +71,14 @@ enum ScreenshotDemoMode {
 
         writeBaseCurrencySettings(to: defaults)
         writeOfflineRates(to: defaults)
+        writeSetupCardOverrides(to: defaults)
+    }
+
+    /// Home's first frame shows the data, not a setup card: Ten's offer of the evening
+    /// reminder is answered (SpendingReminder). The auto-capture card already hides itself
+    /// (the seeded captures).
+    static func writeSetupCardOverrides(to defaults: UserDefaults) {
+        defaults.set(SpendingReminder.OfferState.declined.rawValue, forKey: SpendingReminder.offerKey)
     }
 
     /// Persists `AppSettings` JSON with the demo base currency under the same

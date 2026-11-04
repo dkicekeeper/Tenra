@@ -51,4 +51,18 @@ struct SpendingReminderWiringTests {
         try await store.addBatch([Self.expense(id: "a"), Self.expense(id: "b")])
         #expect(recorded == [["a", "b"]])
     }
+
+    @Test("A tapped reminder's stash is taken once, by whoever comes first")
+    func launchQuickAddTakenOnce() {
+        AppCoordinator.pendingQuickAddOnLaunch = AppCoordinator.QuickAdd(category: nil)
+        #expect(AppCoordinator.takeLaunchQuickAdd() == AppCoordinator.QuickAdd(category: nil))
+        #expect(AppCoordinator.takeLaunchQuickAdd() == nil)
+    }
+
+    @Test("The screenshot demo answers Ten's offer, so Home's first frame has no reminder card")
+    func screenshotDemoHidesOffer() {
+        let defaults = UserDefaults(suiteName: "tests.\(UUID().uuidString)")!
+        ScreenshotDemoMode.writeSetupCardOverrides(to: defaults)
+        #expect(!SpendingReminder.shouldOffer(hasRecords: true, defaults: defaults))
+    }
 }

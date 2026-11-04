@@ -7,7 +7,8 @@
 //  assistant remembers (AgentMemory), with their ids for `draft_fact`, the savings goals, the
 //  open personal debts and the held assets by id and name (amounts come from get_goals /
 //  get_debts / get_assets). The assets line is there even without assets ("none"): it tells the
-//  model this version of the app has them (older versions send no such line). The
+//  model this version of the app has them (older versions send no such line), and the valuation
+//  line that it can estimate an asset's value from listings (estimate_asset_value). The
 //  format matches the eval fixture (server/assistant/eval/fixture.ts, `appContext`). It
 //  carries no balances or amounts: figures only ever come from tools.
 //
@@ -100,6 +101,8 @@ nonisolated enum AgentContextBuilder {
             "income categories: \(income)",
             // Always there: "none" tells the model this version of the app has assets.
             "assets: \(assets.isEmpty ? "none" : assets)",
+            // This version runs estimate_asset_value (the server offers it while it is on).
+            "valuation: listings",
         ]
         // Without facts the line is left out, as before there was a memory.
         if !facts.isEmpty { lines.append("facts you remember about the user: \(facts)") }

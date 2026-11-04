@@ -33,6 +33,9 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
         // Set notification delegate
         UNUserNotificationCenter.current().delegate = self
 
+        // A tap off a text field hides the keyboard, on every screen and sheet.
+        KeyboardDismissal.shared.start()
+
         // Background insights refresh — registration must happen before launch
         // completes. Scheduling happens on scenePhase → .background (TenraApp).
         BackgroundInsightsRefresher.shared.register()

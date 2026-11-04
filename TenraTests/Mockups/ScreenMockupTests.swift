@@ -89,6 +89,7 @@ struct ScreenMockupTests {
             .environment(coordinator)
             .environment(coordinator.transactionStore)
             .environment(TimeFilterManager())
+            .environment(PremiumManager.shared)
         }
     }
 
@@ -102,6 +103,7 @@ struct ScreenMockupTests {
             .environment(coordinator)
             .environment(coordinator.transactionStore)
             .environment(TimeFilterManager())
+            .environment(PremiumManager.shared)
         }
     }
 
@@ -115,6 +117,7 @@ struct ScreenMockupTests {
             .environment(coordinator)
             .environment(coordinator.transactionStore)
             .environment(TimeFilterManager())
+            .environment(PremiumManager.shared)
         }
     }
 
@@ -208,6 +211,19 @@ struct ScreenMockupTests {
         try await render("merchant-merge") {
             MerchantMergeView(merchant: "ZARA MEGA ALMATY")
                 .environment(store)
+        }
+        _ = store
+    }
+
+    /// The transaction form's merchant (the device check of build 64): the merchant linked,
+    /// on top, "No merchant", then the history's merchants.
+    @Test func merchantPicker() async throws {
+        let store = try await demoMerchants()
+        try await render("merchant-picker") {
+            NavigationStack {
+                MerchantPickerView(current: "ZARA MEGA ALMATY", canClear: true) { _ in }
+            }
+            .environment(store)
         }
         _ = store
     }

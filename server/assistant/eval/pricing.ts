@@ -13,6 +13,9 @@ export const PRICING: Record<string, Price> = {
   "claude-haiku-5-5": { input: 0.1, output: 0.5, cacheRead: 0.01, cacheWrite: 0.125 },
 };
 
+/** Anthropic's web search: $10 per 1 000 searches, on top of the tokens its results add. */
+export const WEB_SEARCH_USD = 0.01;
+
 export interface Usage {
   input_tokens: number;
   output_tokens: number;

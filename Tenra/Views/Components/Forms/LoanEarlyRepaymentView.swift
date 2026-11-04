@@ -169,7 +169,7 @@ struct LoanEarlyRepaymentView: View {
 
     @ViewBuilder
     private var fromSection: some View {
-        VStack(alignment: .leading, spacing: AppSpacing.sm) {
+        VStack(alignment: .leading, spacing: AppSpacing.md) {
             SectionHeader(String(localized: "transactionForm.fromHeader"))
                 .screenPadding()
 
@@ -184,7 +184,7 @@ struct LoanEarlyRepaymentView: View {
 
     @ViewBuilder
     private var strategySection: some View {
-        VStack(alignment: .leading, spacing: AppSpacing.sm) {
+        VStack(alignment: .leading, spacing: AppSpacing.md) {
             SectionHeader(String(localized: "loan.strategy", defaultValue: "Strategy"))
                 .screenPadding()
 
@@ -230,7 +230,7 @@ struct LoanEarlyRepaymentView: View {
         // — see `LoanPaymentView` for rationale (discoverability before the user
         // picks a category).
         if let categoriesVM = categoriesViewModel, !availableCategories.isEmpty {
-            VStack(alignment: .leading, spacing: AppSpacing.xs) {
+            VStack(alignment: .leading, spacing: AppSpacing.md) {
                 SectionHeader(String(localized: "loan.subcategoryHeader", defaultValue: "Subcategory"))
                     .screenPadding()
 

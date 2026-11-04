@@ -14,7 +14,8 @@ struct CategoryRow: View, Equatable {
     let isDefault: Bool
     let budgetProgress: BudgetProgress?
     let currency: String
-    let onEdit: () -> Void
+    /// Opens the category; nil in a `CardList(onOpen:)`, which takes the taps on the whole card.
+    let onEdit: (() -> Void)?
 
     /// Optional zoom-transition source. When both id and namespace are non-nil,
     /// the icon (with budget ring) becomes the matched source for
@@ -47,28 +48,39 @@ struct CategoryRow: View, Equatable {
     }
 
     var body: some View {
-        Button(action: onEdit) {
-            AmountRow(
-                category.name,
-                leading: .tinted(category.iconSource, category.color),
-                value: .limit(
-                    budgetProgress.map { LimitProgress($0) },
-                    placeholder: category.type == .expense ? String(localized: "category.noBudgetSet") : nil
-                ),
-                currency: currency,
-                style: .list,
-                transitionSourceID: transitionSourceID,
-                transitionNamespace: transitionNamespace
-            )
+        Group {
+            if let onEdit {
+                Button(action: onEdit) {
+                    content
+                }
+                .buttonStyle(.plain)
+            } else {
+                content
+            }
         }
-        .buttonStyle(.plain)
-        .contentShape(Rectangle())
         .accessibilityElement(children: .combine)
         .accessibilityLabel(categoryAccessibilityLabel)
         // Budget overflow haptic — fires when spending first crosses 100 %
         .onChange(of: budgetProgress?.isOverBudget) { _, isOver in
             if isOver == true { HapticManager.warning() }
         }
+    }
+
+    private var content: some View {
+        AmountRow(
+            category.name,
+            leading: .tinted(category.iconSource, category.color),
+            value: .limit(
+                budgetProgress.map { LimitProgress($0) },
+                placeholder: category.type == .expense ? String(localized: "category.noBudgetSet") : nil
+            ),
+            currency: currency,
+            style: .list,
+            transitionSourceID: transitionSourceID,
+            transitionNamespace: transitionNamespace
+        )
+        // The whole row takes the tap, the space between the name and the budget too.
+        .contentShape(Rectangle())
     }
 }
 

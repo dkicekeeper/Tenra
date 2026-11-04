@@ -26,6 +26,8 @@ final class GoalStore {
     private(set) var goals: [SavingsGoal] = []
     /// The kept goals have been read: an empty list means there are none.
     private(set) var isLoaded: Bool
+    /// The repository's writes in the order they were asked for (SerialTaskQueue).
+    @ObservationIgnored private let writes = SerialTaskQueue()
 
     /// A linked account's live balance; nil when the account is gone. Set by AppCoordinator.
     @ObservationIgnored var accountBalance: (String) -> AccountBalance? = { _ in nil }
@@ -113,35 +115,54 @@ final class GoalStore {
         var goal = goal
         goal.order = (goals.map(\.order).max() ?? -1) + 1
         goals.append(goal)
-        await repository?.save(goal)
+        await writes.run { [repository] in await repository?.save(goal) }
     }
 
     /// Writes the goal over its earlier copy.
     func update(_ goal: SavingsGoal) async {
         guard let index = goals.firstIndex(where: { $0.id == goal.id }) else { return }
         goals[index] = goal
-        await repository?.save(goal)
+        await writes.run { [repository] in await repository?.save(goal) }
     }
 
     func delete(id: String) async {
         goals.removeAll { $0.id == id }
-        await repository?.delete(id: id)
+        await writes.run { [repository] in await repository?.delete(id: id) }
     }
 
     /// The goals of one list (in progress, or reached) in the order the person dragged them to
     /// (DesignKit 8.0.0's list): they take that list's places among all the goals, in memory at
     /// once (the list moves while the finger does), then kept.
     func reorder(_ orderedIds: [String]) async {
+        await save(placing(orderedIds))
+    }
+
+    /// A step of a drag in DesignKit's `CardList`: the goals take their places at once (the
+    /// card moves under the finger and the next step reads the new order), saved after.
+    func move(_ orderedIds: [String]) {
+        let moved = placing(orderedIds)
+        Task { await save(moved) }
+    }
+
+    /// The listed goals take the list's places; returns the ids that moved.
+    private func placing(_ orderedIds: [String]) -> [String] {
         let places = orderedIds.compactMap { id in goals.first { $0.id == id }?.order }.sorted()
-        var moved: [SavingsGoal] = []
+        var moved: [String] = []
         for (id, place) in zip(orderedIds, places) {
             guard let i = goals.firstIndex(where: { $0.id == id }), goals[i].order != place else { continue }
             goals[i].order = place
-            moved.append(goals[i])
+            moved.append(id)
         }
         goals.sort { $0.order < $1.order }
-        for goal in moved {
-            await repository?.save(goal)
+        return moved
+    }
+
+    /// Saves the goals as they are now (a later step's places, not an earlier one's).
+    private func save(_ ids: [String]) async {
+        for id in ids {
+            if let goal = goals.first(where: { $0.id == id }) {
+                await writes.run { [repository] in await repository?.save(goal) }
+            }
         }
     }
 

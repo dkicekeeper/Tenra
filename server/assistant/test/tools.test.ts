@@ -58,3 +58,24 @@ describe("tool schemas", () => {
     }
   });
 });
+
+describe("estimate_asset_value", () => {
+  it("is offered only while POST /v1/valuation is on, and stays valid in a history", async () => {
+    const { toolsFor, TOOL_NAMES, ESTIMATE_ASSET_VALUE } = await import("../src/tools");
+    const { buildParams } = await import("../src/claude");
+    const { readConfig } = await import("../src/config");
+    const names = (config: Parameters<typeof toolsFor>[0], tier?: Parameters<typeof toolsFor>[1]) => toolsFor(config, tier).map((t) => t.name);
+    expect(names({ valuationEnabled: false, freeMonthlyValuations: 0 })).not.toContain(ESTIMATE_ASSET_VALUE);
+    expect(names({ valuationEnabled: true, freeMonthlyValuations: 0 })).toContain(ESTIMATE_ASSET_VALUE);
+    // Pro only: a caller without Pro gets it only while free valuations exist.
+    expect(names({ valuationEnabled: true, freeMonthlyValuations: 0 }, "free")).not.toContain(ESTIMATE_ASSET_VALUE);
+    expect(names({ valuationEnabled: true, freeMonthlyValuations: 2 }, "free")).toContain(ESTIMATE_ASSET_VALUE);
+    expect(TOOL_NAMES.has(ESTIMATE_ASSET_VALUE)).toBe(true);
+    const off = buildParams(readConfig({}), []);
+    const on = buildParams(readConfig({ VALUATION_ENABLED: "true" }), []);
+    expect(off.tools?.map((t) => (t as { name: string }).name)).not.toContain(ESTIMATE_ASSET_VALUE);
+    expect(on.tools?.map((t) => (t as { name: string }).name)).toContain(ESTIMATE_ASSET_VALUE);
+    const free = buildParams(readConfig({ VALUATION_ENABLED: "true" }), [], "free");
+    expect(free.tools?.map((t) => (t as { name: string }).name)).not.toContain(ESTIMATE_ASSET_VALUE);
+  });
+});

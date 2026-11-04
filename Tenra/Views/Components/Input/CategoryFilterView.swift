@@ -138,7 +138,7 @@ struct CategoryFilterView: View {
                 if let emptyText {
                     Text(emptyText)
                         .foregroundStyle(.secondary)
-                        .padding(.vertical, AppSpacing.lg)
+                        .padding(.vertical, AppSpacing.md)
                 }
             } else {
                 ForEach(categories, id: \.self) { category in

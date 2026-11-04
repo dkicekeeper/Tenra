@@ -247,7 +247,9 @@ struct DepositDetailView: View {
             }
 
             if let depositInfo = account.depositInfo {
-                VStack(alignment: .leading, spacing: AppSpacing.md) {
+                // A `FormSection` (DesignKit 8.6.0): the accrual on top as a row of its own, then
+                // the details, 12 pt above and below each, the section's divider between them.
+                FormSection {
                     // Interest info — uses view-level computed property (computed once per body pass)
                     VStack(alignment: .leading, spacing: AppSpacing.xs) {
                         if let nextPosting = nextPosting {
@@ -269,8 +271,8 @@ struct DepositDetailView: View {
                             color: AppColors.accent
                         )
                     }
-
-                    Divider()
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.vertical, AppSpacing.md)
 
                     // Details
                     UniversalRow(
@@ -302,8 +304,6 @@ struct DepositDetailView: View {
                         accessory: .info(depositInfo.dayCount.localizedTitle)
                     )
                 }
-                .padding(AppSpacing.lg)
-                .cardStyle()
             }
         }
         .screenPadding()

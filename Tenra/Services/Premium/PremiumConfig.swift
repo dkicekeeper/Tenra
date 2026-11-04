@@ -66,3 +66,21 @@ enum PremiumConfig {
     /// ⚠️ Confirm against App Store Connect (version 1.0.1's release date) and adjust.
     nonisolated static let foundingUserDownloadCutoff = Date(timeIntervalSince1970: 1_783_623_600)
 }
+
+/// Which gate opened the paywall: RevenueCat's subscriber attribute `paywall_source`, so a
+/// trial or a purchase can be traced to the feature that sold it (docs/promotion-plan.md §6).
+/// Written only by `PremiumManager.notePaywallShown(from:)`.
+enum PaywallSource: String, Sendable {
+    case accountAdd = "account_add"
+    case depositAdd = "deposit_add"
+    case loanAdd = "loan_add"
+    case debtAdd = "debt_add"
+    case assetAdd = "asset_add"
+    case assetEstimate = "asset_estimate"
+    case voice
+    case importStatement = "import"
+    case assistant
+    case assistantAttachment = "assistant_attachment"
+    case insights
+    case settings
+}

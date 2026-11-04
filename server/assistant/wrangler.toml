@@ -32,6 +32,25 @@ GLOBAL_DAILY_CALLS = "1200"
 BLOCKED_COUNTRIES = "RU,BY"
 # The app App Attest assertions must come from: Team ID + bundle id.
 APP_ID = "SY2L2VMQP7.dakacom.Tenra"
+# POST /v1/valuation, an asset's value from comparable listings found by web search
+# (src/valuation.ts, docs/plan-assets-roadmap.md §3), with its line in the privacy policy. On
+# since 2026-11-03 (the owner's decision): builds 68 and later call it.
+VALUATION_ENABLED = "true"
+# Chosen by the valuation eval (eval/valuation.ts), apart from the chat's model: Haiku first,
+# Sonnet again when Haiku finds too few listings or declines (about a quarter of valuations).
+VALUATION_MODEL = "claude-haiku-5-5"
+VALUATION_FALLBACK_MODEL = "claude-sonnet-5-5"
+VALUATION_EFFORT = "low"
+# Web searches per valuation, $0.01 each.
+VALUATION_MAX_SEARCHES = "3"
+# Valuations a month: per App Attest key without Pro, per customer with it. Pro only, 10 a month
+# (the owner's decision, 2026-11-03): without Pro the chat has no estimate_asset_value either.
+FREE_MONTHLY_VALUATIONS = "0"
+PRO_MONTHLY_VALUATIONS = "10"
+# A valuation counts as this many calls in GLOBAL_DAILY_CALLS: Haiku's searches and results cost
+# about $0.025, the Sonnet fallback $0.15 a quarter of the time, some $0.06 on average, about 40
+# chat calls.
+VALUATION_CALL_WEIGHT = "40"
 
 # The KV namespace `tenra-assistant-quota` (Cloudflare → Storage & databases → Workers KV).
 [[kv_namespaces]]

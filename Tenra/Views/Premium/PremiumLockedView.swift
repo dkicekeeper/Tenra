@@ -13,6 +13,8 @@ struct PremiumLockedView: View {
     let icon: String
     let title: String
     let message: String
+    /// The gate, for the paywall's `paywall_source`.
+    let source: PaywallSource
 
     @State private var showPaywall = false
 
@@ -46,6 +48,6 @@ struct PremiumLockedView: View {
 
             Spacer()
         }
-        .paywallSheet(isPresented: $showPaywall)
+        .paywallSheet(isPresented: $showPaywall, source: source)
     }
 }

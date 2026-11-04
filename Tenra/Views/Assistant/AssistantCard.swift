@@ -3,10 +3,10 @@
 //  Tenra
 //
 //  A card of the assistant's reply under an optional title: a chart, payments, a draft, an
-//  attachment. The look of DesignKit's `FormSection(style: .glass)` (5.0.0, `ListCard` in
-//  4.14.0), which 8.0.0 folded into the one glass section with dividers: a reply's card holds
-//  more than rows (a chart, a status line, a button), so it keeps its own padding on every side
-//  and `sm` between its pieces, no dividers.
+//  attachment. DesignKit's `FormSection` (8.6.0, the one rhythm of every card): the title 12 pt
+//  above the card, a divider between its pieces, under each row's text. Every piece pads itself
+//  12 pt above and below: the rows do, a chart, a status line or a button takes
+//  `.padding(.vertical, AppSpacing.md)` at its call site.
 //
 
 import SwiftUI
@@ -21,16 +21,8 @@ struct AssistantCard<Content: View>: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: AppSpacing.sm) {
-            if let title, !title.isEmpty {
-                SectionHeader(title)
-            }
-            VStack(alignment: .leading, spacing: AppSpacing.sm) {
-                content
-            }
-            .padding(AppSpacing.lg)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .cardStyle()
+        FormSection(header: title) {
+            content
         }
     }
 }

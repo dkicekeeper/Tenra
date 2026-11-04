@@ -63,6 +63,8 @@ struct AssistantComposerBar: View {
                 }
                 .accessibilityElement(children: .contain)
                 .accessibilityIdentifier("assistant.composer")
+                // Send, attach and the microphone sit by the field: a tap on them keeps the keyboard.
+                .keepsKeyboardOnTap()
             }
             .screenPadding()
         }

@@ -6,14 +6,18 @@
 //  (the sale price once sold) with when it was valued and the gain over the purchase price as a
 //  trend pill, then its worth over time, the purchase and every valuation, drawing in. Actions:
 //  "Update value" (a valuation, MoneyEntrySheet) and "Sell" (the sale price and day), or
-//  "Return to assets" once sold. Info rows: the purchase, the gain, the growth a year, the
+//  "Undo sale" once sold. Info rows: the purchase, the gain, the growth a year, the
 //  person's share, the linked loan and their own money in it, the rent and upkeep of the last 12
-//  months, the yield and the full result. Then the valuations, newest first (a long press deletes
-//  one, which breaks into dust), and the rent and upkeep transactions by day; with a rent
+//  months, the yield and the full result. Then the valuations, newest first (a tap changes one,
+//  the purchase in the asset's form; a long press deletes one, which breaks into dust), and the
+//  rent and upkeep transactions by day; with a rent
 //  category and no rent yet, a banner opens the add form in it. A valuation older than its kind
 //  allows puts a banner on top that opens "Update value"; with a depreciation rule the value is
 //  an estimate ("≈"), and the chart ends on it today. A valuation above the value bursts
-//  sparkles over the hero; a sale above the purchase price celebrates.
+//  sparkles over the hero; a sale above the purchase price celebrates. The rent banner's form
+//  comes with the link's subcategories. Once Ten's server values
+//  assets, "Estimate from listings" (the menu, and the out-of-date banner) opens
+//  AssetEstimateSheet.
 //
 
 import SwiftUI
@@ -26,18 +30,68 @@ struct AssetDetailView: View {
     @Environment(TimeFilterManager.self) private var timeFilterManager
     @Environment(\.dismiss) private var dismiss
     @Environment(\.amountsHidden) private var amountsHidden
+    /// The estimate from listings is Tenra Pro's (the owner's decision, 2026-11-03).
+    @Environment(PremiumManager.self) private var premium
     @State private var showingEdit = false
     @State private var showingValuation = false
+    /// "Estimate from listings" (AssetEstimateSheet).
+    @State private var showingEstimate = false
+    /// "Estimate from listings" without Pro: the paywall, then the estimate.
+    @State private var showingEstimatePaywall = false
+    /// "Enter by hand" in the estimate sheet: the money sheet, once that one is gone.
+    @State private var valuationAfterEstimate = false
     @State private var showingSale = false
+    /// A valuation changed in place (AssetValuationEditView).
+    @State private var editingValuation: AssetValuation?
     @State private var showingDelete = false
+    /// "Undo sale" asks first: it drops the sale's price, day and note (finding A14).
+    @State private var showingUndoSale = false
+    /// "Link payments", "Remove payments" or "Removed payments" (the owner's car, 2026-11-02).
+    @State private var paymentsScreen: PaymentsScreen?
+
+    private enum PaymentsScreen: Hashable {
+        case link, remove, removed
+    }
     /// The add form in the rent category.
     @State private var showingRentEntry = false
+    /// "Record the money" of a sale: the income category asked first, then the add form in it.
+    @State private var choosingSaleCategory = false
+    @State private var saleIncomeCategory: String?
+    /// The sales whose money the person said is recorded ("Already recorded"): asset ids, one
+    /// per line. A hint of this device, like the soft paywall's cap.
+    @AppStorage("asset.saleIncome.dismissed") private var dismissedSaleIncome = ""
+    /// The linked loan, from the "not paid off" banner of a sold asset.
+    @State private var showingLoan = false
     /// Bumped by a valuation above the value: one burst of sparkles over the hero.
     @State private var valuationSparkles = 0
     /// Bumped by a sale above the purchase price: one confetti burst.
     @State private var celebrations = 0
     /// The growth a year depends on the day: moved at midnight.
     @State private var today = Date()
+    /// The rent and upkeep and what they come to, gathered once per change rather than on every
+    /// pass of the body (finding A6 of the assets audit).
+    @State private var linked = Linked()
+
+    struct Linked {
+        /// Newest first.
+        var transactions: [Transaction] = []
+        var income = AssetValuationMath.IncomeSummary(hasRent: false)
+        /// A sold asset's money is recorded as an income (`AssetSale`).
+        var saleRecorded = true
+        /// Gathered at least once: until then the "no rent yet" banner waits.
+        var isLoaded = false
+    }
+
+    /// What the rent and upkeep depend on: the transactions, the categories and their
+    /// subcategory links, the rates, the asset and the day.
+    private struct LinkedKey: Hashable {
+        let asset: Asset
+        let transactions: Int
+        let categories: Int
+        let subcategories: Int
+        let rates: Int
+        let day: Date
+    }
 
     private var appSettings: AppSettings { coordinator.transactionsViewModel.appSettings }
 
@@ -56,6 +110,47 @@ struct AssetDetailView: View {
         }
     }
 
+    /// The payments by hand, on the shared `LinkPaymentsView` (search, category and subcategory
+    /// filters, select all): any expense or income its rent and upkeep don't count yet, the ones
+    /// they count, or the ones removed.
+    private func paymentsView(_ screen: PaymentsScreen, asset: Asset, counted: Set<String>) -> some View {
+        let store = assetStore
+        let assetId = asset.id
+        let removed = Set(asset.excludedTransactionIds)
+        let title: String
+        var options = LinkPaymentsView.Options.asset
+        let findCandidates: @Sendable ([Transaction], AmountMatchMode) -> [Transaction]
+        let perform: @Sendable ([Transaction]) async throws -> Void
+        switch screen {
+        case .link:
+            title = String(localized: "asset.payments.link")
+            findCandidates = { all, _ in
+                all.filter { ($0.type == .expense || $0.type == .income) && !counted.contains($0.id) }
+            }
+            perform = { selected in await store.include(selected.map(\.id), in: assetId) }
+        case .remove:
+            title = String(localized: "asset.payments.remove")
+            options.actionTitleFormat = String(localized: "asset.payments.removeCount")
+            findCandidates = { all, _ in all.filter { counted.contains($0.id) } }
+            perform = { selected in await store.exclude(selected.map(\.id), from: assetId) }
+        case .removed:
+            title = String(localized: "asset.payments.removed")
+            options.actionTitleFormat = String(localized: "asset.payments.returnCount")
+            findCandidates = { all, _ in all.filter { removed.contains($0.id) } }
+            perform = { selected in await store.restore(selected.map(\.id), to: assetId) }
+        }
+        return LinkPaymentsView(
+            title: title,
+            displayCurrency: appSettings.baseCurrency,
+            findCandidates: findCandidates,
+            performLink: perform,
+            options: options,
+            transactionStore: coordinator.transactionStore,
+            accountsViewModel: coordinator.accountsViewModel,
+            categoriesViewModel: coordinator.categoriesViewModel
+        )
+    }
+
     @ViewBuilder
     private func scaffold(for asset: Asset) -> some View {
         // An asset in another currency shows its value in the base one at the cached rates, and a
@@ -68,9 +163,16 @@ struct AssetDetailView: View {
         let _ = coordinator.transactionStore.categoriesMutationVersion
         let _ = coordinator.transactionStore.subcategoriesMutationVersion
         let summary = assetStore.summary(for: asset, today: today)
-        let income = assetStore.incomeSummary(for: asset, today: today)
-        let linked = assetStore.linkedTransactions(of: asset)
-        let linkedTransactions = ((linked.rent ?? []) + (linked.upkeep ?? [])).sorted { $0.date > $1.date }
+        let income = linked.income
+        let linkedTransactions = linked.transactions
+        let linkedKey = LinkedKey(
+            asset: asset,
+            transactions: coordinator.transactionStore.mutationVersion,
+            categories: coordinator.transactionStore.categoriesMutationVersion,
+            subcategories: coordinator.transactionStore.subcategoriesMutationVersion,
+            rates: coordinator.transactionStore.currencyRatesVersion,
+            day: Calendar.current.startOfDay(for: today)
+        )
         let history = AssetValuationMath.history(of: asset)
         let isStale = AssetValuationMath.isStale(asset, today: today)
         EntityDetailScaffold(
@@ -89,7 +191,10 @@ struct AssetDetailView: View {
                 ? ActionConfig(
                     title: String(localized: "asset.undoSale"),
                     systemImage: "arrow.uturn.backward",
-                    action: { undoSale(asset) }
+                    action: {
+                        HapticManager.warning()
+                        showingUndoSale = true
+                    }
                 )
                 : ActionConfig(
                     title: String(localized: "asset.sell"),
@@ -118,6 +223,31 @@ struct AssetDetailView: View {
                 hero(for: asset, summary: summary, history: history)
             },
             customSections: {
+                if linked.isLoaded, asset.isSold, !linked.saleRecorded, !isSaleIncomeDismissed(asset) {
+                    // Selling makes no transaction: the money, filled in, one tap away (2.4).
+                    StatusBanner(
+                        String(localized: "asset.saleIncome.banner"),
+                        status: .info,
+                        systemImage: "banknote",
+                        action: {
+                            HapticManager.light()
+                            choosingSaleCategory = true
+                        }
+                    )
+                    .screenPadding()
+                }
+                if let loanName = unpaidLoanName(of: asset) {
+                    // Sold with the loan still owed: its screen, to repay it from the money.
+                    StatusBanner(
+                        String(format: String(localized: "asset.saleLoan.banner"), loanName),
+                        status: .warning,
+                        action: {
+                            HapticManager.light()
+                            showingLoan = true
+                        }
+                    )
+                    .screenPadding()
+                }
                 if isStale {
                     // The value was set too long ago: one tap to a new valuation.
                     StatusBanner(
@@ -128,12 +258,17 @@ struct AssetDetailView: View {
                         status: .warning,
                         action: {
                             HapticManager.light()
-                            showingValuation = true
+                            // From listings once the server values assets (Pro); by hand otherwise.
+                            if canEstimate(asset) && premium.isPro {
+                                showingEstimate = true
+                            } else {
+                                showingValuation = true
+                            }
                         }
                     )
                     .screenPadding()
                 }
-                if let category = rentCategory(of: asset), !income.hasRent, !asset.isSold {
+                if linked.isLoaded, let category = rentCategory(of: asset), !income.hasRent, !asset.isSold {
                     // A rent category without rent: the first payment, made monthly in the form.
                     StatusBanner(
                         String(format: String(localized: "asset.rent.empty"), category.name),
@@ -151,11 +286,47 @@ struct AssetDetailView: View {
             },
             toolbarMenu: {
                 AskAssistantMenuItem(topic: .asset(name: asset.name))
+                if canEstimate(asset) {
+                    Button {
+                        HapticManager.selection()
+                        if premium.isPro {
+                            showingEstimate = true
+                        } else {
+                            showingEstimatePaywall = true
+                        }
+                    } label: {
+                        Label(String(localized: "asset.estimate.action"), systemImage: "magnifyingglass")
+                    }
+                }
                 Button {
                     HapticManager.selection()
                     showingEdit = true
                 } label: {
                     Label(String(localized: "button.edit"), systemImage: "pencil")
+                }
+                // Payments by hand: any expense or income linked to it, the ones its category
+                // counts taken out, and given back.
+                Button {
+                    HapticManager.selection()
+                    paymentsScreen = .link
+                } label: {
+                    Label(String(localized: "asset.payments.link"), systemImage: "link.badge.plus")
+                }
+                if !linkedTransactions.isEmpty {
+                    Button {
+                        HapticManager.selection()
+                        paymentsScreen = .remove
+                    } label: {
+                        Label(String(localized: "asset.payments.remove"), systemImage: "minus.circle")
+                    }
+                }
+                if !asset.excludedTransactionIds.isEmpty {
+                    Button {
+                        HapticManager.selection()
+                        paymentsScreen = .removed
+                    } label: {
+                        Label(String(localized: "asset.payments.removed"), systemImage: "arrow.uturn.backward.circle")
+                    }
                 }
                 Divider()
                 Button(role: .destructive) {
@@ -195,6 +366,35 @@ struct AssetDetailView: View {
                 }
             }
         }
+        .sheet(isPresented: $showingEstimate, onDismiss: {
+            if valuationAfterEstimate {
+                valuationAfterEstimate = false
+                showingValuation = true
+            }
+        }) {
+            if let transport = coordinator.assetEstimateTransport {
+                AssetEstimateSheet(
+                    model: AssetEstimateViewModel(
+                        asset: asset,
+                        assets: assetStore,
+                        transport: transport,
+                        defaultCountry: AssetAttributesDraft.phoneCountry
+                    ),
+                    onManual: { valuationAfterEstimate = true },
+                    onSaved: { value in
+                        if value > summary.value { valuationSparkles += 1 }
+                    }
+                )
+            }
+        }
+        .paywallSheet(isPresented: $showingEstimatePaywall, source: .assetEstimate) {
+            showingEstimate = true
+        }
+        .sheet(item: $editingValuation) { valuation in
+            AssetValuationEditView(valuation: valuation, currency: asset.currency) { updated in
+                Task { await assetStore.updateValuation(updated, in: asset.id) }
+            }
+        }
         .sheet(isPresented: $showingSale) {
             MoneyEntrySheet(
                 title: asset.name,
@@ -210,6 +410,9 @@ struct AssetDetailView: View {
                 }
             }
         }
+        .navigationDestination(item: $paymentsScreen) { screen in
+            paymentsView(screen, asset: asset, counted: Set(linkedTransactions.map(\.id)))
+        }
         .navigationDestination(isPresented: $showingRentEntry) {
             if let category = rentCategory(of: asset) {
                 TransactionAddModal(
@@ -221,10 +424,60 @@ struct AssetDetailView: View {
                     categoriesViewModel: coordinator.categoriesViewModel,
                     accountsViewModel: coordinator.accountsViewModel,
                     transactionStore: coordinator.transactionStore,
+                    // The link's subcategories: a rent it does not count would leave the banner.
+                    subcategoryIds: Set(asset.incomeLink?.subcategoryIds ?? []),
                     onDismiss: { showingRentEntry = false }
                 )
                 .environment(timeFilterManager)
             }
+        }
+        .confirmationDialog(
+            String(localized: "asset.saleIncome.choose"),
+            isPresented: $choosingSaleCategory,
+            titleVisibility: .visible
+        ) {
+            ForEach(incomeCategories, id: \.id) { category in
+                Button(category.name) {
+                    saleIncomeCategory = category.name
+                }
+            }
+            Button(String(localized: "asset.saleIncome.recorded")) {
+                dismissSaleIncome(asset)
+            }
+            Button(String(localized: "button.cancel"), role: .cancel) {}
+        }
+        .navigationDestination(item: $saleIncomeCategory) { category in
+            TransactionAddModal(
+                category: category,
+                type: .income,
+                currency: asset.currency,
+                accounts: coordinator.accountsViewModel.accounts,
+                transactionsViewModel: coordinator.transactionsViewModel,
+                categoriesViewModel: coordinator.categoriesViewModel,
+                accountsViewModel: coordinator.accountsViewModel,
+                transactionStore: coordinator.transactionStore,
+                prefill: saleIncomePrefill(of: asset),
+                onDismiss: { saleIncomeCategory = nil }
+            )
+            .environment(timeFilterManager)
+        }
+        .navigationDestination(isPresented: $showingLoan) {
+            if let loanId = asset.linkedLoanAccountId {
+                LoanDetailView(
+                    loansViewModel: coordinator.loansViewModel,
+                    transactionsViewModel: coordinator.transactionsViewModel,
+                    balanceCoordinator: coordinator.balanceCoordinator,
+                    accountId: loanId
+                )
+            }
+        }
+        .alert(String(localized: "asset.undoSale.title"), isPresented: $showingUndoSale) {
+            Button(String(localized: "asset.undoSale"), role: .destructive) {
+                undoSale(asset)
+            }
+            Button(String(localized: "button.cancel"), role: .cancel) {}
+        } message: {
+            Text(String(localized: "asset.undoSale.message"))
         }
         .alert(String(localized: "asset.deleteTitle"), isPresented: $showingDelete) {
             Button(String(localized: "button.delete"), role: .destructive) {
@@ -239,6 +492,54 @@ struct AssetDetailView: View {
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.significantTimeChangeNotification)) { _ in
             today = Date()
         }
+        .task {
+            await coordinator.checkAssetEstimates()
+        }
+        .task(id: linkedKey) {
+            let gathered = assetStore.linkedTransactions(of: asset)
+            linked = Linked(
+                transactions: ((gathered.rent ?? []) + (gathered.upkeep ?? [])).sorted { $0.date > $1.date },
+                income: assetStore.incomeSummary(for: asset, linked: gathered, today: today),
+                saleRecorded: assetStore.isSaleIncomeRecorded(asset),
+                isLoaded: true
+            )
+        }
+    }
+
+    // MARK: - Sale
+
+    /// The income categories, in the person's order: where the sale's money can go.
+    private var incomeCategories: [CustomCategory] {
+        coordinator.categoriesViewModel.customCategories.filter { $0.type == .income }
+    }
+
+    /// The income form of the sale: the price at the person's share, the sale day, "Sale: …".
+    private func saleIncomePrefill(of asset: Asset) -> TransactionAddModal.Prefill? {
+        guard let proceeds = AssetSale.proceeds(of: asset), let soldAt = asset.soldAt else { return nil }
+        return TransactionAddModal.Prefill(amount: proceeds, date: soldAt, description: AssetSale.incomeDescription(of: asset))
+    }
+
+    private func isSaleIncomeDismissed(_ asset: Asset) -> Bool {
+        dismissedSaleIncome.split(separator: "\n").contains { $0 == asset.id }
+    }
+
+    private func dismissSaleIncome(_ asset: Asset) {
+        HapticManager.selection()
+        guard !isSaleIncomeDismissed(asset) else { return }
+        dismissedSaleIncome = (dismissedSaleIncome.split(separator: "\n").map(String.init) + [asset.id]).joined(separator: "\n")
+    }
+
+    /// A sold asset's linked loan while something is still owed on it: its name.
+    private func unpaidLoanName(of asset: Asset) -> String? {
+        guard asset.isSold, let loanId = asset.linkedLoanAccountId,
+              let loan = assetStore.loan(for: asset), loan.amount > PersonalDebt.centTolerance,
+              let account = coordinator.transactionStore.accountById[loanId] else { return nil }
+        return account.name
+    }
+
+    /// A held asset, and Ten's server values assets from listings.
+    private func canEstimate(_ asset: Asset) -> Bool {
+        !asset.isSold && coordinator.assetEstimatesAvailable && coordinator.assetEstimateTransport != nil
     }
 
     // MARK: - Hero
@@ -261,25 +562,20 @@ struct AssetDetailView: View {
             // A valuation above the value: a burst of sparkles over it (DesignKit).
             .sparkleBurst(trigger: valuationSparkles, tint: AppColors.income)
 
-            let points = chartPoints(history: history, summary: summary)
+            // Evenly in time (D3): a month apart from the first point to today or the sale.
+            let points = AssetValuationMath.chartHistory(of: asset, today: today)
             if points.count >= 2 {
                 HeroSparkline(
                     dataPoints: AssetChartPoints.points(points, estimateLast: summary.isEstimate),
                     series: AssetChartPoints.series(color: chartColor(summary)),
+                    // The wear ahead (2.9): a dashed tail to the value in three years, the
+                    // "In 3 years" row below.
+                    projectedValue: AssetValuationMath.forecast(of: asset, today: today)?.value,
                     valueFormat: .currency(asset.currency),
                     entranceDelay: AssetChartPoints.entranceDelay
                 )
             }
         }
-    }
-
-    /// The purchase and every valuation; with a depreciation rule, today's estimate after them.
-    private func chartPoints(history: [AssetValuation], summary: AssetValuationMath.Summary) -> [AssetValuationMath.DatedValue] {
-        var points = history.map { AssetValuationMath.DatedValue(date: $0.date, value: $0.value) }
-        if summary.isEstimate {
-            points.append(AssetValuationMath.DatedValue(date: today, value: summary.value))
-        }
-        return points
     }
 
     private func subtitle(for asset: Asset, summary: AssetValuationMath.Summary) -> String? {
@@ -306,6 +602,7 @@ struct AssetDetailView: View {
         var rows: [InfoRowConfig] = [
             InfoRowConfig(icon: "square.grid.2x2", label: String(localized: "asset.kind"), value: AssetEditView.title(of: asset.kind))
         ]
+        rows += characteristicRows(for: asset, value: summary.value)
         if let price = asset.purchasePrice {
             rows.append(InfoRowConfig(icon: "cart", label: String(localized: "asset.purchasePrice"), amount: price, currency: asset.currency))
         }
@@ -338,6 +635,16 @@ struct AssetDetailView: View {
                 value: String(format: String(localized: "asset.depreciationValue"), Self.percentText(rate)),
                 iconColor: AppColors.textSecondary
             ))
+            if let forecast = AssetValuationMath.forecast(of: asset, today: today) {
+                rows.append(InfoRowConfig(
+                    icon: "hourglass",
+                    label: String(localized: "asset.forecast"),
+                    amount: forecast.value,
+                    currency: asset.currency,
+                    prefix: "\u{2248} ",
+                    iconColor: AppColors.textSecondary
+                ))
+            }
         }
         if asset.ownershipShare < 1 {
             rows.append(InfoRowConfig(
@@ -386,6 +693,60 @@ struct AssetDetailView: View {
                 iconColor: AppColors.income
             ))
         }
+        if !asset.includeInNetWorth, !asset.isSold {
+            rows.append(InfoRowConfig(
+                icon: "chart.pie",
+                label: String(localized: "asset.includeInNetWorth"),
+                value: String(localized: "asset.attr.no"),
+                iconColor: AppColors.textSecondary
+            ))
+        }
+        if let note = asset.note, !note.isEmpty {
+            rows.append(InfoRowConfig(icon: "text.alignleft", label: String(localized: "asset.note"), value: note, iconColor: AppColors.textSecondary))
+        }
+        return rows
+    }
+
+    /// The characteristics saved in the form that say most about it (plan 3.2): the area and the
+    /// price of one square metre, the land and the price of one are of it, the rooms, the year and
+    /// the mileage; only its kind's, only the ones filled in.
+    private func characteristicRows(for asset: Asset, value: Double) -> [InfoRowConfig] {
+        typealias Field = AssetAttributes.Field
+        let fields = Set(Field.fields(for: asset.kind))
+        func number(_ field: Field) -> Double? {
+            guard fields.contains(field), let number = asset.attributes.number(field), number > 0 else { return nil }
+            return number
+        }
+        func row(_ field: Field, _ text: String) -> InfoRowConfig {
+            InfoRowConfig(icon: AssetAttributesSection.icon(of: field), label: AssetAttributesSection.title(of: field), value: text, iconColor: AppColors.textSecondary)
+        }
+        var rows: [InfoRowConfig] = []
+        if let area = number(.areaM2) {
+            rows.append(row(.areaM2, area.formatted(.number.precision(.fractionLength(0...1)))))
+            if value > 0 {
+                rows.append(InfoRowConfig(icon: "square.grid.3x3", label: String(localized: "asset.pricePerM2"), amount: value / area, currency: asset.currency))
+            }
+        }
+        if let ares = number(.landAres) {
+            rows.append(row(.landAres, ares.formatted(.number.precision(.fractionLength(0...1)))))
+            // Land is priced by the are (the sotka); a house by its floor area.
+            if asset.kind == .land, value > 0 {
+                rows.append(InfoRowConfig(icon: "square.grid.3x3", label: String(localized: "asset.pricePerAre"), amount: value / ares, currency: asset.currency))
+            }
+        }
+        if let rooms = number(.rooms) {
+            rows.append(row(.rooms, Int(rooms).formatted()))
+        }
+        // A year has no grouping: "2015", not "2 015".
+        if let year = number(.yearBuilt) {
+            rows.append(row(.yearBuilt, String(Int(year))))
+        }
+        if let year = number(.year) {
+            rows.append(row(.year, String(Int(year))))
+        }
+        if let mileage = number(.mileageKm) {
+            rows.append(row(.mileageKm, mileage.formatted(.number.precision(.fractionLength(0)))))
+        }
         return rows
     }
 
@@ -398,22 +759,40 @@ struct AssetDetailView: View {
 
     private func historySection(for asset: Asset, history: [AssetValuation]) -> some View {
         let entries = Array(history.reversed())
-        return VStack(alignment: .leading, spacing: AppSpacing.sm) {
+        // The header 12 pt above the card; the card padded only at the sides, the rows' own 12 pt
+        // above and below each (DesignKit 8.6.0).
+        return VStack(alignment: .leading, spacing: AppSpacing.md) {
             SectionHeader(String(localized: "asset.history"))
             VStack(spacing: 0) {
                 ForEach(entries) { entry in
                     VStack(spacing: 0) {
-                        HistoryEntryRow(
-                            date: entry.date,
-                            note: entry.note.flatMap { $0.isEmpty ? nil : $0 } ?? Self.sourceTitle(entry.source),
-                            amount: entry.value,
-                            currency: asset.currency,
-                            symbol: Self.symbol(of: entry.source)
-                        )
-                        .contentShape(Rectangle())
-                        .contextMenu {
+                        Button {
+                            HapticManager.selection()
                             // The purchase is the asset's own price and day: changed in Edit.
+                            if entry.source == .purchase {
+                                showingEdit = true
+                            } else {
+                                editingValuation = entry
+                            }
+                        } label: {
+                            HistoryEntryRow(
+                                date: entry.date,
+                                note: entry.note.flatMap { $0.isEmpty ? nil : $0 } ?? Self.sourceTitle(entry.source),
+                                amount: entry.value,
+                                currency: asset.currency,
+                                symbol: Self.symbol(of: entry.source)
+                            )
+                            .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .contextMenu {
                             if entry.source != .purchase {
+                                Button {
+                                    HapticManager.selection()
+                                    editingValuation = entry
+                                } label: {
+                                    Label(String(localized: "button.edit"), systemImage: "pencil")
+                                }
                                 Button(role: .destructive) {
                                     HapticManager.warning()
                                     Task { await assetStore.deleteValuation(id: entry.id, from: asset.id) }
@@ -430,7 +809,7 @@ struct AssetDetailView: View {
                     .transition(AsymmetricTransition(insertion: OpacityTransition(), removal: DissolveTransition()))
                 }
             }
-            .padding(AppSpacing.lg)
+            .padding(.horizontal, AppSpacing.lg)
             .cardStyle()
             .animation(AppAnimation.gentleSpring, value: entries.map(\.id))
         }
@@ -459,6 +838,8 @@ struct AssetDetailView: View {
 
     private func undoSale(_ asset: Asset) {
         HapticManager.selection()
+        // Sold again later, its money is offered again.
+        dismissedSaleIncome = dismissedSaleIncome.split(separator: "\n").filter { $0 != asset.id }.joined(separator: "\n")
         Task { await assetStore.undoSale(assetId: asset.id) }
     }
 }
@@ -471,4 +852,5 @@ struct AssetDetailView: View {
     .environment(coordinator)
     .environment(coordinator.transactionStore)
     .environment(TimeFilterManager())
+    .environment(PremiumManager.shared)
 }

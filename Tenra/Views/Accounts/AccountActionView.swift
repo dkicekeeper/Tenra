@@ -161,7 +161,7 @@ struct AccountActionView: View {
     @ViewBuilder
     private var fromSection: some View {
         @Bindable var viewModel = viewModel
-        VStack(alignment: .leading, spacing: AppSpacing.sm) {
+        VStack(alignment: .leading, spacing: AppSpacing.md) {
             SectionHeader(String(localized: "transactionForm.fromHeader"))
                 .screenPadding()
 
@@ -215,7 +215,7 @@ struct AccountActionView: View {
     private var toSection: some View {
         @Bindable var viewModel = viewModel
         if let coordinator = accountsViewModel.balanceCoordinator {
-            VStack(alignment: .leading, spacing: AppSpacing.sm) {
+            VStack(alignment: .leading, spacing: AppSpacing.md) {
                 SectionHeader(String(localized: "transactionForm.toHeader"))
                     .screenPadding()
 

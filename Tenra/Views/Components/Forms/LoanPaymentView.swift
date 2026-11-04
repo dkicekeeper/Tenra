@@ -178,7 +178,7 @@ struct LoanPaymentView: View {
 
     @ViewBuilder
     private var fromSection: some View {
-        VStack(alignment: .leading, spacing: AppSpacing.sm) {
+        VStack(alignment: .leading, spacing: AppSpacing.md) {
             SectionHeader(String(localized: "transactionForm.fromHeader"))
                 .screenPadding()
 
@@ -217,7 +217,7 @@ struct LoanPaymentView: View {
         // *after* a category is picked, which fails the "what fields can I fill"
         // discoverability test.
         if let categoriesVM = categoriesViewModel, !availableCategories.isEmpty {
-            VStack(alignment: .leading, spacing: AppSpacing.xs) {
+            VStack(alignment: .leading, spacing: AppSpacing.md) {
                 SectionHeader(String(localized: "loan.subcategoryHeader", defaultValue: "Subcategory"))
                     .screenPadding()
 

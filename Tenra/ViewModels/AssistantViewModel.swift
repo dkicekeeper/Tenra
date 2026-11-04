@@ -620,6 +620,8 @@ enum AssistantStep: Equatable {
     case plans
     /// Assets and net worth.
     case assets
+    /// An asset's value from listings: a web search on the server, the longest step.
+    case valuing
     /// Forecasts and what-ifs: the balance, a loan, savings; a currency conversion.
     case calculating
     case composing
@@ -635,6 +637,7 @@ enum AssistantStep: Equatable {
         case "get_insights": self = .insights
         case "get_goals", "get_debts": self = .plans
         case "get_assets", "get_net_worth": self = .assets
+        case "estimate_asset_value": self = .valuing
         case "forecast_balance", "simulate_loan", "project_savings", "convert_currency": self = .calculating
         case AgentProtocol.renderReplyTool: self = .composing
         default: self = .understanding
@@ -653,6 +656,7 @@ enum AssistantStep: Equatable {
         case .insights: String(localized: "assistant.step.insights")
         case .plans: String(localized: "assistant.step.plans")
         case .assets: String(localized: "assistant.step.assets")
+        case .valuing: String(localized: "assistant.step.valuing")
         case .calculating: String(localized: "assistant.step.calculating")
         case .composing: String(localized: "assistant.step.composing")
         }

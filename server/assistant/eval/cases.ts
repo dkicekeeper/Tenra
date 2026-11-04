@@ -368,8 +368,53 @@ export const CASES: EvalCase[] = [
     locale: "ru",
     prompt: "Сколько сейчас может стоить моя квартира на Абая?",
     checks: [
-      // No market prices: it asks for the area and listings, never values the flat itself.
-      { kind: "notCalled", tools: ["draft_asset_valuation", "draft_asset"] },
+      // It asks for what the estimate needs (the city, the district, the area, the rooms) before
+      // spending one, and never values the flat itself.
+      { kind: "notCalled", tools: ["draft_asset_valuation", "draft_asset", "estimate_asset_value"] },
+    ],
+  },
+  {
+    id: "ru-asset-worth-listings",
+    locale: "ru",
+    prompt: "Сколько сейчас может стоить моя квартира на Абая? Двушка 64 метра в Бостандыкском районе Алматы, дом 2012 года, ремонт хороший",
+    checks: [
+      {
+        kind: "toolArgs",
+        tool: "estimate_asset_value",
+        match: (i) => i.asset === "asset_flat" && i.area_m2 === 64 && i.rooms === 2 && /алмат|almaty/i.test(String(i.city ?? "")),
+        label: "the flat estimated from listings with its area, rooms and city",
+      },
+      { kind: "metricFrom", tool: "estimate_asset_value", pathEnds: "value_in_asset_currency", label: "the value from the estimate" },
+      // The estimate is drafted as a valuation in the same turn, for a tap.
+      { kind: "called", anyOf: ["draft_asset_valuation"] },
+      { kind: "block", type: "confirm" },
+      { kind: "notCalled", tools: ["draft_asset"] },
+    ],
+  },
+  {
+    id: "en-car-worth-listings",
+    locale: "en",
+    prompt: "What could I sell my Camry for? It has 125,000 km on it now",
+    checks: [
+      // Its characteristics are saved (110,000 km): the mileage the user just gave goes over them.
+      {
+        kind: "toolArgs",
+        tool: "estimate_asset_value",
+        match: (i) => i.asset === "asset_car" && i.mileage_km === 125_000,
+        label: "the car estimated from listings with the mileage the user just gave",
+      },
+      { kind: "metricFrom", tool: "estimate_asset_value", pathEnds: "value_in_asset_currency", label: "the value from the estimate" },
+    ],
+  },
+  {
+    id: "ru-car-worth-saved",
+    locale: "ru",
+    prompt: "За сколько сейчас можно продать мою машину?",
+    checks: [
+      // The car's characteristics are saved (get_assets): no question, the estimate right away.
+      { kind: "toolArgs", tool: "estimate_asset_value", match: (i) => i.asset === "asset_car", label: "the car estimated without asking what is saved" },
+      { kind: "metricFrom", tool: "estimate_asset_value", pathEnds: "value_in_asset_currency", label: "the value from the estimate" },
+      { kind: "called", anyOf: ["draft_asset_valuation"] },
     ],
   },
   {
@@ -518,6 +563,14 @@ export const CASES: EvalCase[] = [
     prompt: "Покажи, что у меня с кафе, хочу открыть эту категорию",
     checks: [
       { kind: "blockWith", type: "open", match: (b) => b.destination === "category" && b.target_id === "cat_cafe", label: "opens the cafe category" },
+    ],
+  },
+  {
+    id: "ru-open-asset",
+    locale: "ru",
+    prompt: "Как дела у моей квартиры на Абая? Хочу открыть её экран",
+    checks: [
+      { kind: "blockWith", type: "open", match: (b) => b.destination === "asset" && b.target_id === "asset_flat", label: "opens the flat's screen" },
     ],
   },
 ];

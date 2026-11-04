@@ -34,8 +34,10 @@ struct DepositsListView: View {
 
     private let logger = Logger(subsystem: "Tenra", category: "DepositsListView")
 
+    /// The deposits in the person's order. Read from `accounts` (observable), not the
+    /// `depositAccounts` cache: a drag's step then redraws the list at once.
     private var deposits: [Account] {
-        accountsViewModel.depositAccounts.sortedByOrder()
+        accountsViewModel.accounts.filter(\.isDeposit).sortedByOrder()
     }
 
     /// Deposits are a Pro feature (interest accrual + capitalization tracking): every add path
@@ -84,10 +86,11 @@ struct DepositsListView: View {
                 // A card per deposit (DesignKit 8.0.0's `CardList`): a tap opens it, a long press
                 // shows Edit and Delete; the toolbar selects, reorders and adds.
                 ScrollView {
-                    CardList(deposits, mode: mode, selection: $selection, onMove: moveDeposit) { deposit in
+                    // A tap anywhere on a card opens it (DesignKit 8.5.0's `onOpen`), its padding too.
+                    CardList(deposits, mode: mode, selection: $selection, onMove: moveDeposit, onOpen: { navigatingDeposit = $0 }) { deposit in
                         AccountRow(
                             account: deposit,
-                            onEdit: { navigatingDeposit = deposit },
+                            onEdit: nil,
                             balanceCoordinator: coordinator,
                             interestToday: depositsViewModel.interestToday(for: deposit),
                             nextPostingDate: depositsViewModel.nextPostingDate(for: deposit),
@@ -137,7 +140,7 @@ struct DepositsListView: View {
             onAdd: addDeposit,
             onDeleteSelected: { showingBulkDeleteDialog = true }
         )
-        .paywallSheet(isPresented: $showingPaywall) {
+        .paywallSheet(isPresented: $showingPaywall, source: .depositAdd) {
             // After unlocking Pro, continue straight into the add-deposit flow.
             showingAddDeposit = true
         }

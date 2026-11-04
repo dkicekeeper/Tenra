@@ -4,9 +4,9 @@
 //
 //  Detail lists for InsightDetailView (2026-07 UX pass) — extracted from the
 //  monolithic view file. Every list follows one contract: optional large
-//  SectionHeader above, rows inside a `.cardStyle()` card (inner padding
-//  AppSpacing.lg per the design-system card contract), `.screenPadding()`
-//  owned by the shared shell.
+//  SectionHeader 12 pt above, rows inside a `FormSection` card (padded at the
+//  sides, the rows' own 12 pt above and below, the section's divider under each
+//  row's text: DesignKit 8.6.0), `.screenPadding()` owned by the shared shell.
 //
 //  Detail structure contract (docs/domains/insights.md): HeroSection → chart
 //  → cards → these lists.
@@ -17,10 +17,9 @@ import SwiftUI
 // MARK: - Shared card shell
 
 /// Card shell all detail lists share: header outside (feed-section convention),
-/// rows inside the glass card.
+/// rows inside the glass card with a divider between them.
 private struct InsightDetailListCard<Rows: View>: View {
     var title: String? = nil
-    var rowSpacing: CGFloat = AppSpacing.sm
     @ViewBuilder let rows: () -> Rows
 
     var body: some View {
@@ -28,12 +27,9 @@ private struct InsightDetailListCard<Rows: View>: View {
             if let title {
                 SectionHeader(title, style: .large)
             }
-            VStack(alignment: .leading, spacing: rowSpacing) {
+            FormSection {
                 rows()
             }
-            .padding(AppSpacing.lg)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .cardStyle()
         }
         .screenPadding()
     }
@@ -69,6 +65,8 @@ struct InsightCategoryBreakdownList<Destination: View>: View {
                     .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
+            // The link keeps the row's divider inset to itself: the 44 pt tile and its space.
+            .rowDividerInset(AppIconSize.Tile.sm + AppSpacing.md)
         } else {
             CategoryBreakdownRow(item: item, currency: currency)
         }

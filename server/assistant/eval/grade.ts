@@ -1,7 +1,7 @@
 // Grades one assistant turn. Universal checks run on every case; each case adds its own.
 // Every check is mechanical: the numbers the user sees must resolve from tool results.
 
-import { ACCOUNTS, CATEGORIES } from "./fixture";
+import { ACCOUNTS, ASSETS, CATEGORIES } from "./fixture";
 
 export interface ToolCall {
   id: string;
@@ -69,8 +69,17 @@ function resolveBlock(record: RunRecord, block: Block): { call?: ToolCall; value
 
 const near = (a: number, b: number, tolerance = 0.005) => Math.abs(a - b) <= Math.max(1, Math.abs(b) * tolerance);
 
-const MONEY_IN_TEXT = /\d[\d\s  .,]*\s?(₸|тг(?!\p{L})|тенге|\$|€|₽|руб|usd|kzt|eur|rub|dollars?|долл)/iu;
-const BIG_NUMBER = /\d[\d\s  ]{3,}\d|\d{4,}/;
+// An amount with its currency, a scale word between them allowed ("13,4 млн ₸", "13.4 million KZT").
+const MONEY_IN_TEXT = /\d[\d\s  .,]*\s?(?:(?:млн|млрд|тыс\.?|million|billion|thousand|mln|bn)\s?)?(₸|тг(?!\p{L})|тенге|\$|€|₽|руб|usd|kzt|eur|rub|dollars?|долл)/iu;
+// The currency first ("$16,500", "KZT 13.4m").
+const MONEY_PREFIX = /(?:[$€₸₽]|(?<!\p{L})(?:usd|kzt|eur)(?!\p{L}))\s?\d[\d.,]*/iu;
+// Millions without a currency are money too ("около 72,5 млн"); thousands are often kilometres.
+const MONEY_SCALE = /(?<![\p{L}\d])\d[\d.,]*\s?(?:млн|млрд|million|billion)(?!\p{L})/iu;
+// A number of four digits or more, or in groups of three ("1 200 000", "110,000"); not part of a
+// model name ("XV70 2019" is a model and a year).
+const BIG_NUMBER = /(?<![\p{L}\d.,])(?:\d{1,3}(?:[\s  ,]\d{3})+|\d{4,})(?!\d)/u;
+// A big number with a unit after it is a characteristic, not money: mileage, an area, an engine.
+const UNIT_AFTER = /^[\s  ]?(?:км|km|м²|м2|m²|m2|sq|кв\.?|сот|ares?|см|мм|кг|kg|cc|hp|л\.с|miles?|миль)(?!\p{L})/iu;
 // A bare year ("к марту 2027") is a date, not an amount; with a currency MONEY_IN_TEXT still catches it.
 const YEAR = /^(?:19|20)\d{2}$/;
 // JS \b is ASCII-only even with /u: Cyrillic words are bounded with \p{L} lookarounds.
@@ -105,7 +114,7 @@ const BLOCK_FIELDS: Record<string, Record<string, (v: unknown) => boolean>> = {
   insight: { source: STRING, insight_id: STRING },
   confirm: { draft_id: STRING },
   open: {
-    destination: oneOf(["category", "account", "analytics", "history", "budgets", "subscriptions"]),
+    destination: oneOf(["category", "account", "analytics", "history", "budgets", "subscriptions", "assets", "asset"]),
     target_id: OPTIONAL_STRING,
     label: STRING,
   },
@@ -154,8 +163,9 @@ export function universalChecks(record: RunRecord, locale: "ru" | "en", prompt =
     if (block.type === "open") {
       // The app opens nothing for an id it does not know.
       const id = block.target_id;
-      const known = block.destination === "account" ? ACCOUNTS.map((a) => a.id) : CATEGORIES.map((c) => c.id);
-      const needsId = block.destination === "account" || block.destination === "category";
+      const known =
+        block.destination === "account" ? ACCOUNTS.map((a) => a.id) : block.destination === "asset" ? ASSETS.map((a) => a.id) : CATEGORIES.map((c) => c.id);
+      const needsId = block.destination === "account" || block.destination === "category" || block.destination === "asset";
       if (needsId && typeof id !== "string") broken.push(`open: ${String(block.destination)} without target_id`);
       else if (typeof id === "string" && (needsId || block.destination === "history") && !known.includes(id)) broken.push(`open: unknown ${String(block.destination)} ${id}`);
     }
@@ -165,7 +175,9 @@ export function universalChecks(record: RunRecord, locale: "ru" | "en", prompt =
   const text = textOf(record);
   const digits = (value: string) => value.replace(/\D/g, "");
   const typed = new Set((prompt.match(/\d[\d\s\u00a0\u202f.,]*\d|\d/g) ?? []).map(digits));
-  const found = [...text.matchAll(new RegExp(MONEY_IN_TEXT.source, "giu")), ...[...text.matchAll(new RegExp(BIG_NUMBER.source, "g"))].filter((m) => !YEAR.test(m[0]))].map((m) => m[0]);
+  const all = (pattern: RegExp) => [...text.matchAll(new RegExp(pattern.source, "giu"))];
+  const big = all(BIG_NUMBER).filter((m) => !YEAR.test(m[0]) && !UNIT_AFTER.test(text.slice((m.index ?? 0) + m[0].length)));
+  const found = [...all(MONEY_IN_TEXT), ...all(MONEY_PREFIX), ...all(MONEY_SCALE), ...big].map((m) => m[0]);
   const money = found.find((m) => !typed.has(digits(m)));
   results.push({ name: "no_money_in_text", pass: !money, detail: money });
 

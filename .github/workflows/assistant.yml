@@ -1,12 +1,14 @@
 name: Assistant server
 
 # The Cloudflare Worker behind the AI assistant (server/assistant, docs/domains/assistant.md).
-# Push: typecheck and unit tests. Manual run: deploy the Worker, or run the model eval.
+# Push: typecheck and unit tests. Manual run: deploy the Worker, run the model eval, or run the
+# valuation eval (eval/valuation.ts: live web search, about $0.04 a case on Haiku 5.5 and $0.14
+# on Sonnet 5.5).
 #
 # Repository secrets used by the manual jobs:
 #   CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID  deploy
 #   ANTHROPIC_API_KEY, REVENUECAT_SECRET_KEY     uploaded to the Worker on deploy
-#   ANTHROPIC_API_KEY                            eval
+#   ANTHROPIC_API_KEY                            eval, eval-valuation
 
 on:
   push:
@@ -19,17 +21,23 @@ on:
       action:
         description: "What to run"
         type: choice
-        options: [test, deploy, eval]
+        options: [test, deploy, eval, eval-valuation]
         default: test
       models:
-        description: "eval: comma-separated model ids"
+        description: "eval, eval-valuation: comma-separated model ids (the valuation eval is usually claude-haiku-5-5,claude-sonnet-5-5)"
         default: "claude-haiku-5-5,claude-sonnet-5-5,claude-opus-5-5"
       effort:
         description: "eval: comma-separated effort levels"
         default: "low"
       cases:
-        description: "eval: comma-separated case ids, or all"
+        description: "eval, eval-valuation: comma-separated case ids, or all"
         default: "all"
+      fallback:
+        description: "eval-valuation: the model asked again when the first finds too few listings, or none"
+        default: "none"
+      repeat:
+        description: "eval-valuation: how many times each case runs (the search results change between runs)"
+        default: "1"
 
 defaults:
   run:
@@ -103,5 +111,37 @@ jobs:
         if: always()
         with:
           name: assistant-eval
+          path: server/assistant/eval/out/
+          retention-days: 14
+
+  eval-valuation:
+    if: github.event_name == 'workflow_dispatch' && inputs.action == 'eval-valuation'
+    needs: test
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: server/assistant/package-lock.json
+      - run: npm ci
+      - name: Run the valuation eval (spends API credits and web searches)
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          MODELS: ${{ inputs.models }}
+          EFFORT: ${{ inputs.effort }}
+          CASES: ${{ inputs.cases }}
+          FALLBACK: ${{ inputs.fallback }}
+          REPEAT: ${{ inputs.repeat }}
+        run: npm run eval:valuation -- --models "$MODELS" --effort "$EFFORT" --cases "$CASES" --fallback "$FALLBACK" --repeat "$REPEAT" --yes
+      - name: Summary
+        if: always()
+        run: cat eval/out/valuation-*/summary.md >> "$GITHUB_STEP_SUMMARY" || true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: valuation-eval
           path: server/assistant/eval/out/
           retention-days: 14

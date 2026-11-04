@@ -32,6 +32,8 @@ struct LinkPaymentsView: View {
         var defaultAmountMode: AmountMatchMode = .tolerance
         /// Auto-select all candidates on initial load.
         var autoSelectOnInitialLoad: Bool = true
+        /// The primary button's text for the count picked (a localized `%d` format); nil: "Link N".
+        var actionTitleFormat: String? = nil
 
         static let subscription = Options()
         static let loan = Options(
@@ -46,6 +48,13 @@ struct LinkPaymentsView: View {
         static let deposit = Options(
             showCategoryFilter: false,
             showSubcategoryFilter: false,
+            defaultAmountMode: .all,
+            autoSelectOnInitialLoad: false
+        )
+        /// Payments linked to or removed from an asset by hand (AssetDetailView): no amount to
+        /// match, the person picks each one.
+        static let asset = Options(
+            showAmountModeFilter: false,
             defaultAmountMode: .all,
             autoSelectOnInitialLoad: false
         )
@@ -427,7 +436,7 @@ struct LinkPaymentsView: View {
                             ProgressView()
                                 .frame(maxWidth: .infinity)
                         } else {
-                            Text(String(format: String(localized: "subscription.linkPayments.link", defaultValue: "Link %d"), selectedIds.count))
+                            Text(String(format: options.actionTitleFormat ?? String(localized: "subscription.linkPayments.link", defaultValue: "Link %d"), selectedIds.count))
                                 .frame(maxWidth: .infinity)
                         }
                     }
@@ -470,6 +479,19 @@ struct LinkPaymentsView: View {
         }
     }
 
+    /// A transaction's subcategories: the ones linked to it (`subcategoryIdsByTransactionId`,
+    /// how the forms and the import tag), and the legacy single field of old data. Reading only
+    /// the legacy field found no subcategory of a payment entered by hand (the owner's taxi rides,
+    /// 2026-10-31).
+    private func subcategoryNames(of tx: Transaction) -> [String] {
+        var names = (transactionStore.subcategoryIdsByTransactionId[tx.id] ?? [])
+            .compactMap { transactionStore.subcategoryById[$0]?.name }
+        if let legacy = tx.subcategory, !legacy.isEmpty, !names.contains(legacy) {
+            names.append(legacy)
+        }
+        return names
+    }
+
     /// Apply cheap in-memory filters over the cached baseline.
     private func applyFilters() {
         var matched = baseline
@@ -479,8 +501,7 @@ struct LinkPaymentsView: View {
         }
         if let subcategoryNames = filterSubcategoryNames {
             matched = matched.filter { tx in
-                guard let sub = tx.subcategory else { return false }
-                return subcategoryNames.contains(sub)
+                self.subcategoryNames(of: tx).contains { subcategoryNames.contains($0) }
             }
         }
         let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
@@ -488,7 +509,7 @@ struct LinkPaymentsView: View {
             matched = matched.filter { tx in
                 tx.description.lowercased().contains(query)
                     || tx.category.lowercased().contains(query)
-                    || (tx.subcategory?.lowercased().contains(query) ?? false)
+                    || self.subcategoryNames(of: tx).contains { $0.lowercased().contains(query) }
                     || String(format: "%.0f", tx.amount).contains(query)
                     || tx.date.contains(query)
             }
@@ -544,7 +565,7 @@ struct LinkPaymentsView: View {
                 }
             }
             categorySet.insert(tx.category)
-            if let sub = tx.subcategory { subcategorySet.insert(sub) }
+            subcategorySet.formUnion(subcategoryNames(of: tx))
         }
         let sortedAccountIds = accountIdSet.sorted()
         cachedUniqueAccountIds = sortedAccountIds

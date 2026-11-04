@@ -53,6 +53,8 @@ struct TransactionAddModal: View {
         categoriesViewModel: CategoriesViewModel,
         accountsViewModel: AccountsViewModel,
         transactionStore: TransactionStore,
+        subcategoryIds: Set<String> = [],
+        prefill: Prefill? = nil,
         onDismiss: @escaping () -> Void
     ) {
         _coordinator = State(initialValue: TransactionAddCoordinator(
@@ -62,9 +64,22 @@ struct TransactionAddModal: View {
             transactionsViewModel: transactionsViewModel,
             categoriesViewModel: categoriesViewModel,
             accountsViewModel: accountsViewModel,
-            transactionStore: transactionStore
+            transactionStore: transactionStore,
+            subcategoryIds: subcategoryIds,
+            prefill: prefill
         ))
+        if let prefill {
+            _calc = State(initialValue: CalculatorInputModel(seed: AmountInputFormatting.bindingString(for: prefill.amount)))
+        }
         self.onDismiss = onDismiss
+    }
+
+    /// The form filled in up front (an asset's sale money): the amount in `currency`, which an
+    /// account in another currency converts, the day and the description.
+    struct Prefill: Hashable {
+        var amount: Double
+        var date: Date
+        var description: String
     }
 
     // MARK: - Body
@@ -200,6 +215,14 @@ struct TransactionAddModal: View {
                         onReorderTap: {
                             showingSubcategoryReorder = true
                         }
+                    )
+                }
+
+                // A payment entered by hand gets its merchant without a description.
+                if coordinator.formData.type == .expense || coordinator.formData.type == .income {
+                    TransactionMerchantRow(
+                        linkedMerchant: $bindableCoordinator.formData.linkedMerchant,
+                        description: coordinator.formData.description
                     )
                 }
 

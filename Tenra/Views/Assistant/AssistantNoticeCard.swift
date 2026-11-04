@@ -61,6 +61,10 @@ struct AssistantNoticesSection: View {
     @State private var showingWalletGuide = false
     /// The asset an out-of-date message asked to value.
     @State private var valuingAsset: Asset?
+    /// The loan a "loan without an asset" message asked to add an asset for.
+    @State private var assetLoanId: String?
+    @State private var showingAssetPaywall = false
+    @State private var paywallLoanId: String?
 
     var body: some View {
         // A message about a subscription, a debt or a goal deleted since is not shown; the next
@@ -79,6 +83,25 @@ struct AssistantNoticesSection: View {
         // On the group, not the section: the setup message is read (gone) once its guide opens.
         .sheet(isPresented: $showingWalletGuide) {
             NavigationStack { WalletSetupGuideView() }
+        }
+        .sheet(item: Binding(
+            get: { assetLoanId.map(LoanReference.init) },
+            set: { assetLoanId = $0?.id }
+        )) { reference in
+            let store = coordinator.transactionStore
+            AssetEditView(
+                asset: nil,
+                loanAccounts: store.accounts.filter { $0.loanInfo != nil },
+                baseCurrency: coordinator.transactionsViewModel.appSettings.baseCurrency,
+                linkOptions: AssetLinkOptions.make(store: store, assets: coordinator.assetStore, excluding: nil),
+                initialLoanAccountId: reference.id
+            ) { asset in
+                Task { await coordinator.assetStore.add(asset) }
+            }
+        }
+        // Adding an asset is Tenra Pro: after unlocking it, the form opens.
+        .paywallSheet(isPresented: $showingAssetPaywall, source: .assetAdd) {
+            assetLoanId = paywallLoanId
         }
         .sheet(item: $valuingAsset) { asset in
             let assetStore = coordinator.assetStore
@@ -99,7 +122,8 @@ struct AssistantNoticesSection: View {
 
     private func section(notice: AssistantNotice, count: Int) -> some View {
         let title = String(localized: "assistant.notice.title")
-        return VStack(alignment: .leading, spacing: AppSpacing.sm) {
+        // The header 12 pt above the card, as a `FormSection`'s (DesignKit 8.6.0).
+        return VStack(alignment: .leading, spacing: AppSpacing.md) {
             SectionHeader(count > 1 ? "\(title) · \(count)" : title)
             AssistantNoticeCard(
                 notice: notice,
@@ -111,6 +135,14 @@ struct AssistantNoticesSection: View {
                     } else if notice.kind == .asset {
                         inbox.markRead(notice.id)
                         valuingAsset = notice.subjectId.flatMap(coordinator.assetStore.asset(id:))
+                    } else if notice.kind == .loanAsset {
+                        inbox.markRead(notice.id)
+                        if PremiumManager.shared.isPro {
+                            assetLoanId = notice.subjectId
+                        } else {
+                            paywallLoanId = notice.subjectId
+                            showingAssetPaywall = true
+                        }
                     } else {
                         coordinator.goThrough(notice)
                     }
@@ -125,11 +157,17 @@ struct AssistantNoticesSection: View {
     }
 }
 
+/// A loan id as a sheet's item.
+struct LoanReference: Identifiable {
+    let id: String
+}
+
 extension AssistantNoticeCard {
     private var actionTitle: String {
         switch notice.kind {
         case .setup: String(localized: "home.autoCapture.action")
         case .asset: String(localized: "asset.updateValue")
+        case .loanAsset: String(localized: "loan.asset.add")
         default: String(localized: "assistant.notice.goThrough")
         }
     }
@@ -138,6 +176,7 @@ extension AssistantNoticeCard {
         switch notice.kind {
         case .setup: "wave.3.right"
         case .asset: "chart.line.uptrend.xyaxis"
+        case .loanAsset: "house"
         default: "sparkles"
         }
     }

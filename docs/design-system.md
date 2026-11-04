@@ -111,7 +111,7 @@ decision, 2026-10). `Tenra/Views/Components/` keeps two kinds of views:
 | `Icons` | `IconPickerView` → `IconPicker` | |
 | `Input` | `AccountRadioButton` → `SelectableBalanceCard`, `AmountInputView` → `CurrencyAmountInput`, `CurrencySelectorView` → `CurrencyPickerMenu`, `SubscriptionCalendarView` → `MonthCalendar` | the filter sheets, the selectors, carousels and grids that load data, `HomeBackgroundPicker`, the import sheets |
 | `LinkPayments` | | `LinkPaymentsView` |
-| `Rows` | `AccountRow` / `CategoryRow` / `CategoryBreakdownRow` → `AmountRow`, `AmortizationScheduleRow` → `ScheduleRow`, `BudgetProgressRow` → `LimitProgressCard`, `HistoryEntryRow` → `AmountRow`, `MenuOptions.swift` (the menu options of `RecurringFrequency`, `RecurringOption`, `LoanType`, `ReminderOption` for `UniversalRow(accessory: .menu)`; `MenuPickerRow` domain inits before DesignKit 7.0.0) | `PeriodBreakdownRow` |
+| `Rows` | `AccountRow` / `CategoryRow` / `CategoryBreakdownRow` → `AmountRow`, `AmortizationScheduleRow` → `ScheduleRow`, `BudgetProgressRow` → `LimitProgressCard`, `HistoryEntryRow` → `AmountRow`, `MenuOptions.swift` (the menu options of `RecurringFrequency`, `RecurringOption`, `LoanType`, `ReminderOption` for `UniversalRow(accessory: .menu)`; `MenuPickerRow` domain inits before DesignKit 7.0.0) | `PeriodBreakdownRow`, `MerchantChoiceRow` (a merchant to pick: its logo, name and payments, `SelectionIndicator`; "Combine points" and the form's merchant picker), `TransactionMerchantRow` (the transaction forms' "Merchant", [domains/intents.md](domains/intents.md) §6) |
 
 Each file's header comment names what it adapts. Tenra keeps its screens over its own models by
 choice: filter sheets, home sections, transaction lists, entity detail screens, the lock screen,
@@ -224,8 +224,8 @@ ScrollView
 └── VStack(spacing: AppSpacing.lg)
     ├── hero (HeroSection)         .screenPadding().scrollHero()
     ├── actions bar                primary + secondary DSButton
-    ├── info rows card             UniversalRow(config: .info) + InfoRowLayout list in .cardStyle()
-    ├── custom sections            the screen's own cards
+    ├── info rows card             UniversalRow(config: .info) + InfoRowLayout rows in a FormSection
+    ├── custom sections            the screen's own cards (FormSection for a list of rows)
     └── GroupedTransactionList     day headers SectionHeader (default style), TransactionCard rows
 + .heroAccentGlow(icon:tint:) on the screen; the title and amount appear in the nav bar once the
   hero scrolls out; the toolbar menu (edit, delete, …)
@@ -233,10 +233,23 @@ ScrollView
 
 - A hero with a progress passes a word as `ProgressConfig.label` ("Paid off", "Saved",
   "Returned"): `HeroSection` draws "label · NN%" itself.
+- **One rhythm for every list of rows (DesignKit 8.6.0, the owner's call after the row audit of
+  2026-11-03):** each row pads itself 12 pt above and below (`.standard` and `.info` alike,
+  `TransactionRow`, `ScheduleRow`, `ItemRow`, a custom row's `.padding(.vertical, AppSpacing.md)`),
+  a divider under each row's text (`RowDivider`), a section's header 12 pt above its card. A list
+  of rows in a card is a `FormSection` (it draws the dividers); a card stacked by hand is
+  `VStack(spacing: 0)` with a `RowDivider` between rows, padded only at the sides
+  (`.padding(.horizontal, AppSpacing.lg)`), so the rows' 12 pt are its edges too. Never rows in
+  a spaced stack without dividers. The loan's Statistics and Schedule, the deposit's interest
+  card (its accrual a row of its own), the Insights detail lists, the category deep dive's
+  subcategories, Ten's cards and recent chats and the CSV import result are `FormSection`s; a
+  card's title is the section's header above it, not a line inside it (the loan's breakdown
+  too).
 - A goal's contributions and a debt's repayments (no transactions behind them) are a custom
-  section: `SectionHeader` over a card of `HistoryEntryRow`s (DesignKit's `AmountRow`, info style:
-  the note as the title, the date under it) padded `AppSpacing.lg` like the info rows card,
-  dividers inset past the row's icon, a deleted entry dissolving (§7).
+  section: `SectionHeader` 12 pt over a card of `HistoryEntryRow`s (DesignKit's `AmountRow`, info
+  style: the note as the title, the date under it) padded `AppSpacing.lg` at the sides only, the
+  rows' own 12 pt at its edges, dividers inset past the row's icon, a deleted entry dissolving
+  (§7).
 
 ### Lists
 
@@ -255,7 +268,17 @@ dragging and adds; no swipe actions.
   `NavigationLink`s; the circle and the handle sit beside the card. The order is `Account.order`
   (loans: only while the filter shows every loan), `SavingsGoal.order` (within in progress or
   reached), `PersonalDebt.order` and `RecurringSeries.order` (CoreData v16; nil keeps the list's
-  own order, the soonest due first for debts). Goals and debts show three
+  own order, the soonest due first for debts). ⚠️ A list in `CardList` must be built from that
+  stored order and apply each `onMove` at once: CardList calls it on every item the finger
+  crosses, with indices of the last render. `LoansViewModel.loans` once filtered the accounts
+  without sorting, so a drag saved the order and the list drew the old one again; goals, debts
+  and assets move through their store's synchronous `move(_:)` (saved after), not a
+  `Task { await reorder }` a turn later. **A tap anywhere opens an item** (the owner's check of
+  build 65): the `.cards` lists (accounts, deposits, categories) pass `onOpen:` (DesignKit
+  8.5.0) and their rows (`AccountRow`, `CategoryRow`, `onEdit: nil`) have no button of their
+  own, so the card's padding opens it too; a row of Tenra's own in a button puts
+  `.contentShape(Rectangle())` inside the label (`MerchantChoiceRow`, the Wallet merchants,
+  the Support ID row), never after `.buttonStyle`, where it widens nothing. Goals and debts show three
   `PayoffProgressCardSkeleton`s until their store loads, replaced through `.skeletonReveal` (§7).
 - **Assets** (`AssetsListView`): a hero on `.heroBackground` with the total, its gain and its
   worth over time (`HeroSparkline`), the screen's title inline, `.heroScrollEdge()` on the scroll
@@ -273,7 +296,8 @@ dragging and adds; no swipe actions.
 `HistoryTransactionsList` (DesignKit 8.0.0): a `ScrollView` of a `LazyVStack` of day cards, each
 one glass card with the day and its total (`SectionHeader(day) { day total }`) on top and its
 `TransactionCard(…).equatable()` rows under it, a `RowDivider` under each row's text (past the
-44 pt icon). Entity detail screens and link payments show their days the same way
+44 pt icon). The card is padded at the sides; 12 pt above the day, then the rows' own 12 pt
+(`TransactionRow`, DesignKit 8.6.0) under it and at the bottom. Entity detail screens and link payments show their days the same way
 (`GroupedTransactionList`). `TransactionCard` adds the edit sheet and the context menu (Edit,
 Delete, the recurring series' Stop or Resume; no swipe actions) to `TransactionCardView`, which
 maps the transaction onto DesignKit's `TransactionRow`. Sections are sliced with an
@@ -289,8 +313,9 @@ with a `footer:` of plain `Text` when it has one) with `UniversalRow(config: .se
 `accessory: .navigation {}`, `.action {}` (with `role: .destructive` for a destructive one),
 `.toggle($value)` or `.picker`, `.menu` (DesignKit 7.0.0: one row with an accessory instead of
 the twelve rows before). The list insets the rows, so `.settings` has no horizontal padding of
-its own. A form card's rows keep the default `config: .standard`: 16 pt above and below, and
-the `FormSection` card pads them at the sides (DesignKit 8.0.0).
+its own. A form card's rows keep the default `config: .standard`: 12 pt above and below
+(DesignKit 8.6.0; 16 in 8.0.0), and the `FormSection` card pads them at the sides, its header
+12 pt above it.
 
 The sections go from the app as a whole to its features, then the data, then what can't be
 undone: the Tenra Pro hero, General (base currency, background, voice language), insight
@@ -472,6 +497,18 @@ result). Used in `TransactionAddModal`, `TransactionEditView`, `AccountActionVie
   keyboards stack.** The host keeps `@FocusState descriptionFocused`, passes
   `externalFocus: $descriptionFocused` to the field, shows the keypad only
   `if !descriptionFocused`, and sets it to `false` from `AmountInputView(onCalculatorTap:)`.
+
+### The keyboard
+
+A tap off a text field hides the keyboard on every screen and sheet (`KeyboardDismissal`,
+`Utils/`, installed on each window by `AppDelegate`): one window tap recognizer that never takes
+the tap from the view under it. It leaves the keyboard up when the tap lands in a text field or
+text view, when it moves the focus to another field (it decides 0.1 s later, after the tapped
+view's own action), and in a zone marked `.keepsKeyboardOnTap()`: `AmountInputView` (its amount
+is a button over a hidden field) and Ten's composer (`AssistantComposerBar`: send, attach, the
+microphone). A new control that focuses a field itself, or sends what a field holds, gets the
+modifier. Nothing to add per screen otherwise; `scrollDismissesKeyboard` stays where a list
+scrolls under a field.
 
 ---
 

@@ -55,6 +55,18 @@ final class LogoService {
         let normalizedName = brandName.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !normalizedName.isEmpty else { return nil }
 
+        // The person's own picture (UserLogoStore): its file, never the network or a
+        // lettermark for "photo:…".
+        if UserLogoStore.isPhotoKey(normalizedName) {
+            let key = normalizedName as NSString
+            if let cached = memoryCache.object(forKey: key) { return cached }
+            let image = await Task.detached(priority: .userInitiated) {
+                UserLogoStore.image(forKey: normalizedName)
+            }.value
+            if let image { memoryCache.setObject(image, forKey: key) }
+            return image
+        }
+
         let domain = ServiceLogoRegistry.resolveDomain(from: normalizedName)
         let cacheKey = domain as NSString
 

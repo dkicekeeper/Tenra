@@ -149,7 +149,7 @@ struct AssistantView: View {
             },
             onDecline: { awaitingConsent = nil }
         )
-        .paywallSheet(isPresented: $showingPaywall) {
+        .paywallSheet(isPresented: $showingPaywall, source: .assistant) {
             model.refreshAllowance()
         }
         .sheet(isPresented: $showingVoice) {
@@ -301,44 +301,41 @@ struct AssistantView: View {
         return [current].compactMap { $0 } + model.recentThreads.filter { $0.id != current?.id }
     }
 
-    /// The latest chats; a tap opens one, a long press deletes it.
+    /// The latest chats; a tap opens one, a long press deletes it. A `FormSection` (DesignKit
+    /// 8.6.0): the header 12 pt above the card, each chat a row that pads itself 12 pt, the
+    /// section's divider under each row's text.
     private var recentChats: some View {
-        VStack(alignment: .leading, spacing: AppSpacing.sm) {
-            SectionHeader(String(localized: "assistant.recent"))
-            VStack(spacing: AppSpacing.md) {
-                ForEach(chats) { thread in
-                    Button {
-                        Task {
-                            if await model.open(threadId: thread.id) { showChat() }
-                        }
-                    } label: {
-                        ItemRow(
-                            thread.title,
-                            meta: [MetaLine([.text(thread.updatedAt.formatted(.relative(presentation: .named)))])],
-                            leading: .symbol("bubble.left.and.text.bubble.right"),
-                            style: .large,
-                            titleLineLimit: 1,
-                            // A stack that spaces its rows, not a glass section (DesignKit 8.1.0).
-                            verticalPadding: 0
-                        ) {
-                            DisclosureChevron()
-                        }
-                        .contentShape(Rectangle())
+        FormSection(header: String(localized: "assistant.recent")) {
+            ForEach(chats) { thread in
+                Button {
+                    Task {
+                        if await model.open(threadId: thread.id) { showChat() }
                     }
-                    .buttonStyle(.plain)
-                    .contextMenu {
-                        Button(role: .destructive) {
-                            Task { await model.deleteThread(thread.id) }
-                        } label: {
-                            Label(String(localized: "assistant.recent.delete"), systemImage: "trash")
-                        }
+                } label: {
+                    ItemRow(
+                        thread.title,
+                        meta: [MetaLine([.text(thread.updatedAt.formatted(.relative(presentation: .named)))])],
+                        leading: .symbol("bubble.left.and.text.bubble.right"),
+                        style: .large,
+                        titleLineLimit: 1
+                    ) {
+                        DisclosureChevron()
+                    }
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                // The button keeps the row's divider inset to itself, past the symbol.
+                .rowDividerInset(ItemRowStyle.large.symbolDividerInset)
+                .contextMenu {
+                    Button(role: .destructive) {
+                        Task { await model.deleteThread(thread.id) }
+                    } label: {
+                        Label(String(localized: "assistant.recent.delete"), systemImage: "trash")
                     }
                 }
             }
-            .cardContentPadding()
-            .cardStyle()
-            .animation(AppAnimation.smooth, value: chats.map(\.id))
         }
+        .animation(AppAnimation.smooth, value: chats.map(\.id))
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 

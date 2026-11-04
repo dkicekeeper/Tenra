@@ -42,7 +42,7 @@ struct SettingsProHero: View {
         .padding(.bottom, AppSpacing.xxl)
         .background(alignment: .top) { aurora }
         // On the hero, not on the button: buying turns it into the Active state, which removes it.
-        .paywallSheet(isPresented: $showingPaywall)
+        .paywallSheet(isPresented: $showingPaywall, source: .settings)
     }
 
     // MARK: - Button

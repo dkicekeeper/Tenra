@@ -25,6 +25,9 @@ struct LoanDetailView: View {
     @State private var showingDeleteConfirmation = false
     @State private var showingLinkPayments = false
     @State private var showFullSchedule = false
+    /// A new asset bought with this loan (plan-assets-roadmap 1.2); Tenra Pro first without it.
+    @State private var showingAssetForm = false
+    @State private var showingAssetPaywall = false
     @State private var cachedSchedule: [LoanPaymentService.AmortizationEntry] = []
     @State private var cachedTransactions: [Transaction] = []
     @State private var paymentError: String? = nil
@@ -316,6 +319,22 @@ struct LoanDetailView: View {
             }
         )
         .heroAccentGlow(icon: account.iconSource)
+        .sheet(isPresented: $showingAssetForm) {
+            let store = appCoordinator.transactionStore
+            AssetEditView(
+                asset: nil,
+                loanAccounts: store.accounts.filter { $0.loanInfo != nil },
+                baseCurrency: transactionsViewModel.appSettings.baseCurrency,
+                linkOptions: AssetLinkOptions.make(store: store, assets: appCoordinator.assetStore, excluding: nil),
+                initialLoanAccountId: account.id
+            ) { asset in
+                Task { await appCoordinator.assetStore.add(asset) }
+            }
+        }
+        // After unlocking Pro, the form opens.
+        .paywallSheet(isPresented: $showingAssetPaywall, source: .assetAdd) {
+            showingAssetForm = true
+        }
         .sheet(isPresented: $showingEditView) {
             LoanEditView(
                 loansViewModel: loansViewModel,
@@ -549,6 +568,7 @@ struct LoanDetailView: View {
     @ViewBuilder
     private func loanCustomSections(for account: Account) -> some View {
         VStack(spacing: AppSpacing.lg) {
+            assetRow(for: account)
             if let loanInfo = account.loanInfo {
                 // Payment breakdown is meaningless for installments (0% interest, fixed
                 // principal-only splits) — hide it entirely for that loan type.
@@ -562,13 +582,59 @@ struct LoanDetailView: View {
         .screenPadding()
     }
 
+    // MARK: - Its asset
+
+    /// The asset this loan bought (plan-assets-roadmap 1.2): its row opens it; without one,
+    /// while the loan is owed, "Add asset" opens a new asset with the loan (Tenra Pro).
+    @ViewBuilder
+    private func assetRow(for account: Account) -> some View {
+        let assetStore = appCoordinator.assetStore
+        if let asset = assetStore.assets.first(where: { $0.linkedLoanAccountId == account.id }) {
+            FormSection {
+                UniversalRow(
+                    String(localized: "loan.asset"),
+                    icon: "house",
+                    value: asset.name,
+                    accessory: .navigation {
+                        AssetDetailView(assetStore: assetStore, assetId: asset.id)
+                            .environment(timeFilterManager)
+                    }
+                )
+            }
+        } else if !account.isPaidOffLoan {
+            FormSection {
+                UniversalRow(
+                    String(localized: "loan.asset"),
+                    icon: "house",
+                    value: String(localized: "loan.asset.add"),
+                    accessory: .action {
+                        HapticManager.light()
+                        if PremiumManager.shared.isPro {
+                            showingAssetForm = true
+                        } else {
+                            showingAssetPaywall = true
+                        }
+                    }
+                )
+            }
+        }
+    }
+
     // MARK: - Payment Breakdown Card
 
+    /// The header above the card, 12 pt over it, as a `FormSection`'s (DesignKit 8.6.0).
     private func paymentBreakdownCard(loanInfo: LoanInfo, account: Account) -> some View {
         VStack(alignment: .leading, spacing: AppSpacing.md) {
-            Text(String(localized: "loan.currentPaymentBreakdown", defaultValue: "Current Payment Breakdown"))
-                .font(AppTypography.h4)
+            SectionHeader(String(localized: "loan.currentPaymentBreakdown", defaultValue: "Current Payment Breakdown"))
+            paymentBreakdownContent(loanInfo: loanInfo, account: account)
+                .padding(AppSpacing.lg)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .cardStyle()
+        }
+    }
 
+    private func paymentBreakdownContent(loanInfo: LoanInfo, account: Account) -> some View {
+        VStack(alignment: .leading, spacing: AppSpacing.md) {
             if loanInfo.interestRateAnnual > 0, loanInfo.remainingPrincipal > 0 {
                 let breakdown = LoanPaymentService.paymentBreakdown(
                     remainingPrincipal: loanInfo.remainingPrincipal,
@@ -621,17 +687,14 @@ struct LoanDetailView: View {
                     .foregroundStyle(AppColors.textSecondary)
             }
         }
-        .padding(AppSpacing.lg)
-        .cardStyle()
     }
 
     // MARK: - Stats Card
 
+    /// The detail rows in a `FormSection`: the header 12 pt above the card, 12 pt above and below
+    /// each row, the section's divider under each row's text (DesignKit 8.6.0).
     private func statsCard(loanInfo: LoanInfo, account: Account) -> some View {
-        VStack(alignment: .leading, spacing: AppSpacing.md) {
-            Text(String(localized: "loan.stats", defaultValue: "Statistics"))
-                .font(AppTypography.h4)
-
+        FormSection(header: String(localized: "loan.stats", defaultValue: "Statistics")) {
             UniversalRow(
                 String(localized: "loan.originalAmount", defaultValue: "Original Amount"),
                 icon: "banknote",
@@ -701,8 +764,6 @@ struct LoanDetailView: View {
                 )
             }
         }
-        .padding(AppSpacing.lg)
-        .cardStyle()
     }
 
     // MARK: - Amortization Schedule
@@ -711,24 +772,21 @@ struct LoanDetailView: View {
         let schedule = cachedSchedule
         let displayedEntries = showFullSchedule ? schedule : Array(schedule.prefix(6))
 
-        return VStack(alignment: .leading, spacing: AppSpacing.md) {
-            Text(String(localized: "loan.amortizationSchedule", defaultValue: "Amortization Schedule"))
-                .font(AppTypography.h4)
-
+        // A `FormSection`: the header 12 pt above the card, the rows' own 12 pt, the section's
+        // divider under each row's text, after its mark (DesignKit 8.6.0).
+        return FormSection(header: String(localized: "loan.amortizationSchedule", defaultValue: "Amortization Schedule")) {
             if schedule.isEmpty {
                 Text(String(localized: "loan.noSchedule", defaultValue: "No schedule available"))
                     .font(AppTypography.bodySmall)
                     .foregroundStyle(AppColors.textSecondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.vertical, AppSpacing.md)
             } else {
-                // Rows pad themselves vertically (DesignKit's row rule); `sm` between them, as in
-                // the other row lists in cards.
-                VStack(alignment: .leading, spacing: AppSpacing.sm) {
-                    ForEach(displayedEntries) { entry in
-                        AmortizationScheduleRow(entry: entry, currency: account.currency)
-                            .contextMenu {
-                                scheduleRowMenu(entry: entry, accountId: account.id)
-                            }
-                    }
+                ForEach(displayedEntries) { entry in
+                    AmortizationScheduleRow(entry: entry, currency: account.currency)
+                        .contextMenu {
+                            scheduleRowMenu(entry: entry, accountId: account.id)
+                        }
                 }
 
                 if schedule.count > 6 && !showFullSchedule {
@@ -740,12 +798,14 @@ struct LoanDetailView: View {
                         Text(String(format: String(localized: "loan.showAllPayments", defaultValue: "Show all %d payments"), schedule.count))
                             .font(AppTypography.bodySmall)
                             .foregroundStyle(AppColors.accent)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.vertical, AppSpacing.md)
+                            .contentShape(Rectangle())
                     }
+                    .buttonStyle(.plain)
                 }
             }
         }
-        .padding(AppSpacing.lg)
-        .cardStyle()
     }
 
     /// Long-press menu on a schedule row. Marking a payment paid also marks every

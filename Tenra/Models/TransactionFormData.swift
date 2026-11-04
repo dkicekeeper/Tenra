@@ -18,6 +18,8 @@ struct TransactionFormData {
     var selectedDate: Date = Date()
     var recurring: RecurringOption = .never
     var subcategoryIds: Set<String> = []
+    /// The merchant the payment is linked to (`TransactionMerchantRow`); nil: none.
+    var linkedMerchant: String?
 
     // MARK: - Computed Properties
 

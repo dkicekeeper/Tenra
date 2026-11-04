@@ -49,6 +49,14 @@ Closed loans surface in `LoansListView` under a collapsed "Closed" `DisclosureGr
 
 `LoanDetailView` when closed: `primaryAction`/`secondaryAction` are `nil` (paying a zero balance would drive `remainingPrincipal` negative and silently reopen the loan), "Change Rate" is hidden, the hero subtitle becomes "Closed <date>" (from `lastPaymentDate`), and a one-shot success banner fires on the `false → true` edge of `isPaidOffLoan`. The amortization schedule and payment history stay fully readable.
 
+## Its asset
+
+Above its cards, `LoanDetailView` shows the asset bought with the loan (an asset whose
+`linkedLoanAccountId` is the loan; a row that opens it), or, while the loan is owed, "Add asset",
+which opens the asset form with the loan picked ([assets.md](assets.md) §Screens). Ten writes once
+about a long annuity without an asset (`AssistantNotices.loansWithoutAsset`,
+[assistant.md](assistant.md) §6).
+
 ## This Month's Payment Status
 
 `LoanMonthStatusService` (pure, `Services/Loans/`) gives each active loan `LoanMonthStatus`: `.paid(nextDueDate:)` or `.unpaid(dueDate:isOverdue:)`, shown by `LoanMonthStatusBadge` under the type badge in `LoanCard` and in the `LoanDetailView` hero. Pinned by `LoanMonthStatusTests`.
@@ -155,7 +163,7 @@ Both return `Transaction?` for the caller to persist, nil for a future date: a p
 
 ## Link-Payments UI
 
-Existing transactions are linked to a loan, a subscription or a deposit through one shared view, `LinkPaymentsView` (`Views/Components/LinkPayments/LinkPaymentsView.swift`): filters, sheets, search, caches, background scan, haptics. Wrappers: `LoanLinkPaymentsView` (`Options.loan`), `SubscriptionLinkPaymentsView` (`Options.subscription`), `DepositLinkInterestView` (`Options.deposit`).
+Existing transactions are linked to a loan, a subscription, a deposit or a merchant through one shared view, `LinkPaymentsView` (`Views/Components/LinkPayments/LinkPaymentsView.swift`): filters, sheets, search, caches, background scan, haptics. Wrappers: `LoanLinkPaymentsView` (`Options.loan`), `SubscriptionLinkPaymentsView` (`Options.subscription`), `DepositLinkInterestView` (`Options.deposit`), the merchant screen's "Link payments" (`Options.merchant`). A transaction's subcategories for the subcategory filter and the search are the linked ones (`TransactionStore.subcategoryIdsByTransactionId`) plus the legacy `Transaction.subcategory`: the legacy field alone is empty for anything tagged in a form or by the import.
 
 ⚠️ **Don't duplicate the state machine**: wrap `LinkPaymentsView` with a `findCandidates` and a `performLink` `@Sendable` closure.
 

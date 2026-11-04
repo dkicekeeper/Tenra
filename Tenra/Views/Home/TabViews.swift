@@ -46,7 +46,7 @@ struct AnalyticsTab: View {
                     premium.markSoftPaywallShown()
                     showingSoftPaywall = true
                 }
-                .paywallSheet(isPresented: $showingSoftPaywall)
+                .paywallSheet(isPresented: $showingSoftPaywall, source: .insights)
         }
         .softScrollEdges()
     }
@@ -78,7 +78,8 @@ struct VoiceTab: View {
                 PremiumLockedView(
                     icon: "mic.fill",
                     title: String(localized: "premium.locked.voice.title"),
-                    message: String(localized: "premium.locked.voice.message")
+                    message: String(localized: "premium.locked.voice.message"),
+                    source: .voice
                 )
                 .navigationTitle(String(localized: "tab.voice"))
                 .navigationBarTitleDisplayMode(.inline)
@@ -150,7 +151,8 @@ struct OCRTab: View {
                 PremiumLockedView(
                     icon: "doc.viewfinder",
                     title: String(localized: "premium.locked.import.title"),
-                    message: String(localized: "premium.locked.import.message")
+                    message: String(localized: "premium.locked.import.message"),
+                    source: .importStatement
                 )
                 .navigationTitle(String(localized: "tab.ocr"))
                 .navigationBarTitleDisplayMode(.inline)

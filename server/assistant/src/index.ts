@@ -1,12 +1,13 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { AttestError, checkAssertion, isValidKeyId, issueChallenge, registerKey } from "./appattest";
 import { buildParams, donePayload, errorPayload } from "./claude";
-import { readConfig, type Env } from "./config";
+import { readConfig, type Config, type Env } from "./config";
 import { resolveTier, UpstreamError } from "./entitlement";
 import { PROMPT_VERSION } from "./prompt";
 import { RENDER_REPLY } from "./tools";
-import { consumeCall, type Tier } from "./quota";
+import { consumeCall, consumeValuation, type Tier } from "./quota";
 import { isValidUserId, parseTurnRequest, PROTOCOL_VERSION, ValidationError } from "./validate";
+import { parseValuationRequest, valuate, VALUATION_PROMPT_VERSION, valuationConfig } from "./valuation";
 
 // POST /v1/turn — one model call of the assistant loop. The app runs the loop: it sends the
 // conversation, executes the tools Claude asks for on the phone, and calls again with the
@@ -17,6 +18,10 @@ import { isValidUserId, parseTurnRequest, PROTOCOL_VERSION, ValidationError } fr
 //                           shows the reply's text while it streams (older apps ignore it)
 //   done  {content, ...}    the assistant turn to append verbatim, plus usage and quota
 //   error {code, retryable}
+//
+// POST /v1/valuation — what an asset is worth by comparable listings found with web search
+// (src/valuation.ts): one JSON answer, off until VALUATION_ENABLED. Same App Attest, user and
+// Pro rules as a turn, its own monthly count.
 //
 // Every turn must come from the real app: it carries an App Attest assertion over its body
 // (x-tenra-key, x-tenra-assertion). The user id counts only inside that signed body, so a
@@ -34,8 +39,11 @@ const fail = (status: number, code: string, extra: Record<string, unknown> = {})
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url);
-    if (url.pathname === "/v1/health") return json({ ok: true, protocol: PROTOCOL_VERSION, prompt: PROMPT_VERSION });
-    const routes = ["/v1/turn", "/v1/attest", "/v1/attest/challenge"];
+    if (url.pathname === "/v1/health") {
+      const valuation = readConfig(env).valuationEnabled ? VALUATION_PROMPT_VERSION : null;
+      return json({ ok: true, protocol: PROTOCOL_VERSION, prompt: PROMPT_VERSION, valuation });
+    }
+    const routes = ["/v1/turn", "/v1/valuation", "/v1/attest", "/v1/attest/challenge"];
     if (!routes.includes(url.pathname)) return fail(404, "not_found");
 
     const config = readConfig(env);
@@ -52,6 +60,7 @@ export default {
     }
     if (request.method !== "POST") return fail(405, "method");
     if (url.pathname === "/v1/attest") return attest(request, env, config.appId);
+    if (url.pathname === "/v1/valuation") return valuation(request, env, config);
 
     const userId = request.headers.get("x-tenra-user");
     if (!isValidUserId(userId)) return fail(401, "user");
@@ -65,36 +74,9 @@ export default {
       throw error;
     }
 
-    // The body must be signed by a key attested on a real device, Pro or not. Checked before
-    // anything that costs a RevenueCat call or a KV write, so a request that is not from the
-    // app stops here.
-    const keyId = request.headers.get("x-tenra-key");
-    const assertion = request.headers.get("x-tenra-assertion");
-    if (!isValidKeyId(keyId) || !assertion || assertion.length > 4096) return fail(401, "attest", { reason: "missing" });
-    try {
-      await checkAssertion(env.QUOTA, keyId, assertion, bytes, config.appId);
-    } catch (error) {
-      if (error instanceof AttestError) return fail(401, "attest", { reason: error.reason });
-      throw error;
-    }
-
-    // Pro is looked up only for the user id inside the signed body: the header alone is a claim
-    // anyone could copy from someone's Support ID. Apps before 1.6 (build 27) don't sign it and
-    // count as free.
-    if (turn.user !== undefined && turn.user !== userId) return fail(401, "user");
-    let tier: Tier = "free";
-    if (turn.user !== undefined) {
-      try {
-        tier = await resolveTier(env.QUOTA, env.REVENUECAT_SECRET_KEY, turn.user);
-      } catch (error) {
-        if (error instanceof UpstreamError) {
-          console.log(`entitlement ${error.status}`);
-          return fail(502, "entitlement_unavailable");
-        }
-        throw error;
-      }
-    }
-    const quotaId = tier === "free" ? `key:${keyId}` : userId;
+    const caller = await identify(request, env, config, bytes, turn.user, userId);
+    if (caller instanceof Response) return caller;
+    const { tier, quotaId } = caller;
 
     const quota = await consumeCall(env.QUOTA, quotaId, tier, config);
     if (!quota.allowed) return fail(429, quota.reason === "global" ? "busy" : "quota", { tier, used: quota.used, limit: quota.limit });
@@ -109,7 +91,7 @@ export default {
     ctx.waitUntil(
       (async () => {
         try {
-          const stream = client.beta.messages.stream(buildParams(config, turn.messages));
+          const stream = client.beta.messages.stream(buildParams(config, turn.messages, tier));
           // The content block that is render_reply's call, while it streams.
           let replyIndex: number | undefined;
           for await (const event of stream) {
@@ -139,6 +121,88 @@ export default {
     });
   },
 } satisfies ExportedHandler<Env>;
+
+interface Caller {
+  tier: Tier;
+  /** Free calls count per attested key, Pro ones per customer. */
+  quotaId: string;
+}
+
+/** Checks the body's App Attest assertion, then the Pro status of the user named inside it. */
+async function identify(request: Request, env: Env, config: Config, bytes: Uint8Array, bodyUser: string | undefined, userId: string): Promise<Caller | Response> {
+  // The body must be signed by a key attested on a real device, Pro or not. Checked before
+  // anything that costs a RevenueCat call or a KV write, so a request that is not from the
+  // app stops here.
+  const keyId = request.headers.get("x-tenra-key");
+  const assertion = request.headers.get("x-tenra-assertion");
+  if (!isValidKeyId(keyId) || !assertion || assertion.length > 4096) return fail(401, "attest", { reason: "missing" });
+  try {
+    await checkAssertion(env.QUOTA, keyId, assertion, bytes, config.appId);
+  } catch (error) {
+    if (error instanceof AttestError) return fail(401, "attest", { reason: error.reason });
+    throw error;
+  }
+
+  // Pro is looked up only for the user id inside the signed body: the header alone is a claim
+  // anyone could copy from someone's Support ID. Apps before 1.6 (build 27) don't sign it and
+  // count as free.
+  if (bodyUser !== undefined && bodyUser !== userId) return fail(401, "user");
+  let tier: Tier = "free";
+  if (bodyUser !== undefined) {
+    try {
+      tier = await resolveTier(env.QUOTA, env.REVENUECAT_SECRET_KEY, bodyUser);
+    } catch (error) {
+      if (error instanceof UpstreamError) {
+        console.log(`entitlement ${error.status}`);
+        return fail(502, "entitlement_unavailable");
+      }
+      throw error;
+    }
+  }
+  return { tier, quotaId: tier === "free" ? `key:${keyId}` : userId };
+}
+
+async function valuation(request: Request, env: Env, config: Config): Promise<Response> {
+  if (!config.valuationEnabled) return fail(503, "disabled");
+  const userId = request.headers.get("x-tenra-user");
+  if (!isValidUserId(userId)) return fail(401, "user");
+
+  const bytes = new Uint8Array(await request.arrayBuffer());
+  let body;
+  try {
+    body = parseValuationRequest(new TextDecoder().decode(bytes));
+  } catch (error) {
+    if (error instanceof ValidationError) return fail(400, "invalid", { reason: error.code });
+    throw error;
+  }
+
+  const caller = await identify(request, env, config, bytes, body.user, userId);
+  if (caller instanceof Response) return caller;
+  const { tier, quotaId } = caller;
+
+  const quota = await consumeValuation(env.QUOTA, quotaId, tier, config);
+  if (!quota.allowed) return fail(429, quota.reason === "global" ? "busy" : "quota", { tier, used: quota.used, limit: quota.limit });
+
+  const client = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY, maxRetries: 1 });
+  const now = new Date();
+  try {
+    const valuation = await valuate((params) => client.beta.messages.stream(params).finalMessage(), valuationConfig(config), body.asset, now);
+    if (valuation.searches.every((s) => s.outcome.refused)) return fail(422, "refused");
+    return json({
+      ...valuation.result,
+      searches: valuation.searches.reduce((n, s) => n + s.outcome.usage.searches, 0),
+      model: valuation.model,
+      fallback: valuation.usedFallback,
+      prompt: VALUATION_PROMPT_VERSION,
+      tier,
+      quota: { used: quota.used, limit: quota.limit },
+    });
+  } catch (error) {
+    const payload = errorPayload(error);
+    console.log(`valuation error ${payload.code}${error instanceof Anthropic.APIError ? ` ${error.status}` : ""}`);
+    return fail(502, "upstream", { ...payload });
+  }
+}
 
 async function attest(request: Request, env: Env, appId: string): Promise<Response> {
   let input: { keyId?: unknown; attestation?: unknown; challenge?: unknown };

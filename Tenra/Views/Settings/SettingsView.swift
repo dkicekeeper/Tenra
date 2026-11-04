@@ -154,7 +154,7 @@ struct SettingsView: View {
         // Here, not on exportImportSection: that view is a multi-row Section, and in
         // a List a modifier on it is copied onto every row. Two presenters on one
         // binding opened the paywall and dropped it at once.
-        .paywallSheet(isPresented: $showingImportPaywall) {
+        .paywallSheet(isPresented: $showingImportPaywall, source: .importStatement) {
             // After unlocking Pro, continue straight into the import picker.
             showingImportPicker = true
         }
@@ -339,6 +339,8 @@ struct SettingsView: View {
                                 .foregroundStyle(AppColors.textSecondary)
                         }
                     }
+                    // The whole row copies, not only its text.
+                    .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
                 .rowDividerInset(AppIconSize.lg + AppSpacing.md)

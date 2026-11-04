@@ -2,16 +2,15 @@
 
 Version 1.8, drafted 2026-11-03. 1.7.1 was never submitted: by the owner's decision (2026-11-03)
 its changes go out with 1.8 (the 1.7.1 notes are in this file's history). `prepare-version`
-(Actions → App Store Connect, [asc.md](asc.md)) pastes each block into App Store Connect → Tenra →
+(Actions → App Store Connect, [asc.md](../asc.md)) pastes each block into App Store Connect → Tenra →
 1.8 → the locale → "What's New in This Version"; en-GB (search in Kazakhstan) carries ru's text
 in its own block. No em dashes (user rule). Names of screens as the app shows them in each locale
 (`tab.analytics`, `insights.netWorth.title`, `settings.siri.header`, `bankSetup.title`). No bank
-or listing-site names in store texts (App Review 2.3.7). When 1.8 ships, move this file to
-`archive/release-notes-1.8.md`.
+or listing-site names in store texts (App Review 2.3.7). In the store since 2026-11-04 (build 72).
 
 New since 1.7 (in the store since 2026-10-24):
-- Assets and net worth ([domains/assets.md](domains/assets.md),
-  [plan-assets-roadmap.md](plan-assets-roadmap.md)): homes, land, cars and other things with
+- Assets and net worth ([domains/assets.md](../domains/assets.md),
+  [plan-assets-roadmap.md](../plan-assets-roadmap.md)): homes, land, cars and other things with
   their value, growth, rent and upkeep, depreciation with the value in three years, the sale's
   money, the loan's asset; net worth in Analytics; Ten sees assets and drafts them. Adding
   assets is Pro.
@@ -19,7 +18,7 @@ New since 1.7 (in the store since 2026-10-24):
   2026-11-03).
 - Charts on DesignKit 8.4 (the current period in the middle, the options menu), a category's
   months with its budget, the "By day" insight for a year, merchants that join a brand's points
-  ([plan-charts-by-day.md](archive/plans/plan-charts-by-day.md)).
+  ([plan-charts-by-day.md](plans/plan-charts-by-day.md)).
 - Rows on DesignKit 8.6.0: 12 pt above and below every row, a divider between rows on every
   list, a section's header 12 pt above its card (the row audit, PR #127; in the store build 72).
   Not in the store texts: a polish.
@@ -239,13 +238,13 @@ Tenra 1.8의 새로운 기능:
 
 ## Submission checklist (1.8)
 
-Status 2026-11-04: submitted for review by the founder (step 9), build 72 (the rows of PR #127
-on top of build 71), with What's New, Promotional Text and the review notes. Left to the founder:
-step 6 (App Privacy) and step 8 (RevenueCat paywall item). This file moves to
-`docs/archive/release-notes-1.8.md` once 1.8 is in the store.
+Status 2026-11-04: in the store since 2026-11-04 (build 72, the rows of PR #127 on top of build
+71), submitted by the founder the same morning, with What's New, Promotional Text and the review
+notes. Step 6 (App Privacy) and step 8 (RevenueCat paywall item) stay with the founder
+([promotion-plan.md](../promotion-plan.md) §7).
 
 1. **CI green** on the branch, then a TestFlight build from `main` (Actions → TestFlight,
-   [asc.md](asc.md)).
+   [asc.md](../asc.md)).
 2. **Device check**: builds 66-69 checked by the founder (2026-11-03: everything is fine). The
    store build adds the Pro gate of the estimate: without Pro, the asset menu's "Estimate from
    listings" opens the paywall; with Pro, it finds listings (the server is on).

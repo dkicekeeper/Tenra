@@ -40,9 +40,12 @@ struct OnboardingAccountStep: View {
                     title: $vm.draftAccount.name,
                     balance: $balanceText,
                     currency: .constant(vm.draftCurrency),
-                    titlePlaceholder: String(localized: "account.namePlaceholder"),
+                    // The onboarding's own hint ("e.g. Kaspi"), shown until the name is tapped:
+                    // DesignKit's AnimatedTitleInput hides its placeholder while focused, so an
+                    // auto-focused field showed a newcomer only a cursor and a disabled "Next".
+                    titlePlaceholder: String(localized: "onboarding.account.namePlaceholder"),
                     config: Self.heroConfig,
-                    autoFocusTitle: true
+                    autoFocusTitle: false
                 )
                 .padding(.top, AppSpacing.md)
             }

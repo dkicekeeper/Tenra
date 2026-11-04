@@ -37,18 +37,24 @@ with the commit of every fix, are in
      the tiles, but tapping a tile only closes the hint; the form opens on the second tap. Cause:
      DesignKit `Spotlight` gives the dim layer `.contentShape(Rectangle())`, so the cut-out takes
      the tap too (`onTap` or `current = nil`); fix there (let the cut-out pass the tap) or pass
-     an `onTap` from `ContentView` that opens the tile.
+     an `onTap` from `ContentView` that opens the tile. **Fixed in DesignKit 8.6.1** (the cut-out passes
+     the tap; branch `claude/first-run-fixes`, not pushed yet): lands with Tenra's bump to 8.6.1.
   4. *The first Analytics is discouraging.* After one expense: "Финансы: Требует внимания 0/100"
      in red, "Топ категория ↘ +100.0%" (a down arrow with a plus, no earlier period), "Среднедневные
      расходы 116.67 ₸" (one day spread over the month; a dot decimal in ru). Hide the score and
-     trends until there is enough data.
+     trends until there is enough data. **In main since 2026-11-05:** the daily average of the
+     period under way divides by the days so far, and the placeholder score is not shown. Left for
+     the owner: the top category's badge shows its share as a trend ("↘ +34%" means 34% of
+     spending), and amounts use "." as the decimal separator in every language (DesignKit's
+     `AmountDisplayConfiguration`).
   5. *Account step:* the name field shows no placeholder while focused (cursor, "0" and a disabled
-     "Далее"); the "0" is the balance, with no label or ₸.
+     "Далее"); the "0" is the balance, with no label or ₸. **The hint shows since 2026-11-05** ("e.g. Kaspi",
+     not auto-focused); the balance's label and ₸ wait for the owner (layout).
   6. *Categories step:* 10 of 15 names cut ("Проду…", "Здоров…"), 4 per row with labels above the
      icons, no visible selected state ("Отметьте те…" with all 15 preselected). Layout: owner's
      call first (rule in CLAUDE.md).
   7. *Smaller:* the currency step's title sits over the scrolling list; "Все валюты" offers ATS
-     (Austrian schilling); in the add form the date buttons cover "Добавить подкатегорию" and
+     (Austrian schilling; **fixed in DesignKit 8.6.1**, current currencies only); in the add form the date buttons cover "Добавить подкатегорию" and
      "Останется на счёте"; the auto-capture rows have no chevron.
   8. *Not checked (Simulator has no App Attest):* on a phone the action tab is Ten, whose field
      says "Спросите о деньгах…", not "запишите трату"; a typed expense is drafted on the phone.

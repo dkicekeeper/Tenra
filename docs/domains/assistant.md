@@ -304,6 +304,8 @@ The app runs the agent loop, because the tools run on the phone: one server call
 - The model does not see `tool_use` ids, so blocks do not reference them: the phone puts a
   `result_id` (`r1`, `r2`… per thread) into every successful result, and a block's `source` is it.
 - The first message of a thread carries `<app_context>`: today's date, locale, base currency,
+  `date_format` (2026-11-03 in the person's date style) and `week_starts` (their first weekday; the
+  prompt follows both when present, older apps send neither),
   accounts and categories with ids, the held assets with ids (always a line, "none" when empty: it
   tells the prompt this app version has assets, and an older one, with no line, gets no asset
   tools), `valuation: listings` (this version runs `estimate_asset_value`), the facts, the goals

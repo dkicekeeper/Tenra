@@ -91,11 +91,22 @@ nonisolated enum AgentContextBuilder {
         let debts = snapshot.debts.map { "\($0.id) \"\(clean($0.person))\" (\($0.direction), \($0.currency))" }.joined(separator: "; ")
         let assets = snapshot.assets.map { "\($0.id) \"\(clean($0.name))\" (\($0.kind), \($0.currency))" }.joined(separator: "; ")
 
+        // The person's date format (Settings › Formats) shown on a fixed sample, and the day
+        // their week starts on, so Ten writes dates and weeks the way the app shows them.
+        let formats = FormatSettings.snapshot
+        var sampleCalendar = Calendar(identifier: .gregorian)
+        sampleCalendar.timeZone = .current
+        let sample = sampleCalendar.date(from: DateComponents(year: 2026, month: 11, day: 3, hour: 12)) ?? snapshot.today
+        let dateFormat = DateFormatters.day(sample, includeYear: true, style: formats.dateStyle)
+        let weekStarts = weekdays[((formats.firstWeekday - 1) % 7 + 7) % 7]
+
         var lines = [
             "<app_context>",
             "today: \(date) (\(weekday))",
             "locale: \(snapshot.locale)",
             "base_currency: \(snapshot.baseCurrency)",
+            "date_format: \(dateFormat)",
+            "week_starts: \(weekStarts)",
             "accounts: \(accounts)",
             "expense categories: \(expense)",
             "income categories: \(income)",

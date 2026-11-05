@@ -40,6 +40,11 @@ describe("buildParams", () => {
     expect(SYSTEM_PROMPT).toContain(RENDER_REPLY);
   });
 
+  it("tells Ten to follow the date format and first weekday of the app context", () => {
+    expect(SYSTEM_PROMPT).toContain("date_format");
+    expect(SYSTEM_PROMPT).toContain("week_starts");
+  });
+
   it("ends the tool list with render_reply", () => {
     expect(TOOLS.at(-1)?.name).toBe(RENDER_REPLY);
   });

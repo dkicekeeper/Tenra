@@ -584,10 +584,10 @@ nonisolated enum AppCalendar { static var current: Calendar }  // Calendar.curre
 Образец суммы не нужен: промпт уже запрещает цифры денег в тексте, суммы показывают карточки,
 а они следуют настройкам.
 
-- [ ] **Шаг 1. Тесты:** контекст со стилем `dots` содержит `date_format: 03.11.2026`; vitest:
+- [x] **Шаг 1. Тесты:** контекст со стилем `dots` содержит `date_format: 03.11.2026`; vitest:
   промпт содержит `date_format`. **Шаг 2–4.** Красные, реализация, зелёные (`npm test` в
   `server/assistant`).
-- [ ] **Шаг 5.** Коммит «feat(assistant): Ten writes dates in the chosen format». Выкатка
+- [x] **Шаг 5.** Коммит «feat(assistant): Ten writes dates in the chosen format». Выкатка
   Worker по [domains/assistant.md](domains/assistant.md) §12.
 
 ### Задача 11 (Tenra): кэши отформатированного текста и документы

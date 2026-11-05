@@ -286,6 +286,15 @@ final class InsightsViewModel {
         loadInsightsBackground()
     }
 
+    /// Recomputes now, whether Analytics shows or not, and returns once the pass is over (its
+    /// results applied, the weekly digest and the signals handed over). A format change needs
+    /// it: `invalidateAndRecompute` waits for Analytics to appear, and the digest and the
+    /// pending signals are written from the pass.
+    func refreshInsightsAndWait() async {
+        refreshInsights()
+        await recomputeTask?.value
+    }
+
     func selectFilter(_ filter: InsightFilter) {
         selectedFilter = filter
     }

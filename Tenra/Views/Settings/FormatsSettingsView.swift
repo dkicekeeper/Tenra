@@ -3,10 +3,12 @@
 //  Tenra
 //
 //  Settings › Formats (docs/plan-formats.md §3.2): how the app writes dates and amounts. A live
-//  preview on top (a day, three operations and the week), then the five choices, each a
-//  DesignKit picker row whose options are samples. Every choice starts at the region's;
-//  "Use the region's format" returns all five there (FormatSettings). A change rebuilds the
-//  tab roots (`FormatSettings.version`, TabViews), not their stacks, so this page stays open.
+//  preview on top (a day, three operations and the week), then the five choices. Each row shows
+//  the current option by its short name and opens its options (FormatOptionsPage): a sample per
+//  option with what it means under it, as in the approved mockup. Every choice starts at the
+//  region's; "Use the region's format" returns all five there (FormatSettings). A change
+//  rebuilds the tab roots (`FormatSettings.version`, TabViews), not their stacks, so this page
+//  stays open.
 //
 
 import SwiftUI
@@ -23,28 +25,28 @@ struct FormatsSettingsView: View {
                 preview
 
                 FormSection(header: String(localized: "formats.section.dates")) {
-                    UniversalRow(
-                        String(localized: "formats.date"),
-                        accessory: .picker(dateBinding, options: dateOptions)
+                    choiceRow(
+                        "formats.date", id: "formats.date", value: dateValue,
+                        footer: "formats.date.footer", options: dateOptions, selection: dateBinding
                     )
-                    UniversalRow(
-                        String(localized: "formats.weekStart"),
-                        accessory: .picker(weekStartBinding, options: weekStartOptions)
+                    choiceRow(
+                        "formats.weekStart", id: "formats.weekStart", value: weekdayName(formats.resolved.firstWeekday),
+                        footer: "formats.weekStart.footer", options: weekStartOptions, selection: weekStartBinding
                     )
                 }
 
                 FormSection(header: String(localized: "formats.section.amounts"), footer: footer) {
-                    UniversalRow(
-                        String(localized: "formats.separators"),
-                        accessory: .picker(separatorsBinding, options: separatorOptions)
+                    choiceRow(
+                        "formats.separators", id: "formats.separators", value: separatorsValue,
+                        footer: "formats.separators.footer", options: separatorOptions, selection: separatorsBinding
                     )
-                    UniversalRow(
-                        String(localized: "formats.symbol"),
-                        accessory: .picker(symbolBinding, options: symbolOptions)
+                    choiceRow(
+                        "formats.symbol", id: "formats.symbol", value: symbolName(formats.resolved.symbol),
+                        footer: "formats.symbol.footer", options: symbolOptions, selection: symbolBinding
                     )
-                    UniversalRow(
-                        String(localized: "formats.cents"),
-                        accessory: .picker(centsBinding, options: centsOptions)
+                    choiceRow(
+                        "formats.cents", id: "formats.cents", value: centsName(formats.resolved.cents),
+                        footer: "formats.cents.footer", options: centsOptions, selection: centsBinding
                     )
                 }
 
@@ -68,6 +70,31 @@ struct FormatsSettingsView: View {
         .navigationBarTitleDisplayMode(.inline)
     }
 
+    /// A choice: its title, the current option's short name, and its options on a page.
+    private func choiceRow<Value: Hashable>(
+        _ titleKey: String.LocalizationValue,
+        id: String,
+        value: String,
+        footer footerKey: String.LocalizationValue,
+        options: [FormatOption<Value>],
+        selection: Binding<Value>
+    ) -> some View {
+        let title = String(localized: titleKey)
+        return UniversalRow(
+            title,
+            value: value,
+            accessory: .navigation {
+                FormatOptionsPage(
+                    title: title,
+                    footer: String(localized: footerKey),
+                    options: options,
+                    selection: selection
+                )
+            }
+        )
+        .accessibilityIdentifier(id)
+    }
+
     // MARK: - Preview
 
     /// A day, two expenses, an income and the week, as the app will write them. Rebuilt on
@@ -76,7 +103,7 @@ struct FormatsSettingsView: View {
     private var preview: some View {
         FormSection(header: String(localized: "formats.preview")) {
             VStack(alignment: .leading, spacing: 0) {
-                Text(DateFormatters.day(Date(), includeYear: true, style: formats.resolved.dateStyle))
+                Text(dateValue)
                     .font(AppTypography.caption)
                     .foregroundStyle(AppColors.Text.secondary)
                 previewRow("groceries", type: .expense, amount: 12_345.5)
@@ -141,25 +168,20 @@ struct FormatsSettingsView: View {
             .foregroundStyle(AppColors.Text.secondary)
     }
 
+    /// DesignKit's badges: the first day filled, the others tinted.
     private func weekDays(_ days: [String]) -> some View {
         HStack(spacing: AppSpacing.xxs) {
             ForEach(Array(days.enumerated()), id: \.offset) { index, day in
-                if index == 0 {
-                    Badge(day, style: .filled)
-                } else {
-                    // A badge's text and height, without its capsule.
-                    Text(verbatim: day)
-                        .font(AppTypography.caption)
-                        .foregroundStyle(AppColors.Text.primary)
-                        .padding(.horizontal, AppSpacing.xs)
-                        .padding(.vertical, AppSpacing.xxs)
-                        .fixedSize()
-                }
+                Badge(
+                    day,
+                    color: index == 0 ? AppColors.accent : AppColors.Text.secondary,
+                    style: index == 0 ? .filled : .tinted
+                )
             }
         }
     }
 
-    // MARK: - Choices
+    // MARK: - Resolving
 
     private var region: ResolvedFormats {
         FormatPreferences.region(for: formats.regionLocale)
@@ -177,17 +199,35 @@ struct FormatsSettingsView: View {
         DesignKitBridge.amountConfiguration(resolving(edit))
     }
 
-    /// "If any (1 234 and 1 234,50)": the option's name and what it does.
-    private func named(_ nameKey: String.LocalizationValue, _ samples: [String]) -> String {
-        "\(String(localized: nameKey)) (\(samples.formatted(.list(type: .and))))"
+    // MARK: - Date
+
+    /// Today in the current style, with its year (the row's value and the preview's day).
+    private var dateValue: String {
+        DateFormatters.day(Date(), includeYear: true, style: formats.resolved.dateStyle)
     }
 
-    // Date: today in each style, as a date of this year reads (ISO always has its year; the
-    // preview above shows the year). With the year "5 November 2026" did not fit the row's value.
-
-    private var dateOptions: [(label: String, value: DateStyle)] {
+    private var dateOptions: [FormatOption<DateStyle>] {
         let today = Date()
-        return DateStyle.allCases.map { (DateFormatters.day(today, includeYear: false, style: $0), $0) }
+        return DateStyle.allCases.map { style in
+            let hint: String = switch style {
+            case .words: String(localized: wordsOrderKey)
+            case .dots: String(localized: "formats.date.dots")
+            case .slash: String(localized: "formats.date.slash")
+            case .iso: String(localized: "formats.date.iso")
+            }
+            return FormatOption(title: DateFormatters.day(today, includeYear: true, style: style), hint: hint, value: style)
+        }
+    }
+
+    /// The words style keeps the language's order ("3 ноября 2026", "November 3, 2026",
+    /// "2026年11月3日"): its description says which.
+    private var wordsOrderKey: String.LocalizationValue {
+        let template = DateFormatter.dateFormat(fromTemplate: "dMMMMyyyy", options: 0, locale: .current) ?? "d MMMM yyyy"
+        let pattern = template.replacingOccurrences(of: "'[^']*'", with: "", options: .regularExpression)
+        let position = { (field: Character) in pattern.firstIndex(of: field) ?? pattern.endIndex }
+        if position("y") < position("M") { return "formats.date.wordsYearFirst" }
+        if position("M") < position("d") { return "formats.date.wordsMonthFirst" }
+        return "formats.date.wordsDayFirst"
     }
 
     private var dateBinding: Binding<DateStyle> {
@@ -197,17 +237,20 @@ struct FormatsSettingsView: View {
         )
     }
 
-    // First day of the week: Monday, Sunday and the region's own day.
+    // MARK: - First day of the week
 
-    private var weekStartOptions: [(label: String, value: Int)] {
-        var days = FormatPreferences.weekStartOptions(regionFirstWeekday: region.firstWeekday)
-        // A day chosen in another region stays listed, so the row still shows it.
-        if !days.contains(formats.resolved.firstWeekday) { days.append(formats.resolved.firstWeekday) }
+    private func weekdayName(_ day: Int) -> String {
         let names = AppCalendar.current.standaloneWeekdaySymbols
-        return days.map { day in
-            let name = names.indices.contains(day - 1) ? names[day - 1] : String(day)
-            return (name.capitalized(with: .current), day)
-        }
+        let name = names.indices.contains(day - 1) ? names[day - 1] : String(day)
+        return name.capitalized(with: .current)
+    }
+
+    /// Monday, Sunday and the region's own day.
+    private var weekStartOptions: [FormatOption<Int>] {
+        var days = FormatPreferences.weekStartOptions(regionFirstWeekday: region.firstWeekday)
+        // A day chosen in another region stays listed, so it still shows as chosen.
+        if !days.contains(formats.resolved.firstWeekday) { days.append(formats.resolved.firstWeekday) }
+        return days.map { FormatOption(title: weekdayName($0), hint: nil, value: $0) }
     }
 
     private var weekStartBinding: Binding<Int> {
@@ -217,18 +260,34 @@ struct FormatsSettingsView: View {
         )
     }
 
-    // Separators: thousands and cents in each.
+    // MARK: - Separators
 
     private var separatorChoices: [AmountSeparators] {
         FormatPreferences.separatorOptions(region: region)
     }
 
-    private var separatorOptions: [(label: String, value: AmountSeparators)] {
+    /// Thousands and cents in `option`'s marks.
+    private func separatorSample(_ option: AmountSeparators) -> String {
+        // The region's own grouping (India's 1,23,456.78) shows only past a hundred thousand.
+        let sample = option == .region ? 123_456.78 : 1_234.56
+        return amounts { $0.separators = option }.formattedNumber(sample, alwaysShowFraction: true) ?? ""
+    }
+
+    private var separatorsValue: String {
+        separatorSample(selectedSeparators)
+    }
+
+    private var separatorOptions: [FormatOption<AmountSeparators>] {
         separatorChoices.map { option in
-            let configuration = amounts { $0.separators = option }
-            // The region's own grouping (India's 1,23,456.78) shows only past a hundred thousand.
-            let sample = option == .region ? 123_456.78 : 1_234.56
-            return (configuration.formattedNumber(sample, alwaysShowFraction: true) ?? "", option)
+            let hint: String = switch option {
+            case .spaceComma: String(localized: "formats.separators.spaceComma")
+            case .commaDot: String(localized: "formats.separators.commaDot")
+            case .dotComma: String(localized: "formats.separators.dotComma")
+            case .apostropheDot: String(localized: "formats.separators.apostropheDot")
+            case .spaceDot: String(localized: "formats.separators.spaceDot")
+            case .region: String(localized: "formats.separators.region")
+            }
+            return FormatOption(title: separatorSample(option), hint: hint, value: option)
         }
     }
 
@@ -250,15 +309,22 @@ struct FormatsSettingsView: View {
         } ?? .region
     }
 
-    // Currency symbol: after or before, with the base currency.
+    // MARK: - Currency symbol
 
-    private var symbolOptions: [(label: String, value: AmountSymbolPosition)] {
-        [(AmountSymbolPosition.after, "formats.symbol.after"), (.before, "formats.symbol.before")]
-            .map { position, nameKey in
-                let sample = Formatting.formatCurrencySmart(
-                    1_234, currency: currency, configuration: amounts { $0.symbol = position })
-                return (named(String.LocalizationValue(nameKey), [sample]), position)
-            }
+    private func symbolName(_ position: AmountSymbolPosition) -> String {
+        switch position {
+        case .after: String(localized: "formats.symbol.after")
+        case .before: String(localized: "formats.symbol.before")
+        }
+    }
+
+    /// The base currency's sample in each place, its name under it.
+    private var symbolOptions: [FormatOption<AmountSymbolPosition>] {
+        [AmountSymbolPosition.after, .before].map { position in
+            let sample = Formatting.formatCurrencySmart(
+                1_234, currency: currency, configuration: amounts { $0.symbol = position })
+            return FormatOption(title: sample, hint: symbolName(position), value: position)
+        }
     }
 
     private var symbolBinding: Binding<AmountSymbolPosition> {
@@ -268,17 +334,30 @@ struct FormatsSettingsView: View {
         )
     }
 
-    // Cents: what each does to a whole amount and to one with cents.
+    // MARK: - Cents
 
-    private var centsOptions: [(label: String, value: CentsDisplay)] {
+    private func centsName(_ cents: CentsDisplay) -> String {
+        switch cents {
+        case .whenPresent: String(localized: "formats.cents.whenPresent")
+        case .always: String(localized: "formats.cents.always")
+        case .never: String(localized: "formats.cents.never")
+        }
+    }
+
+    /// Each mode's name, and under it what it does to a whole amount and to one with cents.
+    private var centsOptions: [FormatOption<CentsDisplay>] {
         CentsDisplay.allCases.map { cents in
             let configuration = amounts { $0.cents = cents }
             let number = { (value: Double) in configuration.formattedNumber(value) ?? "" }
-            switch cents {
-            case .whenPresent: return (named("formats.cents.whenPresent", [number(1_234), number(1_234.5)]), cents)
-            case .always: return (named("formats.cents.always", [number(1_234)]), cents)
-            case .never: return (named("formats.cents.never", [number(1_234.5)]), cents)
+            let hint = switch cents {
+            case .whenPresent:
+                String(format: String(localized: "formats.cents.bothSamples"), number(1_234), number(1_234.5))
+            case .always:
+                number(1_234)
+            case .never:
+                String(format: String(localized: "formats.cents.rounded"), number(1_234.5))
             }
+            return FormatOption(title: centsName(cents), hint: hint, value: cents)
         }
     }
 
@@ -296,6 +375,47 @@ struct FormatsSettingsView: View {
         let code = formats.regionLocale.region?.identifier
         let name = code.flatMap { Locale.current.localizedString(forRegionCode: $0) } ?? code ?? ""
         return String(format: String(localized: "formats.footer"), name)
+    }
+}
+
+// MARK: - Options page
+
+/// One option of a choice: its sample (or name) and what it means.
+struct FormatOption<Value: Hashable> {
+    let title: String
+    let hint: String?
+    let value: Value
+}
+
+/// The options of one choice (the mockup's list): each its sample with what it means under it,
+/// the chosen one marked, and the choice's footer. A tap chooses it and goes back to Formats.
+private struct FormatOptionsPage<Value: Hashable>: View {
+    let title: String
+    let footer: String
+    let options: [FormatOption<Value>]
+    @Binding var selection: Value
+
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        ScrollView {
+            FormSection(footer: footer) {
+                ForEach(Array(options.enumerated()), id: \.offset) { _, option in
+                    UniversalRow(
+                        option.title,
+                        hint: option.hint,
+                        accessory: .checkmark(isSelected: option.value == selection) {
+                            selection = option.value
+                            dismiss()
+                        }
+                    )
+                }
+            }
+            .screenPadding()
+            .padding(.vertical, AppSpacing.md)
+        }
+        .navigationTitle(title)
+        .navigationBarTitleDisplayMode(.inline)
     }
 }
 

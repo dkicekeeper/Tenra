@@ -18,7 +18,7 @@ struct SettingsCloudSection: View {
             UniversalRow(
                 String(localized: "settings.cloud.backups"),
                 icon: "externaldrive",
-                value: ByteCountFormatter.string(fromByteCount: storageUsed, countStyle: .file),
+                value: NumberDisplay.fileSize(storageUsed),
                 accessory: .navigation { backupsDestination }
             )
         }

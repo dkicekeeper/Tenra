@@ -59,6 +59,36 @@ struct AppCoordinatorFormatsTests {
         #expect(signals.rewritesPendingOnNextPass)
     }
 
+    /// The weekly digest and the pending signals are rebuilt by the insights pass, so a format
+    /// change recomputes even while Analytics is not on screen (`invalidateAndRecompute` alone
+    /// waits for it to appear).
+    @Test func formatChangeRecomputesInsightsWithoutAnalytics() async throws {
+        let saved = AmountDisplayConfiguration.shared
+        let signals = InsightSignalService.shared
+        let savedFlag = signals.rewritesPendingOnNextPass
+        defer {
+            AmountDisplayConfiguration.shared = saved
+            signals.rewritesPendingOnNextPass = savedFlag
+            FormatSettings.resetSnapshot()
+        }
+        let coordinator = makeCoordinator()
+        await coordinator.accountsViewModel.addAccount(name: "Card", initialBalance: 0, currency: "KZT")
+        let account = try #require(coordinator.accountsViewModel.accounts.first)
+        _ = try await coordinator.transactionStore.add(Transaction(
+            id: "", date: "2026-11-02", description: "Salary",
+            amount: 1_234.5, currency: "KZT",
+            type: .income, category: "", accountId: account.id
+        ))
+        #expect(!coordinator.insightsViewModel.hasComputed)
+
+        coordinator.formatSettings.set { $0.separators = .commaDot }
+
+        for _ in 0..<1000 where !coordinator.insightsViewModel.hasComputed {
+            try? await Task.sleep(for: .milliseconds(10))
+        }
+        #expect(coordinator.insightsViewModel.hasComputed)
+    }
+
     @Test func sameChoiceChangesNothing() {
         let saved = AmountDisplayConfiguration.shared
         let signals = InsightSignalService.shared

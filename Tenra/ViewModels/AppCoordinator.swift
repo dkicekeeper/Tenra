@@ -932,18 +932,27 @@ class AppCoordinator {
     private func formatsDidChange(_ formats: ResolvedFormats) {
         // DesignKit's amounts and its dates (FormattedAmountText, the calendars, the pickers).
         DesignKitBridge.apply(formats)
-        // Insight text is formatted when computed. The recompute also reschedules the weekly
-        // digest from it, and the signals already scheduled get its text.
+        // The signals already scheduled get the next pass's text (InsightSignalService).
         InsightSignalService.shared.rewritesPendingOnNextPass = true
-        insightsViewModel.invalidateAndRecompute()
-        Task { [weak self] in
-            guard let self else { return }
-            // The subscriptions' reminders carry their amounts.
-            await self.transactionStore.rescheduleSubscriptionNotifications()
-            // The widgets: a fresh snapshot, and a redraw even when its figures are the same.
-            await WidgetSnapshotBuilder.refresh(coordinator: self)
-            WidgetCenter.shared.reloadAllTimelines()
-        }
+        formatsRefresh.request(())
+    }
+
+    /// What a format change rebuilds ahead of time, one run at a time: changes made during a
+    /// run collapse into one more (CoalescingTask).
+    @ObservationIgnored private lazy var formatsRefresh = CoalescingTask<Void> { [weak self] _ in
+        await self?.rebuildFormattedText()
+    }
+
+    private func rebuildFormattedText() async {
+        // Insight text is formatted when computed: a pass now, Analytics on screen or not
+        // (`invalidateAndRecompute` would wait for it). The pass reschedules the weekly digest
+        // and hands the pending signals their new text.
+        await insightsViewModel.refreshInsightsAndWait()
+        // The subscriptions' reminders carry their amounts.
+        await transactionStore.rescheduleSubscriptionNotifications()
+        // The widgets: a fresh snapshot, and a redraw even when its figures are the same.
+        await WidgetSnapshotBuilder.refresh(coordinator: self)
+        WidgetCenter.shared.reloadAllTimelines()
     }
 
     /// Observe the single FX-rate notifier so EVERY rate change — a late prewarm landing

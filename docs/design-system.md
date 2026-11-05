@@ -344,14 +344,20 @@ and redeem (free users), About.
   the same row, pushing `CurrencyPickerView`.
 - **Formats** (`FormatsSettingsView`, docs/plan-formats.md §3.2): a preview `FormSection` (a
   day by `DateFormatters.day`, three `TransactionRow`s in the onboarding's categories, the week
-  from its first day with that day a filled `Badge`; rebuilt on `FormatSettings.version`, shown
-  while Home's eye hides amounts), then Dates and Amounts of `.picker` rows whose option labels
-  are samples (today without its year, which would not fit the row's value; cents and the
-  symbol: the name and its sample, "If any (1 234 and 1 234,50)"),
-  built with `DesignKitBridge.amountConfiguration` before an option is chosen; the footer names
-  the region; "Use the region's format" is a secondary `DSButton`, only while `isCustomized`.
-  A change rebuilds each tab's root inside its `NavigationStack` (`.id(formatSettings.version)`,
-  TabViews), never the stack, so the open pages stay.
+  from its first day as `Badge`s, that day filled; rebuilt on `FormatSettings.version`, shown
+  while Home's eye hides amounts), then Dates and Amounts: `UniversalRow(title, value: <short
+  name>, accessory: .navigation)` rows (today with its year, the day, "1 234,56", "After the
+  number", "If any") opening `FormatOptionsPage`, a `FormSection` of checkmark rows whose title
+  is the option's sample and whose hint says what it means ("Space and comma", "1 234 and
+  1 234,50"), with the choice's footer; a tap chooses and goes back. Not DesignKit's `.picker`:
+  one label per option did not fit the row and lost the descriptions. Samples are built with
+  `DesignKitBridge.amountConfiguration` before an option is chosen; the footer names the
+  region; "Use the region's format" is a secondary `DSButton`, only while `isCustomized`. A
+  change rebuilds each tab's root inside its `NavigationStack` (`.id(formatSettings.version)`,
+  TabViews; not Voice and Import), never the stack, and the roots open their pages through
+  value links registered outside the rebuilt part, so the open pages stay. On Settings itself
+  the Pro hero (renewal date) and Backups (size, `NumberDisplay.fileSize`) rebuild on the
+  version.
 - **Assistant** (`SettingsAssistantSection`): the cloud and "Ten chats" toggles and "What Ten
   knows about me" (`AssistantMemoryView`: a glass `FormSection` of `ItemRow(style: .large)`
   without a chevron, since a row opens an editor sheet, and a long press edits or forgets;

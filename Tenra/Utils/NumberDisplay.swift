@@ -66,4 +66,18 @@ nonisolated enum NumberDisplay {
     static func integer(_ value: Int, formats: ResolvedFormats = FormatSettings.snapshot) -> String {
         decimal(Double(value), fractionDigits: 0, formats: formats)
     }
+
+    /// A file size ("1.2 MB", the backups on Settings): ByteCountFormatter's text with the
+    /// chosen marks in place of the locale's.
+    static func fileSize(_ bytes: Int64, formats: ResolvedFormats = FormatSettings.snapshot) -> String {
+        var marks = AmountDisplayConfiguration()
+        marks.decimalSeparator = formats.decimalSeparator
+        marks.thousandsSeparator = formats.groupingSeparator
+        marks.separatorsOverrideLocale = true
+        return Formatting.applyConfiguredSeparators(
+            ByteCountFormatter.string(fromByteCount: bytes, countStyle: .file),
+            locale: .current,
+            configuration: marks
+        )
+    }
 }

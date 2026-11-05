@@ -23,7 +23,7 @@ nonisolated struct BackupMetadata: Codable, Sendable, Identifiable {
     var isAutomatic: Bool? = nil
 
     var formattedFileSize: String {
-        ByteCountFormatter.string(fromByteCount: fileSize, countStyle: .file)
+        NumberDisplay.fileSize(fileSize)
     }
 
     var formattedDate: String {

@@ -17,6 +17,8 @@ struct SettingsView: View {
     // MARK: - Dependencies (Observable - no wrappers needed!)
 
     @Environment(PremiumManager.self) private var premium
+    /// Settings › Formats: the sections that write a date or a number rebuild on its version.
+    @Environment(FormatSettings.self) private var formats
 
     let settingsViewModel: SettingsViewModel
 
@@ -67,7 +69,10 @@ struct SettingsView: View {
             // data, what can't be undone and About. DesignKit 8.0.0: glass sections on the page.
             ScrollView {
                 VStack(spacing: AppSpacing.xl) {
+                    // The renewal date (DateFormatters.day) in the chosen format; not the
+                    // page's content, which holds the link to Formats.
                     SettingsProHero()
+                        .id(formats.version)
                     VStack(spacing: AppSpacing.xl) {
                         generalSection
                         notificationsSection
@@ -79,7 +84,9 @@ struct SettingsView: View {
                             categoriesViewModel: categoriesViewModel,
                             accountsViewModel: accountsViewModel
                         )
+                        // The backups' size in the chosen separators.
                         cloudSection
+                            .id(formats.version)
                         exportImportSection
                         dangerZoneSection
                         #if DEBUG

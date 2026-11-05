@@ -74,4 +74,12 @@ struct NumberDisplayVariantTests {
         #expect(NumberDisplay.percent(0, signed: true, formats: f) == "0%")
         #expect(NumberDisplay.percent(12, formats: f) == "12%")
     }
+
+    /// The backups' sizes on Settings: ByteCountFormatter writes the locale's mark ("1.2 MB",
+    /// "1,2 МБ"); the chosen one replaces it, whatever the test host's locale.
+    @Test func fileSizeUsesTheChosenDecimalSeparator() {
+        let text = NumberDisplay.fileSize(1_234_567, formats: formats("x", "y"))
+        #expect(text.contains("1x2"))
+        #expect(!text.contains("1.2") && !text.contains("1,2"))
+    }
 }

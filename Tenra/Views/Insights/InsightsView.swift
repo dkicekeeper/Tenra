@@ -15,6 +15,10 @@ struct InsightsView: View {
     // MARK: - Dependencies
 
     @Bindable var insightsViewModel: InsightsViewModel
+    /// `FormatSettings.version` on the Analytics tab: the feed (not the stack's destinations,
+    /// registered after it) rebuilds when the date or amount format changes, so a page opened
+    /// from it stays open (TabViews).
+    var formatsVersion = 0
 
     // MARK: - State
 
@@ -48,11 +52,17 @@ struct InsightsView: View {
             // ContentRevealModifier owns its own opacity on later loads.
             .animation(AppAnimation.smooth, value: insightsViewModel.hasComputed)
         }
+        // A new format rebuilds the feed only: the destinations below and the pages they
+        // opened stay. Every card opens its page by value for that (InsightsPage).
+        .id(formatsVersion)
         .navigationTitle(String(localized: "insights.title"))
         .navigationBarTitleDisplayMode(.large)
         .navigationDestination(for: Insight.self) { insight in
             insightDetailView(for: insight)
                 .navigationTransition(.zoom(sourceID: insight.id, in: insightNamespace))
+        }
+        .navigationDestination(for: InsightsPage.self) { page in
+            insightsPage(page)
         }
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
@@ -215,7 +225,7 @@ struct InsightsView: View {
     @ViewBuilder
     private var healthScoreCard: some View {
         if let hs = insightsViewModel.healthScore, hs.isAvailable {
-            NavigationLink(destination: FinancialHealthDetailView(score: hs)) {
+            NavigationLink(value: InsightsPage.healthScore) {
                 HealthScoreCardView(score: hs)
                     .contentShape(Rectangle())
             }
@@ -241,7 +251,7 @@ struct InsightsView: View {
             LazyVGrid(columns: columns, spacing: AppSpacing.md) {
                 // Balance is a point-in-time figure, so it drills into the wealth
                 // insight (per-account composition) rather than a period trend.
-                statCardLink(destination: balanceDestination) {
+                statCardLink(.balance) {
                     InsightsStatCard(
                         title: String(localized: "insights.availableBalance"),
                         amount: insightsViewModel.availableBalance,
@@ -251,7 +261,7 @@ struct InsightsView: View {
                         trendSeries: .wealth
                     )
                 }
-                statCardLink(destination: summaryDetail(focus: .netFlow)) {
+                statCardLink(.summary(.netFlow)) {
                     InsightsStatCard(
                         title: String(localized: "insights.netFlow"),
                         amount: netFlow,
@@ -263,7 +273,7 @@ struct InsightsView: View {
                         trendSeries: .cashFlow
                     )
                 }
-                statCardLink(destination: summaryDetail(focus: .expenses)) {
+                statCardLink(.summary(.expenses)) {
                     InsightsStatCard(
                         title: String(localized: "insights.expenses"),
                         amount: insightsViewModel.currentBucketExpenses,
@@ -275,7 +285,7 @@ struct InsightsView: View {
                         trendSeries: .spending
                     )
                 }
-                statCardLink(destination: summaryDetail(focus: .income)) {
+                statCardLink(.summary(.income)) {
                     InsightsStatCard(
                         title: String(localized: "insights.income"),
                         amount: insightsViewModel.currentBucketIncome,
@@ -293,14 +303,29 @@ struct InsightsView: View {
 
     /// One tappable stat card. Each card is its own link so VoiceOver announces four
     /// buttons instead of reading the whole grid as a single one.
-    private func statCardLink<Destination: View, Label: View>(
-        destination: Destination,
+    private func statCardLink<Label: View>(
+        _ page: InsightsPage,
         @ViewBuilder label: () -> Label
     ) -> some View {
-        NavigationLink(destination: destination) {
+        NavigationLink(value: page) {
             label().contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+    }
+
+    /// A page a card opens, read from the view model when it shows (live, as the feed).
+    @ViewBuilder
+    private func insightsPage(_ page: InsightsPage) -> some View {
+        switch page {
+        case .healthScore:
+            if let score = insightsViewModel.healthScore {
+                FinancialHealthDetailView(score: score)
+            }
+        case .summary(let focus):
+            summaryDetail(focus: focus)
+        case .balance:
+            balanceDestination
+        }
     }
 
     /// Wealth insight (per-account composition) when it exists — it is computed from the
@@ -528,6 +553,17 @@ struct InsightsView: View {
             InsightDetailView(insight: insight, currency: insightsViewModel.baseCurrency)
         }
     }
+}
+
+// MARK: - Pages
+
+/// The pages the feed's own cards open (the health score, the stat cards), as values: their
+/// destination is registered on the stack outside the feed a format change rebuilds, so an
+/// open one stays. A view link inside the feed closed with it.
+enum InsightsPage: Hashable {
+    case healthScore
+    case summary(SummaryDetailFocus)
+    case balance
 }
 
 // MARK: - Previews

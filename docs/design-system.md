@@ -342,7 +342,7 @@ and redeem (free users), About.
   .picker(…))` (the chosen value in `bodySmall` secondary, pushing a `List` of checkmark rows
   with system search when long; `NavigationPickerRow(style: .list)` before DesignKit 7.0.0); the base currency is a `NavigationLink` with
   the same row, pushing `CurrencyPickerView`.
-- **Formats** (`FormatsSettingsView`, docs/plan-formats.md §3.2): a preview `FormSection` (a
+- **Formats** (`FormatsSettingsView`, docs/archive/plans/plan-formats.md §3.2): a preview `FormSection` (a
   day by `DateFormatters.day`, three `TransactionRow`s in the onboarding's categories, the week
   from its first day as `Badge`s, that day filled; rebuilt on `FormatSettings.version`, shown
   while Home's eye hides amounts), then Dates and Amounts: `UniversalRow(title, value: <short

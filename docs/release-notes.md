@@ -12,7 +12,7 @@ New since 1.8 (in the store since 2026-11-04):
 - Amounts in the region's number format (decimal and grouping separators); Analytics on day
   one: the daily average of the period under way divides by the days so far, the health score
   waits for income, the top category and top merchant say their share in words.
-- Settings › Formats ([plan-formats.md](plan-formats.md)): the date style, the first day of
+- Settings › Formats ([plan-formats.md](archive/plans/plan-formats.md)): the date style, the first day of
   the week, separators, the currency symbol's place and cents, each the region's until chosen;
   free. The weekly summary comes on the chosen first day (Settings › Insight alerts names it); Ten's
   kept messages, notifications and the widget follow a change.

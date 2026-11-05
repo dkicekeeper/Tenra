@@ -2,7 +2,7 @@
 //  FormatsSettingsView.swift
 //  Tenra
 //
-//  Settings › Formats (docs/plan-formats.md §3.2): how the app writes dates and amounts. A live
+//  Settings › Formats (docs/design-system.md, Formats; design in docs/archive/plans/plan-formats.md §3.2): how the app writes dates and amounts. A live
 //  preview on top (a day, three operations and the week), then the five choices. Each row shows
 //  the current option by its short name and opens its options (FormatOptionsPage): a sample per
 //  option with what it means under it, as in the approved mockup. Every choice starts at the

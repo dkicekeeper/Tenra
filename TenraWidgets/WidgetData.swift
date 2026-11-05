@@ -84,13 +84,15 @@ struct WidgetData: Codable, Equatable {
         return String(localized: "widget.today.untilMonthEnd")
     }
 
-    /// "25 Oct" in words; the other styles are numbers without a year.
+    // Copy of the app's rules: amounts in DesignKit's AmountDisplayConfiguration (set by
+    // DesignKitBridge.apply), dates in DateFormatters.day; keep the two in step.
+    /// "25 Oct" in words; dots "dd.MM" and slash "MM/dd" drop the year, ISO keeps it.
     private func dateText(_ date: Date) -> String {
         let pattern: String
         switch formats?.dateStyle {
         case "dots": pattern = "dd.MM"
-        case "slash": pattern = "dd/MM"
-        case "iso": pattern = "MM-dd"
+        case "slash": pattern = "MM/dd"
+        case "iso": pattern = "yyyy-MM-dd"
         default: return date.formatted(.dateTime.day().month(.abbreviated))
         }
         let formatter = DateFormatter()

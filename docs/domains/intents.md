@@ -187,7 +187,10 @@ Pinned by `TransactionDraftResolverTests`, `TransactionDraftCommitTests`,
 
 ### 3.4 `SpendingQueryService`
 
-A bounded `NSFetchRequest` over `TransactionEntity`: `date` between the period start and now,
+A bounded `NSFetchRequest` over `TransactionEntity`: `date` between the period start and now
+(today from midnight; "this week" from the first day of the week in `AppCalendar.current`, the day
+chosen in Settings › Formats or the region's, read from the App Group in a cold intent process;
+"this month" from the 1st),
 `type` in the types that `summaryContribution(isFuture: false)` counts as expense (expenses
 and loan payments, so Siri agrees with the home summary). Independent of `TransactionStore`
 load state by design.

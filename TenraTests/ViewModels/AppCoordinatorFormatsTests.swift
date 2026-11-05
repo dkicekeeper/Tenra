@@ -89,6 +89,73 @@ struct AppCoordinatorFormatsTests {
         #expect(coordinator.insightsViewModel.hasComputed)
     }
 
+    /// A coordinator with one card and an expense today in "Food" (the top category).
+    private func makeCoordinatorWithAnExpense(_ amount: Double) async throws -> AppCoordinator {
+        let coordinator = makeCoordinator()
+        await coordinator.accountsViewModel.addAccount(name: "Card", initialBalance: 0, currency: "KZT")
+        let account = try #require(coordinator.accountsViewModel.accounts.first)
+        coordinator.transactionStore.addCategory(
+            CustomCategory(id: "food", name: "Food", colorHex: "#22c55e", type: .expense)
+        )
+        _ = try await coordinator.transactionStore.add(Transaction(
+            id: "", date: FastDateParser.string(from: Date()), description: "Lunch",
+            amount: amount, currency: "KZT",
+            type: .expense, category: "Food", accountId: account.id
+        ))
+        return coordinator
+    }
+
+    /// Insight text is written when a pass computes it, so a format change recomputes: after a
+    /// separators change the top category's value carries the new marks.
+    @Test func formatChangeRewritesTheTopCategoryValue() async throws {
+        let saved = AmountDisplayConfiguration.shared
+        let signals = InsightSignalService.shared
+        let savedFlag = signals.rewritesPendingOnNextPass
+        defer {
+            AmountDisplayConfiguration.shared = saved
+            signals.rewritesPendingOnNextPass = savedFlag
+            FormatSettings.resetSnapshot()
+        }
+        let coordinator = try await makeCoordinatorWithAnExpense(1_234.5)
+        let insights = coordinator.insightsViewModel
+        coordinator.formatSettings.set { $0.separators = .dotComma }
+        await insights.refreshInsightsAndWait()
+        let before = try #require(insights.precomputedInsight(id: "top_spending", granularity: .month))
+        #expect(before.metric.formattedValue.contains("1.234,5"), "\(before.metric.formattedValue)")
+
+        coordinator.formatSettings.set { $0.separators = .commaDot }
+
+        for _ in 0..<1000 where !(insights.precomputedInsight(id: "top_spending", granularity: .month)?.metric.formattedValue.contains("1,234.5") ?? false) {
+            try? await Task.sleep(for: .milliseconds(10))
+        }
+        let after = try #require(insights.precomputedInsight(id: "top_spending", granularity: .month))
+        #expect(after.metric.formattedValue.contains("1,234.5"), "\(after.metric.formattedValue)")
+    }
+
+    /// The pass a format change waits for, cancelled by a data change while Analytics is hidden
+    /// (`invalidateAndRecompute` then only marks the insights stale and waits for the tab): the
+    /// wait asks again, so it still ends with a whole pass, the one that reschedules the weekly
+    /// digest and hands the signals their text.
+    @Test func waitingForInsightsOutlivesACancelledPass() async throws {
+        let coordinator = try await makeCoordinatorWithAnExpense(500)
+        let insights = coordinator.insightsViewModel
+
+        let waiting = Task { await insights.refreshInsightsAndWait() }
+        var polls = 0
+        while !insights.isLoading, polls < 1000 {
+            await Task.yield()
+            polls += 1
+        }
+        #expect(insights.isLoading)
+        insights.invalidateAndRecompute()
+        await waiting.value
+
+        #expect(!insights.isStale)
+        // The last write of a whole pass: every granularity, the week the digest is built from.
+        #expect(insights.precomputedInsight(id: "top_spending", granularity: .week) != nil)
+        #expect(insights.precomputedInsight(id: "top_spending", granularity: .month) != nil)
+    }
+
     @Test func sameChoiceChangesNothing() {
         let saved = AmountDisplayConfiguration.shared
         let signals = InsightSignalService.shared

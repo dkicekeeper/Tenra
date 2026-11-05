@@ -465,14 +465,49 @@ Rendering a money amount?
     └── AmountDisplayConfiguration.formatter (cached; never .makeNumberFormatter())
 ```
 
-### Separators
+### Formats
 
-Amounts take the decimal and grouping separators of the phone's region (1 234,56 in Kazakhstan,
-1,234.56 in the US, 1.234,56 in Germany): `DesignKitBridge.configure()` sets them on
-`AmountDisplayConfiguration.shared` from `FormatSettings.snapshot` (the region's by default, the
-chosen ones after Settings › Formats).
-DesignKit's own default is "." and " " in every language. Stored amounts, CSV and parsing are
-not affected (`AmountFormatter` keeps its fixed format).
+Dates and numbers follow the phone's region (1 234,56 ₸ and "3 ноября" in Kazakhstan, 1,234.56
+and "November 3" in the US) until the person picks their own in Settings › Formats
+(`FormatsSettingsView`): the date style, the first day of the week, the separators, the currency
+symbol's place and cents. Each item follows the region until it is chosen. Free.
+
+- **`FormatSettings`** (`Services/Settings/`, MainActor, owned by `AppCoordinator`, in the
+  environment): the choices (`FormatChoices`, App Group defaults, key `settings.formats`, so the
+  widget reads them) resolved against the region (`FormatPreferences.resolve` → `ResolvedFormats`).
+  `FormatSettings.snapshot` is the thread-safe copy for code off the main actor or running before
+  the coordinator exists (`InsightsService`, `TimeFilter`, the widget snapshot, intents).
+  `version` grows on each change; `onChange` calls `AppCoordinator.formatsDidChange`.
+- **`DesignKitBridge.apply(_:)`** carries the resolved formats into DesignKit:
+  `AmountDisplayConfiguration.shared` (separators, the secondary grouping of 1,23,456, the
+  symbol's place, cents) and the `DesignKitDateFormat.day` hook (`MonthCalendar`,
+  `DateRangePickerSheet`). `configure()` calls it at launch, `formatsDidChange` on each change.
+  DesignKit's own default is "." and " " in every language.
+- **`NumberDisplay`** (`Utils/`): every number that is not money (percentages, rates, areas,
+  months, file sizes) with the chosen separators.
+- **`DateFormatters.day(_:includeYear:abbreviated:style:locale:)`**: every day date in the chosen
+  style (§6).
+- **`AppCalendar.current`** (`Utils/`): the calendar of every week and month boundary, with the
+  chosen first weekday: "This week", weekly budgets, Analytics' weeks, the digest's day, Siri's
+  "this week". MainTabView sets it as `\.calendar`, so system `DatePicker`s and DesignKit's
+  calendars start the week on the same day.
+
+**Display numbers and day dates only through these**: money through `FormattedAmountText` /
+`formatCurrencySmart` (above), other numbers through `NumberDisplay`, day dates through
+`DateFormatters.day`, week boundaries through `AppCalendar`. Not `String(format: "%.1f%%")`,
+`.formatted(.percent)`, a `DateFormatter` with a fixed `d MMMM` for display, or `Calendar.current`
+for a week. Stored amounts, CSV, the numbers in Ten's context and parsing typed amounts keep their
+fixed format (`AmountFormatter`); stored dates keep `yyyy-MM-dd` (`FastDateParser`, POSIX).
+
+**A change applies without a relaunch** (CLAUDE.md rule 12). Text written ahead of time is
+written again by `AppCoordinator.rebuildFormattedText`: an insights pass whether Analytics shows or
+not (it reschedules the weekly digest and rewrites the pending signals), Ten's kept messages
+(`AssistantInbox.rewriteTexts`: each keeps the values its words are written from), the
+subscription reminders and the widget snapshot. The tab roots rebuild on `formatSettings.version`
+(`.id`; not Voice and Import, whose state is in flight). A cache of formatted text keys on the
+formats: history's section labels (the date style), Analytics' category pages
+(`CategoryDeepDiveKey.formats`). A new cache of formatted text does the same, or is rebuilt in
+`rebuildFormattedText`.
 
 ### Hidden amounts
 

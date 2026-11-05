@@ -211,7 +211,7 @@ private struct AssistantChartCard: View {
         )
     }
 
-    /// This month or this week ("2026-10", a week's Monday): not over, so its bar fades and
+    /// This month or this week ("2026-10", a week's first day): not over, so its bar fades and
     /// the banner says "so far".
     private func isUnfinished(_ group: AgentReplyData.ChartGroup) -> Bool {
         let calendar = Calendar.current
@@ -219,14 +219,14 @@ private struct AssistantChartCard: View {
         if group.id.count == 7, let month = FastDateParser.date(from: group.id + "-01") {
             return calendar.isDate(month, equalTo: now, toGranularity: .month)
         }
-        if let monday = FastDateParser.date(from: group.id),
-           let end = calendar.date(byAdding: .day, value: 7, to: monday) {
-            return monday <= now && now < end
+        if let weekStart = FastDateParser.date(from: group.id),
+           let end = calendar.date(byAdding: .day, value: 7, to: weekStart) {
+            return weekStart <= now && now < end
         }
         return false
     }
 
-    /// "2026-10" → "Oct"; a week's Monday → "13.10" (the locale's order).
+    /// "2026-10" → "Oct"; a week's first day → "13.10" (the locale's order).
     private func axisLabel(_ group: AgentReplyData.ChartGroup) -> String {
         if group.id.count == 7, let month = FastDateParser.date(from: group.id + "-01") {
             return month.formatted(.dateTime.month(.abbreviated))
@@ -258,7 +258,7 @@ private struct AssistantChartCard: View {
         }
     }
 
-    /// "2026-10" → "October 2026"; a week's Monday → a day date; anything else as it is.
+    /// "2026-10" → "October 2026"; a week's first day → a day date; anything else as it is.
     private func periodLabel(_ group: AgentReplyData.ChartGroup) -> String {
         guard chart.isTimeline else { return group.label }
         if group.id.count == 7, let month = FastDateParser.date(from: group.id + "-01") {

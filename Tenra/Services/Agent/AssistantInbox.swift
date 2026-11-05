@@ -55,6 +55,10 @@ struct AssistantNotice: Codable, Equatable, Identifiable, Sendable {
     /// `body` with its amounts as dots, shown while "hide amounts" is on. nil for a message
     /// without amounts and for one kept before the field existed (then the body shows).
     var hiddenBody: String? = nil
+    /// What `body` and `hiddenBody` are written from, so a change in Settings › Formats writes
+    /// them again (`AssistantInbox.rewriteTexts`). nil for an insight's message (its words come
+    /// from the insight) and for one kept before the field existed.
+    var text: AssistantNoticeText? = nil
     var mood: Mood
     /// What "Go through it" asks.
     var question: String
@@ -78,6 +82,46 @@ struct AssistantNotice: Codable, Equatable, Identifiable, Sendable {
         default: break
         }
         return "<notice>\n\(JSONValue.object(fields).jsonString())\n</notice>"
+    }
+}
+
+/// A message's words as a localized format and the values it is filled with, so the words can
+/// be written again in other formats: the amounts and the days follow Settings › Formats.
+struct AssistantNoticeText: Codable, Equatable, Sendable {
+    enum Value: Codable, Equatable, Sendable {
+        /// An amount; dots while "hide amounts" is on.
+        case amount(Double, currency: String)
+        /// A day date, its year only outside the current one.
+        case day(Date)
+        /// A week from its first day ("3 ноября 2026 – 9 ноября 2026").
+        case week(start: Date)
+        /// Words the formats leave as they are.
+        case text(String)
+    }
+
+    /// The `Localizable.strings` key of the format.
+    var format: String
+    var values: [Value]
+
+    var body: String { written(hidingAmounts: false) }
+    var hiddenBody: String { written(hidingAmounts: true) }
+
+    private func written(hidingAmounts: Bool) -> String {
+        let arguments: [String] = values.map { value in
+            switch value {
+            case let .amount(amount, currency):
+                hidingAmounts
+                    ? Formatting.hiddenAmount(currency: currency)
+                    : Formatting.formatCurrencySmart(amount, currency: currency)
+            case let .day(date):
+                DateFormatters.displayDateOmittingCurrentYear(date)
+            case let .week(start):
+                InsightGranularity.weekBannerLabel(startingOn: start).capitalizedFirstLetter
+            case let .text(text):
+                text
+            }
+        }
+        return String(format: String(localized: String.LocalizationValue(format)), arguments: arguments)
     }
 }
 
@@ -117,23 +161,19 @@ enum AssistantNotices {
         guard let currentIndex = weekPoints.lastIndex(where: { $0.key == currentKey }), currentIndex > 0 else { return nil }
         let week = weekPoints[currentIndex - 1]
         guard week.expenses > 0 else { return nil }
-        let weekLabel = InsightGranularity.week.headingLabel(for: week.key)
-        let spent = Formatting.formatCurrencySmart(week.expenses, currency: baseCurrency)
-        let hiddenSpent = Formatting.hiddenAmount(currency: baseCurrency)
-        var body = String(format: String(localized: "notification.weeklyDigest.body.simple"), weekLabel, spent)
-        var hiddenBody = String(format: String(localized: "notification.weeklyDigest.body.simple"), weekLabel, hiddenSpent)
+        let weekStart = InsightGranularity.week.periodStart(for: week.key)
+        var text = AssistantNoticeText(
+            format: "notification.weeklyDigest.body.simple",
+            values: [.week(start: weekStart), .amount(week.expenses, currency: baseCurrency)]
+        )
         var mood = AssistantNotice.Mood.idle
         if currentIndex > 1 {
             let before = weekPoints[currentIndex - 2]
             if before.expenses > 0 {
                 let change = (week.expenses - before.expenses) / before.expenses * 100
-                body = String(
-                    format: String(localized: "notification.weeklyDigest.body.withComparison"),
-                    weekLabel, spent, String(format: "%+.0f%%", change)
-                )
-                hiddenBody = String(
-                    format: String(localized: "notification.weeklyDigest.body.withComparison"),
-                    weekLabel, hiddenSpent, String(format: "%+.0f%%", change)
+                text = AssistantNoticeText(
+                    format: "notification.weeklyDigest.body.withComparison",
+                    values: [.week(start: weekStart), .amount(week.expenses, currency: baseCurrency), .text(String(format: "%+.0f%%", change))]
                 )
                 mood = change <= -5 ? .happy : (change >= 20 ? .concerned : .idle)
             }
@@ -142,8 +182,9 @@ enum AssistantNotices {
             id: "digest:\(week.key)",
             kind: .digest,
             title: String(localized: "notification.weeklyDigest.title"),
-            body: body,
-            hiddenBody: hiddenBody,
+            body: text.body,
+            hiddenBody: text.hiddenBody,
+            text: text,
             mood: mood,
             question: String(localized: "assistant.notice.ask.digest"),
             insightId: nil,
@@ -161,13 +202,17 @@ enum AssistantNotices {
         guard let tomorrow = calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: now)) else { return [] }
         return subscriptions.compactMap { series in
             guard let date = nextCharge(series), calendar.isDate(date, inSameDayAs: tomorrow) else { return nil }
-            let amount = Formatting.formatCurrencySmart(NSDecimalNumber(decimal: series.amount).doubleValue, currency: series.currency)
+            let text = AssistantNoticeText(
+                format: "assistant.notice.charge",
+                values: [.amount(NSDecimalNumber(decimal: series.amount).doubleValue, currency: series.currency)]
+            )
             return AssistantNotice(
                 id: "charge:\(series.id):\(FastDateParser.string(from: tomorrow))",
                 kind: .charge,
                 title: series.description,
-                body: String(format: String(localized: "assistant.notice.charge"), amount),
-                hiddenBody: String(format: String(localized: "assistant.notice.charge"), Formatting.hiddenAmount(currency: series.currency)),
+                body: text.body,
+                hiddenBody: text.hiddenBody,
+                text: text,
                 mood: .idle,
                 question: String(format: String(localized: "assistant.notice.ask.charge"), series.description),
                 insightId: nil,
@@ -184,17 +229,18 @@ extension AssistantNotices {
         guard let tomorrow = calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: now)) else { return [] }
         return debts.compactMap { debt in
             guard !debt.isSettled, let due = debt.dueDate, calendar.isDate(due, inSameDayAs: tomorrow) else { return nil }
-            let amount = Formatting.formatCurrencySmart(debt.remaining, currency: debt.currency)
             let owedToMe = debt.direction == .owedToMe
-            let format = owedToMe
-                ? String(localized: "assistant.notice.debt.owedToMe")
-                : String(localized: "assistant.notice.debt.iOwe")
+            let text = AssistantNoticeText(
+                format: owedToMe ? "assistant.notice.debt.owedToMe" : "assistant.notice.debt.iOwe",
+                values: [.amount(debt.remaining, currency: debt.currency)]
+            )
             return AssistantNotice(
                 id: "debt:\(debt.id):\(FastDateParser.string(from: tomorrow))",
                 kind: .debt,
                 title: debt.person,
-                body: String(format: format, amount),
-                hiddenBody: String(format: format, Formatting.hiddenAmount(currency: debt.currency)),
+                body: text.body,
+                hiddenBody: text.hiddenBody,
+                text: text,
                 mood: owedToMe ? .idle : .concerned,
                 question: String(format: String(localized: "assistant.notice.ask.debt"), debt.person),
                 insightId: nil,
@@ -222,20 +268,17 @@ extension AssistantNotices {
             guard span > 0, gone >= Self.goalGraceDays * 86_400 else { return nil }
             guard status.fraction < min(1, gone / span) - Self.goalBehindShare else { return nil }
             let month = String(FastDateParser.string(from: now).prefix(7))
+            let text = AssistantNoticeText(
+                format: "assistant.notice.goal.behind",
+                values: [.amount(monthly, currency: goal.currency), .day(deadline)]
+            )
             return AssistantNotice(
                 id: "goal:\(goal.id):\(month)",
                 kind: .goal,
                 title: goal.name,
-                body: String(
-                    format: String(localized: "assistant.notice.goal.behind"),
-                    Formatting.formatCurrencySmart(monthly, currency: goal.currency),
-                    DateFormatters.displayDateOmittingCurrentYear(deadline)
-                ),
-                hiddenBody: String(
-                    format: String(localized: "assistant.notice.goal.behind"),
-                    Formatting.hiddenAmount(currency: goal.currency),
-                    DateFormatters.displayDateOmittingCurrentYear(deadline)
-                ),
+                body: text.body,
+                hiddenBody: text.hiddenBody,
+                text: text,
                 mood: .concerned,
                 question: String(format: String(localized: "assistant.notice.ask.goal"), goal.name),
                 insightId: nil,
@@ -275,15 +318,17 @@ extension AssistantNotices {
         let year = calendar.component(.year, from: now)
         let half = calendar.component(.month, from: now) <= 6 ? 1 : 2
         return assets.filter { AssetValuationMath.isStale($0, today: now, calendar: calendar) }.map { asset in
-            let value = summary(asset)
-            let day = DateFormatters.displayDateOmittingCurrentYear(AssetValuationMath.lastValuedOn(asset))
-            let format = String(localized: "assistant.notice.asset.stale")
+            let text = AssistantNoticeText(
+                format: "assistant.notice.asset.stale",
+                values: [.amount(summary(asset).value, currency: asset.currency), .day(AssetValuationMath.lastValuedOn(asset))]
+            )
             return AssistantNotice(
                 id: "asset:\(asset.id):\(year)-H\(half)",
                 kind: .asset,
                 title: asset.name,
-                body: String(format: format, Formatting.formatCurrencySmart(value.value, currency: asset.currency), day),
-                hiddenBody: String(format: format, Formatting.hiddenAmount(currency: asset.currency), day),
+                body: text.body,
+                hiddenBody: text.hiddenBody,
+                text: text,
                 mood: .idle,
                 question: "",
                 insightId: nil,
@@ -420,6 +465,31 @@ final class AssistantInbox {
         let kept = notices.filter(subjects.contains)
         guard kept.count != notices.count else { return }
         notices = kept
+        save()
+    }
+
+    /// Settings › Formats changed: the kept messages, read or not, are written in the new
+    /// formats. One that keeps its values (`text`) is written from them; any other (an
+    /// insight's, one kept before the values were) takes the words of the fresh message with its
+    /// key in `candidates`; a message neither covers keeps its words.
+    func rewriteTexts(from candidates: [AssistantNotice]) {
+        var fresh: [String: AssistantNotice] = [:]
+        for candidate in candidates where fresh[candidate.id] == nil { fresh[candidate.id] = candidate }
+        var rewritten = notices
+        for index in rewritten.indices {
+            if let text = rewritten[index].text {
+                rewritten[index].body = text.body
+                rewritten[index].hiddenBody = text.hiddenBody
+            } else if let candidate = fresh[rewritten[index].id] {
+                rewritten[index].title = candidate.title
+                rewritten[index].body = candidate.body
+                rewritten[index].hiddenBody = candidate.hiddenBody
+                rewritten[index].question = candidate.question
+                rewritten[index].text = candidate.text
+            }
+        }
+        guard rewritten != notices else { return }
+        notices = rewritten
         save()
     }
 

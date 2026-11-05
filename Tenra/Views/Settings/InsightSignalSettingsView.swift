@@ -42,7 +42,7 @@ struct InsightSignalSettingsView: View {
                     }
 
                     FormSection {
-                        UniversalRow(String(localized: "settings.insightSignals.weeklyDigest"), icon: "calendar",
+                        UniversalRow(Self.digestLabel(calendar: AppCalendar.current), icon: "calendar",
                                      accessory: .toggle(digestBinding))
                     }
                 }
@@ -77,12 +77,21 @@ struct InsightSignalSettingsView: View {
         )
     }
 
+    /// "Weekly summary (Mon, 9:00)": the digest comes on the first day of the week
+    /// (Settings › Formats), so the label names that day.
+    nonisolated static func digestLabel(calendar: Calendar) -> String {
+        let symbols = calendar.shortStandaloneWeekdaySymbols
+        let index = calendar.firstWeekday - 1
+        let day = symbols.indices.contains(index) ? symbols[index] : ""
+        return String(format: String(localized: "settings.insightSignals.weeklyDigest"), day)
+    }
+
     private var digestBinding: Binding<Bool> {
         Binding(
             get: { settings.weeklyDigestEnabled },
             set: { newValue in
                 settings.weeklyDigestEnabled = newValue
-                // Turning the digest off removes the already-pending Monday push;
+                // Turning the digest off removes the already-pending push;
                 // turning it on re-arms on the next insights recompute.
                 if !newValue {
                     WeeklyDigestScheduler.shared.cancel()

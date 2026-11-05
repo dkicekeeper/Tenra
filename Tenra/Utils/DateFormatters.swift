@@ -74,7 +74,8 @@ enum DateFormatters {
     /// ja gives "11月3日", ko "11월 3일", de "3. November", es "3 de noviembre". Only when the
     /// localized no-year pattern is exactly `d MMMM` / `d MMM` (ru, uk, fr, it, tr, ...) does the
     /// year variant use the fixed `d MMMM yyyy`, so Russian stays "3 ноября 2026" without "г.".
-    private nonisolated static func dayPattern(style: DateStyle, includeYear: Bool, abbreviated: Bool, locale: Locale) -> String {
+    /// Settings › Formats reads the words pattern to name its order.
+    nonisolated static func dayPattern(style: DateStyle, includeYear: Bool, abbreviated: Bool, locale: Locale) -> String {
         switch style {
         case .iso: return "yyyy-MM-dd"
         case .dots: return includeYear ? "dd.MM.yyyy" : "dd.MM"

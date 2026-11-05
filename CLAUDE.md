@@ -190,7 +190,7 @@ New file needed?
 |---|---|
 | AppCoordinator, TransactionStore role, BalanceCoordinator, Repository pattern, CoreData v19 model | [docs/architecture.md](docs/architecture.md) |
 | `@Observable`, `Task`, `MainActor`, `nonisolated`, CoreData threading, `Sendable` | [docs/concurrency.md](docs/concurrency.md) |
-| `Views/Components/**`, a new screen or sheet, DesignKit in Tenra (bridge, adapters, screen patterns), amount formatting, dates and category styling, animations and effects | [docs/design-system.md](docs/design-system.md); tokens and components themselves: DesignKit's `docs/design-system.md` |
+| `Views/Components/**`, a new screen or sheet, DesignKit in Tenra (bridge, adapters, screen patterns), amount formatting, the formats of Settings › Formats (`FormatSettings`, `NumberDisplay`, `AppCalendar`), dates and category styling, animations and effects | [docs/design-system.md](docs/design-system.md); tokens and components themselves: DesignKit's `docs/design-system.md` |
 | `Services/Insights/**` (operational guide) | [docs/domains/insights.md](docs/domains/insights.md) |
 | `Services/Notifications/**` (insight signals, weekly digest, subscription reminders) | [docs/domains/insights.md](docs/domains/insights.md) §Signal notifications |
 | Per-metric formulas, granularity, severity behavior | [docs/domains/insights.md](docs/domains/insights.md) §Metric catalogue |

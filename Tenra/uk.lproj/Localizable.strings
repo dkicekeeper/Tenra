@@ -1070,7 +1070,7 @@
 "notification.weeklyDigest.title" = "Підсумки тижня";
 "notification.weeklyDigest.body.withComparison" = "%1$@: витрати %2$@ (%3$@ до минулого тижня)";
 "notification.weeklyDigest.body.simple" = "%1$@: витрати %2$@";
-"settings.insightSignals.weeklyDigest" = "Підсумки тижня (пн, 9:00)";
+"settings.insightSignals.weeklyDigest" = "Підсумки тижня (%@, 9:00)";
 
 "settings.insightSignals.title" = "Сигнали аналітики";
 "settings.insightSignals.master" = "Push про важливі сигнали";

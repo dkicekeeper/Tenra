@@ -45,6 +45,13 @@ struct WeekStartTests {
         #expect(fire == Self.date(2026, 11, 8, 9, calendar: sunday))
     }
 
+    /// Settings › Insight alerts names the digest's day: the first of the week.
+    @Test func digestLabelNamesTheFirstDay() {
+        #expect(InsightSignalSettingsView.digestLabel(calendar: sunday).contains(sunday.shortStandaloneWeekdaySymbols[0]))
+        #expect(InsightSignalSettingsView.digestLabel(calendar: monday).contains(monday.shortStandaloneWeekdaySymbols[1]))
+        #expect(!InsightSignalSettingsView.digestLabel(calendar: monday).contains("%@"))
+    }
+
     @Test func digestOnMonday() {
         let after = Self.date(2026, 11, 5, 12, calendar: monday)
         let fire = WeeklyDigestScheduler.nextFireDate(after: after, calendar: monday)

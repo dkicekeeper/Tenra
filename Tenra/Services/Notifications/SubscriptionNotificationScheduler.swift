@@ -51,8 +51,9 @@ class SubscriptionNotificationScheduler {
         let calendar = Calendar.current
         let center = UNUserNotificationCenter.current()
         
-        // Format amount and currency
-        let amountString = Formatting.formatCurrency(
+        // The amount as the app shows it (Settings › Formats, cents included); a format change
+        // reschedules these (AppCoordinator.rebuildFormattedText).
+        let amountString = Formatting.formatCurrencySmart(
             NSDecimalNumber(decimal: series.amount).doubleValue,
             currency: series.currency
         )

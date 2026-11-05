@@ -1070,7 +1070,7 @@
 "notification.weeklyDigest.title" = "주간 요약";
 "notification.weeklyDigest.body.withComparison" = "%1$@: 지출 %2$@ (전주 대비 %3$@)";
 "notification.weeklyDigest.body.simple" = "%1$@: 지출 %2$@";
-"settings.insightSignals.weeklyDigest" = "주간 요약 (월 9:00)";
+"settings.insightSignals.weeklyDigest" = "주간 요약 (%@ 9:00)";
 
 "settings.insightSignals.title" = "인사이트 알림";
 "settings.insightSignals.master" = "중요 신호 푸시 알림";

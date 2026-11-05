@@ -1,7 +1,8 @@
 # Форматы дат и сумм: дизайн
 
-Статус: дизайн утверждён основателем 2026-11-05. Сделаны задачи 1–3 (DesignKit 8.8.0, ветка
-`claude/formats`, ждёт PR после 8.7.0) и 4, 7 (в main); задачи 5, 6 и 8 в main (DesignKit 8.8.0 закреплён); 9–11 ждут своей очереди. Макет экранов (утверждён 2026-11-05):
+Статус: дизайн утверждён основателем 2026-11-05. Все 11 задач сделаны: 1–3 в DesignKit (выпуск
+8.8.0, закреплён в Tenra), 4–11 в main. Осталось финальное ревью всей ветки, после
+него план уходит в `docs/archive/plans/`. Макет экранов (утверждён 2026-11-05):
 https://claude.ai/artifact/GXmE57X7WjPsSZ4HrQmcdq
 
 Пометки: «(основатель)» решил владелец; «(моё решение)» решено при проектировании, его можно
@@ -567,10 +568,10 @@ nonisolated enum AppCalendar { static var current: Calendar }  // Calendar.curre
 система). `WidgetData.money` строит сумму из этих полей (те же правила, что задача 1), а
 `horizonLine` дату: `words` как сейчас, остальные числом без года.
 
-- [ ] **Шаг 1. Тест:** ключи JSON `formats`, `decimal`, `grouping`, `symbolBefore`, `cents`,
+- [x] **Шаг 1. Тест:** ключи JSON `formats`, `decimal`, `grouping`, `symbolBefore`, `cents`,
   `dateStyle` (как `WidgetSnapshotTests` закрепляет остальные); снимок без `formats`
   декодируется. **Шаг 2–4.** Красный, реализация, зелёный.
-- [ ] **Шаг 5.** Коммит «feat(widget): the chosen formats». Вид виджета владелец проверяет на
+- [x] **Шаг 5.** Коммит «feat(widget): the chosen formats». Вид виджета владелец проверяет на
   телефоне (у тестов нет доступа к цели виджета).
 
 ### Задача 10 (Tenra и сервер): даты в ответах Тэна
@@ -596,14 +597,15 @@ nonisolated enum AppCalendar { static var current: Calendar }  // Calendar.curre
 `grep -rln 'formatCurrencySmart\|DateFormatters\.\|NumberDisplay\.' Tenra/ViewModels Tenra/Services`
 (13 файлов на 2026-11-05), `docs/`.
 
-- [ ] **Шаг 1.** Для каждого места, где отформатированная строка хранится дольше одного вызова
+- [x] **Шаг 1.** Для каждого места, где отформатированная строка хранится дольше одного вызова
   (`Insight.metric.formattedValue`, подписи, тексты входящих Тэна, заголовки секций истории),
   убедиться, что `onChange` её пересобирает, или добавить `FormatSettings.version` в ключ.
   Тест на одно хранимое место: после смены разделителей `formattedValue` у инсайта
   «Топ категория» с новым знаком.
-- [ ] **Шаг 2.** Документы: `docs/design-system.md` §5 (раздел «Separators» становится
+- [x] **Шаг 2.** Документы: `docs/design-system.md` §5 (раздел «Separators» становится
   «Formats»: `FormatSettings`, `DateFormatters.day`, `NumberDisplay`, `AppCalendar`),
   `docs/domains/insights.md` (недели по `AppCalendar`), `docs/domains/intents.md` («эта неделя»),
   `docs/domains/assistant.md` (`date_format`), `docs/release-notes.md` (What's New во всех 14
-  блоках), статус этого файла, строка в `docs/README.md`; план целиком в `docs/archive/plans/`.
-- [ ] **Шаг 3.** Полный прогон, линты; коммит «feat(formats): refresh cached text, docs».
+  блоках), статус этого файла, строка в `docs/README.md`; план целиком в `docs/archive/plans/`
+  (перенос после финального ревью ветки).
+- [x] **Шаг 3.** Полный прогон, линты; коммит «feat(formats): refresh cached text, docs».

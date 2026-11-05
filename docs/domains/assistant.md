@@ -229,7 +229,12 @@ up" and opens the Wallet guide instead of asking Ten (no action spent), and it l
 automation records a payment (`Subjects.capturing`).
 
 A notice keeps a copy of its text with the amounts as dots (`hiddenBody`), shown while "hide
-amounts" is on. A notice about a subscription, a debt, a goal or an asset leaves with it: the Home section
+amounts" is on. It also keeps what its words are written from (`AssistantNoticeText`: the format's
+key and its values, amounts, days and the week), so a change in Settings › Formats writes the kept
+notices again, read or not (`AssistantInbox.rewriteTexts`, from `AppCoordinator.rebuildFormattedText`).
+An insight's notice (its words are the insight's) and one kept before the values existed have
+none: they take the words of the fresh notice with their key (the pass's, or today's charges,
+debts, goals and assets), and keep theirs without one. A notice about a subscription, a debt, a goal or an asset leaves with it: the Home section
 shows only notices whose subject is still there (`AssistantNotices.Subjects`: active
 subscriptions, open debts, goals, assets still out of date, loans still without an asset, read
 once every store has loaded), and

@@ -1070,7 +1070,7 @@
 "notification.weeklyDigest.title" = "Haftalık özet";
 "notification.weeklyDigest.body.withComparison" = "%1$@: harcama %2$@ (önceki haftaya göre %3$@)";
 "notification.weeklyDigest.body.simple" = "%1$@: harcama %2$@";
-"settings.insightSignals.weeklyDigest" = "Haftalık özet (Pzt 9:00)";
+"settings.insightSignals.weeklyDigest" = "Haftalık özet (%@ 9:00)";
 
 "settings.insightSignals.title" = "Analiz uyarıları";
 "settings.insightSignals.master" = "Önemli sinyaller için bildirim";

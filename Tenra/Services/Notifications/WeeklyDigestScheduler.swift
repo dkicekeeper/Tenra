@@ -3,9 +3,9 @@
 //  Tenra
 //
 //  Insights product audit 2026-07 — Phase D.
-//  Schedules the Monday-09:00 "weekly summary" local notification — the single
-//  most-liked analytical push across benchmark apps (Copilot: Monday, Apple
-//  Card: Sunday). Local-notifications-only constraint: content is computed from
+//  Schedules the "weekly summary" local notification for 09:00 on the first day of
+//  the week (Settings › Formats, AppCalendar) — the single most-liked analytical
+//  push across benchmark apps (Copilot: Monday, Apple Card: Sunday). Local-notifications-only constraint: content is computed from
 //  the LAST insights recompute and re-scheduled on every recompute, so the body
 //  names the week it covers (a stale digest reads as "week of 3–9 July", never
 //  as silently wrong numbers).

@@ -91,7 +91,7 @@ nonisolated enum AgentReplyData {
     struct Chart: Equatable {
         let groups: [ChartGroup]
         let currency: String
-        /// Groups are periods (`2026-10`, a week's Monday) rather than categories or merchants.
+        /// Groups are periods (`2026-10`, a week's first day) rather than categories or merchants.
         let isTimeline: Bool
     }
 

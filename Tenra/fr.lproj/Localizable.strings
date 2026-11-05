@@ -1070,7 +1070,7 @@
 "notification.weeklyDigest.title" = "Bilan de la semaine";
 "notification.weeklyDigest.body.withComparison" = "%1$@ : dépenses %2$@ (%3$@ vs la semaine précédente)";
 "notification.weeklyDigest.body.simple" = "%1$@ : dépenses %2$@";
-"settings.insightSignals.weeklyDigest" = "Bilan hebdo (lun. 9:00)";
+"settings.insightSignals.weeklyDigest" = "Bilan hebdo (%@ 9:00)";
 
 "settings.insightSignals.title" = "Alertes analytiques";
 "settings.insightSignals.master" = "Push pour les signaux importants";

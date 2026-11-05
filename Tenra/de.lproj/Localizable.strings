@@ -1070,7 +1070,7 @@
 "notification.weeklyDigest.title" = "Wochenrückblick";
 "notification.weeklyDigest.body.withComparison" = "%1$@: Ausgaben %2$@ (%3$@ ggü. Vorwoche)";
 "notification.weeklyDigest.body.simple" = "%1$@: Ausgaben %2$@";
-"settings.insightSignals.weeklyDigest" = "Wochenrückblick (Mo, 9:00)";
+"settings.insightSignals.weeklyDigest" = "Wochenrückblick (%@, 9:00)";
 
 "settings.insightSignals.title" = "Insight-Benachrichtigungen";
 "settings.insightSignals.master" = "Push bei wichtigen Signalen";

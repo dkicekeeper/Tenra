@@ -81,9 +81,9 @@ enum InsightGranularity: String, CaseIterable, Identifiable {
     /// - Parameter firstTransactionDate: earliest transaction date in the store.
     ///   Used to determine how far back to go for month/quarter/year.
     ///   Pass `nil` to fall back to a sensible default.
-    nonisolated func dateRange(firstTransactionDate: Date?) -> (start: Date, end: Date) {
+    /// - Parameter calendar: the week start; an insights pass passes its own (`DataSnapshot.calendar`).
+    nonisolated func dateRange(firstTransactionDate: Date?, calendar: Calendar = AppCalendar.current) -> (start: Date, end: Date) {
         let now = Date()
-        let calendar = AppCalendar.current
         let end = calendar.startOfDay(for: calendar.date(byAdding: .day, value: 1, to: now)!)
 
         switch self {
@@ -149,9 +149,9 @@ enum InsightGranularity: String, CaseIterable, Identifiable {
 
     // MARK: - Period Start Date for a Key
 
-    /// Returns the start `Date` of the period represented by `key`.
-    nonisolated func periodStart(for key: String) -> Date {
-        let calendar = AppCalendar.current
+    /// Returns the start `Date` of the period represented by `key`. A pass that walks many keys
+    /// passes its `calendar`, so every key starts on the same first weekday.
+    nonisolated func periodStart(for key: String, calendar: Calendar = AppCalendar.current) -> Date {
         switch self {
         case .week:
             // "2024-W03"
@@ -198,9 +198,8 @@ enum InsightGranularity: String, CaseIterable, Identifiable {
     // MARK: - Period Label for a Key
 
     /// Human-readable label shown on charts / breakdown list.
-    nonisolated func periodLabel(for key: String, locale: Locale = .current) -> String {
-        let date = periodStart(for: key)
-        let calendar = AppCalendar.current
+    nonisolated func periodLabel(for key: String, locale: Locale = .current, calendar: Calendar = AppCalendar.current) -> String {
+        let date = periodStart(for: key, calendar: calendar)
         switch self {
         case .week:
             // "3 Jan" (current year) or "3 Jan'25" (other year)
@@ -248,12 +247,9 @@ enum InsightGranularity: String, CaseIterable, Identifiable {
     /// the full month name + year for `.month`, a full week range for `.week`,
     /// and matches `periodLabel` for the others (which are already non-abbreviated).
     nonisolated func bannerLabel(for key: String, locale: Locale = .current) -> String {
-        let calendar = AppCalendar.current
-        let date = periodStart(for: key)
         switch self {
         case .week:
-            let weekEnd = calendar.date(byAdding: .day, value: 6, to: date) ?? date
-            return "\(DateFormatters.day(date, includeYear: true, locale: locale)) – \(DateFormatters.day(weekEnd, includeYear: true, locale: locale))"
+            return Self.weekBannerLabel(startingOn: periodStart(for: key), locale: locale)
         case .month, .quarter, .year, .allTime:
             return periodLabel(for: key, locale: locale)
         }
@@ -268,6 +264,14 @@ enum InsightGranularity: String, CaseIterable, Identifiable {
     /// `.month`/`.quarter`/`.year`/`.allTime` already match `periodLabel`.
     nonisolated func headingLabel(for key: String, locale: Locale = .current) -> String {
         bannerLabel(for: key, locale: locale).capitalizedFirstLetter
+    }
+
+    /// A week from its first day to its seventh, each a day date with its year
+    /// ("3 ноября 2026 – 9 ноября 2026"): the `.week` banner, and Ten's summary of a week it
+    /// writes again after a format change (`AssistantNoticeText`).
+    nonisolated static func weekBannerLabel(startingOn start: Date, locale: Locale = .current) -> String {
+        let end = AppCalendar.current.date(byAdding: .day, value: 6, to: start) ?? start
+        return "\(DateFormatters.day(start, includeYear: true, locale: locale)) – \(DateFormatters.day(end, includeYear: true, locale: locale))"
     }
 
     // MARK: - SF Symbol icon
@@ -324,9 +328,8 @@ enum InsightGranularity: String, CaseIterable, Identifiable {
 
     /// Returns the exclusive end `Date` for the period identified by `key`.
     /// Exclusive end is the first instant after the period completes (same convention as `dateRange()`).
-    nonisolated func periodEnd(for key: String) -> Date {
-        let start = periodStart(for: key)
-        let calendar = AppCalendar.current
+    nonisolated func periodEnd(for key: String, calendar: Calendar = AppCalendar.current) -> Date {
+        let start = periodStart(for: key, calendar: calendar)
         switch self {
         case .week:    return calendar.date(byAdding: .weekOfYear, value: 1, to: start) ?? start
         case .month:   return calendar.date(byAdding: .month,      value: 1, to: start) ?? start

@@ -290,10 +290,29 @@ final class InsightsViewModel {
     /// results applied, the weekly digest and the signals handed over). A format change needs
     /// it: `invalidateAndRecompute` waits for Analytics to appear, and the digest and the
     /// pending signals are written from the pass.
+    ///
+    /// A pass replaced by a newer one is followed to that one. A pass `invalidateAndRecompute`
+    /// cancels while Analytics is hidden leaves the insights stale with nothing running (or
+    /// writes what it had before the data changed): then it asks again, a few times at most, so
+    /// the wait ends with a whole pass over the current data.
     func refreshInsightsAndWait() async {
         refreshInsights()
-        await recomputeTask?.value
+        var attempts = 1
+        while true {
+            // The pass under way; a newer one that replaced it is waited for too.
+            while let task = recomputeTask {
+                let generation = computeGeneration
+                await task.value
+                guard computeGeneration != generation else { break }
+            }
+            guard isStale, attempts < Self.refreshAttempts else { return }
+            attempts += 1
+            refreshInsights()
+        }
     }
+
+    /// Passes `refreshInsightsAndWait` asks for while data changes keep cancelling them.
+    private static let refreshAttempts = 4
 
     func selectFilter(_ filter: InsightFilter) {
         selectedFilter = filter
@@ -304,7 +323,8 @@ final class InsightsViewModel {
     /// Everything a category drill-down's pages depend on (CLAUDE.md ⚠️ #12). The deep
     /// dive reloads whenever it changes: transactions (in-place edits included), base
     /// currency, FX rates, the granularity and its period window, subcategory links,
-    /// account logos, and the day (the realized-only gate moves at midnight).
+    /// account logos, the day (the realized-only gate moves at midnight) and the formats (the
+    /// pages' period headings are day dates).
     struct CategoryDeepDiveKey: Equatable {
         let mutationVersion: Int
         let transactionCount: Int
@@ -316,6 +336,7 @@ final class InsightsViewModel {
         let accountsVersion: Int
         let accountCount: Int
         let day: Date
+        let formats: ResolvedFormats
     }
 
     /// Read from a view's `body` as its `.task(id:)`. `mutationVersion` and
@@ -333,7 +354,8 @@ final class InsightsViewModel {
             subcategoriesVersion: transactionStore.subcategoriesMutationVersion,
             accountsVersion: transactionStore.accountsMutationVersion,
             accountCount: transactionStore.accounts.count,
-            day: Calendar.current.startOfDay(for: Date())
+            day: Calendar.current.startOfDay(for: Date()),
+            formats: FormatSettings.snapshot
         )
     }
 
@@ -535,7 +557,8 @@ final class InsightsViewModel {
             let monthPointsForScore = newPoints[.month] ?? service.computePeriodDataPointsFromPreAggregated(
                 preAggregated: preAggregated,
                 granularity: .month,
-                firstTransactionDate: preAggregated.firstDate
+                firstTransactionDate: preAggregated.firstDate,
+                calendar: snapshot.calendar
             )
             var monthIncome = 0.0; var monthExpenses = 0.0
             for p in monthPointsForScore { monthIncome += p.income; monthExpenses += p.expenses }
@@ -654,7 +677,7 @@ final class InsightsViewModel {
                 if let monthInsights = finalInsights[.month] {
                     Task { await InsightSignalService.shared.processInsights(monthInsights) }
                 }
-                // Weekly digest (Phase D): refresh the Monday-09:00 push content
+                // Weekly digest (Phase D): refresh the push on the first day of the week, 09:00,
                 // from the freshly computed week buckets.
                 if let weekPoints = finalPoints[.week] {
                     let digestCurrency = self.baseCurrency
@@ -664,12 +687,7 @@ final class InsightsViewModel {
                 // the assistant (AssistantInbox), whether or not pushes are allowed.
                 if AssistantAvailability.isAvailable {
                     let now = Date()
-                    var notices = AssistantNotices.signals(from: finalInsights[.month] ?? [], now: now)
-                    if let weekPoints = finalPoints[.week],
-                       let digest = AssistantNotices.digest(weekPoints: weekPoints, baseCurrency: self.baseCurrency, now: now) {
-                        notices.append(digest)
-                    }
-                    AssistantInbox.shared.post(notices, now: now)
+                    AssistantInbox.shared.post(self.assistantNotices(now: now), now: now)
                 }
             }
         }
@@ -689,6 +707,17 @@ final class InsightsViewModel {
     /// `get_net_worth` reads net worth's months).
     func precomputedInsight(id: String, granularity: InsightGranularity) -> Insight? {
         precomputedInsights[granularity]?.first { $0.id == id }
+    }
+
+    /// Ten's messages from the last pass (AssistantInbox): the `.month` signals and last week's
+    /// summary. The pass posts them; a format change rewrites the kept ones with them.
+    func assistantNotices(now: Date) -> [AssistantNotice] {
+        var notices = AssistantNotices.signals(from: precomputedInsights[.month] ?? [], now: now)
+        if let weekPoints = precomputedPeriodPoints[.week],
+           let digest = AssistantNotices.digest(weekPoints: weekPoints, baseCurrency: baseCurrency, now: now) {
+            notices.append(digest)
+        }
+        return notices
     }
 
     private func applyPrecomputed(for granularity: InsightGranularity) {

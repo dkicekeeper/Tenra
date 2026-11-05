@@ -220,7 +220,7 @@ struct FormatsSettingsView: View {
         let today = Date()
         return DateStyle.allCases.map { style in
             let hint: String = switch style {
-            case .words: String(localized: wordsOrderKey)
+            case .words: String(localized: String.LocalizationValue(Self.wordsOrderKey(locale: .current)))
             case .dots: String(localized: "formats.date.dots")
             case .slash: String(localized: "formats.date.slash")
             case .iso: String(localized: "formats.date.iso")
@@ -230,10 +230,11 @@ struct FormatsSettingsView: View {
     }
 
     /// The words style keeps the language's order ("3 ноября 2026", "November 3, 2026",
-    /// "2026年11月3日"): its description says which.
-    private var wordsOrderKey: String.LocalizationValue {
-        let template = DateFormatter.dateFormat(fromTemplate: "dMMMMyyyy", options: 0, locale: .current) ?? "d MMMM yyyy"
-        let pattern = template.replacingOccurrences(of: "'[^']*'", with: "", options: .regularExpression)
+    /// "2026年11月3日"): its description says which, read from the pattern the sample is written
+    /// with (kk's year template puts the year first, its sample "3 қараша 2026" does not).
+    nonisolated static func wordsOrderKey(locale: Locale) -> String {
+        let written = DateFormatters.dayPattern(style: .words, includeYear: true, abbreviated: false, locale: locale)
+        let pattern = written.replacingOccurrences(of: "'[^']*'", with: "", options: .regularExpression)
         let position = { (field: Character) in pattern.firstIndex(of: field) ?? pattern.endIndex }
         if position("y") < position("M") { return "formats.date.wordsYearFirst" }
         if position("M") < position("d") { return "formats.date.wordsMonthFirst" }

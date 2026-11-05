@@ -1070,7 +1070,7 @@
 "notification.weeklyDigest.title" = "Апта қорытындысы";
 "notification.weeklyDigest.body.withComparison" = "%1$@: шығыс %2$@ (өткен аптамен салыстырғанда %3$@)";
 "notification.weeklyDigest.body.simple" = "%1$@: шығыс %2$@";
-"settings.insightSignals.weeklyDigest" = "Апта қорытындысы (дс, 9:00)";
+"settings.insightSignals.weeklyDigest" = "Апта қорытындысы (%@, 9:00)";
 
 "settings.insightSignals.title" = "Инсайт ескертулері";
 "settings.insightSignals.master" = "Маңызды сигналдар туралы push-хабарландырулар";

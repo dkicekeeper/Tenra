@@ -1070,7 +1070,7 @@
 "notification.weeklyDigest.title" = "Riepilogo settimanale";
 "notification.weeklyDigest.body.withComparison" = "%1$@: spese %2$@ (%3$@ vs la settimana precedente)";
 "notification.weeklyDigest.body.simple" = "%1$@: spese %2$@";
-"settings.insightSignals.weeklyDigest" = "Riepilogo settimanale (lun, 9:00)";
+"settings.insightSignals.weeklyDigest" = "Riepilogo settimanale (%@, 9:00)";
 
 "settings.insightSignals.title" = "Avvisi di analisi";
 "settings.insightSignals.master" = "Push per segnali importanti";

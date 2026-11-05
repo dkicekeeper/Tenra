@@ -287,7 +287,7 @@ nonisolated final class InsightsService {
                 .compactMap { (dateMap?[$0.date]) ?? FastDateParser.date(from: $0.date) }
                 .min()
         }
-        let (windowStart, windowEnd) = granularity.dateRange(firstTransactionDate: firstDate)
+        let (windowStart, windowEnd) = granularity.dateRange(firstTransactionDate: firstDate, calendar: snapshot.calendar)
 
         // Non-week granularities cover the full date range (first tx → now).
         // The filter is guaranteed no-op for these — skip the O(N) scan entirely.
@@ -345,7 +345,8 @@ nonisolated final class InsightsService {
             periodPoints = computePeriodDataPointsFromPreAggregated(
                 preAggregated: preAgg,
                 granularity: granularity,
-                firstTransactionDate: firstDate
+                firstTransactionDate: firstDate,
+                calendar: snapshot.calendar
             )
         } else {
             periodPoints = computePeriodDataPoints(
@@ -353,7 +354,8 @@ nonisolated final class InsightsService {
                 granularity: granularity,
                 baseCurrency: baseCurrency,
                 firstTransactionDate: firstDate,
-                txDateMap: dateMap
+                txDateMap: dateMap,
+                calendar: snapshot.calendar
             )
         }
 
@@ -655,10 +657,9 @@ nonisolated final class InsightsService {
         granularity: InsightGranularity,
         baseCurrency: String,
         firstTransactionDate: Date? = nil,
-        txDateMap: [String: Date]? = nil
+        txDateMap: [String: Date]? = nil,
+        calendar: Calendar = AppCalendar.current
     ) -> [PeriodDataPoint] {
-        let calendar = AppCalendar.current
-
         // Determine data window.
         //
         // The fallback below used to parse `$0.date` ("yyyy-MM-dd") with
@@ -671,7 +672,7 @@ nonisolated final class InsightsService {
         let firstDate = firstTransactionDate
             ?? transactions.compactMap { (txDateMap?[$0.date]) ?? FastDateParser.date(from: $0.date) }.min()
             ?? Date()
-        let (windowStart, windowEnd) = granularity.dateRange(firstTransactionDate: firstDate)
+        let (windowStart, windowEnd) = granularity.dateRange(firstTransactionDate: firstDate, calendar: calendar)
 
         // All transactions are in memory — direct scan for all granularities.
         guard !transactions.isEmpty else { return [] }
@@ -681,7 +682,7 @@ nonisolated final class InsightsService {
         var keySet = Set<String>()
         var cursor = windowStart
         while cursor < windowEnd {
-            let key = granularity.groupingKey(for: cursor)
+            let key = granularity.groupingKey(for: cursor, calendar: calendar)
             if !keySet.contains(key) {
                 orderedKeys.append(key)
                 keySet.insert(key)
@@ -723,7 +724,7 @@ nonisolated final class InsightsService {
 
         // Build result array in chronological order
         return orderedKeys.map { key in
-            let periodStart = granularity.periodStart(for: key)
+            let periodStart = granularity.periodStart(for: key, calendar: calendar)
             let periodEnd: Date
             switch granularity {
             case .week:    periodEnd = calendar.date(byAdding: .weekOfYear, value: 1, to: periodStart) ?? periodStart
@@ -738,7 +739,7 @@ nonisolated final class InsightsService {
                 key: key,
                 periodStart: periodStart,
                 periodEnd: periodEnd,
-                label: granularity.periodLabel(for: key),
+                label: granularity.periodLabel(for: key, calendar: calendar),
                 income: incomeByKey[key] ?? 0,
                 expenses: expensesByKey[key] ?? 0,
                 cumulativeBalance: nil
@@ -760,18 +761,18 @@ nonisolated final class InsightsService {
     nonisolated func computePeriodDataPointsFromPreAggregated(
         preAggregated: PreAggregatedData,
         granularity: InsightGranularity,
-        firstTransactionDate: Date?
+        firstTransactionDate: Date?,
+        calendar: Calendar = AppCalendar.current
     ) -> [PeriodDataPoint] {
-        let calendar = AppCalendar.current
         let firstDate = firstTransactionDate ?? preAggregated.firstDate ?? Date()
-        let (windowStart, windowEnd) = granularity.dateRange(firstTransactionDate: firstDate)
+        let (windowStart, windowEnd) = granularity.dateRange(firstTransactionDate: firstDate, calendar: calendar)
 
         // Build ordered period keys (same key-building logic as computePeriodDataPoints)
         var orderedKeys: [String] = []
         var keySet = Set<String>()
         var cursor = windowStart
         while cursor < windowEnd {
-            let key = granularity.groupingKey(for: cursor)
+            let key = granularity.groupingKey(for: cursor, calendar: calendar)
             if !keySet.contains(key) {
                 orderedKeys.append(key)
                 keySet.insert(key)
@@ -786,7 +787,7 @@ nonisolated final class InsightsService {
         }
 
         return orderedKeys.map { key in
-            let periodStart = granularity.periodStart(for: key)
+            let periodStart = granularity.periodStart(for: key, calendar: calendar)
             let periodEnd: Date
             switch granularity {
             case .week:    periodEnd = calendar.date(byAdding: .weekOfYear, value: 1, to: periodStart) ?? periodStart
@@ -807,7 +808,7 @@ nonisolated final class InsightsService {
                 key: key,
                 periodStart: periodStart,
                 periodEnd: periodEnd,
-                label: granularity.periodLabel(for: key),
+                label: granularity.periodLabel(for: key, calendar: calendar),
                 income: income,
                 expenses: expenses,
                 cumulativeBalance: nil
@@ -840,6 +841,9 @@ nonisolated final class InsightsService {
         /// The points merged into brands and the operations linked to a merchant by hand
         /// (MerchantGroupStore), for the top merchant.
         var merchantBrands: MerchantBrands = .none
+        /// The pass's calendar, taken once when the snapshot is made: every week the pass builds
+        /// starts on its first weekday, even if Settings › Formats changes it mid-pass.
+        var calendar: Calendar = AppCalendar.current
     }
 
     /// An amount in `currency` in the base currency, at the cached rates; a cold cache leaves it

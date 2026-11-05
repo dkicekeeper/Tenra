@@ -1070,7 +1070,7 @@
 "notification.weeklyDigest.title" = "Resumo da semana";
 "notification.weeklyDigest.body.withComparison" = "%1$@: gastos %2$@ (%3$@ vs. semana anterior)";
 "notification.weeklyDigest.body.simple" = "%1$@: gastos %2$@";
-"settings.insightSignals.weeklyDigest" = "Resumo semanal (seg, 9h)";
+"settings.insightSignals.weeklyDigest" = "Resumo semanal (%@, 9h)";
 
 "settings.insightSignals.title" = "Alertas de análises";
 "settings.insightSignals.master" = "Push para sinais importantes";

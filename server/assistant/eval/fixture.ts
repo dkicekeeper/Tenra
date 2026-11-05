@@ -240,6 +240,13 @@ export const ASSETS: Asset[] = [
   },
 ];
 
+// The app's sample date (2026-11-03) in this user's date style: words, in each language's order
+// (AgentContextBuilder; a Kazakhstan region, weeks from Monday).
+const DATE_FORMAT: Record<"ru" | "en", string> = {
+  ru: "3 ноября 2026",
+  en: "November 3, 2026",
+};
+
 export function appContext(locale: "ru" | "en"): string {
   const accounts = ACCOUNTS.map((a) => `${a.id} "${a.name}" (${a.currency}, ${a.kind})`).join("; ");
   const expense = CATEGORIES.filter((c) => c.type === "expense").map((c) => `${c.id} "${c.name}"`).join("; ");
@@ -253,6 +260,8 @@ export function appContext(locale: "ru" | "en"): string {
     `today: ${TODAY} (Wednesday)`,
     `locale: ${locale}`,
     `base_currency: ${BASE_CURRENCY}`,
+    `date_format: ${DATE_FORMAT[locale]}`,
+    "week_starts: Monday",
     `accounts: ${accounts}`,
     `expense categories: ${expense}`,
     `income categories: ${income}`,

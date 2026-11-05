@@ -1070,7 +1070,7 @@
 "notification.weeklyDigest.title" = "Итоги недели";
 "notification.weeklyDigest.body.withComparison" = "%1$@: расходы %2$@ (%3$@ к прошлой неделе)";
 "notification.weeklyDigest.body.simple" = "%1$@: расходы %2$@";
-"settings.insightSignals.weeklyDigest" = "Итоги недели (пн, 9:00)";
+"settings.insightSignals.weeklyDigest" = "Итоги недели (%@, 9:00)";
 
 "settings.insightSignals.title" = "Сигналы аналитики";
 "settings.insightSignals.master" = "Push-уведомления о важных сигналах";

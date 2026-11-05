@@ -50,7 +50,7 @@ final class InsightSignalSettings {
         center.removePendingNotificationRequests(withIdentifiers: toCancel)
     }
 
-    /// Monday-09:00 weekly summary push (Phase D). Separate from the diff
+    /// The weekly summary push, 09:00 on the first day of the week (Phase D). Separate from the diff
     /// signals — it's a scheduled ritual, not a transition, and doesn't count
     /// against the weekly cap.
     var weeklyDigestEnabled: Bool {

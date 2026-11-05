@@ -1070,7 +1070,7 @@
 "notification.weeklyDigest.title" = "今週のまとめ";
 "notification.weeklyDigest.body.withComparison" = "%1$@：支出 %2$@（前週比 %3$@）";
 "notification.weeklyDigest.body.simple" = "%1$@：支出 %2$@";
-"settings.insightSignals.weeklyDigest" = "週間まとめ（月曜9:00）";
+"settings.insightSignals.weeklyDigest" = "週間まとめ（%@曜9:00）";
 
 "settings.insightSignals.title" = "インサイト通知";
 "settings.insightSignals.master" = "重要なシグナルをプッシュ通知";

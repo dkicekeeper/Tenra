@@ -350,6 +350,12 @@ class AppCoordinator {
         if let subjects = assistantNoticeSubjects {
             AssistantInbox.shared.drop(outside: subjects)
         }
+        AssistantInbox.shared.post(assistantNoticeCandidates(now: now), now: now)
+    }
+
+    /// The messages `refreshAssistantInbox` posts, as they read now (a format change writes the
+    /// kept ones again with them).
+    private func assistantNoticeCandidates(now: Date) -> [AssistantNotice] {
         let scheduler = SubscriptionNotificationScheduler.shared
         var candidates = AssistantNotices.charges(
             subscriptions: transactionStore.activeSubscriptions,
@@ -368,7 +374,7 @@ class AppCoordinator {
         ) {
             candidates.append(nudge)
         }
-        AssistantInbox.shared.post(candidates, now: now)
+        return candidates
     }
 
     /// What Ten's messages may still talk about (AssistantNotices.Subjects); nil until every
@@ -943,10 +949,14 @@ class AppCoordinator {
     }
 
     private func rebuildFormattedText() async {
+        // Ten's kept messages (Home's "Ten writes"): the ones that keep their values at once.
+        AssistantInbox.shared.rewriteTexts(from: assistantNoticeCandidates(now: Date()))
         // Insight text is formatted when computed: a pass now, Analytics on screen or not
         // (`invalidateAndRecompute` would wait for it). The pass reschedules the weekly digest
         // and hands the pending signals their new text.
         await insightsViewModel.refreshInsightsAndWait()
+        // Ten's insight messages take the words of the pass's own.
+        AssistantInbox.shared.rewriteTexts(from: insightsViewModel.assistantNotices(now: Date()))
         // The subscriptions' reminders carry their amounts.
         await transactionStore.rescheduleSubscriptionNotifications()
         // The widgets: a fresh snapshot carrying the formats; the store reloads the timelines

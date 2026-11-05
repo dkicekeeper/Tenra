@@ -12,6 +12,9 @@ New since 1.8 (in the store since 2026-11-04):
 - Amounts in the region's number format (decimal and grouping separators); Analytics on day
   one: the daily average of the period under way divides by the days so far, the health score
   waits for income, the top category and top merchant say their share in words.
+- Settings › Formats ([plan-formats.md](plan-formats.md)): the date style, the first day of
+  the week, separators, the currency symbol's place and cents, each the region's until chosen;
+  free. What's New blocks below come with the plan's last task.
 - First run: the account step's name hint; the categories step 3 per row with a check under
   each tile; the auto-capture rows with chevrons, the statement a toggle (newcomers only, not
   in What's New).
@@ -137,6 +140,10 @@ Tenra의 새로운 기능:
    tap opens Ten; Settings › Spending reminder switches it and moves the time.
    First run on a fresh install: category names fit 3 per row, the checks toggle; amounts read
    "1 234,56 ₸" with a Russian or Kazakh region, "1,234.56" with a US one.
+   Settings › Formats: a choice changes the preview at once and leaves the page open; Home,
+   History and Analytics show it after going back, without a relaunch; "Use the region's
+   format" shows only after a change. VoiceOver reads amounts as numbers with "1’234.56" and
+   "1.234,56"; the widget redraws in the new format.
    Refuse the system prompt from quiet (provisional) notifications and check iOS Settings: if
    Tenra stays provisional, reminders arrive quietly while the attribute says `denied`.
 3. **The store build**: `prepare-version --version X --build N`.

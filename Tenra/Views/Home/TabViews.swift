@@ -6,6 +6,12 @@
 //  Each wrapper owns its NavigationStack so navigation state
 //  is independent per tab (standard iOS tab bar pattern).
 //
+//  Every tab's root content inside its stack carries `.id(formatSettings.version)`: a new date
+//  or amount format (Settings › Formats) rebuilds the root, whose amounts read DesignKit's
+//  configuration, which SwiftUI does not observe. Never the stack itself, so the pages open
+//  over a root stay (Home's and Finances' roots are in ContentView and FinancesView, the
+//  assistant's in AssistantView).
+//
 
 import SwiftUI
 
@@ -29,6 +35,7 @@ struct AnalyticsTab: View {
     var body: some View {
         NavigationStack {
             InsightsView(insightsViewModel: coordinator.insightsViewModel)
+                .id(coordinator.formatSettings.version)
                 .environment(timeFilterManager)
                 .navigationTitle(String(localized: "tab.analytics"))
                 .navigationBarTitleDisplayMode(.large)
@@ -96,6 +103,7 @@ struct VoiceTab: View {
                 accountsViewModel: coordinator.accountsViewModel,
                 embeddedInTab: true
             )
+            .id(coordinator.formatSettings.version)
             .task {
                 if parser == nil {
                     parser = VoiceInputParser(
@@ -186,6 +194,7 @@ struct OCRTab: View {
 
                 Spacer()
             }
+            .id(coordinator.formatSettings.version)
             .navigationTitle(String(localized: "tab.ocr"))
             .navigationBarTitleDisplayMode(.inline)
             }

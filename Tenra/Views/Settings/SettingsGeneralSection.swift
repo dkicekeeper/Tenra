@@ -10,9 +10,9 @@
 import SwiftUI
 
 /// Props-based General section for Settings.
-/// Groups currency picker + navigation link to the background settings page + the voice
-/// language (its own setting, VoiceRecognitionLanguage). Merchant logos are in the Wallet
-/// section (SettingsWalletSection).
+/// Groups currency picker + the date and amount formats (FormatsSettingsView) + navigation link
+/// to the background settings page + the voice language (its own setting,
+/// VoiceRecognitionLanguage). Merchant logos are in the Wallet section (SettingsWalletSection).
 struct SettingsGeneralSection<BackgroundDest: View>: View {
 
     // MARK: - Props
@@ -55,6 +55,16 @@ struct SettingsGeneralSection<BackgroundDest: View>: View {
                 }
             )
 
+            // How dates and amounts are written (FormatsSettingsView); no value on the row.
+            UniversalRow(
+                String(localized: "settings.formats"),
+                icon: "textformat.123",
+                accessory: .navigation {
+                    FormatsSettingsView(currency: selectedCurrency)
+                }
+            )
+            .accessibilityIdentifier("settings.formats")
+
             // Background settings navigation link
             UniversalRow(
                 String(localized: "settings.background"),
@@ -93,4 +103,6 @@ struct SettingsGeneralSection<BackgroundDest: View>: View {
             }
         }
     }
+    // The Formats page it opens reads `@Environment(FormatSettings.self)`.
+    .environment(FormatSettings(defaults: UserDefaults(suiteName: "preview.formats") ?? .standard))
 }

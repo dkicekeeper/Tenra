@@ -10,6 +10,7 @@ import Foundation
 import SwiftUI
 import CoreData
 import Observation
+import WidgetKit
 import os
 
 /// Coordinator that manages all ViewModels and their dependencies
@@ -35,6 +36,11 @@ class AppCoordinator {
     @ObservationIgnored let settingsViewModel: SettingsViewModel
     @ObservationIgnored let insightsViewModel: InsightsViewModel
     @ObservationIgnored let cloudSyncViewModel: CloudSyncViewModel
+
+    /// How dates and amounts are written (Settings › Formats), on the App Group's defaults:
+    /// the same choices `FormatSettings.snapshot` reads before this exists, and the widget.
+    /// A change goes through `formatsDidChange`; the tab roots rebuild on its `version`.
+    @ObservationIgnored let formatSettings: FormatSettings
 
     // MARK: - Store
 
@@ -430,8 +436,13 @@ class AppCoordinator {
 
     // MARK: - Initialization
 
-    init(repository: DataRepositoryProtocol? = nil) {
+    /// - Parameter formatDefaults: Where the format choices live; nil = the App Group (tests
+    ///   pass a suite of their own).
+    init(repository: DataRepositoryProtocol? = nil, formatDefaults: UserDefaults? = nil) {
         self.repository = repository ?? CoreDataRepository()
+        self.formatSettings = FormatSettings(
+            defaults: formatDefaults ?? UserDefaults(suiteName: WidgetSnapshotStore.appGroup) ?? .standard
+        )
 
         // Task 9: Pagination controller — uses CoreDataStack.shared viewContext for FRC.
         self.transactionPaginationController = TransactionPaginationController(stack: CoreDataStack.shared)
@@ -643,6 +654,9 @@ class AppCoordinator {
 
         // Every record, in the app or by a background intent, reaches the evening reminder.
         transactionStore.onRecorded = { SpendingReminder.noteRecorded($0) }
+
+        // Settings › Formats, or the phone's region: everything that writes dates and amounts.
+        formatSettings.onChange = { [weak self] formats in self?.formatsDidChange(formats) }
 
         // No initial sync here — TransactionStore is empty at this point. The first
         // useful sync happens in initialize() after loadData() populates the store.
@@ -909,6 +923,28 @@ class AppCoordinator {
     }
 
     // MARK: - Private Methods
+
+    /// The date and amount formats changed (Settings › Formats, or the phone's region). The
+    /// snapshot (`FormatSettings.snapshot`, `AppCalendar`) is already the new one; this carries
+    /// it everywhere text is written ahead of time. The screens rebuild on
+    /// `formatSettings.version` (the tab roots, MainTabView's calendar), the time filter in
+    /// TenraApp.
+    private func formatsDidChange(_ formats: ResolvedFormats) {
+        // DesignKit's amounts and its dates (FormattedAmountText, the calendars, the pickers).
+        DesignKitBridge.apply(formats)
+        // Insight text is formatted when computed. The recompute also reschedules the weekly
+        // digest from it, and the signals already scheduled get its text.
+        InsightSignalService.shared.rewritesPendingOnNextPass = true
+        insightsViewModel.invalidateAndRecompute()
+        Task { [weak self] in
+            guard let self else { return }
+            // The subscriptions' reminders carry their amounts.
+            await self.transactionStore.rescheduleSubscriptionNotifications()
+            // The widgets: a fresh snapshot, and a redraw even when its figures are the same.
+            await WidgetSnapshotBuilder.refresh(coordinator: self)
+            WidgetCenter.shared.reloadAllTimelines()
+        }
+    }
 
     /// Observe the single FX-rate notifier so EVERY rate change — a late prewarm landing
     /// (past the 2.5s wait), a manual refresh, or a second provider response — bumps the

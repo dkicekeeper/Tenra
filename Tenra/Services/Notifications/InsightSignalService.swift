@@ -117,6 +117,10 @@ final class InsightSignalService {
     private let defaults: UserDefaults
     private let settings: InsightSignalSettings
 
+    /// Set when the date and amount formats change (AppCoordinator): the next pass rewrites
+    /// the signals already scheduled with the fresh insights' text, at the times they had.
+    var rewritesPendingOnNextPass = false
+
     /// `settings` is optional rather than defaulting to `.shared` directly: default
     /// argument expressions are evaluated in the *caller's* isolation, so a
     /// MainActor-isolated singleton in that position warns (and is an error in the
@@ -351,6 +355,10 @@ final class InsightSignalService {
             center.removePendingNotificationRequests(withIdentifiers: stale)
             Self.logger.debug("🔔 [Signals] cancelled \(stale.count) stale pending signal(s)")
         }
+        if rewritesPendingOnNextPass {
+            rewritesPendingOnNextPass = false
+            await rewritePending(from: insights, center: center)
+        }
 
         let storedHistory = loadHistory()
         let migratedHistory = Self.migratingLegacyEventRecords(storedHistory, insights: insights)
@@ -370,15 +378,7 @@ final class InsightSignalService {
         // Prune expired records while we're writing anyway.
         var history = Self.retainedHistory(migratedHistory, now: now)
         for (insight, fireDate) in zip(selected, fireDates) {
-            let content = UNMutableNotificationContent()
-            content.title = insight.title
-            content.body = Self.notificationBody(for: insight)
-            content.sound = .default
-            // From Ten: worried, or surprised at something out of the ordinary.
-            let surprise = InsightSignalKind.from(insight)?.isSurprise == true
-            if let art = TenNotificationArt.attachment(mood: surprise ? .surprised : .worried) {
-                content.attachments = [art]
-            }
+            let content = Self.content(for: insight)
             // Near-immediate dates deliver now; future ones get a calendar trigger
             // so they survive the app being suspended or relaunched.
             let trigger: UNNotificationTrigger?
@@ -404,6 +404,42 @@ final class InsightSignalService {
             }
         }
         saveHistory(history)
+    }
+
+    /// A signal's notification: the insight's title and line, from Ten.
+    private static func content(for insight: Insight) -> UNMutableNotificationContent {
+        let content = UNMutableNotificationContent()
+        content.title = insight.title
+        content.body = notificationBody(for: insight)
+        content.sound = .default
+        // From Ten: worried, or surprised at something out of the ordinary.
+        let surprise = InsightSignalKind.from(insight)?.isSurprise == true
+        if let art = TenNotificationArt.attachment(mood: surprise ? .surprised : .worried) {
+            content.attachments = [art]
+        }
+        return content
+    }
+
+    /// The signals still to come, with the text of the same insight from this pass (its
+    /// amounts and dates in the current formats) and the trigger they were scheduled with.
+    /// History and the caps are untouched: nothing new is pushed.
+    private func rewritePending(from insights: [Insight], center: UNUserNotificationCenter) async {
+        let byRequestId = Dictionary(
+            insights.map { (Self.notificationIdPrefix + $0.id, $0) },
+            uniquingKeysWith: { first, _ in first }
+        )
+        var rewritten = 0
+        for request in await center.pendingNotificationRequests() {
+            guard request.identifier != WeeklyDigestScheduler.notificationId,
+                  let insight = byRequestId[request.identifier] else { continue }
+            let replacement = UNNotificationRequest(
+                identifier: request.identifier,
+                content: Self.content(for: insight),
+                trigger: request.trigger
+            )
+            if (try? await center.add(replacement)) != nil { rewritten += 1 }
+        }
+        Self.logger.debug("🔔 [Signals] rewrote \(rewritten) pending signal(s) in the new formats")
     }
 
     // MARK: - History persistence

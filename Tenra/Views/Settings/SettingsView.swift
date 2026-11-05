@@ -431,4 +431,6 @@ struct SettingsView: View {
     // Required: the view reads `@Environment(PremiumManager.self)` for the Pro gate.
     // A non-optional `@Environment(T.self)` traps when T isn't in the environment.
     .environment(PremiumManager.shared)
+    // The Formats page (General) reads `@Environment(FormatSettings.self)`.
+    .environment(coordinator.formatSettings)
 }

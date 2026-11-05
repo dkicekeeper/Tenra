@@ -9,7 +9,9 @@ import Testing
 import Foundation
 @testable import Tenra
 
-@Suite("AccountActionViewModel.defaultAction")
+// `.sharedProcessState`: AppCoordinator() builds the formats store, which publishes
+// `FormatSettings.snapshot`.
+@Suite("AccountActionViewModel.defaultAction", .sharedProcessState)
 @MainActor
 struct AccountActionViewModelTests {
 

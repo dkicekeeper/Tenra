@@ -65,7 +65,13 @@ struct TenraApp: App {
                                 .environment(timeFilterManager)
                                 .environment(coordinator)
                                 .environment(coordinator.transactionStore)
+                                .environment(coordinator.formatSettings)
                                 .environment(PremiumManager.shared)
+                                // A new first day of the week moves "This week": its days are
+                                // stored in the filter, so derive them again.
+                                .onChange(of: coordinator.formatSettings.version) { _, _ in
+                                    timeFilterManager.refreshRelativePresetIfNeeded()
+                                }
                         }
                     }
                     .transition(.opacity)

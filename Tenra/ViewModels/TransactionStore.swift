@@ -447,7 +447,9 @@ final class TransactionStore {
         }
     }
 
-    private func rescheduleSubscriptionNotifications() async {
+    /// The next-charge reminders of every active subscription, built again (on activation, and
+    /// after a format change so their amounts read in the new format).
+    func rescheduleSubscriptionNotifications() async {
         let activeSubscriptions = subscriptions.filter { $0.subscriptionStatus == .active && $0.isActive }
         await SubscriptionNotificationScheduler.shared.rescheduleAllActiveSubscriptions(subscriptions: activeSubscriptions)
     }

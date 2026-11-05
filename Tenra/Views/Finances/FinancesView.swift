@@ -70,6 +70,8 @@ struct FinancesView: View {
                 }
                 .padding(.vertical, AppSpacing.md)
             }
+            // A new date or amount format rebuilds the root, not the stack (TabViews).
+            .id(coordinator.formatSettings.version)
             .navigationTitle(String(localized: "finances.title"))
             .navigationBarTitleDisplayMode(.large)
             .navigationDestination(for: FinancesDestination.self) { destination in

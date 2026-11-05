@@ -1,7 +1,7 @@
 # Форматы дат и сумм: дизайн
 
 Статус: дизайн утверждён основателем 2026-11-05. Сделаны задачи 1–3 (DesignKit 8.8.0, ветка
-`claude/formats`, ждёт PR после 8.7.0) и 4, 7 (в main); задачи 5 и 6 в main (DesignKit 8.8.0 закреплён); 8–11 ждут своей очереди. Макет экранов (утверждён 2026-11-05):
+`claude/formats`, ждёт PR после 8.7.0) и 4, 7 (в main); задачи 5, 6 и 8 в main (DesignKit 8.8.0 закреплён); 9–11 ждут своей очереди. Макет экранов (утверждён 2026-11-05):
 https://claude.ai/artifact/GXmE57X7WjPsSZ4HrQmcdq
 
 Пометки: «(основатель)» решил владелец; «(моё решение)» решено при проектировании, его можно
@@ -530,7 +530,7 @@ nonisolated enum AppCalendar { static var current: Calendar }  // Calendar.curre
 Корень каждой вкладки внутри её `NavigationStack` получает `.id(formatSettings.version)`, сам
 стек нет, чтобы открытые экраны остались.
 
-- [ ] **Шаг 1.** Строки (ключи, en): `settings.formats` «Formats»; `formats.preview` «How it will
+- [x] **Шаг 1.** Строки (ключи, en): `settings.formats` «Formats»; `formats.preview` «How it will
   look»; `formats.section.dates` «Dates»; `formats.section.amounts` «Amounts»; `formats.date`
   «Date»; `formats.weekStart` «First day of the week»; `formats.separators` «Separators»;
   `formats.symbol` «Currency symbol»; `formats.symbol.after` «After the number»;
@@ -539,10 +539,10 @@ nonisolated enum AppCalendar { static var current: Calendar }  // Calendar.curre
   «Your region's format is picked first (now %@). CSV export and your saved data don't change.»;
   `formats.reset` «Use the region's format». Русский по макету («Копейки», «Если есть»,
   «Вернуть формат региона»), остальные 10 языков по смыслу; паритет ключей проверить `diff`.
-- [ ] **Шаг 2. UI-тест** `FormatsUITests` (`-ScreenshotDemo -NoRevenueCat`, только Simulator):
+- [x] **Шаг 2. UI-тест** `FormatsUITests` (`-ScreenshotDemo -NoRevenueCat`, только Simulator):
   Главная → шестерёнка → «Formats» → «Separators» → «1,234.56»; на экране остаётся заголовок
   «Formats» (стек не сброшен); назад дважды; на Главной есть текст по `\d,\d{3}`. Красный.
-- [ ] **Шаг 3.** `FormatsSettingsView` по макету: превью (`FormSection` с датой
+- [x] **Шаг 3.** `FormatsSettingsView` по макету: превью (`FormSection` с датой
   `DateFormatters.day`, тремя строками операций на компонентах DesignKit с
   `FormattedAmountText`, полосой дней недели из `AppCalendar.current.shortWeekdaySymbols` от
   первого дня), секции «Даты» и «Суммы» из `UniversalRow(…, accessory: .picker(binding, options:))`
@@ -551,11 +551,11 @@ nonisolated enum AppCalendar { static var current: Calendar }  // Calendar.curre
   Настроек). Привязка: чтение из `resolved`, запись `set { $0.<поле> = value }`. Строка
   «Форматы» в `SettingsGeneralSection` между базовой валютой и фоном, `.navigation`. Подключение в
   `AppCoordinator` и `.id` на корнях вкладок.
-- [ ] **Шаг 4.** UI-тест зелёный (`-parallel-testing-enabled NO`), полный прогон юнит-тестов,
+- [x] **Шаг 4.** UI-тест зелёный (`-parallel-testing-enabled NO`), полный прогон юнит-тестов,
   `design_lint.py`, `section_rows_lint.py`. `#Preview` в новом файле получают все
   `@Environment`, которые читает вид. В чек-лист проверки на телефоне (`release-notes.md`):
   VoiceOver читает «1’234.56» и «1.234,56» как числа, виджет в новом формате.
-- [ ] **Шаг 5.** Коммит «feat(formats): Formats page in Settings».
+- [x] **Шаг 5.** Коммит «feat(formats): Formats page in Settings».
 
 ### Задача 9 (Tenra): виджет
 

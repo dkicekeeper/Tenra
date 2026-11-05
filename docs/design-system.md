@@ -318,7 +318,7 @@ its own. A form card's rows keep the default `config: .standard`: 12 pt above an
 12 pt above it.
 
 The sections go from the app as a whole to its features, then the data, then what can't be
-undone: the Tenra Pro hero, General (base currency, background, voice language), insight
+undone: the Tenra Pro hero, General (base currency, formats, background, voice language), insight
 alerts, Privacy, Assistant, Siri & Shortcuts (the Wallet automation guide), Wallet (To review,
 merchants, cards, the merchant logos switch), Backups, Export and import, Danger zone, restore
 and redeem (free users), About.
@@ -342,6 +342,16 @@ and redeem (free users), About.
   .picker(…))` (the chosen value in `bodySmall` secondary, pushing a `List` of checkmark rows
   with system search when long; `NavigationPickerRow(style: .list)` before DesignKit 7.0.0); the base currency is a `NavigationLink` with
   the same row, pushing `CurrencyPickerView`.
+- **Formats** (`FormatsSettingsView`, docs/plan-formats.md §3.2): a preview `FormSection` (a
+  day by `DateFormatters.day`, three `TransactionRow`s in the onboarding's categories, the week
+  from its first day with that day a filled `Badge`; rebuilt on `FormatSettings.version`, shown
+  while Home's eye hides amounts), then Dates and Amounts of `.picker` rows whose option labels
+  are samples (today without its year, which would not fit the row's value; cents and the
+  symbol: the name and its sample, "If any (1 234 and 1 234,50)"),
+  built with `DesignKitBridge.amountConfiguration` before an option is chosen; the footer names
+  the region; "Use the region's format" is a secondary `DSButton`, only while `isCustomized`.
+  A change rebuilds each tab's root inside its `NavigationStack` (`.id(formatSettings.version)`,
+  TabViews), never the stack, so the open pages stay.
 - **Assistant** (`SettingsAssistantSection`): the cloud and "Ten chats" toggles and "What Ten
   knows about me" (`AssistantMemoryView`: a glass `FormSection` of `ItemRow(style: .large)`
   without a chevron, since a row opens an editor sheet, and a long press edits or forgets;

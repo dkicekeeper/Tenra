@@ -115,6 +115,9 @@ struct ContentView: View {
     var body: some View {
         NavigationStack(path: $navigationPath) {
             mainContent
+            // A new date or amount format (Settings › Formats) rebuilds the root, not the
+            // stack: the pages open over it (Settings, Formats) stay.
+            .id(coordinator.formatSettings.version)
             .navigationBarTitleDisplayMode(.inline)
             .navigationDestination(for: HomeDestination.self) { dest in
                 switch dest {

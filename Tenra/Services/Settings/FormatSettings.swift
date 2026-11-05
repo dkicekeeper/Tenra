@@ -28,6 +28,10 @@ final class FormatSettings {
         !FormatPreferences.isEquivalent(resolved, FormatPreferences.region(for: locale()))
     }
 
+    /// The phone's region (and the app's language) the defaults come from: Settings › Formats
+    /// resolves its samples and names the region with it.
+    var regionLocale: Locale { locale() }
+
     init(defaults: UserDefaults, locale: @escaping () -> Locale = { .current }) {
         self.defaults = defaults
         self.locale = locale

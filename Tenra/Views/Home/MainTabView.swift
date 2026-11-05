@@ -170,7 +170,6 @@ struct MainTabView: View {
         // scroll down and re-expands on scroll up, on every tab.
         .tabBarMinimizeBehavior(.onScrollDown)
         .environment(tabBarVisibility)
-        .environment(\.calendar, AppCalendar.current)
         .onChange(of: selectedTab) { _, new in
             handleTabSelection(new)
         }
@@ -332,6 +331,15 @@ struct MainTabView: View {
         // The eye button on Home: every amount below (tabs, pushed screens, sheets) draws
         // "•••• ₸" while it is on. Outermost, so the sheets above get it too.
         .amountsHidden(coordinator.transactionsViewModel.appSettings.hidesAmounts)
+        // The first day of the week (Settings › Formats) for every DatePicker and calendar
+        // below, the sheets above included. Outermost for them.
+        .environment(\.calendar, appCalendar)
+    }
+
+    /// `AppCalendar.current`, read again whenever the formats change.
+    private var appCalendar: Calendar {
+        _ = coordinator.formatSettings.version
+        return AppCalendar.current
     }
 
     // MARK: - Tap Handling
@@ -385,7 +393,10 @@ struct MainTabView: View {
 // MARK: - Preview
 
 #Preview {
+    let coordinator = AppCoordinator()
     MainTabView()
         .environment(TimeFilterManager())
-        .environment(AppCoordinator())
+        .environment(coordinator)
+        // Settings › Formats reads it (TenraApp puts it in the environment).
+        .environment(coordinator.formatSettings)
 }

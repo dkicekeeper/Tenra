@@ -16,7 +16,7 @@
 //    before `CurrencyRateStore.shared` is first touched. Writes UserDefaults:
 //    onboarding-completed, Founding-User (forces Pro so Voice/OCR/deposit/loan
 //    screens are unlocked), base-currency settings and a fresh offline FX-rate
-//    cache so no network fetch happens during capture.
+//    cache so no network fetch happens during capture; clears the chosen formats.
 //  - `ScreenshotDemoSeeder.seed()` — called from `TenraApp.task` after the
 //    CoreData store is ready and before `AppCoordinator` is constructed.
 //
@@ -72,6 +72,16 @@ enum ScreenshotDemoMode {
         writeBaseCurrencySettings(to: defaults)
         writeOfflineRates(to: defaults)
         writeSetupCardOverrides(to: defaults)
+        resetFormats()
+    }
+
+    /// Every capture (and FormatsUITests) starts from the region's formats, as a fresh install:
+    /// the choices live in the App Group, outside what the store wipe reaches. TenraApp.init
+    /// already gave DesignKit the stored ones, so it gets the region's now.
+    private static func resetFormats() {
+        UserDefaults(suiteName: WidgetSnapshotStore.appGroup)?.removeObject(forKey: FormatSettings.storageKey)
+        FormatSettings.resetSnapshot()
+        DesignKitBridge.apply(FormatSettings.snapshot)
     }
 
     /// Home's first frame shows the data, not a setup card: Ten's offer of the evening

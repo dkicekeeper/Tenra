@@ -79,6 +79,9 @@ struct AssistantView: View {
                     .screenPadding()
                     .padding(.vertical, AppSpacing.lg)
             }
+            // A new date or amount format rebuilds the root, not the stack: a chat stays open
+            // (TabViews).
+            .id(coordinator.formatSettings.version)
             .scrollDismissesKeyboard(.interactively)
             // A tap anywhere puts the keyboard away (buttons still work).
             .simultaneousGesture(TapGesture().onEnded { composerFocused = false })

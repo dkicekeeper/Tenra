@@ -24,7 +24,18 @@ enum DesignKitBridge {
     /// Carries the resolved formats into DesignKit's amount configuration. Called at launch
     /// and again whenever the person changes a format.
     static func apply(_ formats: ResolvedFormats) {
-        var amounts = AmountDisplayConfiguration.shared
+        AmountDisplayConfiguration.shared = amountConfiguration(formats)
+        // MonthCalendar's week label (no year) and DateRangePickerSheet (with year).
+        DesignKitDateFormat.day = { DateFormatters.day($0, includeYear: $1, abbreviated: true) }
+    }
+
+    /// DesignKit's amount configuration for `formats`, the rest of `base` kept: what `apply`
+    /// installs, and the samples of Settings › Formats (an option before it is chosen).
+    static func amountConfiguration(
+        _ formats: ResolvedFormats,
+        base: AmountDisplayConfiguration = .shared
+    ) -> AmountDisplayConfiguration {
+        var amounts = base
         amounts.decimalSeparator = formats.decimalSeparator
         amounts.thousandsSeparator = formats.groupingSeparator
         amounts.secondaryGroupingSize = formats.secondaryGroupingSize
@@ -37,9 +48,7 @@ enum DesignKitBridge {
         case .always: amounts.fractions = .always
         case .never: amounts.fractions = .never
         }
-        AmountDisplayConfiguration.shared = amounts
-        // MonthCalendar's week label (no year) and DateRangePickerSheet (with year).
-        DesignKitDateFormat.day = { DateFormatters.day($0, includeYear: $1, abbreviated: true) }
+        return amounts
     }
 
     /// Call once from `TenraApp.init()`, before any view renders.

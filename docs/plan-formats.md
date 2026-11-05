@@ -1,6 +1,7 @@
 # Форматы дат и сумм: дизайн
 
-Статус: дизайн утверждён основателем 2026-11-05; план реализации в §7 ждёт его просмотра. Макет экранов (утверждён 2026-11-05):
+Статус: дизайн утверждён основателем 2026-11-05. Сделаны задачи 1–3 (DesignKit 8.8.0, ветка
+`claude/formats`, ждёт PR после 8.7.0) и 4, 7 (в main); задачи 5, 6, 8–11 ждут выпуска DesignKit 8.8.0. Макет экранов (утверждён 2026-11-05):
 https://claude.ai/artifact/GXmE57X7WjPsSZ4HrQmcdq
 
 Пометки: «(основатель)» решил владелец; «(моё решение)» решено при проектировании, его можно
@@ -279,7 +280,7 @@ https://claude.ai/artifact/GXmE57X7WjPsSZ4HrQmcdq
   в `Formatting`: после числа «1 234 ₸» (через пробел), перед числом «₸1 234» без пробела, знак
   минуса впереди символа «-₸1 234».
 
-- [ ] **Шаг 1. Тесты** (`AmountDisplayOptionsTests`, каждая с конфигурацией из
+- [x] **Шаг 1. Тесты** (`AmountDisplayOptionsTests`, каждая с конфигурацией из
   `AmountDisplayConfiguration()` и правкой одного поля):
   ```swift
   @Test func symbolAfterIsTheDefault()      // formatCurrencySmart(1234, "KZT") == "1 234 ₸"
@@ -292,14 +293,14 @@ https://claude.ai/artifact/GXmE57X7WjPsSZ4HrQmcdq
                                              // formatCurrencyCompact(1_200_000, "USD") == "$1,2M"
   @Test func showDecimalsWhenZeroMapsToFractions() // set true → fractions == .always
   ```
-- [ ] **Шаг 2.** Запустить сьют: падает (нет `symbolPosition`, `fractions`, `configuration:`).
-- [ ] **Шаг 3.** Реализовать в трёх файлах. `FormattedAmountText`: единица перед числом при
+- [x] **Шаг 2.** Запустить сьют: падает (нет `symbolPosition`, `fractions`, `configuration:`).
+- [x] **Шаг 3.** Реализовать в трёх файлах. `FormattedAmountText`: единица перед числом при
   `.before` (знак, символ, число), скрытая сумма «₸ ••••», запасной сокращённый вид через
   `formatCurrencyCompact`, дробная часть не рисуется при `.never`, кроме 0 < |x| < 1.
   Подписи осей (`ChartValueFormat.compactString`) идут через тот же `formatCompactNumber`;
   если он форматирует сам, перевести. Умолчания прежние, поэтому снимки Gallery не меняются.
-- [ ] **Шаг 4.** Сьют зелёный, затем весь `xcodebuild test -scheme DesignKit`.
-- [ ] **Шаг 5.** Коммит «feat(amounts): symbol position, fractions, secondary grouping».
+- [x] **Шаг 4.** Сьют зелёный, затем весь `xcodebuild test -scheme DesignKit`.
+- [x] **Шаг 5.** Коммит «feat(amounts): symbol position, fractions, secondary grouping».
 
 ### Задача 2 (DesignKit): разделители в поле ввода суммы
 
@@ -312,7 +313,7 @@ https://claude.ai/artifact/GXmE57X7WjPsSZ4HrQmcdq
 Вставка из буфера (`AnimatedInputComponents`, `clipboardText`) сначала убирает выбранный знак
 группировки, если в тексте есть и выбранный десятичный: `cleanPastedAmount(_:configuration:)`.
 
-- [ ] **Шаг 1. Тесты:**
+- [x] **Шаг 1. Тесты:**
   ```swift
   @Test func displayUsesConfiguredSeparators() // commaDot: "1234.5" → "1,234.5"; dotComma → "1.234,5"
   @Test func displayDefaultUnchanged()          // "1234.5" → "1 234.5"
@@ -320,8 +321,8 @@ https://claude.ai/artifact/GXmE57X7WjPsSZ4HrQmcdq
   @Test func pastedGroupedAmount()              // commaDot: cleanPastedAmount("1,234.56") == "1234.56";
                                                 // spaceComma: cleanPastedAmount("1 234,56") == "1234.56"
   ```
-- [ ] **Шаг 2.** Падают. **Шаг 3.** Реализовать. **Шаг 4.** Зелёные + весь пакет.
-- [ ] **Шаг 5.** Коммит «feat(input): amount field shows the configured separators».
+- [x] **Шаг 2.** Падают. **Шаг 3.** Реализовать. **Шаг 4.** Зелёные + весь пакет.
+- [x] **Шаг 5.** Коммит «feat(input): amount field shows the configured separators».
 
 ### Задача 3 (DesignKit): формат дат, первый день недели, выпуск 8.8.0
 
@@ -336,12 +337,12 @@ https://claude.ai/artifact/GXmE57X7WjPsSZ4HrQmcdq
 недели и строки `MonthCalendar` следуют `range.calendar.firstWeekday` (проверить; если уже так,
 только тест).
 
-- [ ] **Шаг 1. Тесты:** `weekStartsOnSunday` — `CalendarRange(today: 2026-11-05, calendar:` григорианский с
+- [x] **Шаг 1. Тесты:** `weekStartsOnSunday` — `CalendarRange(today: 2026-11-05, calendar:` григорианский с
   `firstWeekday = 1)` даёт первую неделю с воскресенья 2026-11-01; `weekdayHeaderFollowsCalendar` —
   порядок символов дней в заголовке начинается с воскресенья (через внутреннюю функцию заголовка,
   открытую для тестов `internal`); `dayHookIsUsed` — с хуком подпись недели равна строке хука.
-- [ ] **Шаг 2–4.** Красный, реализация, зелёный весь пакет.
-- [ ] **Шаг 5.** `VERSION` 8.8.0, раздел CHANGELOG «8.8.0» (Added: позиция символа, копейки,
+- [x] **Шаг 2–4.** Красный, реализация, зелёный весь пакет.
+- [x] **Шаг 5.** `VERSION` 8.8.0, раздел CHANGELOG «8.8.0» (Added: позиция символа, копейки,
   вторичная группировка, разделители в поле ввода, `DesignKitDateFormat`; умолчания не меняются),
   `docs/design-system.md` DesignKit (§6 суммы, раздел про хуки). Коммит, push ветки, ссылка на PR
   владельцу: `https://github.com/dkicekeeper/DesignKit/compare/main...claude/formats?expand=1`.
@@ -397,7 +398,7 @@ nonisolated enum AppCalendar { static var current: Calendar }  // Calendar.curre
 начинается с «¤». `regionDidChange()` подписан на `NSLocale.currentLocaleDidChangeNotification`;
 `version` растёт только когда меняется `resolved`.
 
-- [ ] **Шаг 1. Тесты** `FormatPreferencesTests`:
+- [x] **Шаг 1. Тесты** `FormatPreferencesTests`:
   ```swift
   @Test func kazakhstanInRussian()   // region(ru_KZ) == ResolvedFormats(.words, 2, ",", "\u{00A0}", nil, .after, .whenPresent)
   @Test func englishInKazakhstanKeepsSymbolAfter() // region(en_KZ).symbol == .after
@@ -415,9 +416,9 @@ nonisolated enum AppCalendar { static var current: Calendar }  // Calendar.curre
   `true`; `resetToRegion()` → `false` и `choices == FormatChoices()`), `snapshotFollows`
   (`FormatSettings.snapshot == resolved` после `set`), `appCalendarUsesWeekStart`
   (`firstWeekday = 1` → `AppCalendar.current.firstWeekday == 1`).
-- [ ] **Шаг 2.** Красные. **Шаг 3.** Реализовать. **Шаг 4.** Оба сьюта зелёные, затем полный
+- [x] **Шаг 2.** Красные. **Шаг 3.** Реализовать. **Шаг 4.** Оба сьюта зелёные, затем полный
   прогон (удалённые `AmountSeparatorsTests` не должны оставить ссылок).
-- [ ] **Шаг 5.** Коммит «feat(formats): region-resolved format preferences and their store».
+- [x] **Шаг 5.** Коммит «feat(formats): region-resolved format preferences and their store».
 
 ### Задача 5 (Tenra): суммы и числа по выбранному формату
 
@@ -502,7 +503,7 @@ nonisolated enum AppCalendar { static var current: Calendar }  // Calendar.curre
 `.environment(\.calendar, AppCalendar.current)` на `MainTabView` (с `formatSettings.version` в
 зависимостях, задача 8).
 
-- [ ] **Шаг 1. Тесты** (`Asia/Almaty`; «воскресный» календарь `firstWeekday = 1`, «понедельничный» `2`):
+- [x] **Шаг 1. Тесты** (`Asia/Almaty`; «воскресный» календарь `firstWeekday = 1`, «понедельничный» `2`):
   ```swift
   @Test func thisWeekFromSunday()   // now вс 2026-11-08 10:00: start 2026-11-08 00:00, end 2026-11-15
   @Test func thisWeekFromMonday()   // то же now: start 2026-11-02 00:00
@@ -510,10 +511,10 @@ nonisolated enum AppCalendar { static var current: Calendar }  // Calendar.curre
   @Test func digestOnSunday()       // after чт 2026-11-05 12:00: 2026-11-08 09:00
   @Test func digestOnMonday()       // after тот же момент: 2026-11-09 09:00
   ```
-- [ ] **Шаг 2–3.** Красные; реализовать, потом заменить недельный `Calendar.current` в списке
+- [x] **Шаг 2–3.** Красные; реализовать, потом заменить недельный `Calendar.current` в списке
   файлов (`grep -nE 'weekOfYear|yearForWeekOfYear|firstWeekday|\.weekday' …`).
-- [ ] **Шаг 4.** Полный прогон (в том числе `InsightGranularity` и бюджеты).
-- [ ] **Шаг 5.** Коммит «feat(formats): one first day of the week for everything weekly».
+- [x] **Шаг 4.** Полный прогон (в том числе `InsightGranularity` и бюджеты).
+- [x] **Шаг 5.** Коммит «feat(formats): one first day of the week for everything weekly».
 
 ### Задача 8 (Tenra): экран «Форматы», подключение и обновление без перезапуска
 

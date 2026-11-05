@@ -1206,7 +1206,6 @@ extension InsightsService {
 
         // What stands out.
         var patterns: [WeekdayPatternItem] = []
-        let percent = FloatingPointFormatStyle<Double>.Percent().precision(.fractionLength(0)).sign(strategy: .always())
 
         // Weekends against weekdays, per day.
         let weekendDays = Double(weekdayDays[1] + weekdayDays[7])
@@ -1222,7 +1221,7 @@ extension InsightsService {
                     title: weekendsLead ? String(localized: "insights.byDay.weekends") : String(localized: "insights.byDay.weekdays"),
                     subtitle: String(
                         format: weekendsLead ? String(localized: "insights.byDay.vsWeekdays") : String(localized: "insights.byDay.vsWeekends"),
-                        change.formatted(percent)
+                        NumberDisplay.percent(change * 100, signed: true)
                     ),
                     amount: max(weekend, work),
                     icon: .sfSymbol(weekendsLead ? "sun.max.fill" : "briefcase.fill"),
@@ -1248,7 +1247,7 @@ extension InsightsService {
                 patterns.append(WeekdayPatternItem(
                     id: "month_third_\(third)",
                     title: title,
-                    subtitle: String(format: String(localized: "insights.byDay.vsRestOfMonth"), (average / rest - 1).formatted(percent)),
+                    subtitle: String(format: String(localized: "insights.byDay.vsRestOfMonth"), NumberDisplay.percent((average / rest - 1) * 100, signed: true)),
                     amount: average,
                     icon: .sfSymbol("calendar"),
                     tint: AppColors.accent
@@ -1279,7 +1278,7 @@ extension InsightsService {
                 title: InsightsService.categoryLabel(for: standout.key),
                 subtitle: String(format: String(localized: "insights.byDay.categoryLift"),
                                  Self.onWeekdayPhrase(standout.weekday).capitalizedFirstLetter,
-                                 standout.lift.formatted(.number.precision(.fractionLength(1)))),
+                                 NumberDisplay.decimal(standout.lift, fractionDigits: 1)),
                 amount: standout.amount,
                 icon: look.icon,
                 tint: look.color

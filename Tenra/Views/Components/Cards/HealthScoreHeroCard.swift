@@ -65,7 +65,7 @@ struct HealthScoreHeroCard: View {
 
     /// "+5", "−3" (a minus sign, not a hyphen), "0".
     static func pointsText(_ change: Int) -> String {
-        let magnitude = abs(change).formatted(.number)
+        let magnitude = NumberDisplay.integer(abs(change))
         return change > 0 ? "+" + magnitude : (change < 0 ? "\u{2212}" + magnitude : magnitude)
     }
 }

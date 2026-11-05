@@ -12,12 +12,16 @@ import Foundation
 nonisolated enum NumberDisplay {
 
     /// `percentValue` is already a percentage: 34.2 reads "34,2%" (no space before the sign).
+    /// `signed` writes "+" before a positive value ("+12%"); a negative keeps its minus.
     static func percent(
         _ percentValue: Double,
         fractionDigits: Int = 0,
+        signed: Bool = false,
         formats: ResolvedFormats = FormatSettings.snapshot
     ) -> String {
-        decimal(percentValue, fractionDigits: fractionDigits, formats: formats) + "%"
+        let text = decimal(percentValue, fractionDigits: fractionDigits...fractionDigits, formats: formats)
+        let sign = signed && percentValue > 0 && !text.hasPrefix("-") ? "+" : ""
+        return sign + text + "%"
     }
 
     /// A number with exactly `fractionDigits` fraction digits, grouped thousands and the
@@ -27,14 +31,24 @@ nonisolated enum NumberDisplay {
         fractionDigits: Int,
         formats: ResolvedFormats = FormatSettings.snapshot
     ) -> String {
+        decimal(value, fractionDigits: fractionDigits...fractionDigits, formats: formats)
+    }
+
+    /// A number with between `fractionDigits.lowerBound` and `upperBound` fraction digits
+    /// (`0...1` drops a zero fraction: 12 reads "12", 12.5 reads "12,5").
+    static func decimal(
+        _ value: Double,
+        fractionDigits: ClosedRange<Int>,
+        formats: ResolvedFormats = FormatSettings.snapshot
+    ) -> String {
         let formatter = NumberFormatter()
         formatter.locale = Locale(identifier: "en_US_POSIX")
         formatter.numberStyle = .decimal
         formatter.usesGroupingSeparator = true
         formatter.groupingSize = 3
         formatter.secondaryGroupingSize = formats.secondaryGroupingSize ?? 0
-        formatter.minimumFractionDigits = fractionDigits
-        formatter.maximumFractionDigits = fractionDigits
+        formatter.minimumFractionDigits = fractionDigits.lowerBound
+        formatter.maximumFractionDigits = fractionDigits.upperBound
         formatter.roundingMode = .halfUp
         let plain = formatter.string(from: NSNumber(value: value)) ?? String(value)
         var result = ""
@@ -46,5 +60,10 @@ nonisolated enum NumberDisplay {
             }
         }
         return result
+    }
+
+    /// A whole number with grouped thousands: 1234 reads "1,234" under commaDot.
+    static func integer(_ value: Int, formats: ResolvedFormats = FormatSettings.snapshot) -> String {
+        decimal(Double(value), fractionDigits: 0, formats: formats)
     }
 }

@@ -119,8 +119,8 @@ private struct AssistantMetricCard: View {
     private var value: MetricCardValue {
         switch metric.value {
         case .amount(let amount, let currency): .amount(amount, currency: currency)
-        case .percent(let percent): .text(percent.formatted(.number.precision(.fractionLength(0...1))))
-        case .count(let count): .text(count.formatted(.number.precision(.fractionLength(0))))
+        case .percent(let percent): .text(NumberDisplay.decimal(percent, fractionDigits: 0...1))
+        case .count(let count): .text(NumberDisplay.decimal(count, fractionDigits: 0))
         }
     }
 

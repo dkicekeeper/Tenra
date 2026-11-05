@@ -43,3 +43,35 @@ struct NumberDisplayTests {
         #expect(NumberDisplay.percent(-8.56, fractionDigits: 1, formats: formats(decimal: ".", grouping: ",")) == "-8.6%")
     }
 }
+
+@Suite("NumberDisplay variants")
+struct NumberDisplayVariantTests {
+    private func formats(_ decimal: String, _ grouping: String) -> ResolvedFormats {
+        ResolvedFormats(
+            dateStyle: .words, firstWeekday: 2, decimalSeparator: decimal, groupingSeparator: grouping,
+            secondaryGroupingSize: nil, symbol: .after, cents: .whenPresent)
+    }
+
+    @Test func rangeDropsAZeroFraction() {
+        let dotComma = formats(",", ".")
+        let spaceComma = formats(",", "\u{00A0}")
+        #expect(NumberDisplay.decimal(12.0, fractionDigits: 0...1, formats: dotComma) == "12")
+        #expect(NumberDisplay.decimal(12.5, fractionDigits: 0...1, formats: dotComma) == "12,5")
+        #expect(NumberDisplay.decimal(12.0, fractionDigits: 0...1, formats: spaceComma) == "12")
+        #expect(NumberDisplay.decimal(12.5, fractionDigits: 0...1, formats: spaceComma) == "12,5")
+    }
+
+    @Test func integerGroupsThousands() {
+        #expect(NumberDisplay.integer(1234, formats: formats(".", ",")) == "1,234")
+        #expect(NumberDisplay.integer(999, formats: formats(".", ",")) == "999")
+    }
+
+    @Test func signedPercentAlwaysShowsPlusForPositive() {
+        let f = formats(".", ",")
+        #expect(NumberDisplay.percent(12, signed: true, formats: f) == "+12%")
+        // A negative keeps the ASCII hyphen-minus the formatter writes.
+        #expect(NumberDisplay.percent(-8, signed: true, formats: f) == "-8%")
+        #expect(NumberDisplay.percent(0, signed: true, formats: f) == "0%")
+        #expect(NumberDisplay.percent(12, formats: f) == "12%")
+    }
+}

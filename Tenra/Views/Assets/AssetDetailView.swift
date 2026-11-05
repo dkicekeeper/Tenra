@@ -722,20 +722,20 @@ struct AssetDetailView: View {
         }
         var rows: [InfoRowConfig] = []
         if let area = number(.areaM2) {
-            rows.append(row(.areaM2, area.formatted(.number.precision(.fractionLength(0...1)))))
+            rows.append(row(.areaM2, NumberDisplay.decimal(area, fractionDigits: 0...1)))
             if value > 0 {
                 rows.append(InfoRowConfig(icon: "square.grid.3x3", label: String(localized: "asset.pricePerM2"), amount: value / area, currency: asset.currency))
             }
         }
         if let ares = number(.landAres) {
-            rows.append(row(.landAres, ares.formatted(.number.precision(.fractionLength(0...1)))))
+            rows.append(row(.landAres, NumberDisplay.decimal(ares, fractionDigits: 0...1)))
             // Land is priced by the are (the sotka); a house by its floor area.
             if asset.kind == .land, value > 0 {
                 rows.append(InfoRowConfig(icon: "square.grid.3x3", label: String(localized: "asset.pricePerAre"), amount: value / ares, currency: asset.currency))
             }
         }
         if let rooms = number(.rooms) {
-            rows.append(row(.rooms, Int(rooms).formatted()))
+            rows.append(row(.rooms, NumberDisplay.integer(Int(rooms))))
         }
         // A year has no grouping: "2015", not "2 015".
         if let year = number(.yearBuilt) {

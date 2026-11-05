@@ -227,10 +227,10 @@ struct AssetEstimateSheet: View {
     static func details(of listing: AssetEstimate.Listing) -> String? {
         var parts: [String] = []
         if let size = listing.sizeM2 {
-            parts.append(String(format: String(localized: "asset.estimate.squareMetres"), size.formatted(.number.precision(.fractionLength(0...1)))))
+            parts.append(String(format: String(localized: "asset.estimate.squareMetres"), NumberDisplay.decimal(size, fractionDigits: 0...1)))
         }
         if let ares = listing.landAres {
-            parts.append(String(format: String(localized: "asset.estimate.ares"), ares.formatted(.number.precision(.fractionLength(0...1)))))
+            parts.append(String(format: String(localized: "asset.estimate.ares"), NumberDisplay.decimal(ares, fractionDigits: 0...1)))
         }
         if let rooms = listing.rooms {
             parts.append(String(format: String(localized: "asset.estimate.rooms"), rooms))

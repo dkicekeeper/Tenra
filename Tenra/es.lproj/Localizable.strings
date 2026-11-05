@@ -1367,6 +1367,7 @@
 "settings.cloud.iCloud.movedToICloud" = "Copias de seguridad movidas a iCloud";
 "settings.cloud.iCloud.movedToLocal" = "Copias de seguridad movidas a este dispositivo";
 "settings.cloud.tapToRestoreHint" = "Toca una copia de seguridad para restaurarla. Mantenla pulsada para eliminarla.";
+"settings.cloud.backupDate" = "%1$@, %2$@";
 "alert.restore.title" = "¿Restaurar copia de seguridad?";
 "alert.restore.message" = "Todos los datos actuales se reemplazarán con la copia de seguridad del %@.";
 "alert.restore.confirm" = "Restaurar";

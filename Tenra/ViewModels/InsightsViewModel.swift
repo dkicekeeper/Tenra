@@ -52,7 +52,13 @@ final class InsightsViewModel {
     /// Monotonic token identifying the current recompute. MainActor writes from a detached
     /// task only land if their captured generation still matches — so a superseded/cancelled
     /// task can never clobber the cache with stale data.
-    @ObservationIgnored private var computeGeneration = 0
+    @ObservationIgnored private(set) var computeGeneration = 0
+
+    /// The generation current when the date and amount formats last changed: the first pass
+    /// started after it (a higher generation) wrote its text in the new formats, and it rewrites
+    /// the signals already scheduled. A pass already running when they changed wrote the old
+    /// formats, so it never takes the rewrite.
+    @ObservationIgnored private var signalRewriteAfterGeneration: Int?
 
     /// Debounce task — coalesces rapid mutation bursts into a single recompute.
     @ObservationIgnored private var debounceTask: Task<Void, Never>?
@@ -313,6 +319,21 @@ final class InsightsViewModel {
 
     /// Passes `refreshInsightsAndWait` asks for while data changes keep cancelling them.
     private static let refreshAttempts = 4
+
+    /// The formats changed (AppCoordinator.formatsDidChange): the first pass that starts from
+    /// now on rewrites the signals already scheduled with its text. A second change before that
+    /// pass starts moves the boundary to it.
+    func rewritePendingSignalsWithNextPass() {
+        signalRewriteAfterGeneration = computeGeneration
+    }
+
+    /// Whether the pass of `generation` rewrites the pending signals: once, for the first pass
+    /// started after the last format change.
+    func takesPendingSignalRewrite(generation: Int) -> Bool {
+        guard let after = signalRewriteAfterGeneration, generation > after else { return false }
+        signalRewriteAfterGeneration = nil
+        return true
+    }
 
     func selectFilter(_ filter: InsightFilter) {
         selectedFilter = filter
@@ -675,7 +696,12 @@ final class InsightsViewModel {
                 // insights against the alert history — new critical/warning signals
                 // fire a local push (7-day dedup + 5/week cap in InsightSignalService).
                 if let monthInsights = finalInsights[.month] {
-                    Task { await InsightSignalService.shared.processInsights(monthInsights) }
+                    // Decided here, on the main actor at the pass's final write: a format change
+                    // after it hands the rewrite to the next pass instead.
+                    let rewritesPending = self.takesPendingSignalRewrite(generation: myGen)
+                    Task {
+                        await InsightSignalService.shared.processInsights(monthInsights, rewritingPending: rewritesPending)
+                    }
                 }
                 // Weekly digest (Phase D): refresh the push on the first day of the week, 09:00,
                 // from the freshly computed week buckets.

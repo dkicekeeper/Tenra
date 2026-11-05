@@ -26,14 +26,14 @@ nonisolated struct BackupMetadata: Codable, Sendable, Identifiable {
         NumberDisplay.fileSize(fileSize)
     }
 
+    /// "3 нояб. 2026, 14:30": the day in the chosen date style, with its year, then the time.
     var formattedDate: String {
-        Self.dateFormatter.string(from: date)
+        formattedDate(style: FormatSettings.snapshot.dateStyle, locale: .current)
     }
 
-    private nonisolated static let dateFormatter: DateFormatter = {
-        let f = DateFormatter()
-        f.dateStyle = .medium
-        f.timeStyle = .short
-        return f
-    }()
+    func formattedDate(style: DateStyle, locale: Locale) -> String {
+        let day = DateFormatters.day(date, includeYear: true, abbreviated: true, style: style, locale: locale)
+        let time = date.formatted(Date.FormatStyle(date: .omitted, time: .shortened, locale: locale))
+        return String(format: String(localized: "settings.cloud.backupDate"), day, time)
+    }
 }

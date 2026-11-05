@@ -1367,6 +1367,7 @@
 "settings.cloud.iCloud.movedToICloud" = "백업을 iCloud로 옮겼어요";
 "settings.cloud.iCloud.movedToLocal" = "백업을 이 기기로 옮겼어요";
 "settings.cloud.tapToRestoreHint" = "백업을 탭하면 복원돼요. 길게 누르면 삭제할 수 있어요.";
+"settings.cloud.backupDate" = "%1$@ %2$@";
 "alert.restore.title" = "백업을 복원할까요?";
 "alert.restore.message" = "현재 데이터가 모두 %@의 백업으로 대체돼요.";
 "alert.restore.confirm" = "복원";

@@ -1367,6 +1367,7 @@
 "settings.cloud.iCloud.movedToICloud" = "Backups movidos para o iCloud";
 "settings.cloud.iCloud.movedToLocal" = "Backups movidos para este dispositivo";
 "settings.cloud.tapToRestoreHint" = "Toque em um backup para restaurá-lo. Toque e segure para apagar.";
+"settings.cloud.backupDate" = "%1$@, %2$@";
 "alert.restore.title" = "Restaurar backup?";
 "alert.restore.message" = "Todos os dados atuais serão substituídos pelo backup de %@.";
 "alert.restore.confirm" = "Restaurar";

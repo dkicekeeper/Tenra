@@ -937,8 +937,9 @@ class AppCoordinator {
     private func formatsDidChange(_ formats: ResolvedFormats) {
         // DesignKit's amounts and its dates (FormattedAmountText, the calendars, the pickers).
         DesignKitBridge.apply(formats)
-        // The signals already scheduled get the next pass's text (InsightSignalService).
-        InsightSignalService.shared.rewritesPendingOnNextPass = true
+        // The signals already scheduled get the text of the first pass that starts from here on,
+        // never that of a pass already running in the old formats (InsightsViewModel).
+        insightsViewModel.rewritePendingSignalsWithNextPass()
         formatsRefresh.request(())
     }
 
@@ -946,6 +947,12 @@ class AppCoordinator {
     /// run collapse into one more (CoalescingTask).
     @ObservationIgnored private lazy var formatsRefresh = CoalescingTask<Void> { [weak self] _ in
         await self?.rebuildFormattedText()
+    }
+
+    /// Returns once the rebuild a format change started is over, and any run it queued (tests:
+    /// the rebuild writes Ten's inbox, the widget snapshot and the reminders).
+    func waitUntilFormatsRefreshIdle() async {
+        await formatsRefresh.waitUntilIdle()
     }
 
     private func rebuildFormattedText() async {

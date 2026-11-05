@@ -1367,6 +1367,7 @@
 "settings.cloud.iCloud.movedToICloud" = "バックアップをiCloudに移動しました";
 "settings.cloud.iCloud.movedToLocal" = "バックアップをこのデバイスに移動しました";
 "settings.cloud.tapToRestoreHint" = "バックアップをタップすると復元できます。長押しで削除します。";
+"settings.cloud.backupDate" = "%1$@ %2$@";
 "alert.restore.title" = "バックアップを復元しますか？";
 "alert.restore.message" = "現在のデータはすべて、%@のバックアップに置き換えられます。";
 "alert.restore.confirm" = "復元";

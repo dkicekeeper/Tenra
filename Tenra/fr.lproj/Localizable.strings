@@ -1367,6 +1367,7 @@
 "settings.cloud.iCloud.movedToICloud" = "Sauvegardes déplacées vers iCloud";
 "settings.cloud.iCloud.movedToLocal" = "Sauvegardes déplacées vers cet appareil";
 "settings.cloud.tapToRestoreHint" = "Touchez une sauvegarde pour la restaurer. Maintenez le doigt dessus pour la supprimer.";
+"settings.cloud.backupDate" = "%1$@, %2$@";
 "alert.restore.title" = "Restaurer la sauvegarde ?";
 "alert.restore.message" = "Toutes les données actuelles seront remplacées par la sauvegarde du %@.";
 "alert.restore.confirm" = "Restaurer";

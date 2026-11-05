@@ -1367,6 +1367,7 @@
 "settings.cloud.iCloud.movedToICloud" = "Көшірмелер iCloud-қа тасымалданды";
 "settings.cloud.iCloud.movedToLocal" = "Көшірмелер осы құрылғыға тасымалданды";
 "settings.cloud.tapToRestoreHint" = "Қалпына келтіру үшін көшірмені түртіңіз. Жою үшін басып тұрыңыз.";
+"settings.cloud.backupDate" = "%1$@, %2$@";
 "alert.restore.title" = "Көшірмені қалпына келтіру керек пе?";
 "alert.restore.message" = "Барлық ағымдағы деректер %@ күнгі сақтық көшірмемен ауыстырылады.";
 "alert.restore.confirm" = "Қалпына келтіру";

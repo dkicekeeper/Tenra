@@ -159,8 +159,10 @@ Tenra의 새로운 기능:
    History and Analytics show it after going back, without a relaunch; "Use the region's
    format" shows only after a change. VoiceOver reads amounts as numbers with "1’234.56" and
    "1.234,56". The widget shows amounts and dates in a chosen format. A system DatePicker (the
-   add form) and the date range sheet start the week on the chosen day. The Home filter chip
-   fits with "This week" and with a custom range. A change while Analytics has a page open (a
+   add form) and the date range sheet start the week on the chosen day. The date range sheet's
+   header ("3 нояб. 2026 – 10 нояб. 2026", longer in pt-BR and es) fits. The Home filter chip
+   fits with "This week" and with a custom range. Settings › Backups dates each backup in the
+   chosen style with its year, then the time. A change while Analytics has a page open (a
    category's breakdown, an insight) leaves the page open and shows the new format there; Ten's
    message on Home reads the new format; Settings › Insight alerts names the chosen first day.
    Refuse the system prompt from quiet (provisional) notifications and check iOS Settings: if

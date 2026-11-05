@@ -1367,6 +1367,7 @@
 "settings.cloud.iCloud.movedToICloud" = "Копии перенесены в iCloud";
 "settings.cloud.iCloud.movedToLocal" = "Копии перенесены на это устройство";
 "settings.cloud.tapToRestoreHint" = "Нажмите на копию, чтобы восстановить её. Удерживайте, чтобы удалить.";
+"settings.cloud.backupDate" = "%1$@, %2$@";
 "alert.restore.title" = "Восстановить данные?";
 "alert.restore.message" = "Все текущие данные будут заменены копией от %@.";
 "alert.restore.confirm" = "Восстановить";

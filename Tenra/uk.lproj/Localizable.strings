@@ -1367,6 +1367,7 @@
 "settings.cloud.iCloud.movedToICloud" = "Резервні копії перенесено в iCloud";
 "settings.cloud.iCloud.movedToLocal" = "Резервні копії перенесено на цей пристрій";
 "settings.cloud.tapToRestoreHint" = "Торкніться резервної копії, щоб відновити її. Утримуйте, щоб видалити.";
+"settings.cloud.backupDate" = "%1$@, %2$@";
 "alert.restore.title" = "Відновити резервну копію?";
 "alert.restore.message" = "Усі поточні дані буде замінено резервною копією від %@.";
 "alert.restore.confirm" = "Відновити";

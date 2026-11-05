@@ -117,10 +117,6 @@ final class InsightSignalService {
     private let defaults: UserDefaults
     private let settings: InsightSignalSettings
 
-    /// Set when the date and amount formats change (AppCoordinator): the next pass rewrites
-    /// the signals already scheduled with the fresh insights' text, at the times they had.
-    var rewritesPendingOnNextPass = false
-
     /// `settings` is optional rather than defaulting to `.shared` directly: default
     /// argument expressions are evaluated in the *caller's* isolation, so a
     /// MainActor-isolated singleton in that position warns (and is an error in the
@@ -336,7 +332,11 @@ final class InsightSignalService {
     /// at organic times inside the 09:00-21:00 delivery window. Call after every
     /// insight recompute (foreground or BGAppRefresh) - dedup, the weekly cap and
     /// the per-run cap make repeated calls safe.
-    func processInsights(_ insights: [Insight], now: Date = Date()) async {
+    ///
+    /// `rewritingPending`: the date and amount formats changed before this pass started
+    /// (`InsightsViewModel.takesPendingSignalRewrite`), so the signals already scheduled take
+    /// these insights' text, at the times they had.
+    func processInsights(_ insights: [Insight], now: Date = Date(), rewritingPending: Bool = false) async {
         let center = UNUserNotificationCenter.current()
         let auth = await center.notificationSettings().authorizationStatus
         guard auth == .authorized || auth == .provisional else {
@@ -355,8 +355,7 @@ final class InsightSignalService {
             center.removePendingNotificationRequests(withIdentifiers: stale)
             Self.logger.debug("🔔 [Signals] cancelled \(stale.count) stale pending signal(s)")
         }
-        if rewritesPendingOnNextPass {
-            rewritesPendingOnNextPass = false
+        if rewritingPending {
             await rewritePending(from: insights, center: center)
         }
 

@@ -1367,6 +1367,7 @@
 "settings.cloud.iCloud.movedToICloud" = "Yedekler iCloud'a taşındı";
 "settings.cloud.iCloud.movedToLocal" = "Yedekler bu cihaza taşındı";
 "settings.cloud.tapToRestoreHint" = "Geri yüklemek için bir yedeğe dokun. Silmek için basılı tut.";
+"settings.cloud.backupDate" = "%1$@, %2$@";
 "alert.restore.title" = "Yedek Geri Yüklensin mi?";
 "alert.restore.message" = "Tüm mevcut veriler %@ tarihli yedekle değiştirilecek.";
 "alert.restore.confirm" = "Geri Yükle";

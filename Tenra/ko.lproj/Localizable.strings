@@ -836,7 +836,6 @@
 "insights.noInsightsForFilter" = "이 카테고리에 대한 분석이 없어요";
 "insights.topCategory" = "지출이 가장 많은 카테고리";
 "insights.topMerchant" = "지출이 가장 많은 가맹점";
-"insights.ofTotal" = "전체 지출 중";
 "insights.spendingSpike" = "이상 지출이 감지됐어요";
 "insights.monthOverMonth" = "월간 지출 변화";
 "insights.monthOverMonth.week" = "주간 지출";
@@ -2624,3 +2623,4 @@
 "settings.spendingReminder.toggle" = "저녁에 알려 주기";
 "settings.spendingReminder.time" = "시간";
 "settings.spendingReminder.footer" = "Tenra에 기록이 없는 날에만 텐이 알려 드려요. 앱을 열지 않으시면 알림이 줄어들어요.";
+"insights.topCategory.share" = "%1$@, 지출의 %2$@";

@@ -16,8 +16,6 @@ struct OnboardingAutoCaptureStep: View {
     /// The bank notification row: iOS 27 with its setup guide in the build.
     var showsBankNotifications = OnboardingViewModel.offersBankNotifications
 
-    @State private var showingWalletGuide = false
-    @State private var showingNotificationGuide = false
 
     var body: some View {
         OnboardingPageContainer(
@@ -36,26 +34,27 @@ struct OnboardingAutoCaptureStep: View {
         ) {
             ScrollView {
                 FormSection {
+                    // A guide to open is a row with a chevron (`.navigation`, DesignKit's rule);
+                    // the statement is a choice for after the start, so a switch.
                     UniversalRow(
                         String(localized: "onboarding.autoCapture.applePay.title"),
                         icon: "wave.3.right",
                         hint: String(localized: "onboarding.autoCapture.applePay.hint"),
-                        accessory: .action { showingWalletGuide = true }
+                        accessory: .navigation { WalletSetupGuideView() }
                     )
                     if showsBankNotifications {
                         UniversalRow(
                             String(localized: "onboarding.autoCapture.notifications.title"),
                             icon: "bell.badge",
                             hint: String(localized: "onboarding.autoCapture.notifications.hint"),
-                            accessory: .action { showingNotificationGuide = true }
+                            accessory: .navigation { BankNotificationGuideView() }
                         )
                     }
                     UniversalRow(
                         String(localized: "onboarding.autoCapture.statement.title"),
                         icon: "doc.text.viewfinder",
-                        value: vm.afterFinish == .statement ? String(localized: "onboarding.autoCapture.afterStart") : nil,
                         hint: String(localized: "onboarding.autoCapture.statement.hint"),
-                        accessory: .action { vm.toggleAfterFinish(.statement) }
+                        accessory: .toggle(statementAfterStart)
                     )
                 }
                 // The onboarding stack centres its text; rows read from the leading edge.
@@ -64,16 +63,14 @@ struct OnboardingAutoCaptureStep: View {
                 .padding(.top, AppSpacing.md)
             }
         }
-        .sheet(isPresented: $showingWalletGuide) {
-            NavigationStack {
-                WalletSetupGuideView()
-            }
-        }
-        .sheet(isPresented: $showingNotificationGuide) {
-            NavigationStack {
-                BankNotificationGuideView()
-            }
-        }
+    }
+
+    /// On: after "Start", Ten (or the import tab) opens with a statement to pick.
+    private var statementAfterStart: Binding<Bool> {
+        Binding(
+            get: { vm.afterFinish == .statement },
+            set: { _ in vm.toggleAfterFinish(.statement) }
+        )
     }
 }
 

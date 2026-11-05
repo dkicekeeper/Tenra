@@ -22,10 +22,23 @@ import SwiftUI
 
 enum DesignKitBridge {
     /// Call once from `TenraApp.init()`, before any view renders.
+    /// The decimal and grouping separators of `locale`'s number format (1 234,56 in Kazakhstan,
+    /// 1,234.56 in the US, 1.234,56 in Germany).
+    nonisolated static func amountSeparators(for locale: Locale) -> (decimal: String, grouping: String) {
+        (locale.decimalSeparator ?? ".", locale.groupingSeparator ?? " ")
+    }
+
     static func configure() {
         // Inter comes from DesignKit's bundle (Tenra's own copy and UIAppFonts were removed).
         // The accent stays DesignKit's default, system indigo (= Tenra's AccentColor).
         DesignKitFonts.registerIfNeeded()
+        // Amounts in the reader's own number format (the owner's decision of 2026-11-05):
+        // DesignKit's default is a fixed "." and " " for every language.
+        let separators = amountSeparators(for: .current)
+        var amounts = AmountDisplayConfiguration.shared
+        amounts.decimalSeparator = separators.decimal
+        amounts.thousandsSeparator = separators.grouping
+        AmountDisplayConfiguration.shared = amounts
         DesignKitLogoLoader.loader = { brandName in
             await LogoService.shared.logoImage(brandName: brandName)
         }

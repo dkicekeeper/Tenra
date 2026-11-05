@@ -836,7 +836,6 @@
 "insights.noInsightsForFilter" = "このカテゴリの分析はありません";
 "insights.topCategory" = "支出トップのカテゴリ";
 "insights.topMerchant" = "支出トップの店舗";
-"insights.ofTotal" = "全支出のうち";
 "insights.spendingSpike" = "異常な支出を検出しました";
 "insights.monthOverMonth" = "月間の支出の変化";
 "insights.monthOverMonth.week" = "週間の支出";
@@ -2624,3 +2623,4 @@
 "settings.spendingReminder.toggle" = "夜にお知らせする";
 "settings.spendingReminder.time" = "時刻";
 "settings.spendingReminder.footer" = "Tenra に記録のない日だけテンがお知らせします。しばらく開かないと、お知らせは少なくなります。";
+"insights.topCategory.share" = "%1$@、支出の%2$@";

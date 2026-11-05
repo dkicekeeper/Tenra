@@ -836,7 +836,6 @@
 "insights.noInsightsForFilter" = "Нет данных для этой категории";
 "insights.topCategory" = "Топ категория расходов";
 "insights.topMerchant" = "Топ-продавец";
-"insights.ofTotal" = "от общих расходов";
 "insights.spendingSpike" = "Обнаружены необычные траты";
 "insights.monthOverMonth" = "Расходы за месяц";
 "insights.monthOverMonth.week" = "Расходы за неделю";
@@ -2624,3 +2623,4 @@
 "settings.spendingReminder.toggle" = "Напоминать вечером";
 "settings.spendingReminder.time" = "Время";
 "settings.spendingReminder.footer" = "Тэн напомнит только в дни, когда в Tenra ничего не записано, и будет писать реже, если вы не заглядываете.";
+"insights.topCategory.share" = "%1$@, %2$@ трат";

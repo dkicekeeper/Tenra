@@ -836,7 +836,6 @@
 "insights.noInsightsForFilter" = "Keine Einblicke für diese Kategorie";
 "insights.topCategory" = "Top-Ausgabenkategorie";
 "insights.topMerchant" = "Top-Händler";
-"insights.ofTotal" = "der Gesamtausgaben";
 "insights.spendingSpike" = "Ungewöhnliche Ausgaben erkannt";
 "insights.monthOverMonth" = "Monatliche Ausgabenveränderung";
 "insights.monthOverMonth.week" = "Wöchentliche Ausgaben";
@@ -2624,3 +2623,4 @@
 "settings.spendingReminder.toggle" = "Abends erinnern";
 "settings.spendingReminder.time" = "Uhrzeit";
 "settings.spendingReminder.footer" = "Ten erinnert Sie nur an Tagen, an denen in Tenra nichts eingetragen ist, und meldet sich seltener, wenn Sie nicht vorbeischauen.";
+"insights.topCategory.share" = "%1$@, %2$@ der Ausgaben";

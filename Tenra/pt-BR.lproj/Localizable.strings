@@ -836,7 +836,6 @@
 "insights.noInsightsForFilter" = "Nenhuma análise para esta categoria";
 "insights.topCategory" = "Maior Categoria de Gastos";
 "insights.topMerchant" = "Estabelecimento com mais gastos";
-"insights.ofTotal" = "do gasto total";
 "insights.spendingSpike" = "Gasto Incomum Detectado";
 "insights.monthOverMonth" = "Variação Mensal de Gastos";
 "insights.monthOverMonth.week" = "Gastos Semanais";
@@ -2624,3 +2623,4 @@
 "settings.spendingReminder.toggle" = "Lembrar à noite";
 "settings.spendingReminder.time" = "Horário";
 "settings.spendingReminder.footer" = "Ten lembra você só nos dias sem registros no Tenra, e escreve menos se você não aparecer.";
+"insights.topCategory.share" = "%1$@, %2$@ dos gastos";

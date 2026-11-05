@@ -836,7 +836,6 @@
 "insights.noInsightsForFilter" = "Nessuna analisi per questa categoria";
 "insights.topCategory" = "Categoria di spesa principale";
 "insights.topMerchant" = "Esercente principale";
-"insights.ofTotal" = "della spesa totale";
 "insights.spendingSpike" = "Spesa insolita rilevata";
 "insights.monthOverMonth" = "Variazione mensile delle spese";
 "insights.monthOverMonth.week" = "Spesa settimanale";
@@ -2624,3 +2623,4 @@
 "settings.spendingReminder.toggle" = "Ricordamelo la sera";
 "settings.spendingReminder.time" = "Orario";
 "settings.spendingReminder.footer" = "Ten te lo ricorda solo nei giorni senza voci in Tenra, e scrive meno spesso se non passi.";
+"insights.topCategory.share" = "%1$@, %2$@ delle spese";

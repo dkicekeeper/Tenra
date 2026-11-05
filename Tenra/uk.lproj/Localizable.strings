@@ -836,7 +836,6 @@
 "insights.noInsightsForFilter" = "Немає аналітики для цієї категорії";
 "insights.topCategory" = "Головна категорія витрат";
 "insights.topMerchant" = "Головний продавець";
-"insights.ofTotal" = "від усіх витрат";
 "insights.spendingSpike" = "Виявлено незвичні витрати";
 "insights.monthOverMonth" = "Зміна витрат за місяць";
 "insights.monthOverMonth.week" = "Витрати за тиждень";
@@ -2624,3 +2623,4 @@
 "settings.spendingReminder.toggle" = "Нагадувати ввечері";
 "settings.spendingReminder.time" = "Час";
 "settings.spendingReminder.footer" = "Тен нагадає лише в дні, коли в Tenra нічого не записано, і писатиме рідше, якщо ви не заглядаєте.";
+"insights.topCategory.share" = "%1$@, %2$@ витрат";

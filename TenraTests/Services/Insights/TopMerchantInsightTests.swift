@@ -80,7 +80,8 @@ struct TopMerchantInsightTests {
             tx("MAGNUM 12", 9_000, daysAgo: -5)                         // future: not realized
         ]))
         #expect(insight.type == .topMerchant)
-        #expect(insight.subtitle == "Magnum")
+        #expect(insight.subtitle == InsightsService.shareOfSpendingSubtitle(name: "Magnum", sharePercent: 60))
+        #expect(insight.trend == nil)       // the share is not a change: no "↘ +60%" badge
         #expect(insight.metric.value == 9_000)
         guard case .categoryBreakdown(let items) = insight.detailData else {
             Issue.record("expected a breakdown")
@@ -103,7 +104,7 @@ struct TopMerchantInsightTests {
             tx("GREENMART", 100),
             tx("MAGNUM 12", 90_000, daysAgo: 70)
         ], granularity: .month))
-        #expect(insight.subtitle == "Small")
+        #expect(insight.subtitle == InsightsService.shareOfSpendingSubtitle(name: "Small", sharePercent: 50))
         guard case .categoryBreakdown(let items) = insight.detailData else {
             Issue.record("expected a breakdown")
             return

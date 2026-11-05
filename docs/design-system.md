@@ -447,6 +447,14 @@ Rendering a money amount?
     └── AmountDisplayConfiguration.formatter (cached; never .makeNumberFormatter())
 ```
 
+### Separators
+
+Amounts take the decimal and grouping separators of the phone's region (1 234,56 in Kazakhstan,
+1,234.56 in the US, 1.234,56 in Germany): `DesignKitBridge.configure()` sets them on
+`AmountDisplayConfiguration.shared` from `DesignKitBridge.amountSeparators(for: .current)`.
+DesignKit's own default is "." and " " in every language. Stored amounts, CSV and parsing are
+not affected (`AmountFormatter` keeps its fixed format).
+
 ### Hidden amounts
 
 The eye on Home sets `\.amountsHidden`. `FormattedAmountText`, `RedactableAmount` and the rows

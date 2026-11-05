@@ -836,7 +836,6 @@
 "insights.noInsightsForFilter" = "No insights for this category";
 "insights.topCategory" = "Top Spending Category";
 "insights.topMerchant" = "Top Merchant";
-"insights.ofTotal" = "of total spending";
 "insights.spendingSpike" = "Unusual Spending Detected";
 "insights.monthOverMonth" = "Monthly Spending Change";
 "insights.monthOverMonth.week" = "Weekly Spending";
@@ -2624,3 +2623,4 @@
 "settings.spendingReminder.toggle" = "Remind me in the evening";
 "settings.spendingReminder.time" = "Time";
 "settings.spendingReminder.footer" = "Ten reminds you only on days with nothing logged in Tenra, and writes less often if you don’t drop by.";
+"insights.topCategory.share" = "%1$@, %2$@ of spending";

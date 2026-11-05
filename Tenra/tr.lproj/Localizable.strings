@@ -836,7 +836,6 @@
 "insights.noInsightsForFilter" = "Bu kategori için analiz yok";
 "insights.topCategory" = "En Çok Harcanan Kategori";
 "insights.topMerchant" = "En Çok Harcanan İşyeri";
-"insights.ofTotal" = "toplam harcama payı";
 "insights.spendingSpike" = "Olağan Dışı Harcama Tespit Edildi";
 "insights.monthOverMonth" = "Aylık Harcama Değişimi";
 "insights.monthOverMonth.week" = "Haftalık Harcama";
@@ -2624,3 +2623,4 @@
 "settings.spendingReminder.toggle" = "Akşam hatırlat";
 "settings.spendingReminder.time" = "Saat";
 "settings.spendingReminder.footer" = "Ten yalnızca Tenra'ya hiçbir şey yazılmayan günlerde hatırlatır; uğramazsan daha seyrek yazar.";
+"insights.topCategory.share" = "%1$@, harcamalardaki payı %2$@";

@@ -43,19 +43,27 @@ struct OnboardingCategoryGrid: View {
             return "questionmark.circle"
         }()
 
-        CategoryChip(
-            category: name,
-            type: preset.type,
-            customCategories: [],
-            isSelected: isSelected,
-            onTap: {
-                selectable.wrappedValue.isSelected.toggle()
-            },
-            budgetProgress: nil,
-            iconName: iconName,
-            iconColor: color
-        )
-        .opacity(isSelected ? 1 : 0.55)
+        // The check under the tile says it is picked: with all of them picked at first, the
+        // tint alone did not (the first-run walkthrough of 2026-11-04).
+        VStack(spacing: AppSpacing.sm) {
+            CategoryChip(
+                category: name,
+                type: preset.type,
+                customCategories: [],
+                isSelected: isSelected,
+                onTap: {
+                    selectable.wrappedValue.isSelected.toggle()
+                },
+                budgetProgress: nil,
+                iconName: iconName,
+                iconColor: color
+            )
+            .opacity(isSelected ? 1 : 0.55)
+            SelectionIndicator(isSelected: isSelected)
+                .contentShape(Rectangle())
+                .onTapGesture { selectable.wrappedValue.isSelected.toggle() }
+        }
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
         .animation(AppAnimation.contentSpring, value: isSelected)
         .sensoryFeedback(.selection, trigger: isSelected)
     }

@@ -153,11 +153,10 @@ extension InsightsService {
                     formattedValue: Formatting.formatCurrencySmart(top.amount, currency: baseCurrency),
                     currency: baseCurrency, unit: nil
                 )
-                subtitle = Self.categoryLabel(for: top.categoryName)
-                trend = InsightTrend(
-                    direction: .down, changePercent: pct, changeAbsolute: nil,
-                    comparisonPeriod: String(format: "%.0f%% %@", pct, String(localized: "insights.ofTotal"))
-                )
+                // The share goes in the subtitle ("Groceries, 34% of spending"), as DesignKit's
+                // MetricCard means it: as a trend badge it read "↘ +34%", a change it is not.
+                subtitle = Self.shareOfSpendingSubtitle(name: Self.categoryLabel(for: top.categoryName), sharePercent: pct)
+                trend = nil
                 severity = pct > 50 ? .warning : .neutral
             } else {
                 // Current period has no realized expenses — keep the card, show empty hero.
@@ -300,19 +299,14 @@ extension InsightsService {
                 id: "top_spending_\(top.key)",
                 type: .topSpendingCategory,
                 title: String(localized: "insights.topCategory"),
-                subtitle: Self.categoryLabel(for: top.key),
+                subtitle: Self.shareOfSpendingSubtitle(name: Self.categoryLabel(for: top.key), sharePercent: percentage),
                 metric: InsightMetric(
                     value: top.total,
                     formattedValue: Formatting.formatCurrencySmart(top.total, currency: baseCurrency),
                     currency: baseCurrency,
                     unit: nil
                 ),
-                trend: InsightTrend(
-                    direction: .down,
-                    changePercent: percentage,
-                    changeAbsolute: nil,
-                    comparisonPeriod: String(format: "%.0f%% %@", percentage, String(localized: "insights.ofTotal"))
-                ),
+                trend: nil,
                 severity: percentage > 50 ? .warning : .neutral,
                 category: .spending,
                 detailData: .categoryBreakdown(breakdownItems)
@@ -505,6 +499,13 @@ extension InsightsService {
     /// A bucket with fewer merchants tells nothing the person does not know.
     nonisolated static let topMerchantMinimumMerchants = 3
 
+    /// "Groceries, 34% of spending": the name of a top card (category or merchant) and its share,
+    /// in the reader's percent format.
+    nonisolated static func shareOfSpendingSubtitle(name: String, sharePercent: Double) -> String {
+        let share = (sharePercent / 100).formatted(.percent.precision(.fractionLength(0)))
+        return String(format: String(localized: "insights.topCategory.share"), name, share)
+    }
+
     /// The days a bucket's daily average divides by: all of them once it is over, the days so
     /// far (today included) while it is under way. Dividing the month under way by all its days
     /// made 3 500 ₸ on the 5th read as 117 ₸ a day, and every early-month trend look like a fall.
@@ -619,16 +620,14 @@ extension InsightsService {
             id: "top_merchant",
             type: .topMerchant,
             title: String(localized: "insights.topMerchant"),
-            subtitle: top.categoryName,
+            // The share in words, like the top category: as a trend badge it read "↘ +22%".
+            subtitle: Self.shareOfSpendingSubtitle(name: top.categoryName, sharePercent: top.percentage),
             metric: InsightMetric(
                 value: top.amount,
                 formattedValue: Formatting.formatCurrencySmart(top.amount, currency: baseCurrency),
                 currency: baseCurrency, unit: nil
             ),
-            trend: InsightTrend(
-                direction: .down, changePercent: top.percentage, changeAbsolute: nil,
-                comparisonPeriod: String(format: "%.0f%% %@", top.percentage, String(localized: "insights.ofTotal"))
-            ),
+            trend: nil,
             severity: .neutral,
             category: .spending,
             detailData: .categoryBreakdown(items)

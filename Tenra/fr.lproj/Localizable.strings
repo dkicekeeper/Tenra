@@ -836,7 +836,6 @@
 "insights.noInsightsForFilter" = "Aucune analyse pour cette catégorie";
 "insights.topCategory" = "Première catégorie de dépenses";
 "insights.topMerchant" = "Premier commerçant";
-"insights.ofTotal" = "des dépenses totales";
 "insights.spendingSpike" = "Dépenses inhabituelles détectées";
 "insights.monthOverMonth" = "Évolution des dépenses mensuelles";
 "insights.monthOverMonth.week" = "Dépenses hebdomadaires";
@@ -2624,3 +2623,4 @@
 "settings.spendingReminder.toggle" = "Me le rappeler le soir";
 "settings.spendingReminder.time" = "Heure";
 "settings.spendingReminder.footer" = "Ten vous le rappelle seulement les jours où rien n’est saisi dans Tenra, et écrit moins souvent si vous ne passez pas.";
+"insights.topCategory.share" = "%1$@, %2$@ des dépenses";

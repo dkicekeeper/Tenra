@@ -52,4 +52,12 @@ struct NewcomerAnalyticsTests {
     func unavailableScoreIsNotAvailable() {
         #expect(!FinancialHealthScore.unavailable().isAvailable)
     }
+
+    @Test("A top card's share is said in its subtitle, not shown as a trend")
+    func shareOfSpendingInSubtitle() {
+        let subtitle = InsightsService.shareOfSpendingSubtitle(name: "Продукты", sharePercent: 34.2)
+        #expect(subtitle.contains("Продукты"))
+        #expect(subtitle.contains("34"))
+        #expect(!subtitle.contains("+"))
+    }
 }

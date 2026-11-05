@@ -836,7 +836,6 @@
 "insights.noInsightsForFilter" = "No hay análisis para esta categoría";
 "insights.topCategory" = "Categoría con más gasto";
 "insights.topMerchant" = "Comercio con más gasto";
-"insights.ofTotal" = "del gasto total";
 "insights.spendingSpike" = "Gasto inusual detectado";
 "insights.monthOverMonth" = "Variación del gasto mensual";
 "insights.monthOverMonth.week" = "Gasto semanal";
@@ -2624,3 +2623,4 @@
 "settings.spendingReminder.toggle" = "Recordármelo por la noche";
 "settings.spendingReminder.time" = "Hora";
 "settings.spendingReminder.footer" = "Ten te lo recuerda solo los días sin registros en Tenra, y escribe menos si no pasas por aquí.";
+"insights.topCategory.share" = "%1$@, %2$@ del gasto";

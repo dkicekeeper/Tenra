@@ -33,7 +33,8 @@ struct OnboardingCategoriesStep: View {
             stepSymbols: OnboardingViewModel.stepSymbols
         ) {
             ScrollView {
-                OnboardingCategoryGrid(presets: $vm.draftCategories)
+                // Three a row, as Home's grid (the owner's rule: 3 a row, one-line titles).
+                OnboardingCategoryGrid(presets: $vm.draftCategories, columns: 3)
                     .screenPadding()
                     .padding(.top, AppSpacing.md)
             }

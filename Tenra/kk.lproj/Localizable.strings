@@ -836,7 +836,6 @@
 "insights.noInsightsForFilter" = "Бұл санат бойынша инсайттар жоқ";
 "insights.topCategory" = "Ең көп шығыс санаты";
 "insights.topMerchant" = "Басты сатушы";
-"insights.ofTotal" = "жалпы шығыстан";
 "insights.spendingSpike" = "Әдеттен тыс шығыс анықталды";
 "insights.monthOverMonth" = "Айлық шығыс өзгерісі";
 "insights.monthOverMonth.week" = "Апталық шығыс";
@@ -2624,3 +2623,4 @@
 "settings.spendingReminder.toggle" = "Кешке еске салу";
 "settings.spendingReminder.time" = "Уақыт";
 "settings.spendingReminder.footer" = "Тэн Tenra-да ештеңе жазылмаған күндері ғана еске салады, ал сіз кірмесеңіз, сиректеу жазады.";
+"insights.topCategory.share" = "%1$@, шығындардың %2$@";

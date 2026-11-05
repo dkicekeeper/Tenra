@@ -26,7 +26,7 @@ struct FormatsSettingsView: View {
 
                 FormSection(header: String(localized: "formats.section.dates")) {
                     choiceRow(
-                        "formats.date", id: "formats.date", value: dateValue,
+                        "formats.date", id: "formats.date", value: dateRowValue,
                         footer: "formats.date.footer", options: dateOptions, selection: dateBinding
                     )
                     choiceRow(
@@ -41,7 +41,7 @@ struct FormatsSettingsView: View {
                         footer: "formats.separators.footer", options: separatorOptions, selection: separatorsBinding
                     )
                     choiceRow(
-                        "formats.symbol", id: "formats.symbol", value: symbolName(formats.resolved.symbol),
+                        "formats.symbol", id: "formats.symbol", value: symbolRowValue,
                         footer: "formats.symbol.footer", options: symbolOptions, selection: symbolBinding
                     )
                     choiceRow(
@@ -144,7 +144,7 @@ struct FormatsSettingsView: View {
     private var weekStrip: some View {
         let symbols = AppCalendar.current.shortWeekdaySymbols
         let first = formats.resolved.firstWeekday
-        let days = symbols.indices.map { symbols[(first - 1 + $0) % symbols.count].capitalized(with: .current) }
+        let days = symbols.indices.map { symbols[(first - 1 + $0) % symbols.count].capitalizedFirstLetter }
         return ViewThatFits(in: .horizontal) {
             HStack(spacing: AppSpacing.sm) {
                 weekLabel
@@ -201,9 +201,19 @@ struct FormatsSettingsView: View {
 
     // MARK: - Date
 
-    /// Today in the current style, with its year (the row's value and the preview's day).
+    /// Today in the current style, with its year (the preview's day).
     private var dateValue: String {
         DateFormatters.day(Date(), includeYear: true, style: formats.resolved.dateStyle)
+    }
+
+    /// The row's value, short enough for the half of the row DesignKit gives a value in every
+    /// language (the full date cut in en, de, es and pt-BR): the numeric styles with the year
+    /// ("03.11.2026"), words with a short month and no year ("Nov 3", «3 нояб.»), since with
+    /// it Portuguese still cut ("28 de set. de 2026", rendered at 375 pt). The options page keeps
+    /// the full samples.
+    private var dateRowValue: String {
+        let style = formats.resolved.dateStyle
+        return DateFormatters.day(Date(), includeYear: style != .words, abbreviated: true, style: style)
     }
 
     private var dateOptions: [FormatOption<DateStyle>] {
@@ -242,7 +252,8 @@ struct FormatsSettingsView: View {
     private func weekdayName(_ day: Int) -> String {
         let names = AppCalendar.current.standaloneWeekdaySymbols
         let name = names.indices.contains(day - 1) ? names[day - 1] : String(day)
-        return name.capitalized(with: .current)
+        // The first letter only: Portuguese writes "Segunda-feira".
+        return name.capitalizedFirstLetter
     }
 
     /// Monday, Sunday and the region's own day.
@@ -316,6 +327,13 @@ struct FormatsSettingsView: View {
         case .after: String(localized: "formats.symbol.after")
         case .before: String(localized: "formats.symbol.before")
         }
+    }
+
+    /// The row's value: the sample amount in the current format («1 234 ₸», «₸1 234»); "After
+    /// the number" in words did not fit the row in English.
+    private var symbolRowValue: String {
+        Formatting.formatCurrencySmart(
+            1_234, currency: currency, configuration: DesignKitBridge.amountConfiguration(formats.resolved))
     }
 
     /// The base currency's sample in each place, its name under it.

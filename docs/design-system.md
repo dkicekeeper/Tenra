@@ -346,8 +346,10 @@ and redeem (free users), About.
   day by `DateFormatters.day`, three `TransactionRow`s in the onboarding's categories, the week
   from its first day as `Badge`s, that day filled; rebuilt on `FormatSettings.version`, shown
   while Home's eye hides amounts), then Dates and Amounts: `UniversalRow(title, value: <short
-  name>, accessory: .navigation)` rows (today with its year, the day, "1 234,56", "After the
-  number", "If any") opening `FormatOptionsPage`, a `FormSection` of checkmark rows whose title
+  name>, accessory: .navigation)` rows whose values are compact samples that fit the half of
+  the row DesignKit gives a value at 375 pt in all 12 languages (today with a short month and
+  no year in words, "Nov 3", with the year in the numeric styles; the day; "1 234,56"; the
+  sample amount "1 234 ₸"; "If any") opening `FormatOptionsPage`, a `FormSection` of checkmark rows whose title
   is the option's sample and whose hint says what it means ("Space and comma", "1 234 and
   1 234,50"), with the choice's footer; a tap chooses and goes back. Not DesignKit's `.picker`:
   one label per option did not fit the row and lost the descriptions. Samples are built with

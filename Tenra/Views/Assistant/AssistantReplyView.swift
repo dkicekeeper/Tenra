@@ -429,7 +429,7 @@ private struct AssistantForecastCard: View {
     }
 
     private func label(_ obligation: AgentReplyData.Forecast.Obligation) -> String {
-        let day = FastDateParser.date(from: obligation.date).map { DateFormatters.day($0, includeYear: false) } ?? obligation.date
+        let day = FastDateParser.date(from: obligation.date).map { DateFormatters.day($0, includeYear: false, abbreviated: true) } ?? obligation.date
         return "\(obligation.label) · \(day)"
     }
 }
@@ -629,7 +629,7 @@ private struct AssistantDraftCard: View {
 
     /// The subscription or regular payment: its name, how often, the first charge, the amount.
     private func recurringRow(_ series: RecurringSeries) -> some View {
-        let first = FastDateParser.date(from: series.startDate).map { DateFormatters.day($0, includeYear: false) } ?? series.startDate
+        let first = FastDateParser.date(from: series.startDate).map { DateFormatters.day($0, includeYear: false, abbreviated: true) } ?? series.startDate
         return UniversalRow(
             "\(series.description) · \(series.frequency.displayName) · \(first)",
             icon: series.kind == .subscription ? "repeat.circle" : "repeat",

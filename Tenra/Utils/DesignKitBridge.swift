@@ -39,7 +39,7 @@ enum DesignKitBridge {
         }
         AmountDisplayConfiguration.shared = amounts
         // MonthCalendar's week label (no year) and DateRangePickerSheet (with year).
-        DesignKitDateFormat.day = { DateFormatters.day($0, includeYear: $1) }
+        DesignKitDateFormat.day = { DateFormatters.day($0, includeYear: $1, abbreviated: true) }
     }
 
     /// Call once from `TenraApp.init()`, before any view renders.

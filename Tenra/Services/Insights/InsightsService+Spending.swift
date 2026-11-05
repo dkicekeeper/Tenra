@@ -755,7 +755,7 @@ extension InsightsService {
         guard multiplier >= 4 else { return nil }
 
         let severity: InsightSeverity = multiplier >= 8 ? .warning : .neutral
-        let dateLabel = DateFormatters.day(candidate.date, includeYear: true)
+        let dateLabel = DateFormatters.day(candidate.date, includeYear: true, abbreviated: true)
         let name = candidate.tx.description.isEmpty ? candidate.tx.category : candidate.tx.description
 
         let model = InsightFormulaModel(

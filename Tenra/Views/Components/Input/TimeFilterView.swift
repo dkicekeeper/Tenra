@@ -108,7 +108,7 @@ struct TimeFilterView: View {
     }
 
     private var customRangeDescription: String {
-        "\(DateFormatters.day(customDateRange.lowerBound, includeYear: true)) – \(DateFormatters.day(customDateRange.upperBound, includeYear: true))"
+        "\(DateFormatters.day(customDateRange.lowerBound, includeYear: true, abbreviated: true)) – \(DateFormatters.day(customDateRange.upperBound, includeYear: true, abbreviated: true))"
     }
 }
 

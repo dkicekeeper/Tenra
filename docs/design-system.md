@@ -530,10 +530,9 @@ These helpers are Tenra's (`Tenra/Utils`): they read Tenra models.
 | Member | Format | For |
 |---|---|---|
 | `dateFormatter` | `yyyy-MM-dd` | storage, parsing |
-| `displayDateFormatter` | `d MMMM` (device locale) | display |
-| `displayDateWithYearFormatter` | `d MMMM yyyy` | display with the year |
+| `day(_:includeYear:abbreviated:style:locale:)` | the chosen date style: words (the locale's own `dMMMM` / `dMMM`, `d MMMM yyyy` where the locale's is plain `d MMMM`), `dd.MM`, `MM/dd`, ISO (always with the year) | every day date; `abbreviated` keeps compact labels short |
 | `displayDateOmittingCurrentYear(_:)` | the year only outside the current one | next-charge dates and the like |
-| `displayString(from:)` | ISO string → `d MMMM` | a stored date string |
+| `displayString(from:)` | ISO string → a day date, no year | a stored date string |
 | `timeFormatter` | `HH:mm` | time |
 
 **Category style.** Resolve it at the `ForEach`, not inside the row:

@@ -102,7 +102,7 @@ struct SubcategoryReorderView: View {
                     Text(String(format: NSLocalizedString("subcategory.usageCount", comment: "Count with plural forms in Localizable.stringsdict"), usageCount))
                     if let lastUsed {
                         Text("·")
-                        Text(DateFormatters.day(lastUsed, includeYear: true))
+                        Text(DateFormatters.day(lastUsed, includeYear: true, abbreviated: true))
                     }
                 } else {
                     Text(String(localized: "subcategory.notUsed"))

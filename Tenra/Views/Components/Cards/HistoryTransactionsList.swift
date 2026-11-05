@@ -326,7 +326,7 @@ struct HistoryTransactionsList: View {
 
         let currentYear = calendar.component(.year, from: Date())
         let sectionYear = calendar.component(.year, from: date)
-        return DateFormatters.day(date, includeYear: sectionYear != currentYear)
+        return DateFormatters.day(date, includeYear: sectionYear != currentYear, abbreviated: true)
     }
 }
 

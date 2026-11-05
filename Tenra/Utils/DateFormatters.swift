@@ -70,31 +70,37 @@ enum DateFormatters {
 
     private nonisolated(unsafe) static var dayFormatterCache: [String: DateFormatter] = [:]
 
-    /// The pattern of one day date. `words` takes only the ORDER from the locale's `dMMMM`
-    /// template (day first or month first), so Russian stays "3 ноября 2026" without "г.".
-    private nonisolated static func dayPattern(style: DateStyle, includeYear: Bool, locale: Locale) -> String {
+    /// The pattern of one day date. `words` is the locale's own `dMMMM` (or `dMMM`) pattern, so
+    /// ja gives "11月3日", ko "11월 3일", de "3. November", es "3 de noviembre". Only when the
+    /// localized no-year pattern is exactly `d MMMM` / `d MMM` (ru, uk, fr, it, tr, ...) does the
+    /// year variant use the fixed `d MMMM yyyy`, so Russian stays "3 ноября 2026" without "г.".
+    private nonisolated static func dayPattern(style: DateStyle, includeYear: Bool, abbreviated: Bool, locale: Locale) -> String {
         switch style {
         case .iso: return "yyyy-MM-dd"
         case .dots: return includeYear ? "dd.MM.yyyy" : "dd.MM"
         case .slash: return includeYear ? "MM/dd/yyyy" : "MM/dd"
         case .words:
-            let template = DateFormatter.dateFormat(fromTemplate: "dMMMM", options: 0, locale: locale) ?? "d MMMM"
-            let dayFirst = (template.firstIndex(of: "d") ?? template.endIndex) < (template.firstIndex(of: "M") ?? template.endIndex)
-            if dayFirst { return includeYear ? "d MMMM yyyy" : "d MMMM" }
-            return includeYear ? "MMMM d, yyyy" : "MMMM d"
+            let month = abbreviated ? "MMM" : "MMMM"
+            let plain = DateFormatter.dateFormat(fromTemplate: "d" + month, options: 0, locale: locale) ?? "d \(month)"
+            guard includeYear else { return plain }
+            if plain == "d \(month)" { return "d \(month) yyyy" }
+            return DateFormatter.dateFormat(fromTemplate: "d" + month + "yyyy", options: 0, locale: locale) ?? "d \(month) yyyy"
         }
     }
 
-    /// A day date in the chosen style: "3 ноября" / "November 3" (words), "03.11", "11/03" or
-    /// "2026-11-03" (always with the year). Formatters are cached by style, year and locale.
+    /// A day date in the chosen style: "3 ноября" / "November 3" (words; `abbreviated` gives
+    /// "3 нояб." / "Nov 3"), "03.11", "11/03" or "2026-11-03" (always with the year; the numeric
+    /// styles ignore `abbreviated`). Formatters are cached by style, year, width, locale.
     nonisolated static func day(
         _ date: Date,
         includeYear: Bool,
+        abbreviated: Bool = false,
         style: DateStyle = FormatSettings.snapshot.dateStyle,
         locale: Locale = .current
     ) -> String {
         let withYear = includeYear || style == .iso
-        let key = "\(style.rawValue)|\(withYear)|\(locale.identifier)|\(TimeZone.current.identifier)"
+        let short = style == .words && abbreviated
+        let key = "\(style.rawValue)|\(withYear)|\(short)|\(locale.identifier)|\(TimeZone.current.identifier)"
         displayFormatterLock.lock()
         defer { displayFormatterLock.unlock() }
         if let cached = dayFormatterCache[key] { return cached.string(from: date) }
@@ -103,7 +109,7 @@ enum DateFormatters {
         formatter.locale = style == .words ? locale : Locale(identifier: "en_US_POSIX")
         formatter.calendar = style == .words ? locale.calendar : Calendar(identifier: .gregorian)
         formatter.timeZone = TimeZone.current
-        formatter.dateFormat = dayPattern(style: style, includeYear: withYear, locale: locale)
+        formatter.dateFormat = dayPattern(style: style, includeYear: withYear, abbreviated: short, locale: locale)
         dayFormatterCache[key] = formatter
         return formatter.string(from: date)
     }

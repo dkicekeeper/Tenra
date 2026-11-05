@@ -130,6 +130,6 @@ struct AssistantAttachmentCard: View {
     }
 
     private static func day(_ date: String?) -> String? {
-        date.flatMap { FastDateParser.date(from: $0) }.map { DateFormatters.day($0, includeYear: false) }
+        date.flatMap { FastDateParser.date(from: $0) }.map { DateFormatters.day($0, includeYear: false, abbreviated: true) }
     }
 }

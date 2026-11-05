@@ -231,7 +231,7 @@ struct SubcategoryManagementRow: View {
         guard usageCount > 0 else { return [.text(String(localized: "subcategory.notUsed"))] }
         var items: [MetaItem] = [.text(String(format: NSLocalizedString("subcategory.usageCount", comment: "Count with plural forms in Localizable.stringsdict"), usageCount))]
         if let lastUsed = lastUsedDate {
-            items.append(.text(DateFormatters.day(lastUsed, includeYear: true)))
+            items.append(.text(DateFormatters.day(lastUsed, includeYear: true, abbreviated: true)))
         }
         return items
     }

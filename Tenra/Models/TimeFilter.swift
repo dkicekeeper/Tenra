@@ -155,7 +155,7 @@ struct TimeFilter: Codable, Equatable, Hashable {
 
     var displayName: String {
         if preset == .custom {
-            return "\(DateFormatters.day(startDate, includeYear: false)) - \(DateFormatters.day(lastIncludedDay, includeYear: false))"
+            return "\(DateFormatters.day(startDate, includeYear: false, abbreviated: true)) - \(DateFormatters.day(lastIncludedDay, includeYear: false, abbreviated: true))"
         }
         return preset.localizedName
     }

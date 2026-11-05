@@ -24,7 +24,9 @@ final class FormatSettings {
     @ObservationIgnored private let locale: () -> Locale
     @ObservationIgnored private var observer: NSObjectProtocol?
 
-    var isCustomized: Bool { resolved != FormatPreferences.region(for: locale()) }
+    var isCustomized: Bool {
+        !FormatPreferences.isEquivalent(resolved, FormatPreferences.region(for: locale()))
+    }
 
     init(defaults: UserDefaults, locale: @escaping () -> Locale = { .current }) {
         self.defaults = defaults
@@ -82,10 +84,21 @@ final class FormatSettings {
         snapshotLock.lock()
         defer { snapshotLock.unlock() }
         if let value = snapshotValue { return value }
-        let defaults = UserDefaults(suiteName: WidgetSnapshotStore.appGroup) ?? .standard
+        let defaults = snapshotDefaults ?? UserDefaults(suiteName: WidgetSnapshotStore.appGroup) ?? .standard
         let value = FormatPreferences.resolve(storedChoices(in: defaults), locale: .current)
         snapshotValue = value
         return value
+    }
+
+    private nonisolated(unsafe) static var snapshotDefaults: UserDefaults?
+
+    /// Test hook: drops the cached snapshot so the next read resolves from the stored choices
+    /// again (from `defaults` when given, else the App Group).
+    nonisolated static func resetSnapshot(defaults: UserDefaults? = nil) {
+        snapshotLock.lock()
+        snapshotValue = nil
+        snapshotDefaults = defaults
+        snapshotLock.unlock()
     }
 
     private nonisolated static let snapshotLock = NSLock()

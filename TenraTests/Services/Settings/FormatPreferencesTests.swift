@@ -55,6 +55,12 @@ struct FormatPreferencesTests {
         #expect(!FormatPreferences.separatorOptions(region: region).contains(.region))
     }
 
+    @Test("Switzerland's ASCII apostrophe counts as the apostrophe format")
+    func switzerlandApostropheIsApostrophe() {
+        let region = FormatPreferences.region(for: Locale(identifier: "de_CH"))
+        #expect(!FormatPreferences.separatorOptions(region: region).contains(.region))
+    }
+
     @Test("One choice stays, the rest follows the region")
     func choiceStaysOthersFollowRegion() {
         let choices = FormatChoices(separators: .commaDot)

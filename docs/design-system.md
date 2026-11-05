@@ -451,7 +451,8 @@ Rendering a money amount?
 
 Amounts take the decimal and grouping separators of the phone's region (1 234,56 in Kazakhstan,
 1,234.56 in the US, 1.234,56 in Germany): `DesignKitBridge.configure()` sets them on
-`AmountDisplayConfiguration.shared` from `DesignKitBridge.amountSeparators(for: .current)`.
+`AmountDisplayConfiguration.shared` from `FormatSettings.snapshot` (the region's by default, the
+chosen ones after Settings › Formats).
 DesignKit's own default is "." and " " in every language. Stored amounts, CSV and parsing are
 not affected (`AmountFormatter` keeps its fixed format).
 

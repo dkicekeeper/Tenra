@@ -113,9 +113,20 @@ nonisolated enum FormatPreferences {
         }
     }
 
-    /// A space, a no-break space and a narrow no-break space are one "space".
+    /// A space, a no-break space and a narrow no-break space are one "space"; the ASCII
+    /// apostrophe, the right single quote and the modifier letter apostrophe are one "apostrophe".
     private static func normalized(_ grouping: String) -> String {
-        ["\u{00A0}", "\u{202F}", " "].contains(grouping) ? " " : grouping
+        if ["\u{00A0}", "\u{202F}", " "].contains(grouping) { return " " }
+        if ["'", "\u{2019}", "\u{02BC}"].contains(grouping) { return "\u{2019}" }
+        return grouping
+    }
+
+    /// Whether two resolved formats look the same (spaces and apostrophes are interchangeable).
+    static func isEquivalent(_ a: ResolvedFormats, _ b: ResolvedFormats) -> Bool {
+        var a = a, b = b
+        a.groupingSeparator = normalized(a.groupingSeparator)
+        b.groupingSeparator = normalized(b.groupingSeparator)
+        return a == b
     }
 
     private static func secondaryGroupingSize(for locale: Locale) -> Int? {

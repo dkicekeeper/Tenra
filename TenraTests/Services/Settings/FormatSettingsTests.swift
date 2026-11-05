@@ -11,7 +11,10 @@ import Foundation
 
 @MainActor
 @Suite(.sharedProcessState)
-struct FormatSettingsTests {
+final class FormatSettingsTests {
+
+    /// Every test leaves the process-wide snapshot as it found it (resolved afresh on next read).
+    deinit { FormatSettings.resetSnapshot() }
 
     private func makeDefaults() -> UserDefaults {
         let name = "FormatSettingsTests.\(UUID().uuidString)"
@@ -86,5 +89,21 @@ struct FormatSettingsTests {
         #expect(notified == 1)
         #expect(settings.version == before + 1)
         #expect(settings.resolved.decimalSeparator == ".")
+    }
+
+    @Test("In France a no-break space instead of the narrow one is not a customization")
+    func franceSpaceIsNotCustomized() {
+        let settings = FormatSettings(defaults: makeDefaults(), locale: { Locale(identifier: "fr_FR") })
+        settings.set { $0.separators = .spaceComma }
+        #expect(!settings.isCustomized)
+    }
+
+    @Test("Before any instance the snapshot reads the stored choices itself")
+    func firstAccessReadsStoredChoices() throws {
+        let defaults = makeDefaults()
+        let choices = FormatChoices(separators: .dotComma, cents: .always)
+        defaults.set(try JSONEncoder().encode(choices), forKey: FormatSettings.storageKey)
+        FormatSettings.resetSnapshot(defaults: defaults)
+        #expect(FormatSettings.snapshot == FormatPreferences.resolve(choices, locale: .current))
     }
 }

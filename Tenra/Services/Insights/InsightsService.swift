@@ -175,6 +175,7 @@ nonisolated final class InsightsService {
         // Unparseable and not-yet-realized dates are remembered as skipped.
         var keyByDate: [String: String] = [:]
         var skippedDates = Set<String>()
+        let keyCalendar = AppCalendar.current
 
         for tx in transactions {
             guard moneyBucket(tx.type) == bucket, categoryKey(for: tx) == categoryName,
@@ -183,7 +184,7 @@ nonisolated final class InsightsService {
             if let cached = keyByDate[tx.date] {
                 key = cached
             } else if let date = FastDateParser.date(from: tx.date), LedgerPolicyRule.isRealized(date) {
-                key = granularity.groupingKey(for: date)
+                key = granularity.groupingKey(for: date, calendar: keyCalendar)
                 keyByDate[tx.date] = key
             } else {
                 skippedDates.insert(tx.date)
@@ -656,7 +657,7 @@ nonisolated final class InsightsService {
         firstTransactionDate: Date? = nil,
         txDateMap: [String: Date]? = nil
     ) -> [PeriodDataPoint] {
-        let calendar = Calendar.current
+        let calendar = AppCalendar.current
 
         // Determine data window.
         //
@@ -711,7 +712,7 @@ nonisolated final class InsightsService {
             // pre-aggregated path and calculateMonthlySummary).
             guard let date = txDate, date >= windowStart, date < windowEnd,
                   LedgerPolicyRule.isRealized(date) else { continue }
-            let key = granularity.groupingKey(for: date)
+            let key = granularity.groupingKey(for: date, calendar: calendar)
             let amount = resolveAmount(tx, baseCurrency: baseCurrency)
             switch Self.moneyBucket(tx.type) {
             case .income:  incomeByKey[key, default: 0] += amount
@@ -761,7 +762,7 @@ nonisolated final class InsightsService {
         granularity: InsightGranularity,
         firstTransactionDate: Date?
     ) -> [PeriodDataPoint] {
-        let calendar = Calendar.current
+        let calendar = AppCalendar.current
         let firstDate = firstTransactionDate ?? preAggregated.firstDate ?? Date()
         let (windowStart, windowEnd) = granularity.dateRange(firstTransactionDate: firstDate)
 

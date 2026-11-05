@@ -68,7 +68,7 @@ struct CategoryBudgetService {
                                    store: store)
 
         case .weekly:
-            return sumDailyBuckets(in: weeklyPeriod(now: now),
+            return sumDailyBuckets(in: Self.weeklyPeriod(now: now),
                                    category: category.name,
                                    store: store)
         }
@@ -79,7 +79,7 @@ struct CategoryBudgetService {
     func budgetPeriodStart(for category: CustomCategory) -> Date {
         let now = Date()
         switch category.budgetPeriod {
-        case .weekly:  return weeklyPeriod(now: now).start
+        case .weekly:  return Self.weeklyPeriod(now: now).start
         case .monthly: return monthlyPeriod(resetDay: category.budgetResetDay, now: now).start
         case .yearly:  return Calendar.current.dateInterval(of: .year, for: now)?.start ?? now
         }
@@ -87,8 +87,7 @@ struct CategoryBudgetService {
 
     // MARK: - Private — period boundaries
 
-    private func weeklyPeriod(now: Date) -> DateInterval {
-        let cal = Calendar.current
+    nonisolated static func weeklyPeriod(now: Date, calendar cal: Calendar = AppCalendar.current) -> DateInterval {
         let start = cal.dateInterval(of: .weekOfYear, for: now)?.start ?? now
         return DateInterval(start: start, end: now)
     }
@@ -223,7 +222,7 @@ extension CategoryBudgetService {
         let now = Date()
         switch category.budgetPeriod {
         case .weekly:
-            return cal.dateInterval(of: .weekOfYear, for: now)?.start ?? now
+            return AppCalendar.current.dateInterval(of: .weekOfYear, for: now)?.start ?? now
         case .monthly:
             let comps = cal.dateComponents([.year, .month], from: now)
             var startComps = comps

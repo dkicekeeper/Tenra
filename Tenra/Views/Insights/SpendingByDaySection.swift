@@ -40,7 +40,8 @@ struct SpendingByDaySection: View {
                     values: detail.days,
                     weeks: detail.weeks,
                     color: AppColors.destructive,
-                    valueFormat: .currency(currency)
+                    valueFormat: .currency(currency),
+                    calendar: AppCalendar.current
                 )
             }
             .screenPadding()

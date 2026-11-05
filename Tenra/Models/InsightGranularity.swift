@@ -83,7 +83,7 @@ enum InsightGranularity: String, CaseIterable, Identifiable {
     ///   Pass `nil` to fall back to a sensible default.
     nonisolated func dateRange(firstTransactionDate: Date?) -> (start: Date, end: Date) {
         let now = Date()
-        let calendar = Calendar.current
+        let calendar = AppCalendar.current
         let end = calendar.startOfDay(for: calendar.date(byAdding: .day, value: 1, to: now)!)
 
         switch self {
@@ -118,11 +118,11 @@ enum InsightGranularity: String, CaseIterable, Identifiable {
     // MARK: - Grouping Key
 
     /// Returns a stable string key for bucketing a date into this granularity's period.
-    nonisolated func groupingKey(for date: Date) -> String {
-        let calendar = Calendar.current
+    /// Pass a `calendar` hoisted out of the loop when bucketing many dates (`AppCalendar.current` builds one per call).
+    nonisolated func groupingKey(for date: Date, calendar: Calendar = AppCalendar.current) -> String {
         switch self {
         case .week:
-            // ISO week: "yyyy-Www" e.g. "2024-W03"
+            // Week of the calendar (its first weekday): "yyyy-Www" e.g. "2024-W03"
             let weekOfYear = calendar.component(.weekOfYear, from: date)
             let year = calendar.component(.yearForWeekOfYear, from: date)
             return String(format: "%04d-W%02d", year, weekOfYear)
@@ -151,7 +151,7 @@ enum InsightGranularity: String, CaseIterable, Identifiable {
 
     /// Returns the start `Date` of the period represented by `key`.
     nonisolated func periodStart(for key: String) -> Date {
-        let calendar = Calendar.current
+        let calendar = AppCalendar.current
         switch self {
         case .week:
             // "2024-W03"
@@ -200,7 +200,7 @@ enum InsightGranularity: String, CaseIterable, Identifiable {
     /// Human-readable label shown on charts / breakdown list.
     nonisolated func periodLabel(for key: String, locale: Locale = .current) -> String {
         let date = periodStart(for: key)
-        let calendar = Calendar.current
+        let calendar = AppCalendar.current
         switch self {
         case .week:
             // "3 Jan" (current year) or "3 Jan'25" (other year)
@@ -248,7 +248,7 @@ enum InsightGranularity: String, CaseIterable, Identifiable {
     /// the full month name + year for `.month`, a full week range for `.week`,
     /// and matches `periodLabel` for the others (which are already non-abbreviated).
     nonisolated func bannerLabel(for key: String, locale: Locale = .current) -> String {
-        let calendar = Calendar.current
+        let calendar = AppCalendar.current
         let date = periodStart(for: key)
         switch self {
         case .week:
@@ -329,7 +329,7 @@ enum InsightGranularity: String, CaseIterable, Identifiable {
     /// Exclusive end is the first instant after the period completes (same convention as `dateRange()`).
     nonisolated func periodEnd(for key: String) -> Date {
         let start = periodStart(for: key)
-        let calendar = Calendar.current
+        let calendar = AppCalendar.current
         switch self {
         case .week:    return calendar.date(byAdding: .weekOfYear, value: 1, to: start) ?? start
         case .month:   return calendar.date(byAdding: .month,      value: 1, to: start) ?? start
@@ -351,13 +351,13 @@ enum InsightGranularity: String, CaseIterable, Identifiable {
     /// reliably in the prior bucket for day/week/month/quarter/year.
     nonisolated func previousPeriodKey(before key: String) -> String {
         let start = periodStart(for: key)
-        let anchor = Calendar.current.date(byAdding: .day, value: -1, to: start) ?? start
+        let anchor = AppCalendar.current.date(byAdding: .day, value: -1, to: start) ?? start
         return groupingKey(for: anchor)
     }
 
     /// Returns the grouping key for the previous period (used for MoP comparison).
     nonisolated var previousPeriodKey: String {
-        let calendar = Calendar.current
+        let calendar = AppCalendar.current
         let now = Date()
         let prev: Date
         switch self {
@@ -384,7 +384,7 @@ enum InsightGranularity: String, CaseIterable, Identifiable {
     /// - `.year`     → current calendar year
     /// - `.allTime`  → full data window (same as `dateRange`)
     nonisolated func currentBucketRange(now: Date = Date()) -> (start: Date, end: Date) {
-        let calendar = Calendar.current
+        let calendar = AppCalendar.current
         let endOfDay = calendar.startOfDay(for: calendar.date(byAdding: .day, value: 1, to: now)!)
 
         switch self {
@@ -426,7 +426,7 @@ enum InsightGranularity: String, CaseIterable, Identifiable {
     /// (no comparison possible).
     nonisolated func previousBucketRange(now: Date = Date()) -> (start: Date, end: Date) {
         let (curStart, _) = currentBucketRange(now: now)
-        let calendar = Calendar.current
+        let calendar = AppCalendar.current
 
         switch self {
         case .week:
@@ -449,7 +449,7 @@ enum InsightGranularity: String, CaseIterable, Identifiable {
     /// Human-readable label for the current bucket
     /// ("May 2026", "Q2 2026", "2026", localised "Last 7 days", "All time").
     nonisolated func currentBucketLabel(locale: Locale = .current, now: Date = Date()) -> String {
-        let calendar = Calendar.current
+        let calendar = AppCalendar.current
         switch self {
         case .week:
             return String(localized: "insights.bucket.week.label")

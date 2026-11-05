@@ -210,6 +210,7 @@ nonisolated enum FinanceToolkitCompute {
     static func groupTotals(_ txs: [Transaction], by: String, kind: Kind, period: Period, snapshot s: FinanceSnapshot) throws -> [GroupTotal] {
         var buckets: [String: [Transaction]] = [:]
         var labels: [String: String] = [:]
+        let weekCalendar = AppCalendar.current
         for tx in txs {
             let key: String
             let label: String
@@ -234,7 +235,7 @@ nonisolated enum FinanceToolkitCompute {
                     label = tx.category
                 }
             case "week":
-                key = weekStart(of: tx.date)
+                key = weekStart(of: tx.date, calendar: weekCalendar)
                 label = key
             case "month":
                 key = String(tx.date.prefix(7))
@@ -281,10 +282,10 @@ nonisolated enum FinanceToolkitCompute {
         return tx.convertedAmount ?? tx.amount
     }
 
-    static func weekStart(of day: String) -> String {
+    /// The first day of the week `day` falls in, by the calendar's first weekday. Pass a calendar
+    /// hoisted out of the loop (`AppCalendar.current` builds one per call).
+    static func weekStart(of day: String, calendar: Calendar = AppCalendar.current) -> String {
         guard let date = FastDateParser.date(from: day) else { return day }
-        var calendar = Calendar(identifier: .iso8601)
-        calendar.timeZone = Calendar.current.timeZone
         guard let start = calendar.dateInterval(of: .weekOfYear, for: date)?.start else { return day }
         return FastDateParser.string(from: start)
     }

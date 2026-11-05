@@ -62,7 +62,16 @@ final class WeeklyDigestScheduler {
         )
     }
 
-    /// Re-schedules the digest for the next Monday 09:00 with fresh content.
+    /// The next first day of the calendar's week at 09:00, strictly after `after`.
+    nonisolated static func nextFireDate(after: Date, calendar: Calendar) -> Date? {
+        var target = DateComponents()
+        target.weekday = calendar.firstWeekday
+        target.hour = 9
+        target.minute = 0
+        return calendar.nextDate(after: after, matching: target, matchingPolicy: .nextTime)
+    }
+
+    /// Re-schedules the digest for the next first day of the week, 09:00 with fresh content.
     /// Called after every insights recompute; safe to call repeatedly.
     func reschedule(weekPoints: [PeriodDataPoint], baseCurrency: String, now: Date = Date()) async {
         let center = UNUserNotificationCenter.current()
@@ -79,14 +88,8 @@ final class WeeklyDigestScheduler {
             return
         }
 
-        // Next Monday 09:00 local time (strictly after now).
-        var target = DateComponents()
-        target.weekday = 2 // Monday
-        target.hour = 9
-        target.minute = 0
-        guard let fireDate = Calendar.current.nextDate(
-            after: now, matching: target, matchingPolicy: .nextTime
-        ) else { return }
+        let calendar = AppCalendar.current
+        guard let fireDate = Self.nextFireDate(after: now, calendar: calendar) else { return }
 
         let content = UNMutableNotificationContent()
         content.title = String(localized: "notification.weeklyDigest.title")
@@ -97,7 +100,7 @@ final class WeeklyDigestScheduler {
             content.attachments = [art]
         }
 
-        let components = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: fireDate)
+        let components = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: fireDate)
         let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
         let request = UNNotificationRequest(identifier: Self.notificationId, content: content, trigger: trigger)
 

@@ -44,9 +44,7 @@ enum TimeFilterPreset: String, CaseIterable, Codable {
         }
     }
     
-    nonisolated func dateRange() -> (start: Date, end: Date) {
-        let calendar = Calendar.current
-        let now = Date()
+    nonisolated func dateRange(now: Date = Date(), calendar: Calendar = AppCalendar.current) -> (start: Date, end: Date) {
 
         switch self {
         case .today:
@@ -61,12 +59,12 @@ enum TimeFilterPreset: String, CaseIterable, Codable {
             return (start, end)
             
         case .thisWeek:
-            // Неделя начинается с понедельника (ISO)
-            let weekday = calendar.component(.weekday, from: now)
-            let daysFromMonday = (weekday + 5) % 7 // Понедельник = 0
-            let start = calendar.date(byAdding: .day, value: -daysFromMonday, to: calendar.startOfDay(for: now)) ?? now
-            let end = calendar.date(byAdding: .day, value: 7, to: start) ?? now
-            return (start, end)
+            // The week starts on the calendar's first weekday (Settings → Formats, else the region's).
+            if let week = calendar.dateInterval(of: .weekOfYear, for: now) {
+                return (week.start, week.end)
+            }
+            let start = calendar.startOfDay(for: now)
+            return (start, calendar.date(byAdding: .day, value: 7, to: start) ?? now)
             
         case .last30Days:
             let start = calendar.date(byAdding: .day, value: -30, to: calendar.startOfDay(for: now)) ?? now

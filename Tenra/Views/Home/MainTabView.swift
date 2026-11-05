@@ -170,6 +170,7 @@ struct MainTabView: View {
         // scroll down and re-expands on scroll up, on every tab.
         .tabBarMinimizeBehavior(.onScrollDown)
         .environment(tabBarVisibility)
+        .environment(\.calendar, AppCalendar.current)
         .onChange(of: selectedTab) { _, new in
             handleTabSelection(new)
         }

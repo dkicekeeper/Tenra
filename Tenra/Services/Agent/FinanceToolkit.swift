@@ -72,7 +72,7 @@ final class FinanceToolkit: AgentToolExecuting {
         learned: VoiceLearningStore? = nil,
         suggestAccount: ((String) -> String?)? = nil,
         now: @escaping () -> Date = Date.init,
-        calendar: Calendar = .current,
+        calendar: Calendar = AppCalendar.current,
         loadRates: @escaping @MainActor (Set<String>) async -> Void = { await TransactionConversion.loadRates($0) }
     ) {
         self.store = store

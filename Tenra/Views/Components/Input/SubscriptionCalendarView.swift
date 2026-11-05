@@ -15,7 +15,7 @@ struct SubscriptionCalendarView: View {
     let subscriptions: [RecurringSeries]
     let baseCurrency: String
 
-    @State private var range = CalendarRange()
+    @State private var range = CalendarRange(calendar: AppCalendar.current)
     /// Subscriptions keyed by the start of each billing day across the whole range.
     @State private var subscriptionsByDay: [Date: [RecurringSeries]] = [:]
     /// Total due in each week and month, in the base currency.

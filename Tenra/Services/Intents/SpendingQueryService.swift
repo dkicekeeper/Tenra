@@ -41,7 +41,7 @@ enum SpendingQueryService {
         baseCurrency: String,
         context: NSManagedObjectContext,
         now: Date = Date(),
-        calendar: Calendar = .current
+        calendar: Calendar = AppCalendar.current
     ) throws -> SpendingTotal {
 
         // TransactionEntity.date is a real Date at local midnight (written by

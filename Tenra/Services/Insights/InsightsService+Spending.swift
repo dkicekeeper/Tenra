@@ -122,10 +122,11 @@ extension InsightsService {
         if let gran = granularity, gran != .allTime, !periodPoints.isEmpty {
             // Bucket realized expenses by period key in a single pass.
             var expensesByKey: [String: [Transaction]] = [:]
+            let keyCalendar = AppCalendar.current
             for tx in expenses {
                 guard let d = (txDateMap?[tx.date] ?? FastDateParser.date(from: tx.date)),
                       LedgerPolicyRule.isRealized(d) else { continue }
-                expensesByKey[gran.groupingKey(for: d), default: []].append(tx)
+                expensesByKey[gran.groupingKey(for: d, calendar: keyCalendar), default: []].append(tx)
             }
 
             let pages: [PeriodCategoryBreakdown] = periodPoints.map { pt in
@@ -1116,7 +1117,7 @@ extension InsightsService {
         txDateMap: [String: Date]? = nil,
         now: Date = Date()
     ) -> Insight? {
-        let calendar = Calendar.current
+        let calendar = AppCalendar.current
         let today = calendar.startOfDay(for: now)
         guard let windowStart = calendar.date(byAdding: .day, value: -(Self.byDayWeeks * 7 - 1), to: today) else { return nil }
         let start = max(windowStart, firstTransactionDate.map { calendar.startOfDay(for: $0) } ?? windowStart)

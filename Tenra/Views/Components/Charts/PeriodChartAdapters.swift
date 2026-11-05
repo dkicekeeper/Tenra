@@ -213,7 +213,7 @@ nonisolated enum PeriodAxisLabel {
     }
 
     static func compact(for point: PeriodDataPoint) -> String {
-        let calendar = Calendar.current
+        let calendar = AppCalendar.current
         let currentYear = calendar.component(.year, from: Date())
         let pointYear = calendar.component(.year, from: point.periodStart)
         let shortYear = String(format: "%02d", pointYear % 100)

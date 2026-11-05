@@ -391,9 +391,10 @@ extension InsightsService {
         // ── Paged path ────────────────────────────────────────────────────────
         if let gran = granularity, gran != .allTime, !periodPoints.isEmpty {
             var incomeByKey: [String: [Transaction]] = [:]
+            let keyCalendar = AppCalendar.current
             for tx in incomeTransactions {
                 guard let d = resolveDate(tx), LedgerPolicyRule.isRealized(d) else { continue }
-                incomeByKey[gran.groupingKey(for: d), default: []].append(tx)
+                incomeByKey[gran.groupingKey(for: d, calendar: keyCalendar), default: []].append(tx)
             }
 
             let pages: [PeriodCategoryBreakdown] = periodPoints.map { pt in

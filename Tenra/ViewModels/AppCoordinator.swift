@@ -10,7 +10,6 @@ import Foundation
 import SwiftUI
 import CoreData
 import Observation
-import WidgetKit
 import os
 
 /// Coordinator that manages all ViewModels and their dependencies
@@ -950,9 +949,9 @@ class AppCoordinator {
         await insightsViewModel.refreshInsightsAndWait()
         // The subscriptions' reminders carry their amounts.
         await transactionStore.rescheduleSubscriptionNotifications()
-        // The widgets: a fresh snapshot, and a redraw even when its figures are the same.
+        // The widgets: a fresh snapshot carrying the formats; the store reloads the timelines
+        // itself when the file changed.
         await WidgetSnapshotBuilder.refresh(coordinator: self)
-        WidgetCenter.shared.reloadAllTimelines()
     }
 
     /// Observe the single FX-rate notifier so EVERY rate change — a late prewarm landing

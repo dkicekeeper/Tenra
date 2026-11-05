@@ -25,6 +25,18 @@ struct WidgetData: Codable, Equatable {
     var incomeDay: String?
     var spentToday: Double
     var categories: [Category]
+    /// The formats chosen in the app; nil in a snapshot from before they existed.
+    var formats: Formats?
+
+    /// Mirror of WidgetSnapshot.Formats (the app side).
+    struct Formats: Codable, Equatable {
+        var decimal: String
+        var grouping: String
+        var symbolBefore: Bool
+        var cents: String
+        var dateStyle: String
+        var secondaryGrouping: Int?
+    }
 
     static let appGroup = "group.dakacom.Tenra"
     static let fileName = "widget-snapshot.json"
@@ -52,7 +64,8 @@ struct WidgetData: Codable, Equatable {
             Category(name: String(localized: "widget.sample.transport"), symbol: "car.fill", colorHex: "#007AFF"),
             Category(name: String(localized: "widget.sample.coffee"), symbol: "cup.and.saucer.fill", colorHex: "#A2845E"),
             Category(name: String(localized: "widget.sample.shopping"), symbol: "bag.fill", colorHex: "#AF52DE"),
-        ]
+        ],
+        formats: nil
     )
 
     // MARK: - Reading
@@ -66,18 +79,70 @@ struct WidgetData: Codable, Equatable {
     var horizonLine: String {
         if let incomeDay, let date = Self.date(incomeDay) {
             return String(format: String(localized: "widget.today.untilIncome"),
-                          date.formatted(.dateTime.day().month(.abbreviated)))
+                          dateText(date))
         }
         return String(localized: "widget.today.untilMonthEnd")
     }
 
+    /// "25 Oct" in words; the other styles are numbers without a year.
+    private func dateText(_ date: Date) -> String {
+        let pattern: String
+        switch formats?.dateStyle {
+        case "dots": pattern = "dd.MM"
+        case "slash": pattern = "dd/MM"
+        case "iso": pattern = "MM-dd"
+        default: return date.formatted(.dateTime.day().month(.abbreviated))
+        }
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.dateFormat = pattern
+        return formatter.string(from: date)
+    }
+
     func money(_ amount: Double) -> String {
         if amountsHidden { return "•••" }
-        return amount.formatted(
-            .currency(code: currency)
-                .precision(.fractionLength(amount.rounded() == amount || abs(amount) >= 100 ? 0 : 2))
-                .presentation(.narrow)
-        )
+        guard let formats else {
+            return amount.formatted(
+                .currency(code: currency)
+                    .precision(.fractionLength(amount.rounded() == amount || abs(amount) >= 100 ? 0 : 2))
+                    .presentation(.narrow)
+            )
+        }
+        // Cents: never rounds half up, but keeps two decimals under 1 so 0.40 is not "0".
+        let magnitude = abs(amount)
+        let rounded = (magnitude * 100).rounded(.toNearestOrAwayFromZero) / 100
+        let digits: Int
+        switch formats.cents {
+        case "always": digits = 2
+        case "never": digits = (magnitude > 0 && magnitude < 1) ? 2 : 0
+        default: digits = rounded.truncatingRemainder(dividingBy: 1) == 0 ? 0 : 2
+        }
+        let scale = pow(10.0, Double(digits))
+        let value = (magnitude * scale).rounded(.toNearestOrAwayFromZero) / scale
+        let parts = String(format: "%.\(digits)f", value).split(separator: ".", omittingEmptySubsequences: false)
+        let integer = Array(parts[0])
+        let secondary = formats.secondaryGrouping ?? 3
+        var groups: [String] = []
+        var end = integer.count
+        var size = 3
+        while end > 0 {
+            let start = max(0, end - size)
+            groups.insert(String(integer[start..<end]), at: 0)
+            end = start
+            size = secondary
+        }
+        var number = groups.joined(separator: formats.grouping)
+        if parts.count > 1 { number += formats.decimal + parts[1] }
+        let symbol = currencySymbol
+        let sign = amount < 0 && value != 0 ? "-" : ""
+        return formats.symbolBefore ? "\(sign)\(symbol)\(number)" : "\(sign)\(number) \(symbol)"
+    }
+
+    /// The narrow symbol ("₸", "$"), as the system's narrow currency format writes it.
+    private var currencySymbol: String {
+        let sample = 0.0.formatted(.currency(code: currency).presentation(.narrow))
+        let symbol = sample.filter { !$0.isNumber && !$0.isWhitespace && $0 != "." && $0 != "," }
+        return symbol.isEmpty ? currency : symbol
     }
 
     // MARK: - Dates (yyyy-MM-dd, as the app stores them)

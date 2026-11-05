@@ -20,6 +20,41 @@ nonisolated struct WidgetSnapshot: Codable, Equatable, Sendable {
         let colorHex: String
     }
 
+    /// The amount and date formats chosen in Settings (FormatSettings.snapshot), as plain values:
+    /// the widget does not link Tenra's code. nil in a snapshot written before formats existed,
+    /// the widget then formats like the system.
+    nonisolated struct Formats: Codable, Equatable, Sendable {
+        var decimal: String
+        var grouping: String
+        var symbolBefore: Bool
+        /// `CentsDisplay.rawValue`: whenPresent, always, never.
+        var cents: String
+        /// `DateStyle.rawValue`: words, dots, slash, iso.
+        var dateStyle: String
+        /// Digits in the groups above the first (India: 2); nil groups by three.
+        var secondaryGrouping: Int?
+
+        init(decimal: String, grouping: String, symbolBefore: Bool, cents: String, dateStyle: String, secondaryGrouping: Int? = nil) {
+            self.decimal = decimal
+            self.grouping = grouping
+            self.symbolBefore = symbolBefore
+            self.cents = cents
+            self.dateStyle = dateStyle
+            self.secondaryGrouping = secondaryGrouping
+        }
+
+        init(_ resolved: ResolvedFormats) {
+            self.init(
+                decimal: resolved.decimalSeparator,
+                grouping: resolved.groupingSeparator,
+                symbolBefore: resolved.symbol == .before,
+                cents: resolved.cents.rawValue,
+                dateStyle: resolved.dateStyle.rawValue,
+                secondaryGrouping: resolved.secondaryGroupingSize
+            )
+        }
+    }
+
     var version = 1
     /// The day (`yyyy-MM-dd`) the figures are for; the widget shows 0 spent on another day.
     var day: String
@@ -34,6 +69,8 @@ nonisolated struct WidgetSnapshot: Codable, Equatable, Sendable {
     var spentToday: Double
     /// The most used expense categories of the last 30 days, at most four.
     var categories: [Category]
+    /// The chosen amount and date formats; nil for a snapshot from before they existed.
+    var formats: Formats? = nil
 }
 
 enum WidgetSnapshotStore {
@@ -115,7 +152,8 @@ enum WidgetSnapshotBuilder {
             allowance: allowance?.amount,
             incomeDay: allowance?.income.map { FastDateParser.string(from: $0) },
             spentToday: spent,
-            categories: Array(ranked)
+            categories: Array(ranked),
+            formats: .init(FormatSettings.snapshot)
         )
     }
 

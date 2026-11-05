@@ -32,6 +32,25 @@ struct WidgetSnapshotTests {
         #expect(object["version"] as? Int == 1)
     }
 
+    @Test("The formats the widget reads, and a snapshot without them")
+    func formatsKeys() throws {
+        let formats = WidgetSnapshot.Formats(decimal: ",", grouping: "\u{00A0}", symbolBefore: false, cents: "whenPresent", dateStyle: "words")
+        let snapshot = WidgetSnapshot(day: "2026-10-22", currency: "KZT", amountsHidden: false, allowance: nil,
+                                      incomeDay: nil, spentToday: 0, categories: [], formats: formats)
+        let object = try #require(try JSONSerialization.jsonObject(with: JSONEncoder().encode(snapshot)) as? [String: Any])
+        let inner = try #require(object["formats"] as? [String: Any])
+        #expect(Set(inner.keys) == ["decimal", "grouping", "symbolBefore", "cents", "dateStyle"])
+
+        let india = WidgetSnapshot.Formats(decimal: ".", grouping: ",", symbolBefore: true, cents: "never", dateStyle: "iso", secondaryGrouping: 2)
+        let withIndia = WidgetSnapshot(day: "d", currency: "INR", amountsHidden: false, allowance: nil, incomeDay: nil,
+                                       spentToday: 0, categories: [], formats: india)
+        let back = try JSONDecoder().decode(WidgetSnapshot.self, from: JSONEncoder().encode(withIndia))
+        #expect(back.formats == india)
+
+        let old = Data(#"{"version":1,"day":"d","currency":"KZT","amountsHidden":false,"spentToday":0,"categories":[]}"#.utf8)
+        #expect(try JSONDecoder().decode(WidgetSnapshot.self, from: old).formats == nil)
+    }
+
     @Test("tenra://add opens the assistant, with a category its add form")
     func links() throws {
         #expect(AppCoordinator.quickAdd(from: try #require(URL(string: "tenra://add"))) == .init(category: nil))

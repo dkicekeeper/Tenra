@@ -48,12 +48,6 @@ with the commit of every fix, are in
   6. *Not checked (Simulator has no App Attest):* on a phone the action tab is Ten, whose field
      says "Спросите о деньгах…", not "запишите трату"; a typed expense is drafted on the phone.
 
-- **Formats in Settings** (the owner asked 2026-11-05): let the person choose how dates and
-  amounts look (date format, decimal and grouping separators, the currency symbol's place,
-  decimals; whatever else belongs there). The default is the phone's region: amounts take its
-  separators since 2026-11-05 (`DesignKitBridge.amountSeparators(for:)`). Needs a design the
-  owner approves first.
-
 - **Assistant attachments after a relaunch.** A receipt or statement attached in the chat lives
   in memory: after a relaunch its card is gone from the kept thread (drafts too, by design).
   Plan §3.8 keeps the file in the app's container with the thread; only worth it if people come

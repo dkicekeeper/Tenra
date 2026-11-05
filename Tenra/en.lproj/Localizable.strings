@@ -2142,6 +2142,8 @@
 "assistant.notice.ask.digest" = "Go through my last week";
 "assistant.notice.ask.charge" = "Is %@ worth keeping?";
 "assistant.notice.charge" = "%@ is charged tomorrow";
+"assistant.notice.signal" = "%1$@ · %2$@";
+"assistant.notice.signal.change" = "%1$@ · %2$@ (%3$@)";
 "assistant.forecast.perDay" = "Per day until %@";
 "assistant.forecast.free" = "Free to spend: %@";
 "assistant.forecast.balance" = "Balance by day";

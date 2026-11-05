@@ -2142,6 +2142,8 @@
 "assistant.notice.ask.digest" = "Розбери мій минулий тиждень";
 "assistant.notice.ask.charge" = "Чи варто залишати %@?";
 "assistant.notice.charge" = "Завтра спишеться %@";
+"assistant.notice.signal" = "%1$@ · %2$@";
+"assistant.notice.signal.change" = "%1$@ · %2$@ (%3$@)";
 "assistant.forecast.perDay" = "На день до %@";
 "assistant.forecast.free" = "Вільно: %@";
 "assistant.forecast.balance" = "Залишок по днях";

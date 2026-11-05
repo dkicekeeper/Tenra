@@ -2142,6 +2142,8 @@
 "assistant.notice.ask.digest" = "Разбери мою прошлую неделю";
 "assistant.notice.ask.charge" = "Стоит ли оставлять %@?";
 "assistant.notice.charge" = "Завтра спишется %@";
+"assistant.notice.signal" = "%1$@ · %2$@";
+"assistant.notice.signal.change" = "%1$@ · %2$@ (%3$@)";
 "assistant.forecast.perDay" = "В день до %@";
 "assistant.forecast.free" = "Свободно: %@";
 "assistant.forecast.balance" = "Остаток по дням";

@@ -2142,6 +2142,8 @@
 "assistant.notice.ask.digest" = "지난주를 살펴봐 줘";
 "assistant.notice.ask.charge" = "%@ 계속 유지할 만할까?";
 "assistant.notice.charge" = "내일 %@ 결제돼요";
+"assistant.notice.signal" = "%1$@ · %2$@";
+"assistant.notice.signal.change" = "%1$@ · %2$@ (%3$@)";
 "assistant.forecast.perDay" = "%@까지 하루 사용 가능 금액";
 "assistant.forecast.free" = "사용 가능: %@";
 "assistant.forecast.balance" = "일별 잔액";

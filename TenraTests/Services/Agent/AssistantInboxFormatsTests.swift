@@ -4,8 +4,8 @@
 //
 //  Ten's kept messages after a change in Settings › Formats (AssistantInbox.rewriteTexts): a
 //  message keeps the values its words are written from, so it is written again in the new
-//  marks and date style, read or not; an insight's message takes the fresh one with its key; a
-//  message neither covers keeps its words.
+//  marks and date style, read or not, insight messages included (their subtitle as words, the
+//  value as an amount, the change as words); a message without values keeps its words.
 //
 //  `.sharedProcessState`: writes `FormatSettings.snapshot` and `AmountDisplayConfiguration.shared`,
 //  and restores them.
@@ -31,18 +31,27 @@ struct AssistantInboxFormatsTests {
         DesignKitBridge.apply(formats.resolved)
     }
 
-    private static func signal(_ formattedValue: String) -> Insight {
-        Insight(
+    /// A budget overspend of 1 234,5 ₸ written in the formats in force, its change `percent`.
+    private static func signal(
+        type: InsightType = .budgetOverspend,
+        value: Double = 1_234.5,
+        prefix: String = "",
+        percent: Double? = nil,
+        hiddenSubtitle: String? = nil
+    ) -> Insight {
+        var insight = Insight(
             id: "over",
-            type: .budgetOverspend,
+            type: type,
             title: "Кафе: бюджет превышен",
             subtitle: "Кафе",
-            metric: InsightMetric(value: 1_234.5, formattedValue: formattedValue, currency: "KZT", unit: nil),
-            trend: nil,
+            metric: InsightMetric(value: value, formattedValue: prefix + Formatting.formatCurrencySmart(value, currency: "KZT"), currency: "KZT", unit: nil),
+            trend: percent.map { InsightTrend(direction: .up, changePercent: $0, changeAbsolute: nil, comparisonPeriod: "") },
             severity: .warning,
             category: .budget,
             detailData: nil
         )
+        insight.hiddenSubtitle = hiddenSubtitle
+        return insight
     }
 
     private static func weeks() -> [PeriodDataPoint] {
@@ -71,7 +80,7 @@ struct AssistantInboxFormatsTests {
                                       frequency: .monthly, startDate: "2026-01-15", kind: .subscription, status: .active)
         let charge = try #require(AssistantNotices.charges(subscriptions: [netflix], nextCharge: { _ in tomorrow }, now: Self.now).first)
         let digest = try #require(AssistantNotices.digest(weekPoints: Self.weeks(), baseCurrency: "KZT", now: Self.now))
-        let signal = try #require(AssistantNotices.signals(from: [Self.signal("1.234,50 ₸")], now: Self.now).first)
+        let signal = try #require(AssistantNotices.signals(from: [Self.signal()], now: Self.now).first)
         // A message kept before its values were: only a fresh message with its key rewrites it.
         var legacy = charge
         legacy.id = "charge:old:2026-01-15"
@@ -87,8 +96,7 @@ struct AssistantInboxFormatsTests {
         inbox.markRead(charge.id)
 
         Self.use(formats) { $0.separators = .commaDot; $0.date = .iso; $0.symbol = .before }
-        let freshSignal = try #require(AssistantNotices.signals(from: [Self.signal("₸1,234.50")], now: Self.now).first)
-        inbox.rewriteTexts(from: [freshSignal])
+        inbox.rewriteTexts(from: [])
 
         let byId = Dictionary(uniqueKeysWithValues: inbox.notices.map { ($0.id, $0) })
         let rewrittenCharge = try #require(byId[charge.id])
@@ -101,12 +109,50 @@ struct AssistantInboxFormatsTests {
         #expect(rewrittenDigest.body.contains(DateFormatters.day(weekStart, includeYear: true, style: .iso)), "\(rewrittenDigest.body)")
         #expect(rewrittenDigest.body.contains("₸1,234.5"))
 
-        #expect(byId[signal.id]?.body == freshSignal.body)
+        #expect(byId[signal.id]?.body.contains("₸1,234.5") == true, "\(byId[signal.id]?.body ?? "")")
         #expect(byId[legacy.id]?.body == legacy.body)
 
         // Kept: a relaunch reads the new words.
         let again = AssistantInbox(defaults: store)
         #expect(again.notices.first { $0.id == charge.id }?.body == rewrittenCharge.body)
+    }
+
+    /// An insight's message keeps its subtitle, its value and its change, and reads as the push
+    /// does (InsightSignalService.notificationBody); a subtitle with an amount or a day in it
+    /// (`hiddenSubtitle`, the large expense's date) keeps the message as written.
+    @Test func aSignalMessageKeepsItsValues() throws {
+        let savedAmounts = AmountDisplayConfiguration.shared
+        defer {
+            AmountDisplayConfiguration.shared = savedAmounts
+            FormatSettings.resetSnapshot()
+        }
+        let formats = FormatSettings(defaults: Self.defaults())
+        Self.use(formats) { $0.separators = .dotComma; $0.symbol = .after }
+
+        let insight = Self.signal(percent: 25)
+        let notice = try #require(AssistantNotices.signals(from: [insight], now: Self.now).first)
+        #expect(notice.text != nil)
+        #expect(notice.body == InsightSignalService.notificationBody(for: insight))
+        #expect(notice.hiddenBody == InsightSignalService.hiddenNotificationBody(for: insight))
+        // A value written with its "+" (the projected balance) keeps it.
+        let growing = Self.signal(type: .projectedBalance, value: 500, prefix: "+")
+        let growingNotice = try #require(AssistantNotices.signals(from: [growing], now: Self.now).first)
+        #expect(growingNotice.text != nil)
+        #expect(growingNotice.body == InsightSignalService.notificationBody(for: growing))
+
+        let withAmount = Self.signal(hiddenSubtitle: "Кафе ••••")
+        #expect(AssistantNotices.signals(from: [withAmount], now: Self.now).first?.text == nil)
+        let large = Self.signal(type: .largeTransaction)
+        #expect(AssistantNotices.signals(from: [large], now: Self.now).first?.text == nil)
+
+        let inbox = AssistantInbox(defaults: Self.defaults())
+        inbox.post([notice], now: Self.now)
+        Self.use(formats) { $0.separators = .commaDot }
+        inbox.rewriteTexts(from: [])
+        let rewritten = try #require(inbox.notices.first)
+        #expect(rewritten.body.contains("1,234.50"), "\(rewritten.body)")
+        #expect(rewritten.body.contains("(+25%)"))
+        #expect(rewritten.body.hasPrefix("Кафе · "))
     }
 
     /// A message kept before the values existed decodes without them.

@@ -85,12 +85,40 @@ struct AssistantNotice: Codable, Equatable, Identifiable, Sendable {
     }
 }
 
+extension AssistantNotice {
+    /// As the synthesized decoder, except `text`: values another version wrote (a value case
+    /// renamed, removed or added) drop only this message's values. The inbox decodes all or
+    /// nothing, so a failure here would lose every message and every posted key.
+    init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(String.self, forKey: .id)
+        kind = try container.decode(Kind.self, forKey: .kind)
+        title = try container.decode(String.self, forKey: .title)
+        body = try container.decode(String.self, forKey: .body)
+        hiddenBody = try container.decodeIfPresent(String.self, forKey: .hiddenBody)
+        text = try? container.decodeIfPresent(AssistantNoticeText.self, forKey: .text)
+        mood = try container.decode(Mood.self, forKey: .mood)
+        question = try container.decode(String.self, forKey: .question)
+        insightId = try container.decodeIfPresent(String.self, forKey: .insightId)
+        subjectId = try container.decodeIfPresent(String.self, forKey: .subjectId)
+        createdAt = try container.decode(Date.self, forKey: .createdAt)
+        isRead = try container.decodeIfPresent(Bool.self, forKey: .isRead) ?? false
+    }
+}
+
 /// A message's words as a localized format and the values it is filled with, so the words can
 /// be written again in other formats: the amounts and the days follow Settings › Formats.
+///
+/// ⚠️ The format keys are stored with their values in every kept message: a key's arguments
+/// (their number, order or kind) never change; a new wording with other arguments takes a new
+/// key. A key that no longer resolves or no longer takes exactly these values is not used: the
+/// message keeps its stored words.
 struct AssistantNoticeText: Codable, Equatable, Sendable {
     enum Value: Codable, Equatable, Sendable {
         /// An amount; dots while "hide amounts" is on.
         case amount(Double, currency: String)
+        /// An amount with "+" before it when it is not negative (the projected balance).
+        case signedAmount(Double, currency: String)
         /// A day date, its year only outside the current one.
         case day(Date)
         /// A week from its first day ("3 ноября 2026 – 9 ноября 2026").
@@ -103,16 +131,56 @@ struct AssistantNoticeText: Codable, Equatable, Sendable {
     var format: String
     var values: [Value]
 
-    var body: String { written(hidingAmounts: false) }
-    var hiddenBody: String { written(hidingAmounts: true) }
+    /// The words in the formats in force; nil when the key no longer resolves or no longer
+    /// takes exactly these values (another version changed it), so the stored words stay.
+    var body: String? { written(hidingAmounts: false) }
+    var hiddenBody: String? { written(hidingAmounts: true) }
 
-    private func written(hidingAmounts: Bool) -> String {
+    /// How many string arguments `format` takes: its `%@` or its distinct `%n$@` (positions
+    /// 1...n, none skipped). nil when it takes anything else, mixes the two, or skips one.
+    static func objectArguments(in format: String) -> Int? {
+        let characters = Array(format)
+        var plain = 0
+        var positions = Set<Int>()
+        var index = 0
+        while index < characters.count {
+            guard characters[index] == "%" else { index += 1; continue }
+            index += 1
+            guard index < characters.count else { return nil }
+            if characters[index] == "%" { index += 1; continue }
+            var digits = ""
+            while index < characters.count, characters[index].isASCII, characters[index].isNumber {
+                digits.append(characters[index])
+                index += 1
+            }
+            var position: Int?
+            if !digits.isEmpty {
+                guard index < characters.count, characters[index] == "$", let number = Int(digits), number > 0 else { return nil }
+                position = number
+                index += 1
+            }
+            guard index < characters.count, characters[index] == "@" else { return nil }
+            index += 1
+            if let position { positions.insert(position) } else { plain += 1 }
+        }
+        guard !positions.isEmpty else { return plain }
+        guard plain == 0, positions == Set(1...positions.count) else { return nil }
+        return positions.count
+    }
+
+    private func written(hidingAmounts: Bool) -> String? {
+        let resolved = String(localized: String.LocalizationValue(format))
+        guard resolved != format, Self.objectArguments(in: resolved) == values.count else { return nil }
         let arguments: [String] = values.map { value in
             switch value {
             case let .amount(amount, currency):
                 hidingAmounts
                     ? Formatting.hiddenAmount(currency: currency)
                     : Formatting.formatCurrencySmart(amount, currency: currency)
+            case let .signedAmount(amount, currency):
+                hidingAmounts
+                    ? Formatting.hiddenAmount(currency: currency)
+                    : (amount >= 0 ? "+" : "") + Formatting.formatCurrencySmart(amount, currency: currency)
             case let .day(date):
                 DateFormatters.displayDateOmittingCurrentYear(date)
             case let .week(start):
@@ -121,7 +189,7 @@ struct AssistantNoticeText: Codable, Equatable, Sendable {
                 text
             }
         }
-        return String(format: String(localized: String.LocalizationValue(format)), arguments: arguments)
+        return String(format: resolved, arguments: arguments)
     }
 }
 
@@ -140,18 +208,51 @@ enum AssistantNotices {
                 return lhs.severity == .critical
             }
             .map { insight in
-                AssistantNotice(
+                let text = signalText(for: insight)
+                return AssistantNotice(
                     id: "signal:\(insight.signalKey ?? insight.id)",
                     kind: .signal,
                     title: insight.title,
-                    body: InsightSignalService.notificationBody(for: insight),
-                    hiddenBody: InsightSignalService.hiddenNotificationBody(for: insight),
+                    body: text?.body ?? InsightSignalService.notificationBody(for: insight),
+                    hiddenBody: text?.hiddenBody ?? InsightSignalService.hiddenNotificationBody(for: insight),
+                    text: text,
                     mood: InsightSignalKind.from(insight)?.isSurprise == true ? .surprised : .concerned,
                     question: String(format: String(localized: "assistant.notice.ask"), insight.title),
                     insightId: insight.id,
                     createdAt: now
                 )
             }
+    }
+
+    /// An insight message's values, read as `InsightSignalService.notificationBody` writes the
+    /// push: the subtitle as words, the value as an amount, the change as words. nil when the
+    /// words hold what the values cannot write again: an amount in the subtitle
+    /// (`hiddenSubtitle`), the large expense's day, a value not written by `formatCurrencySmart`
+    /// (or with its "+"), an empty subtitle, a value without a currency. Such a message keeps
+    /// its words.
+    static func signalText(for insight: Insight) -> AssistantNoticeText? {
+        guard !insight.subtitle.isEmpty, insight.hiddenSubtitle == nil, insight.type != .largeTransaction,
+              let currency = insight.metric.currency else { return nil }
+        let metric = insight.metric
+        let written = Formatting.formatCurrencySmart(metric.value, currency: currency)
+        let amount: AssistantNoticeText.Value
+        if metric.formattedValue == written {
+            amount = .amount(metric.value, currency: currency)
+        } else if metric.formattedValue == "+" + written, metric.value >= 0 {
+            amount = .signedAmount(metric.value, currency: currency)
+        } else {
+            return nil
+        }
+        let text: AssistantNoticeText
+        if let percent = insight.trend?.changePercent, abs(percent) >= 1 {
+            text = AssistantNoticeText(
+                format: "assistant.notice.signal.change",
+                values: [.text(insight.subtitle), amount, .text(String(format: "%+.0f%%", percent))]
+            )
+        } else {
+            text = AssistantNoticeText(format: "assistant.notice.signal", values: [.text(insight.subtitle), amount])
+        }
+        return text.body == nil ? nil : text
     }
 
     /// Last week's summary: the week before the current one, against the week before it. Nil
@@ -182,7 +283,7 @@ enum AssistantNotices {
             id: "digest:\(week.key)",
             kind: .digest,
             title: String(localized: "notification.weeklyDigest.title"),
-            body: text.body,
+            body: text.body ?? "",
             hiddenBody: text.hiddenBody,
             text: text,
             mood: mood,
@@ -210,7 +311,7 @@ enum AssistantNotices {
                 id: "charge:\(series.id):\(FastDateParser.string(from: tomorrow))",
                 kind: .charge,
                 title: series.description,
-                body: text.body,
+                body: text.body ?? "",
                 hiddenBody: text.hiddenBody,
                 text: text,
                 mood: .idle,
@@ -238,7 +339,7 @@ extension AssistantNotices {
                 id: "debt:\(debt.id):\(FastDateParser.string(from: tomorrow))",
                 kind: .debt,
                 title: debt.person,
-                body: text.body,
+                body: text.body ?? "",
                 hiddenBody: text.hiddenBody,
                 text: text,
                 mood: owedToMe ? .idle : .concerned,
@@ -276,7 +377,7 @@ extension AssistantNotices {
                 id: "goal:\(goal.id):\(month)",
                 kind: .goal,
                 title: goal.name,
-                body: text.body,
+                body: text.body ?? "",
                 hiddenBody: text.hiddenBody,
                 text: text,
                 mood: .concerned,
@@ -326,7 +427,7 @@ extension AssistantNotices {
                 id: "asset:\(asset.id):\(year)-H\(half)",
                 kind: .asset,
                 title: asset.name,
-                body: text.body,
+                body: text.body ?? "",
                 hiddenBody: text.hiddenBody,
                 text: text,
                 mood: .idle,
@@ -469,18 +570,21 @@ final class AssistantInbox {
     }
 
     /// Settings › Formats changed: the kept messages, read or not, are written in the new
-    /// formats. One that keeps its values (`text`) is written from them; any other (an
-    /// insight's, one kept before the values were) takes the words of the fresh message with its
-    /// key in `candidates`; a message neither covers keeps its words.
-    func rewriteTexts(from candidates: [AssistantNotice]) {
+    /// formats, each from its OWN values (`text`), never from newer figures. A message without
+    /// values (kept before they existed, or whose words they cannot write) takes the words of
+    /// the fresh message with its key in `candidates` only when both are of the same day: a key
+    /// that repeats on another day may carry other figures. Any other keeps its words.
+    func rewriteTexts(from candidates: [AssistantNotice], calendar: Calendar = .current) {
         var fresh: [String: AssistantNotice] = [:]
         for candidate in candidates where fresh[candidate.id] == nil { fresh[candidate.id] = candidate }
         var rewritten = notices
         for index in rewritten.indices {
-            if let text = rewritten[index].text {
-                rewritten[index].body = text.body
-                rewritten[index].hiddenBody = text.hiddenBody
-            } else if let candidate = fresh[rewritten[index].id] {
+            let kept = rewritten[index]
+            if let text = kept.text {
+                guard let body = text.body else { continue }
+                rewritten[index].body = body
+                rewritten[index].hiddenBody = text.hiddenBody ?? kept.hiddenBody
+            } else if let candidate = fresh[kept.id], calendar.isDate(candidate.createdAt, inSameDayAs: kept.createdAt) {
                 rewritten[index].title = candidate.title
                 rewritten[index].body = candidate.body
                 rewritten[index].hiddenBody = candidate.hiddenBody

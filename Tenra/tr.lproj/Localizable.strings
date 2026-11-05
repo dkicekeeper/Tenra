@@ -2142,6 +2142,8 @@
 "assistant.notice.ask.digest" = "Geçen haftamı incele";
 "assistant.notice.ask.charge" = "%@ tutmaya değer mi?";
 "assistant.notice.charge" = "Yarın %@ çekilecek";
+"assistant.notice.signal" = "%1$@ · %2$@";
+"assistant.notice.signal.change" = "%1$@ · %2$@ (%3$@)";
 "assistant.forecast.perDay" = "%@ tarihine kadar günlük";
 "assistant.forecast.free" = "Kullanılabilir: %@";
 "assistant.forecast.balance" = "Günlük bakiye";

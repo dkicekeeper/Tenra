@@ -2142,6 +2142,8 @@
 "assistant.notice.ask.digest" = "Geh meine letzte Woche durch";
 "assistant.notice.ask.charge" = "Lohnt sich %@ noch?";
 "assistant.notice.charge" = "Morgen wird %@ abgebucht";
+"assistant.notice.signal" = "%1$@ · %2$@";
+"assistant.notice.signal.change" = "%1$@ · %2$@ (%3$@)";
 "assistant.forecast.perDay" = "Pro Tag bis %@";
 "assistant.forecast.free" = "Frei verfügbar: %@";
 "assistant.forecast.balance" = "Kontostand pro Tag";

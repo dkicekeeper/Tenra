@@ -2142,6 +2142,8 @@
 "assistant.notice.ask.digest" = "Өткен аптамды талдап бер";
 "assistant.notice.ask.charge" = "«%@» жазылымын қалдырған жөн бе?";
 "assistant.notice.charge" = "Ертең %@ есептен шығарылады";
+"assistant.notice.signal" = "%1$@ · %2$@";
+"assistant.notice.signal.change" = "%1$@ · %2$@ (%3$@)";
 "assistant.forecast.perDay" = "Күнделікті, %@ күніне дейін";
 "assistant.forecast.free" = "Жұмсауға болады: %@";
 "assistant.forecast.balance" = "Күндер бойынша қалдық";

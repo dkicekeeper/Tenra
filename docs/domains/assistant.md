@@ -230,11 +230,28 @@ automation records a payment (`Subjects.capturing`).
 
 A notice keeps a copy of its text with the amounts as dots (`hiddenBody`), shown while "hide
 amounts" is on. It also keeps what its words are written from (`AssistantNoticeText`: the format's
-key and its values, amounts, days and the week), so a change in Settings › Formats writes the kept
-notices again, read or not (`AssistantInbox.rewriteTexts`, from `AppCoordinator.rebuildFormattedText`).
-An insight's notice (its words are the insight's) and one kept before the values existed have
-none: they take the words of the fresh notice with their key (the pass's, or today's charges,
-debts, goals and assets), and keep theirs without one. A notice about a subscription, a debt, a goal or an asset leaves with it: the Home section
+key and its values: amounts, days, the week, and words the formats leave alone), so a change in
+Settings › Formats writes the kept notices again, read or not, each from its own values, never
+from newer figures (`AssistantInbox.rewriteTexts`, from `AppCoordinator.rebuildFormattedText`).
+An insight's notice keeps its subtitle as words, its value as an amount and its change as words
+(`AssistantNotices.signalText`, read as the push is written: `assistant.notice.signal` and
+`.signal.change`).
+
+- ⚠️ **The format keys are stored with their values** in every kept notice
+  (`assistant.notice.charge`, `.debt.owedToMe`, `.debt.iOwe`, `.goal.behind`, `.asset.stale`,
+  `.signal`, `.signal.change`, `notification.weeklyDigest.body.simple` and `.withComparison`):
+  never change a key's arguments (their number, order or kind); a wording with other arguments
+  takes a new key. A key that no longer resolves, or no longer takes exactly the stored values
+  (`AssistantNoticeText.objectArguments`), is not used, and the notice keeps its stored words; a
+  value case another version wrote drops only that notice's values (the inbox decodes all or
+  nothing, `AssistantNotice.init(from:)` decodes `text` on its own).
+- **What keeps its words** (the limitation): an insight's notice whose subtitle carries an amount
+  (`hiddenSubtitle`) or a day (the large expense's), or whose value is not a plain amount; and a
+  notice kept before the values existed. Such a notice takes the words of the fresh notice with
+  its key only when both are of the same day (a key that repeats on another day may carry other
+  figures), else keeps its own.
+
+A notice about a subscription, a debt, a goal or an asset leaves with it: the Home section
 shows only notices whose subject is still there (`AssistantNotices.Subjects`: active
 subscriptions, open debts, goals, assets still out of date, loans still without an asset, read
 once every store has loaded), and

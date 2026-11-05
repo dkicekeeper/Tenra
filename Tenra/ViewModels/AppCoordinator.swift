@@ -949,13 +949,14 @@ class AppCoordinator {
     }
 
     private func rebuildFormattedText() async {
-        // Ten's kept messages (Home's "Ten writes"): the ones that keep their values at once.
+        // Ten's kept messages (Home's "Ten writes"), each from its own values, at once; one kept
+        // before the values existed takes today's message with its key, if there is one.
         AssistantInbox.shared.rewriteTexts(from: assistantNoticeCandidates(now: Date()))
         // Insight text is formatted when computed: a pass now, Analytics on screen or not
         // (`invalidateAndRecompute` would wait for it). The pass reschedules the weekly digest
         // and hands the pending signals their new text.
         await insightsViewModel.refreshInsightsAndWait()
-        // Ten's insight messages take the words of the pass's own.
+        // The same for today's insight messages kept before the values, from the pass's own.
         AssistantInbox.shared.rewriteTexts(from: insightsViewModel.assistantNotices(now: Date()))
         // The subscriptions' reminders carry their amounts.
         await transactionStore.rescheduleSubscriptionNotifications()

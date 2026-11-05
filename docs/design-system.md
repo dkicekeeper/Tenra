@@ -502,7 +502,8 @@ fixed format (`AmountFormatter`); stored dates keep `yyyy-MM-dd` (`FastDateParse
 **A change applies without a relaunch** (CLAUDE.md rule 12). Text written ahead of time is
 written again by `AppCoordinator.rebuildFormattedText`: an insights pass whether Analytics shows or
 not (it reschedules the weekly digest and rewrites the pending signals), Ten's kept messages
-(`AssistantInbox.rewriteTexts`: each keeps the values its words are written from), the
+(`AssistantInbox.rewriteTexts`: each from its own values; one without values keeps its words,
+[domains/assistant.md](domains/assistant.md) §6), the
 subscription reminders and the widget snapshot. The tab roots rebuild on `formatSettings.version`
 (`.id`; not Voice and Import, whose state is in flight). A cache of formatted text keys on the
 formats: history's section labels (the date style), Analytics' category pages

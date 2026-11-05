@@ -33,19 +33,14 @@ with the commit of every fix, are in
   2. *Save is not visible in the add form.* "Вчера / Сегодня / Дата" are the save buttons
      (`dateButtonsSafeArea`), with no "Сохранить" label or check: a newcomer can read them as a
      date picker and leave with ← unsaved. The owner's call (2026-11-05): a one-time spotlight
-     on the buttons, nothing added to the buttons themselves. Needs DesignKit 8.7.0
-     (`dateButtonsSafeArea(spotlightAnchor:)`), then a `FeatureTourState` hint in
+     on the buttons, nothing added to the buttons themselves. Ready to build (Tenra pins DesignKit
+     8.8.1, which has `dateButtonsSafeArea(spotlightAnchor:)`): a `FeatureTourState` hint in
      `TransactionAddModal`, shown once after the first amount is typed.
-  3. *The Home hint eats the first tap.* The spotlight's dim layer took the tap meant for the
-     tile. **Fixed in DesignKit 8.7.0** (the cut-out passes the tap): lands with Tenra's bump.
-  4. *Account step:* the balance "0" has no label or currency. The owner's call: a caption under
-     it, "Стартовый баланс" with the currency picked a step earlier, not always ₸. Needs DesignKit
-     8.7.0 (`EditableHero.Options.amountCaption`), passed through `EditableHeroSection`.
-  5. *DesignKit 8.7.0 also brings:* only current currencies in "Все валюты" (no ATS, the
-     Austrian schilling), and a row's hint aligned left (the auto-capture rows had it centred).
-     DesignKit 8.7.0 waits on its PR from the branch `claude/first-run-fixes`, pushed 2026-11-05;
-     the overlaps in the add form and the currency step stay, by the owner's call.
-  6. *Not checked (Simulator has no App Attest):* on a phone the action tab is Ten, whose field
+  3. *Account step:* the balance "0" has no label or currency. The owner's call: a caption under
+     it, "Стартовый баланс" with the currency picked a step earlier, not always ₸. Ready to build
+     (`EditableHero.Options.amountCaption` is in the pinned DesignKit), passed through
+     `EditableHeroSection`.
+  4. *Not checked (Simulator has no App Attest):* on a phone the action tab is Ten, whose field
      says "Спросите о деньгах…", not "запишите трату"; a typed expense is drafted on the phone.
 
 - **Assistant attachments after a relaunch.** A receipt or statement attached in the chat lives

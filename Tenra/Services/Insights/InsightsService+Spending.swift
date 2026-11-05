@@ -503,7 +503,7 @@ extension InsightsService {
     /// "Groceries, 34% of spending": the name of a top card (category or merchant) and its share,
     /// in the reader's percent format.
     nonisolated static func shareOfSpendingSubtitle(name: String, sharePercent: Double) -> String {
-        let share = (sharePercent / 100).formatted(.percent.precision(.fractionLength(0)))
+        let share = NumberDisplay.percent(sharePercent)
         return String(format: String(localized: "insights.topCategory.share"), name, share)
     }
 

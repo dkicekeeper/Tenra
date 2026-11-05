@@ -1,7 +1,7 @@
 # Форматы дат и сумм: дизайн
 
 Статус: дизайн утверждён основателем 2026-11-05. Сделаны задачи 1–3 (DesignKit 8.8.0, ветка
-`claude/formats`, ждёт PR после 8.7.0) и 4, 7 (в main); задачи 5, 6, 8–11 ждут выпуска DesignKit 8.8.0. Макет экранов (утверждён 2026-11-05):
+`claude/formats`, ждёт PR после 8.7.0) и 4, 7 (в main); задача 5 в main (DesignKit 8.8.0 закреплён); 6, 8–11 ждут выпуска DesignKit 8.8.0. Макет экранов (утверждён 2026-11-05):
 https://claude.ai/artifact/GXmE57X7WjPsSZ4HrQmcdq
 
 Пометки: «(основатель)» решил владелец; «(моё решение)» решено при проектировании, его можно
@@ -434,21 +434,21 @@ nonisolated enum AppCalendar { static var current: Calendar }  // Calendar.curre
 число с выбранными разделителями, процент без пробела, как сейчас «34%» (`percentValue` 34.2
 значит 34,2%).
 
-- [ ] **Шаг 1.** Поднять DesignKit до 8.8.0: в `XCRemoteSwiftPackageReference "DesignKit"`
+- [x] **Шаг 1.** Поднять DesignKit до 8.8.0: в `XCRemoteSwiftPackageReference "DesignKit"`
   `version = 8.8.0;`, затем `xcodebuild -resolvePackageDependencies -scheme Tenra` (или дождаться
   коммита workflow «DesignKit update»). Сборка зелёная.
-- [ ] **Шаг 2. Тесты:** `DesignKitBridgeFormatsTests` (`@MainActor`, `.sharedProcessState`,
+- [x] **Шаг 2. Тесты:** `DesignKitBridgeFormatsTests` (`@MainActor`, `.sharedProcessState`,
   восстанавливает `AmountDisplayConfiguration()` после себя): `apply` с `ResolvedFormats`
   (разделители `commaDot`, символ `.before`, копейки `.never`) →
   `Formatting.formatCurrencySmart(1234.5, currency: "USD") == "$1,235"`.
   `NumberDisplayTests`: `percent(34.2, fractionDigits: 1, dotComma) == "34,2%"`,
   `percent(34.2) == "34%"` (spaceComma), `decimal(1234.5, fractionDigits: 2, commaDot) == "1,234.50"`.
-- [ ] **Шаг 3.** Красные; реализовать; зелёные.
-- [ ] **Шаг 4.** Перевести показ чисел на `NumberDisplay`: места из
+- [x] **Шаг 3.** Красные; реализовать; зелёные.
+- [x] **Шаг 4.** Перевести показ чисел на `NumberDisplay`: места из
   `grep -rnE 'String\(format: "%\.[0-9]f%%?"|\.formatted\(\.percent' Tenra --include='*.swift'`,
   кроме логов, CSV, контекста ИИ и ключей. В `InsightsService+Spending.shareOfSpendingSubtitle`
   процент тоже через `NumberDisplay.percent`. Полный прогон.
-- [ ] **Шаг 5.** Коммит «feat(formats): amounts and numbers in the chosen format».
+- [x] **Шаг 5.** Коммит «feat(formats): amounts and numbers in the chosen format».
 
 ### Задача 6 (Tenra): даты по выбранному стилю
 

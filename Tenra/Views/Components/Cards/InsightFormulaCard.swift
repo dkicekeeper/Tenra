@@ -56,7 +56,7 @@ struct InsightFormulaCard: View {
         case .months:
             return String(format: String(localized: "insights.formula.value.months"), row.value)
         case .percent:
-            return String(format: "%.1f%%", row.value)
+            return NumberDisplay.percent(row.value, fractionDigits: 1)
         case .days:
             return String(format: String(localized: "insights.formula.value.days"), Int(row.value.rounded()))
         case .rawText(let s):

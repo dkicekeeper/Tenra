@@ -208,7 +208,7 @@ struct InsightDeepDiveView: View {
 
                     VStack(alignment: .trailing, spacing: AppSpacing.xxs) {
                         FormattedAmountText(amount: item.amount, currency: displayCurrency, color: AppColors.textPrimary)
-                        Text(String(format: "%.1f%%", item.percentage))
+                        Text(NumberDisplay.percent(item.percentage, fractionDigits: 1))
                             .font(AppTypography.bodySmall)
                             .foregroundStyle(AppColors.textSecondary)
                     }

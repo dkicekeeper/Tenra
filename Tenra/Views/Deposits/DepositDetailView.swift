@@ -367,7 +367,7 @@ struct DepositDetailView: View {
     // MARK: - Formatting helpers
 
     private func formatRate(_ rate: Decimal) -> String {
-        String(format: "%.2f", NSDecimalNumber(decimal: rate).doubleValue)
+        NumberDisplay.decimal(NSDecimalNumber(decimal: rate).doubleValue, fractionDigits: 2)
     }
 
     private func formatDate(_ date: Date) -> String {

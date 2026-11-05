@@ -39,12 +39,12 @@ struct LargeTransactionHeroCard: View {
         )
     }
 
-    /// "13.9× the usual", the multiple in the app's locale with one decimal.
+    /// "13.9× the usual", the multiple in the reader's number format with one decimal.
     static func timesText(amount: Double, usual: Double) -> String {
         let multiple = usual > 0 ? amount / usual : 0
         return String(
             format: String(localized: "insights.largeTransaction.timesUsual"),
-            multiple.formatted(.number.precision(.fractionLength(1)))
+            NumberDisplay.decimal(multiple, fractionDigits: 1)
         )
     }
 }

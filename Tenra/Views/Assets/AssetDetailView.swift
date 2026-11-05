@@ -745,14 +745,14 @@ struct AssetDetailView: View {
             rows.append(row(.year, String(Int(year))))
         }
         if let mileage = number(.mileageKm) {
-            rows.append(row(.mileageKm, mileage.formatted(.number.precision(.fractionLength(0)))))
+            rows.append(row(.mileageKm, NumberDisplay.decimal(mileage, fractionDigits: 0)))
         }
         return rows
     }
 
-    /// "50%" (or "8.6%" with one fraction digit) in the app's locale.
+    /// "50%" (or "8.6%" with one fraction digit) in the reader's number format.
     static func percentText(_ share: Double, fractionDigits: Int = 0) -> String {
-        share.formatted(.percent.precision(.fractionLength(fractionDigits)))
+        NumberDisplay.percent(share * 100, fractionDigits: fractionDigits)
     }
 
     // MARK: - History

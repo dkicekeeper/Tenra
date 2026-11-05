@@ -207,7 +207,7 @@ extension InsightsService {
         } else if delta >= 15 {
             recommendation = String(
                 format: String(localized: "insights.formula.yearOverYear.rec.up"),
-                String(format: "%.1f%%", delta)
+                NumberDisplay.percent(delta, fractionDigits: 1)
             )
         } else {
             recommendation = String(localized: "insights.formula.yearOverYear.rec.flat")
@@ -377,7 +377,7 @@ extension InsightsService {
                 subtitle: Self.categoryLabel(for: top.categoryName),
                 metric: InsightMetric(
                     value: topPercent,
-                    formattedValue: String(format: "%.0f%%", topPercent),
+                    formattedValue: NumberDisplay.percent(topPercent),
                     currency: nil,
                     unit: nil
                 ),

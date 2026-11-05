@@ -707,7 +707,7 @@ struct LoanDetailView: View {
                     String(localized: "loan.interestRate", defaultValue: "Interest Rate"),
                     icon: "percent",
                     config: .info,
-                    accessory: .info(String(format: "%.2f%% %@", NSDecimalNumber(decimal: loanInfo.interestRateAnnual).doubleValue, String(localized: "loan.annual", defaultValue: "annual")))
+                    accessory: .info("\(NumberDisplay.percent(NSDecimalNumber(decimal: loanInfo.interestRateAnnual).doubleValue, fractionDigits: 2)) \(String(localized: "loan.annual", defaultValue: "annual"))")
                 )
 
                 UniversalRow(

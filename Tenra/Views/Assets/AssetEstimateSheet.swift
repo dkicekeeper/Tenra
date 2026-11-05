@@ -239,7 +239,7 @@ struct AssetEstimateSheet: View {
             parts.append(String(year))
         }
         if let mileage = listing.mileageKm {
-            parts.append(String(format: String(localized: "asset.estimate.kilometres"), mileage.formatted(.number.precision(.fractionLength(0)))))
+            parts.append(String(format: String(localized: "asset.estimate.kilometres"), NumberDisplay.decimal(mileage, fractionDigits: 0)))
         }
         return parts.isEmpty ? nil : parts.joined(separator: " · ")
     }

@@ -85,7 +85,7 @@ extension InsightsService {
             titleKey: "insights.formula.savingsRate.title",
             icon: "banknote.fill",
             color: severity.color,
-            heroValueText: String(format: "%.1f%%", rate),
+            heroValueText: NumberDisplay.percent(rate, fractionDigits: 1),
             heroLabelKey: "insights.formula.savingsRate.heroLabel",
             formulaHeaderKey: "insights.formula.savingsRate.formulaHeader",
             formulaRows: [
@@ -113,7 +113,7 @@ extension InsightsService {
             subtitle: withPeriod(savedText),
             metric: InsightMetric(
                 value: rate,
-                formattedValue: String(format: "%.1f%%", rate),
+                formattedValue: NumberDisplay.percent(rate, fractionDigits: 1),
                 currency: nil,
                 unit: nil
             ),
@@ -204,7 +204,7 @@ extension InsightsService {
             baseCurrency: baseCurrency
         )
 
-        Self.logger.debug("🛡 [Insights] EmergencyFund — \(String(format: "%.1f", monthsCovered), privacy: .public) months, severity=\(String(describing: severity), privacy: .public)")
+        Self.logger.debug("🛡 [Insights] EmergencyFund — \(NumberDisplay.decimal(monthsCovered, fractionDigits: 1), privacy: .public) months, severity=\(String(describing: severity), privacy: .public)")
         return Insight(
             id: "emergency_fund",
             type: .emergencyFund,
@@ -212,7 +212,7 @@ extension InsightsService {
             subtitle: String(format: String(localized: "insights.monthsCovered"), monthsInt),
             metric: InsightMetric(
                 value: monthsCovered,
-                formattedValue: String(format: "%.1f", monthsCovered),
+                formattedValue: NumberDisplay.decimal(monthsCovered, fractionDigits: 1),
                 currency: nil,
                 unit: String(localized: "insights.months")
             ),

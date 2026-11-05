@@ -21,6 +21,25 @@
 import SwiftUI
 
 enum DesignKitBridge {
+    /// Carries the resolved formats into DesignKit's amount configuration. Called at launch
+    /// and again whenever the person changes a format. The date hook is added by the dates task.
+    static func apply(_ formats: ResolvedFormats) {
+        var amounts = AmountDisplayConfiguration.shared
+        amounts.decimalSeparator = formats.decimalSeparator
+        amounts.thousandsSeparator = formats.groupingSeparator
+        amounts.secondaryGroupingSize = formats.secondaryGroupingSize
+        // Tenra always applies the resolved separators (the region's or the chosen ones), so
+        // abbreviated amounts and chart labels follow them instead of the locale's.
+        amounts.separatorsOverrideLocale = true
+        amounts.symbolPosition = formats.symbol == .before ? .before : .after
+        switch formats.cents {
+        case .whenPresent: amounts.fractions = .whenPresent
+        case .always: amounts.fractions = .always
+        case .never: amounts.fractions = .never
+        }
+        AmountDisplayConfiguration.shared = amounts
+    }
+
     /// Call once from `TenraApp.init()`, before any view renders.
     static func configure() {
         // Inter comes from DesignKit's bundle (Tenra's own copy and UIAppFonts were removed).
@@ -28,11 +47,7 @@ enum DesignKitBridge {
         DesignKitFonts.registerIfNeeded()
         // Amounts in the reader's own number format (the owner's decision of 2026-11-05):
         // DesignKit's default is a fixed "." and " " for every language.
-        let formats = FormatSettings.snapshot
-        var amounts = AmountDisplayConfiguration.shared
-        amounts.decimalSeparator = formats.decimalSeparator
-        amounts.thousandsSeparator = formats.groupingSeparator
-        AmountDisplayConfiguration.shared = amounts
+        apply(FormatSettings.snapshot)
         DesignKitLogoLoader.loader = { brandName in
             await LogoService.shared.logoImage(brandName: brandName)
         }

@@ -72,7 +72,7 @@ struct FinancialHealthDetailView: View {
             color: AppColors.success,
             weight: 30,
             componentScore: score.savingsRateScore,
-            currentValueText: String(format: "%.1f%%", score.savingsRatePercent),
+            currentValueText: NumberDisplay.percent(score.savingsRatePercent, fractionDigits: 1),
             targetTextKey: "insights.health.target.savingsRate",
             progress: min(max(score.savingsRatePercent, 0) / 20.0, 1),
             recommendation: HealthRecommendationBuilder.savingsRateRecommendation(score),
@@ -115,7 +115,7 @@ struct FinancialHealthDetailView: View {
             color: AppColors.accent,
             weight: 20,
             componentScore: score.recurringRatioScore,
-            currentValueText: String(format: "%.0f%%", score.recurringPercentOfIncome),
+            currentValueText: NumberDisplay.percent(score.recurringPercentOfIncome),
             targetTextKey: "insights.health.target.recurringRatio",
             progress: progress,
             recommendation: HealthRecommendationBuilder.recurringRatioRecommendation(score),
@@ -129,7 +129,7 @@ struct FinancialHealthDetailView: View {
         if score.avgMonthlyExpenses == 0 {
             valueText = "12+"  // unbounded: cap display
         } else {
-            valueText = String(format: "%.1f", score.monthsCovered)
+            valueText = NumberDisplay.decimal(score.monthsCovered, fractionDigits: 1)
         }
         return HealthComponentDisplayModel(
             id: "emergencyFund",

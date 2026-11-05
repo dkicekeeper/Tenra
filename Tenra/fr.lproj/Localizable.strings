@@ -97,6 +97,7 @@
 "settings.background" = "Arrière-plan";
 "settings.merchantLogos" = "Logos des commerçants";
 "home.hint.categories" = "Touchez une catégorie pour ajouter une dépense";
+"transaction.hint.save" = "Touchez un jour pour enregistrer la dépense";
 "home.autoCapture.title" = "Laissez Tenra enregistrer";
 "home.autoCapture.message" = "Configurez l’automatisation Wallet une fois, et les paiements Apple Pay apparaîtront ici d’eux-mêmes.";
 "home.autoCapture.action" = "Configurer";
@@ -1633,6 +1634,7 @@
 "onboarding.account.nameLabel" = "Nom";
 "onboarding.account.iconLabel" = "Icône";
 "onboarding.account.balanceLabel" = "Solde initial";
+"onboarding.account.balanceCaption" = "Solde initial (%@)";
 "onboarding.account.currencyChangedBanner" = "La devise de l'app a été modifiée. La devise du compte reste inchangée. Vous pouvez la modifier dans l'éditeur de compte.";
 
 "onboarding.categories.title" = "Choisissez vos catégories de dépenses";

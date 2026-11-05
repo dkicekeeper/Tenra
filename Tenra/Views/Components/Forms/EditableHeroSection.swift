@@ -18,6 +18,9 @@ struct HeroConfig {
     var showBalance: Bool = false
     var showCurrency: Bool = false
     var allowLogos: Bool = true
+    /// A line under the amount saying what it is (DesignKit 8.7.0), e.g. the onboarding's
+    /// "Starting balance (₸)".
+    var amountCaption: String? = nil
 
     static let accountHero = HeroConfig(showBalance: true, showCurrency: true)
     static let subscriptionHero = HeroConfig(showBalance: true, showCurrency: true)
@@ -74,7 +77,8 @@ struct EditableHeroSection: View {
             options: EditableHero.Options(
                 showsAmount: config.showBalance,
                 showsCurrency: config.showCurrency,
-                allowsLogos: config.allowLogos
+                allowsLogos: config.allowLogos,
+                amountCaption: config.amountCaption
             ),
             autoFocusTitle: autoFocusTitle
         )

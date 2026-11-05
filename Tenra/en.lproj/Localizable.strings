@@ -97,6 +97,7 @@
 "settings.background" = "Background";
 "settings.merchantLogos" = "Merchant logos";
 "home.hint.categories" = "Tap a category to add an expense";
+"transaction.hint.save" = "Tap a day to save the expense";
 "home.autoCapture.title" = "Let Tenra log it for you";
 "home.autoCapture.message" = "Set up the Wallet automation once, and Apple Pay payments appear here on their own.";
 "home.autoCapture.action" = "Set up";
@@ -1633,6 +1634,7 @@
 "onboarding.account.nameLabel" = "Name";
 "onboarding.account.iconLabel" = "Icon";
 "onboarding.account.balanceLabel" = "Starting balance";
+"onboarding.account.balanceCaption" = "Starting balance (%@)";
 "onboarding.account.currencyChangedBanner" = "App currency changed. Account currency stays the same. You can change it in the account editor.";
 
 "onboarding.categories.title" = "Choose spending categories";

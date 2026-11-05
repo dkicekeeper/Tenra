@@ -35,6 +35,8 @@ struct TransactionAddModal: View {
     @State private var subcategorySearchText = ""
     @State private var showingSubcategoryReorder = false
     @State private var showingCategoryHistory = false
+    /// The one-time hint on the save buttons (`FeatureTourState.Hint.addFormSave`).
+    @State private var saveHint: FeatureTourState.Hint?
 
     @Namespace private var historyNamespace
 
@@ -112,14 +114,19 @@ struct TransactionAddModal: View {
         // restoration on pop isn't tied to this view's safe-area teardown.
         .toolbar(.hidden, for: .tabBar)
         .onAppear { tabBarVisibility?.isHidden = true }
-        .onDisappear { tabBarVisibility?.isHidden = false }
+        .onDisappear {
+            tabBarVisibility?.isHidden = false
+            saveHint = nil
+        }
         .toolbar {
             toolbarContent
         }
         .dateButtonsSafeArea(
             selectedDate: $bindableCoordinator.formData.selectedDate,
             isDisabled: isSaving,
+            spotlightAnchor: FeatureTourState.Hint.addFormSave,
             onSave: { date in
+                saveHint = nil
                 coordinator.formData.selectedDate = date
                 Task { await saveTransaction() }
             }
@@ -138,6 +145,10 @@ struct TransactionAddModal: View {
             // conversion keep working off the existing `formData.amountText`.
             coordinator.formData.amountText = newValue
         }
+        // The buttons lit, the rest dimmed, once; a tap on a button saves as usual, a tap
+        // elsewhere lifts it. After the keypad's last change, so it never takes a digit's tap.
+        .spotlight($saveHint, message: { _ in String(localized: "transaction.hint.save") })
+        .task(id: calc.amountText) { await showSaveHintIfNeeded() }
         .overlay(overlayContent)
         .navigationDestination(isPresented: $showingCategoryHistory) {
             categoryHistoryDestination
@@ -368,6 +379,25 @@ struct TransactionAddModal: View {
 
     private var categoryId: String? {
         categoryData?.id
+    }
+
+    /// A newcomer's first amount: after a pause in typing, the save buttons in a spotlight,
+    /// once ("Вчера / Сегодня / Дата" read as a date picker). Someone with a history is only
+    /// marked as having seen it.
+    private func showSaveHintIfNeeded() async {
+        guard !FeatureTourState.hasSeen(.addFormSave) else { return }
+        let hasTransactions = appCoordinator.transactionStore.transactionsCount > 0
+        guard !hasTransactions else {
+            FeatureTourState.markSeen(.addFormSave)
+            return
+        }
+        try? await Task.sleep(for: .seconds(1.5))
+        guard !Task.isCancelled, !isSaving,
+              FeatureTourState.shouldShowSaveHint(
+                  amount: calc.displayResult, hasTransactions: hasTransactions, seen: false
+              ) else { return }
+        FeatureTourState.markSeen(.addFormSave)
+        saveHint = .addFormSave
     }
 
     private func saveTransaction() async {

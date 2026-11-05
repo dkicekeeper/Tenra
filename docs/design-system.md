@@ -136,7 +136,10 @@ what is still unused and where it could go):
 - `.spotlight` with `FeatureTourState`: once, the first launch's hint on Home's categories for a
   person without transactions (`ContentView.showCategoryHintIfNeeded`): Home dims, the grid stays
   lit (`.spotlightAnchor`) with the message beside it, a tap lifts it. The voice orb's hint is
-  the same (`VoiceInputView`).
+  the same (`VoiceInputView`), and so is the add form's: a newcomer's first amount, after a
+  1.5 s pause in typing (so it never takes a keypad tap), lights the day buttons that save
+  (`TransactionAddModal.showSaveHintIfNeeded`, `dateButtonsSafeArea(spotlightAnchor:)`; the
+  rule in `FeatureTourState.shouldShowSaveHint`). A tap on a button saves as usual.
 - The onboarding welcome (`OnboardingWelcomeStep`): DesignKit's `LoopOnboardingHero` at 140 pt
   (`WelcomeHeroMetrics`), a fresh hero per slide (`.id` + `.blurReplace`), Ten
   (`ParticleCreature`) as the hero of its slide where the assistant runs. Slides: auto-capture,

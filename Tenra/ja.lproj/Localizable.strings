@@ -97,6 +97,7 @@
 "settings.background" = "背景";
 "settings.merchantLogos" = "店舗のロゴ";
 "home.hint.categories" = "カテゴリをタップして支出を追加";
+"transaction.hint.save" = "日付をタップして支出を保存";
 "home.autoCapture.title" = "記録はTenraにおまかせ";
 "home.autoCapture.message" = "Walletオートメーションを一度設定すれば、Apple Payの支払いがここに自動で表示されます。";
 "home.autoCapture.action" = "設定する";
@@ -1633,6 +1634,7 @@
 "onboarding.account.nameLabel" = "名前";
 "onboarding.account.iconLabel" = "アイコン";
 "onboarding.account.balanceLabel" = "初期残高";
+"onboarding.account.balanceCaption" = "初期残高（%@）";
 "onboarding.account.currencyChangedBanner" = "アプリの通貨が変更されました。口座の通貨はそのままです。口座の編集画面で変更できます。";
 
 "onboarding.categories.title" = "支出カテゴリを選択";

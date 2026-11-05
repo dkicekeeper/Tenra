@@ -97,6 +97,7 @@
 "settings.background" = "Фон";
 "settings.merchantLogos" = "Логотипы магазинов";
 "home.hint.categories" = "Нажмите на категорию, чтобы добавить расход";
+"transaction.hint.save" = "Нажмите на день, чтобы сохранить расход";
 "home.autoCapture.title" = "Пусть Tenra записывает сама";
 "home.autoCapture.message" = "Настройте автоматизацию Wallet один раз, и оплаты Apple Pay будут появляться здесь сами.";
 "home.autoCapture.action" = "Настроить";
@@ -1633,6 +1634,7 @@
 "onboarding.account.nameLabel" = "Название";
 "onboarding.account.iconLabel" = "Иконка";
 "onboarding.account.balanceLabel" = "Стартовый баланс";
+"onboarding.account.balanceCaption" = "Стартовый баланс (%@)";
 "onboarding.account.currencyChangedBanner" = "Валюта приложения изменена. Валюта счёта останется прежней. Изменить можно в редакторе счёта.";
 
 "onboarding.categories.title" = "Выберите категории трат";

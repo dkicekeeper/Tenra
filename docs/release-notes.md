@@ -16,9 +16,10 @@ New since 1.8 (in the store since 2026-11-04):
   the week, separators, the currency symbol's place and cents, each the region's until chosen;
   free. The weekly summary comes on the chosen first day (Settings › Insight alerts names it); Ten's
   kept messages, notifications and the widget follow a change.
-- First run: the account step's name hint; the categories step 3 per row with a check under
-  each tile; the auto-capture rows with chevrons, the statement a toggle (newcomers only, not
-  in What's New).
+- First run: the account step's name hint and its starting balance captioned in the currency
+  just picked; the categories step 3 per row with a check under each tile; the auto-capture
+  rows with chevrons, the statement a toggle; a one-time hint that the day buttons save the
+  first expense (newcomers only, not in What's New).
 
 ## en-US
 
@@ -153,7 +154,10 @@ Tenra의 새로운 기능:
    Ten's chat; "Remind me" shows the system prompt; the push at the set time on a day with
    nothing recorded, none after an entry (a manual one, Ten's draft, an Apple Pay capture); a
    tap opens Ten; Settings › Spending reminder switches it and moves the time.
-   First run on a fresh install: category names fit 3 per row, the checks toggle; amounts read
+   First run on a fresh install: the account step's balance reads "Стартовый баланс (₸)" (or the
+   currency picked), category names fit 3 per row, the checks toggle; the first expense's amount
+   lights "Вчера / Сегодня / Дата" with "Нажмите на день, чтобы сохранить расход" after a pause,
+   once, and a tap on a day saves; amounts read
    "1 234,56 ₸" with a Russian or Kazakh region, "1,234.56" with a US one, "1.234,56 €" with a
    Spanish one (grouped below 10 000 too), "R$ 1.234,56" with a Brazilian one (the symbol first,
    with a space), on Home and in the widget.

@@ -97,6 +97,7 @@
 "settings.background" = "Arka Plan";
 "settings.merchantLogos" = "İşyeri logoları";
 "home.hint.categories" = "Harcama eklemek için bir kategoriye dokunun";
+"transaction.hint.save" = "Harcamayı kaydetmek için bir güne dokunun";
 "home.autoCapture.title" = "Bırakın Tenra kaydetsin";
 "home.autoCapture.message" = "Wallet otomasyonunu bir kez kurun, Apple Pay ödemeleri burada kendiliğinden görünsün.";
 "home.autoCapture.action" = "Kur";
@@ -1633,6 +1634,7 @@
 "onboarding.account.nameLabel" = "Ad";
 "onboarding.account.iconLabel" = "Simge";
 "onboarding.account.balanceLabel" = "Başlangıç bakiyesi";
+"onboarding.account.balanceCaption" = "Başlangıç bakiyesi (%@)";
 "onboarding.account.currencyChangedBanner" = "Uygulama para birimi değişti. Hesabın para birimi aynı kalır. Hesap düzenleyicisinden değiştirebilirsin.";
 
 "onboarding.categories.title" = "Harcama kategorilerini seç";

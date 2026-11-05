@@ -97,6 +97,7 @@
 "settings.background" = "Fondo";
 "settings.merchantLogos" = "Logotipos de comercios";
 "home.hint.categories" = "Toca una categoría para añadir un gasto";
+"transaction.hint.save" = "Toca un día para guardar el gasto";
 "home.autoCapture.title" = "Deja que Tenra lo registre";
 "home.autoCapture.message" = "Configura la automatización de Wallet una vez y los pagos con Apple Pay aparecerán aquí solos.";
 "home.autoCapture.action" = "Configurar";
@@ -1633,6 +1634,7 @@
 "onboarding.account.nameLabel" = "Nombre";
 "onboarding.account.iconLabel" = "Icono";
 "onboarding.account.balanceLabel" = "Saldo inicial";
+"onboarding.account.balanceCaption" = "Saldo inicial (%@)";
 "onboarding.account.currencyChangedBanner" = "La moneda de la app cambió. La moneda de la cuenta se mantiene. Puedes cambiarla en el editor de la cuenta.";
 
 "onboarding.categories.title" = "Elige tus categorías de gasto";

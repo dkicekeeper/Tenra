@@ -97,6 +97,7 @@
 "settings.background" = "배경";
 "settings.merchantLogos" = "가맹점 로고";
 "home.hint.categories" = "카테고리를 탭해 지출을 추가하세요";
+"transaction.hint.save" = "날짜를 탭해 지출을 저장하세요";
 "home.autoCapture.title" = "기록은 Tenra에게 맡기세요";
 "home.autoCapture.message" = "Wallet 자동화를 한 번 설정하면 Apple Pay 결제가 여기에 저절로 나타납니다.";
 "home.autoCapture.action" = "설정하기";
@@ -1633,6 +1634,7 @@
 "onboarding.account.nameLabel" = "이름";
 "onboarding.account.iconLabel" = "아이콘";
 "onboarding.account.balanceLabel" = "시작 잔액";
+"onboarding.account.balanceCaption" = "시작 잔액 (%@)";
 "onboarding.account.currencyChangedBanner" = "앱 통화가 변경됐어요. 계좌 통화는 그대로 유지돼요. 계좌 편집에서 바꿀 수 있어요.";
 
 "onboarding.categories.title" = "지출 카테고리를 선택하세요";

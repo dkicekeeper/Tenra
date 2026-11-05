@@ -97,6 +97,7 @@
 "settings.background" = "Фон";
 "settings.merchantLogos" = "Сатушы логотиптері";
 "home.hint.categories" = "Шығыс қосу үшін санатты басыңыз";
+"transaction.hint.save" = "Шығысты сақтау үшін күнді басыңыз";
 "home.autoCapture.title" = "Tenra өзі жазып отырсын";
 "home.autoCapture.message" = "Wallet автоматтандыруын бір рет баптаңыз, сонда Apple Pay төлемдері осында өздігінен пайда болады.";
 "home.autoCapture.action" = "Баптау";
@@ -1633,6 +1634,7 @@
 "onboarding.account.nameLabel" = "Атауы";
 "onboarding.account.iconLabel" = "Белгіше";
 "onboarding.account.balanceLabel" = "Бастапқы баланс";
+"onboarding.account.balanceCaption" = "Бастапқы баланс (%@)";
 "onboarding.account.currencyChangedBanner" = "Қолданба валютасы өзгертілді. Шот валютасы өзгермейді. Оны шот редакторында өзгертуге болады.";
 
 "onboarding.categories.title" = "Шығыс санаттарын таңдаңыз";

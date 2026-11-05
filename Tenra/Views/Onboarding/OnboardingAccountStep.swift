@@ -17,7 +17,18 @@ struct OnboardingAccountStep: View {
     // EditableHeroSection's balance binding is a formatted string.
     @State private var balanceText: String = ""
 
-    private static let heroConfig = HeroConfig(showBalance: true, showCurrency: false)
+    /// The amount says what it is, in the currency picked a step earlier ("Starting balance
+    /// (₸)"): a bare "0" read as nothing (the first-run walkthrough of 2026-11-04).
+    private var heroConfig: HeroConfig {
+        HeroConfig(
+            showBalance: true,
+            showCurrency: false,
+            amountCaption: String(
+                format: String(localized: "onboarding.account.balanceCaption"),
+                Formatting.currencySymbol(for: vm.draftCurrency)
+            )
+        )
+    }
 
     var body: some View {
         OnboardingPageContainer(
@@ -44,7 +55,7 @@ struct OnboardingAccountStep: View {
                     // DesignKit's AnimatedTitleInput hides its placeholder while focused, so an
                     // auto-focused field showed a newcomer only a cursor and a disabled "Next".
                     titlePlaceholder: String(localized: "onboarding.account.namePlaceholder"),
-                    config: Self.heroConfig,
+                    config: heroConfig,
                     autoFocusTitle: false
                 )
                 .padding(.top, AppSpacing.md)

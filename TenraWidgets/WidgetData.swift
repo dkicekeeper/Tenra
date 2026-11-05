@@ -137,7 +137,11 @@ struct WidgetData: Codable, Equatable {
         if parts.count > 1 { number += formats.decimal + parts[1] }
         let symbol = currencySymbol
         let sign = amount < 0 && value != 0 ? "-" : ""
-        return formats.symbolBefore ? "\(sign)\(symbol)\(number)" : "\(sign)\(number) \(symbol)"
+        guard formats.symbolBefore else { return "\(sign)\(number) \(symbol)" }
+        // As DesignKit's Formatting.attachSymbol: a symbol with a letter in it keeps a no-break
+        // space before the number ("R$ 1.234,56", "CHF 1’234.50"); a sign touches it ("₸1 234").
+        let gap = symbol.contains { $0.isLetter } ? "\u{00A0}" : ""
+        return "\(sign)\(symbol)\(gap)\(number)"
     }
 
     /// The narrow symbol ("₸", "$"), as the system's narrow currency format writes it.

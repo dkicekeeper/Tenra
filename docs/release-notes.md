@@ -154,7 +154,9 @@ Tenra의 새로운 기능:
    nothing recorded, none after an entry (a manual one, Ten's draft, an Apple Pay capture); a
    tap opens Ten; Settings › Spending reminder switches it and moves the time.
    First run on a fresh install: category names fit 3 per row, the checks toggle; amounts read
-   "1 234,56 ₸" with a Russian or Kazakh region, "1,234.56" with a US one.
+   "1 234,56 ₸" with a Russian or Kazakh region, "1,234.56" with a US one, "1.234,56 €" with a
+   Spanish one (grouped below 10 000 too), "R$ 1.234,56" with a Brazilian one (the symbol first,
+   with a space), on Home and in the widget.
    Settings › Formats: a choice changes the preview at once and leaves the page open; Home,
    History and Analytics show it after going back, without a relaunch; "Use the region's
    format" shows only after a change. VoiceOver reads amounts as numbers with "1’234.56" and

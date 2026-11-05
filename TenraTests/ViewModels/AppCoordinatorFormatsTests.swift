@@ -66,6 +66,25 @@ struct AppCoordinatorFormatsTests {
         try await withCoordinator({ makeCoordinator() }, body)
     }
 
+    /// Separator options that each change what the host's region writes, in the order Settings ›
+    /// Formats lists them, with the marks each one writes. The Simulator's region varies (CI runs
+    /// en_US, where commaDot is the region's own and choosing it changes nothing).
+    private func separatorsOtherThanTheRegion(
+        _ settings: FormatSettings
+    ) -> [(option: AmountSeparators, grouping: String, decimal: String)] {
+        var seen = [settings.resolved]
+        var picked: [(option: AmountSeparators, grouping: String, decimal: String)] = []
+        for option in FormatPreferences.separatorOptions(region: settings.resolved) where option != .region {
+            var choices = settings.choices
+            choices.separators = option
+            let resolved = FormatPreferences.resolve(choices, locale: settings.regionLocale)
+            guard !seen.contains(where: { FormatPreferences.isEquivalent($0, resolved) }) else { continue }
+            seen.append(resolved)
+            picked.append((option, resolved.groupingSeparator, resolved.decimalSeparator))
+        }
+        return picked
+    }
+
     @Test func formatChangeReachesDesignKit() async throws {
         try await withCoordinator { coordinator in
             coordinator.formatSettings.set {
@@ -96,18 +115,24 @@ struct AppCoordinatorFormatsTests {
         }
     }
 
-    /// A second change while the first one's pass runs: that pass carries the first change's
-    /// text, so only the one after it rewrites.
+    /// A second change while a pass started after the first one runs: that pass carries the
+    /// first change's text, so the boundary moves and only the pass after it rewrites (were the
+    /// first change to win, the running pass would take it).
     @Test func aChangeDuringAPassMovesTheRewriteToTheNextPass() async throws {
-        try await withCoordinator { coordinator in
+        try await withCoordinator({ try await makeCoordinatorWithAnExpense(500) }) { coordinator in
             let insights = coordinator.insightsViewModel
-            let first = insights.computeGeneration
+            let before = insights.computeGeneration
 
             coordinator.formatSettings.set { $0.date = .iso }
+            // A pass starts in the first change's formats (Analytics on screen, say)...
+            insights.refreshInsights()
+            let running = insights.computeGeneration
+            #expect(running == before + 1)
+            // ...and the formats change again while it runs.
             coordinator.formatSettings.set { $0.date = .dots }
 
-            #expect(!insights.takesPendingSignalRewrite(generation: first))
-            #expect(insights.takesPendingSignalRewrite(generation: first + 1))
+            #expect(!insights.takesPendingSignalRewrite(generation: running))
+            #expect(insights.takesPendingSignalRewrite(generation: running + 1))
         }
     }
 
@@ -124,8 +149,9 @@ struct AppCoordinatorFormatsTests {
                 type: .income, category: "", accountId: account.id
             ))
             #expect(!coordinator.insightsViewModel.hasComputed)
+            let other = try #require(separatorsOtherThanTheRegion(coordinator.formatSettings).first)
 
-            coordinator.formatSettings.set { $0.separators = .commaDot }
+            coordinator.formatSettings.set { $0.separators = other.option }
             await coordinator.waitUntilFormatsRefreshIdle()
 
             #expect(coordinator.insightsViewModel.hasComputed)
@@ -137,16 +163,21 @@ struct AppCoordinatorFormatsTests {
     @Test func formatChangeRewritesTheTopCategoryValue() async throws {
         try await withCoordinator({ try await makeCoordinatorWithAnExpense(1_234.5) }) { coordinator in
             let insights = coordinator.insightsViewModel
-            coordinator.formatSettings.set { $0.separators = .dotComma }
+            let options = separatorsOtherThanTheRegion(coordinator.formatSettings)
+            try #require(options.count >= 2)
+            let (first, second) = (options[0], options[1])
+            coordinator.formatSettings.set { $0.separators = first.option }
             await coordinator.waitUntilFormatsRefreshIdle()
             let before = try #require(insights.precomputedInsight(id: "top_spending", granularity: .month))
-            #expect(before.metric.formattedValue.contains("1.234,5"), "\(before.metric.formattedValue)")
+            let firstText = "1" + first.grouping + "234" + first.decimal + "5"
+            #expect(before.metric.formattedValue.contains(firstText), "\(before.metric.formattedValue)")
 
-            coordinator.formatSettings.set { $0.separators = .commaDot }
+            coordinator.formatSettings.set { $0.separators = second.option }
             await coordinator.waitUntilFormatsRefreshIdle()
 
             let after = try #require(insights.precomputedInsight(id: "top_spending", granularity: .month))
-            #expect(after.metric.formattedValue.contains("1,234.5"), "\(after.metric.formattedValue)")
+            let secondText = "1" + second.grouping + "234" + second.decimal + "5"
+            #expect(after.metric.formattedValue.contains(secondText), "\(after.metric.formattedValue)")
         }
     }
 

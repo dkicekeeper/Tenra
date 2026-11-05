@@ -482,7 +482,13 @@ symbol's place and cents. Each item follows the region until it is chosen. Free.
   `AmountDisplayConfiguration.shared` (separators, the secondary grouping of 1,23,456, the
   symbol's place, cents) and the `DesignKitDateFormat.day` hook (`MonthCalendar`,
   `DateRangePickerSheet`). `configure()` calls it at launch, `formatsDidChange` on each change.
-  DesignKit's own default is "." and " " in every language.
+  DesignKit's own default is "." and " " in every language. It sets `separatorsOverrideLocale`,
+  so amounts group by 3 from 1 000 on whatever the device's locale (DesignKit 8.8.1: es_ES and
+  it_IT would leave "1234,56" ungrouped, en_IN would group by lakh unasked), as `NumberDisplay`
+  does. A symbol before the number touches it when it is a sign ("₸1 234", "$1,234") and keeps a
+  no-break space when it has a letter ("R$ 1.234,56", "CHF 1’234.50"); the widget's
+  `WidgetData.money` mirrors both rules. `shared` is safe to write on the main actor while an
+  insights pass formats off it.
 - **`NumberDisplay`** (`Utils/`): every number that is not money (percentages, rates, areas,
   months, file sizes) with the chosen separators.
 - **`DateFormatters.day(_:includeYear:abbreviated:style:locale:)`**: every day date in the chosen

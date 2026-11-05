@@ -155,10 +155,7 @@ struct TimeFilter: Codable, Equatable, Hashable {
 
     var displayName: String {
         if preset == .custom {
-            let formatter = DateFormatter()
-            formatter.dateFormat = "d MMM"
-            formatter.locale = Locale.current // Use system locale instead of hardcoded "ru_RU"
-            return "\(formatter.string(from: startDate)) - \(formatter.string(from: lastIncludedDay))"
+            return "\(DateFormatters.day(startDate, includeYear: false)) - \(DateFormatters.day(lastIncludedDay, includeYear: false))"
         }
         return preset.localizedName
     }

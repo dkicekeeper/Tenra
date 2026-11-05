@@ -19,13 +19,6 @@ struct SubcategoryReorderView: View {
     @State private var mode: CardListMode = .browsing
     @State private var selection: Set<String> = []
 
-    private nonisolated static let dateFormatter: DateFormatter = {
-        let f = DateFormatter()
-        f.dateStyle = .medium
-        f.timeStyle = .none
-        return f
-    }()
-
     var body: some View {
         NavigationStack {
             Group {
@@ -109,7 +102,7 @@ struct SubcategoryReorderView: View {
                     Text(String(format: NSLocalizedString("subcategory.usageCount", comment: "Count with plural forms in Localizable.stringsdict"), usageCount))
                     if let lastUsed {
                         Text("·")
-                        Text(Self.dateFormatter.string(from: lastUsed))
+                        Text(DateFormatters.day(lastUsed, includeYear: true))
                     }
                 } else {
                     Text(String(localized: "subcategory.notUsed"))

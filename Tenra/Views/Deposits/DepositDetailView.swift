@@ -371,7 +371,7 @@ struct DepositDetailView: View {
     }
 
     private func formatDate(_ date: Date) -> String {
-        DateFormatters.displayDateFormatter.string(from: date)
+        DateFormatters.day(date, includeYear: false)
     }
 }
 

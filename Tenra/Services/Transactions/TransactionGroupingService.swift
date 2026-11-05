@@ -15,8 +15,6 @@ nonisolated class TransactionGroupingService {
     // MARK: - Properties
 
     private let dateFormatter: DateFormatter
-    private let displayDateFormatter: DateFormatter
-    private let displayDateWithYearFormatter: DateFormatter
     private weak var cacheManager: TransactionCacheManager?  // ✅ OPTIMIZATION: Cache support
 
     // ✅ OPTIMIZATION: Cache for formatted date keys (cleared on each groupByDate call)
@@ -26,13 +24,9 @@ nonisolated class TransactionGroupingService {
 
     init(
         dateFormatter: DateFormatter,
-        displayDateFormatter: DateFormatter,
-        displayDateWithYearFormatter: DateFormatter,
         cacheManager: TransactionCacheManager? = nil  // ✅ OPTIMIZATION: Optional cache
     ) {
         self.dateFormatter = dateFormatter
-        self.displayDateFormatter = displayDateFormatter
-        self.displayDateWithYearFormatter = displayDateWithYearFormatter
         self.cacheManager = cacheManager
     }
 
@@ -260,41 +254,11 @@ nonisolated class TransactionGroupingService {
             key = String(localized: "date.yesterday")
         } else {
             let transactionYear = calendar.component(.year, from: date)
-            if transactionYear == currentYear {
-                key = displayDateFormatter.string(from: date)
-            } else {
-                key = displayDateWithYearFormatter.string(from: date)
-            }
+            key = DateFormatters.day(date, includeYear: transactionYear != currentYear)
         }
 
         // ✅ OPTIMIZATION: Cache the result
         dateKeyCache[date] = key
         return key
-    }
-
-    private func parseDateFromKey(_ key: String, currentYear: Int) -> Date {
-        // Handle localized special keys
-        let todayKey = String(localized: "date.today")
-        let yesterdayKey = String(localized: "date.yesterday")
-
-        if key == todayKey {
-            return Date()
-        } else if key == yesterdayKey {
-            return Calendar.current.date(byAdding: .day, value: -1, to: Date()) ?? Date()
-        }
-
-        // Try to parse with year
-        if let date = displayDateWithYearFormatter.date(from: key) {
-            return date
-        }
-
-        // Try to parse without year (assume current year)
-        if let date = displayDateFormatter.date(from: key) {
-            var components = Calendar.current.dateComponents([.month, .day], from: date)
-            components.year = currentYear
-            return Calendar.current.date(from: components) ?? date
-        }
-
-        return Date.distantPast
     }
 }

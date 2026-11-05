@@ -87,7 +87,7 @@ struct AssistantComposerBar: View {
             return String(format: NSLocalizedString("assistant.allowance.remaining", comment: "Free answers left"), allowance.remaining)
         }
         guard let renewsAt = allowance.renewsAt else { return String(localized: "assistant.error.freeLimit") }
-        return String(format: String(localized: "assistant.allowance.renews"), renewsAt.formatted(.dateTime.day().month(.wide)))
+        return String(format: String(localized: "assistant.allowance.renews"), DateFormatters.day(renewsAt, includeYear: false))
     }
 }
 

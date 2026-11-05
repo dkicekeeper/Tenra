@@ -131,7 +131,7 @@ struct SettingsProHero: View {
         case .lifetime, .unknown: planName = "Pro"
         }
         guard let date = status.expirationDate else { return planName }
-        let dateString = date.formatted(date: .abbreviated, time: .omitted)
+        let dateString = DateFormatters.day(date, includeYear: true)
         let key = status.willRenew ? "settings.pro.status.renews" : "settings.pro.status.expires"
         return String(
             format: String(localized: String.LocalizationValue(key)),

@@ -50,20 +50,6 @@ struct HistoryTransactionsList: View {
         return f
     }()
 
-    /// Date → "15 Feb" (current year omitted)
-    private static let shortDisplay: DateFormatter = {
-        let f = DateFormatter()
-        f.setLocalizedDateFormatFromTemplate("dMMM")
-        return f
-    }()
-
-    /// Date → "15 Feb 2023" (cross-year)
-    private static let longDisplay: DateFormatter = {
-        let f = DateFormatter()
-        f.setLocalizedDateFormatFromTemplate("dMMMyyyy")
-        return f
-    }()
-
     // MARK: - Pagination State
 
     /// Number of date-sections currently displayed. Starts at 100 (≈ last 100 days).
@@ -155,7 +141,7 @@ struct HistoryTransactionsList: View {
                         // re-runs compactMap { entity.toTransaction() } over the section's managed
                         // objects, with a DateFormatter.string per entity. Read once per section.
                         let rows = section.transactions
-                        let displayLabel = displayLabelCache[section.date] ?? displayDateKey(from: section.date)
+                        let displayLabel = displayLabelCache[Self.labelCacheKey(section.date)] ?? displayDateKey(from: section.date)
                         dayCard(
                             isoDate: section.date,
                             displayLabel: displayLabel,
@@ -305,17 +291,23 @@ struct HistoryTransactionsList: View {
 
     // MARK: - Date Display Conversion
 
+    /// The label depends on the date style, so the style is part of the key: a changed style
+    /// misses the cache and falls back to a fresh label.
+    private static func labelCacheKey(_ isoDate: String) -> String {
+        "\(FormatSettings.snapshot.dateStyle.rawValue)|\(isoDate)"
+    }
+
     private func rebuildDisplayLabelCache() {
         let sections = paginationController.sections
         var cache: [String: String] = [:]
         for section in sections {
-            cache[section.date] = displayDateKey(from: section.date)
+            cache[Self.labelCacheKey(section.date)] = displayDateKey(from: section.date)
         }
         displayLabelCache = cache
     }
 
     /// Converts a "YYYY-MM-DD" FRC section key to a human-readable display string.
-    /// Returns "Today", "Yesterday", a short date ("15 Feb"), or a long date ("15 Feb 2023").
+    /// Returns "Today", "Yesterday", or a day date in the chosen style (year only outside the current one).
     private func displayDateKey(from isoDate: String) -> String {
         guard let date = Self.isoParser.date(from: isoDate) else {
             return isoDate
@@ -334,10 +326,7 @@ struct HistoryTransactionsList: View {
 
         let currentYear = calendar.component(.year, from: Date())
         let sectionYear = calendar.component(.year, from: date)
-        if sectionYear == currentYear {
-            return Self.shortDisplay.string(from: date)
-        }
-        return Self.longDisplay.string(from: date)
+        return DateFormatters.day(date, includeYear: sectionYear != currentYear)
     }
 }
 

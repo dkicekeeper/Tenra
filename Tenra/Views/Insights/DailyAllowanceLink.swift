@@ -115,7 +115,7 @@ struct DailyAllowanceLink: View {
         guard let income else { return String(localized: "home.today.untilMonthEnd") }
         return String(
             format: String(localized: "home.today.untilIncome"),
-            income.formatted(.dateTime.day().month(.abbreviated))
+            DateFormatters.day(income, includeYear: false)
         )
     }
 

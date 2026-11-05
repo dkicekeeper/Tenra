@@ -50,6 +50,7 @@ struct GroupedTransactionList<Overlay: View>: View {
         let transactions: [Transaction]
         let accountCurrencies: [String: String]
         let ratesVersion: Int
+        let dateStyle: DateStyle
     }
 
     init(
@@ -156,9 +157,9 @@ struct GroupedTransactionList<Overlay: View>: View {
         if cal.isDateInToday(date) { return String(localized: "date.today", defaultValue: "Today") }
         if cal.isDateInYesterday(date) { return String(localized: "date.yesterday", defaultValue: "Yesterday") }
         if cal.component(.year, from: date) == cal.component(.year, from: Date()) {
-            return DateFormatters.displayDateFormatter.string(from: date)
+            return DateFormatters.day(date, includeYear: false)
         }
-        return DateFormatters.displayDateWithYearFormatter.string(from: date)
+        return DateFormatters.day(date, includeYear: true)
     }
 
     var body: some View {
@@ -295,7 +296,8 @@ struct GroupedTransactionList<Overlay: View>: View {
             .task(id: SectionsKey(
                 transactions: transactions,
                 accountCurrencies: accountsById.mapValues(\.currency),
-                ratesVersion: CurrencyRatesNotifier.shared.version
+                ratesVersion: CurrencyRatesNotifier.shared.version,
+                dateStyle: FormatSettings.snapshot.dateStyle
             )) {
                 // When sections already exist, this is a mutation (not the first load or a
                 // back-nav): animate the ForEach diff so removed rows collapse smoothly

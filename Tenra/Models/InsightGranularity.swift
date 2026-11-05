@@ -252,11 +252,8 @@ enum InsightGranularity: String, CaseIterable, Identifiable {
         let date = periodStart(for: key)
         switch self {
         case .week:
-            let df = DateFormatter()
-            df.locale = locale
-            df.dateFormat = DateFormatter.dateFormat(fromTemplate: "dMMMMyyyy", options: 0, locale: locale)
             let weekEnd = calendar.date(byAdding: .day, value: 6, to: date) ?? date
-            return "\(df.string(from: date)) – \(df.string(from: weekEnd))"
+            return "\(DateFormatters.day(date, includeYear: true, locale: locale)) – \(DateFormatters.day(weekEnd, includeYear: true, locale: locale))"
         case .month, .quarter, .year, .allTime:
             return periodLabel(for: key, locale: locale)
         }

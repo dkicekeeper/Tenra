@@ -22,7 +22,7 @@ import SwiftUI
 
 enum DesignKitBridge {
     /// Carries the resolved formats into DesignKit's amount configuration. Called at launch
-    /// and again whenever the person changes a format. The date hook is added by the dates task.
+    /// and again whenever the person changes a format.
     static func apply(_ formats: ResolvedFormats) {
         var amounts = AmountDisplayConfiguration.shared
         amounts.decimalSeparator = formats.decimalSeparator
@@ -38,6 +38,8 @@ enum DesignKitBridge {
         case .never: amounts.fractions = .never
         }
         AmountDisplayConfiguration.shared = amounts
+        // MonthCalendar's week label (no year) and DateRangePickerSheet (with year).
+        DesignKitDateFormat.day = { DateFormatters.day($0, includeYear: $1) }
     }
 
     /// Call once from `TenraApp.init()`, before any view renders.

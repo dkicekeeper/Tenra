@@ -49,7 +49,7 @@ struct DateFormattersTests {
     @Test("DisplayDateFormatter formats date in Russian")
     func testDisplayDateFormatter() {
         let date = Date(timeIntervalSince1970: 1705276800) // 2024-01-15
-        let formatted = DateFormatters.displayDateFormatter.string(from: date)
+        let formatted = DateFormatters.day(date, includeYear: false)
         // Проверяем, что формат содержит число и месяц
         #expect(formatted.contains("15") || formatted.contains("января") || formatted.contains("January"))
     }

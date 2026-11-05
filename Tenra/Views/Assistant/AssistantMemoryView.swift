@@ -103,7 +103,7 @@ struct AssistantMemoryView: View {
         } label: {
             ItemRow(
                 fact.text,
-                meta: [MetaLine([.text(Text(fact.updatedAt, format: .dateTime.day().month().year()))])],
+                meta: [MetaLine([.text(Text(DateFormatters.day(fact.updatedAt, includeYear: true)))])],
                 style: .large
             )
             .contentShape(Rectangle())

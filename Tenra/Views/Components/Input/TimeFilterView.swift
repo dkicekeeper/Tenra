@@ -107,16 +107,8 @@ struct TimeFilterView: View {
         .softScrollEdges()
     }
 
-    /// Static formatter — allocated once, reused every body evaluation.
-    private static let rangeFormatter: DateFormatter = {
-        let f = DateFormatter()
-        f.dateStyle = .medium
-        f.timeStyle = .none
-        return f
-    }()
-
     private var customRangeDescription: String {
-        "\(Self.rangeFormatter.string(from: customDateRange.lowerBound)) – \(Self.rangeFormatter.string(from: customDateRange.upperBound))"
+        "\(DateFormatters.day(customDateRange.lowerBound, includeYear: true)) – \(DateFormatters.day(customDateRange.upperBound, includeYear: true))"
     }
 }
 

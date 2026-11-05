@@ -93,8 +93,6 @@ class TransactionsViewModel {
         self.queryService = TransactionQueryService()
         self.groupingService = TransactionGroupingService(
             dateFormatter: DateFormatters.dateFormatter,
-            displayDateFormatter: DateFormatters.displayDateFormatter,
-            displayDateWithYearFormatter: DateFormatters.displayDateWithYearFormatter,
             cacheManager: cacheManager
         )
 

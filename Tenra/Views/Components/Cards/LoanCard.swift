@@ -38,7 +38,7 @@ struct LoanCard: View {
                 phase: isPaidOff
                     ? .done(caption: closedFooterText(loanInfo: loanInfo))
                     : .inProgress(
-                        nextDate: nextDate.map { DateFormatters.displayDateFormatter.string(from: $0) },
+                        nextDate: nextDate.map { DateFormatters.day($0, includeYear: false) },
                         remainingCaption: String(
                             format: String(localized: "loan.remainingShort", defaultValue: "%d left"),
                             remaining
@@ -65,7 +65,7 @@ struct LoanCard: View {
         }
         return String(
             format: String(localized: "loan.closedOn", defaultValue: "Closed %@"),
-            DateFormatters.displayDateFormatter.string(from: date)
+            DateFormatters.day(date, includeYear: false)
         )
     }
 }

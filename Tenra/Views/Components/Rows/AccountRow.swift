@@ -46,7 +46,7 @@ struct AccountRow: View {
     /// either of them alone.
     private var interestDetail: AmountRow.Detail? {
         if let interest = interestToday, interest > 0, let posting = nextPostingDate {
-            let dateString = DateFormatters.displayDateFormatter.string(from: posting)
+            let dateString = DateFormatters.day(posting, includeYear: false)
             return .init(
                 String(format: String(localized: "account.postingWithInterest", defaultValue: "Posting: %@  ·  "), dateString),
                 amount: interest
@@ -57,7 +57,7 @@ struct AccountRow: View {
                 amount: interest
             )
         } else if let posting = nextPostingDate {
-            let dateString = DateFormatters.displayDateFormatter.string(from: posting)
+            let dateString = DateFormatters.day(posting, includeYear: false)
             return .init(String(format: String(localized: "account.nextPosting"), dateString))
         }
         return nil

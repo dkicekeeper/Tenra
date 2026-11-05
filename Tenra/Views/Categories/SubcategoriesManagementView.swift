@@ -216,13 +216,6 @@ struct SubcategoryManagementRow: View {
     let lastUsedDate: Date?
     let onEdit: () -> Void
 
-    private nonisolated static let dateFormatter: DateFormatter = {
-        let f = DateFormatter()
-        f.dateStyle = .medium
-        f.timeStyle = .none
-        return f
-    }()
-
     var body: some View {
         Button {
             HapticManager.selection()
@@ -238,7 +231,7 @@ struct SubcategoryManagementRow: View {
         guard usageCount > 0 else { return [.text(String(localized: "subcategory.notUsed"))] }
         var items: [MetaItem] = [.text(String(format: NSLocalizedString("subcategory.usageCount", comment: "Count with plural forms in Localizable.stringsdict"), usageCount))]
         if let lastUsed = lastUsedDate {
-            items.append(.text(Self.dateFormatter.string(from: lastUsed)))
+            items.append(.text(DateFormatters.day(lastUsed, includeYear: true)))
         }
         return items
     }

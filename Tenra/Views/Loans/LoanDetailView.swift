@@ -905,7 +905,7 @@ struct LoanDetailView: View {
     // MARK: - Formatters
 
     private func formatDate(_ date: Date) -> String {
-        DateFormatters.displayDateFormatter.string(from: date)
+        DateFormatters.day(date, includeYear: false)
     }
 
     private func formatDateString(_ dateStr: String) -> String {

@@ -66,28 +66,62 @@ enum DateFormatters {
         return formatter
     }
 
-    /// Форматтер для отображения даты в формате "d MMMM" (локаль устройства)
-    nonisolated static var displayDateFormatter: DateFormatter { localizedDisplayFormatter(format: "d MMMM") }
+    // MARK: - Day dates in the chosen style
 
-    /// Форматтер для отображения даты с годом в формате "d MMMM yyyy" (локаль устройства)
-    nonisolated static var displayDateWithYearFormatter: DateFormatter { localizedDisplayFormatter(format: "d MMMM yyyy") }
+    private nonisolated(unsafe) static var dayFormatterCache: [String: DateFormatter] = [:]
 
-    /// Display a date as "d MMMM", appending the year ("d MMMM yyyy") only when it
-    /// falls outside the current calendar year. Keeps same-year dates uncluttered
-    /// while disambiguating future/past dates (e.g. a next-charge date in 2027).
-    static func displayDateOmittingCurrentYear(_ date: Date) -> String {
-        let calendar = Calendar.current
-        if calendar.component(.year, from: date) == calendar.component(.year, from: Date()) {
-            return displayDateFormatter.string(from: date)
+    /// The pattern of one day date. `words` takes only the ORDER from the locale's `dMMMM`
+    /// template (day first or month first), so Russian stays "3 ноября 2026" without "г.".
+    private nonisolated static func dayPattern(style: DateStyle, includeYear: Bool, locale: Locale) -> String {
+        switch style {
+        case .iso: return "yyyy-MM-dd"
+        case .dots: return includeYear ? "dd.MM.yyyy" : "dd.MM"
+        case .slash: return includeYear ? "MM/dd/yyyy" : "MM/dd"
+        case .words:
+            let template = DateFormatter.dateFormat(fromTemplate: "dMMMM", options: 0, locale: locale) ?? "d MMMM"
+            let dayFirst = (template.firstIndex(of: "d") ?? template.endIndex) < (template.firstIndex(of: "M") ?? template.endIndex)
+            if dayFirst { return includeYear ? "d MMMM yyyy" : "d MMMM" }
+            return includeYear ? "MMMM d, yyyy" : "MMMM d"
         }
-        return displayDateWithYearFormatter.string(from: date)
     }
 
-    /// Convert "yyyy-MM-dd" string to display format "d MMMM".
+    /// A day date in the chosen style: "3 ноября" / "November 3" (words), "03.11", "11/03" or
+    /// "2026-11-03" (always with the year). Formatters are cached by style, year and locale.
+    nonisolated static func day(
+        _ date: Date,
+        includeYear: Bool,
+        style: DateStyle = FormatSettings.snapshot.dateStyle,
+        locale: Locale = .current
+    ) -> String {
+        let withYear = includeYear || style == .iso
+        let key = "\(style.rawValue)|\(withYear)|\(locale.identifier)|\(TimeZone.current.identifier)"
+        displayFormatterLock.lock()
+        defer { displayFormatterLock.unlock() }
+        if let cached = dayFormatterCache[key] { return cached.string(from: date) }
+        let formatter = DateFormatter()
+        // POSIX for the numeric styles: digits and separators must not follow the region.
+        formatter.locale = style == .words ? locale : Locale(identifier: "en_US_POSIX")
+        formatter.calendar = style == .words ? locale.calendar : Calendar(identifier: .gregorian)
+        formatter.timeZone = TimeZone.current
+        formatter.dateFormat = dayPattern(style: style, includeYear: withYear, locale: locale)
+        dayFormatterCache[key] = formatter
+        return formatter.string(from: date)
+    }
+
+    /// Display a date as a day date, appending the year only when it falls outside the
+    /// current calendar year. Keeps same-year dates uncluttered while disambiguating
+    /// future/past dates (e.g. a next-charge date in 2027).
+    nonisolated static func displayDateOmittingCurrentYear(_ date: Date) -> String {
+        let calendar = Calendar.current
+        let sameYear = calendar.component(.year, from: date) == calendar.component(.year, from: Date())
+        return day(date, includeYear: !sameYear)
+    }
+
+    /// Convert "yyyy-MM-dd" string to a day date (no year; "iso" always has it).
     /// Returns the original string if parsing fails.
-    static func displayString(from isoDateString: String) -> String {
-        if let date = dateFormatter.date(from: isoDateString) {
-            return displayDateFormatter.string(from: date)
+    nonisolated static func displayString(from isoDateString: String) -> String {
+        if let date = FastDateParser.date(from: isoDateString) {
+            return day(date, includeYear: false)
         }
         return isoDateString
     }

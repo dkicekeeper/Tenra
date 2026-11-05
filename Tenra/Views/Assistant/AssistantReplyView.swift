@@ -258,14 +258,14 @@ private struct AssistantChartCard: View {
         }
     }
 
-    /// "2026-10" → "October 2026"; a week's Monday → "13 October"; anything else as it is.
+    /// "2026-10" → "October 2026"; a week's Monday → a day date; anything else as it is.
     private func periodLabel(_ group: AgentReplyData.ChartGroup) -> String {
         guard chart.isTimeline else { return group.label }
         if group.id.count == 7, let month = FastDateParser.date(from: group.id + "-01") {
             return month.formatted(.dateTime.month(.wide).year())
         }
         if let day = FastDateParser.date(from: group.id) {
-            return day.formatted(.dateTime.day().month(.wide))
+            return DateFormatters.day(day, includeYear: false)
         }
         return group.label
     }
@@ -425,11 +425,11 @@ private struct AssistantForecastCard: View {
     }
 
     private var untilText: String {
-        FastDateParser.date(from: forecast.until)?.formatted(.dateTime.day().month(.wide)) ?? forecast.until
+        FastDateParser.date(from: forecast.until).map { DateFormatters.day($0, includeYear: false) } ?? forecast.until
     }
 
     private func label(_ obligation: AgentReplyData.Forecast.Obligation) -> String {
-        let day = FastDateParser.date(from: obligation.date)?.formatted(.dateTime.day().month(.abbreviated)) ?? obligation.date
+        let day = FastDateParser.date(from: obligation.date).map { DateFormatters.day($0, includeYear: false) } ?? obligation.date
         return "\(obligation.label) · \(day)"
     }
 }
@@ -629,7 +629,7 @@ private struct AssistantDraftCard: View {
 
     /// The subscription or regular payment: its name, how often, the first charge, the amount.
     private func recurringRow(_ series: RecurringSeries) -> some View {
-        let first = FastDateParser.date(from: series.startDate)?.formatted(.dateTime.day().month(.abbreviated)) ?? series.startDate
+        let first = FastDateParser.date(from: series.startDate).map { DateFormatters.day($0, includeYear: false) } ?? series.startDate
         return UniversalRow(
             "\(series.description) · \(series.frequency.displayName) · \(first)",
             icon: series.kind == .subscription ? "repeat.circle" : "repeat",

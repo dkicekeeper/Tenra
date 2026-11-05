@@ -464,7 +464,7 @@ nonisolated enum AppCalendar { static var current: Calendar }  // Calendar.curre
 `displayDateFormatter` и `displayDateWithYearFormatter` удаляются после переноса вызовов.
 `apply` ставит `DesignKitDateFormat.day = { DateFormatters.day($0, includeYear: $1) }`.
 
-- [ ] **Шаг 1. Тесты** (дата 2026-11-03, григорианский календарь, `Asia/Almaty`):
+- [x] **Шаг 1. Тесты** (дата 2026-11-03, григорианский календарь, `Asia/Almaty`):
   ```swift
   @Test func wordsRussian()   // ru_KZ: "3 ноября", с годом "3 ноября 2026" 
   @Test func wordsUnitedStates() // en_US: "November 3", "November 3, 2026"
@@ -472,14 +472,14 @@ nonisolated enum AppCalendar { static var current: Calendar }  // Calendar.curre
   @Test func slash()          // "11/03", "11/03/2026"
   @Test func isoAlwaysWithYear() // "2026-11-03" в обоих случаях
   ```
-- [ ] **Шаг 2–3.** Красные; реализовать.
-- [ ] **Шаг 4.** Перенести показ дат дня на `day(_:includeYear:)`: вызовы `displayDateFormatter`,
+- [x] **Шаг 2–3.** Красные; реализовать.
+- [x] **Шаг 4.** Перенести показ дат дня на `day(_:includeYear:)`: вызовы `displayDateFormatter`,
   `displayDateWithYearFormatter`, шаблоны `dMMM` и `dMMMyyyy` (`HistoryTransactionsList`),
   `"d MMM"` (`TimeFilter`), `.formatted(date: .long/.abbreviated, …)` и `dateStyle` в показе
   (список: `grep -rnE 'setLocalizedDateFormatFromTemplate|dateStyle =|formatted\(date:|\.dateTime' Tenra`).
   Не трогать: «месяц год», дни недели, подписи осей `MMM`, время, POSIX и разбор, имена файлов,
   `Debug/`. Полный прогон.
-- [ ] **Шаг 5.** Коммит «feat(formats): day dates in the chosen style».
+- [x] **Шаг 5.** Коммит «feat(formats): day dates in the chosen style».
 
 ### Задача 7 (Tenra): первый день недели везде
 

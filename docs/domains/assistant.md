@@ -470,8 +470,8 @@ spending, no em dashes, in all 11 languages.
   included.
 - **Valuations** (`POST /v1/valuation`) count apart, Pro only (the owner's decision,
   2026-11-03): `FREE_MONTHLY_VALUATIONS` (0) per attested key, `PRO_MONTHLY_VALUATIONS` (10) per
-  customer, and each weighs `VALUATION_CALL_WEIGHT` (25)
-  calls in `GLOBAL_DAILY_CALLS` (40, on the safe side). Cost: about $0.025 a valuation on Haiku
+  customer, and each weighs `VALUATION_CALL_WEIGHT` (40, on the safe side) calls in
+  `GLOBAL_DAILY_CALLS`. Cost: about $0.025 a valuation on Haiku
   5.5 and $0.15 on Sonnet 5.5 (web search is $10 per 1 000 searches); the Sonnet fallback ran for
   4 of 13 cases in eval run 122 and none in run 124. No separate AI subscription ([promotion-plan.md](../promotion-plan.md) §2).
 - **Cost** (Anthropic prices per 1M tokens, 2026-10: Haiku 5.5 $0.10 / $0.50, Sonnet 5.5 $2 / $10,

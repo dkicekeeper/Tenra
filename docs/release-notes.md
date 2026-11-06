@@ -191,6 +191,8 @@ item 2 (the push at the set time, VoiceOver, the widget), on the phone once 1.8.
 
 ## In main for the next version (not in 1.8.1)
 
+Version 1.8.2 in the project since 2026-11-06 (TestFlight build for the device check; goes to
+review once 1.8.1 is out).
 Not What's New material; for the next release's device check:
 - The trial offer at the end of onboarding: after "Start" on the auto-capture step, a free person
   sees Tenra Pro's paywall when the App Store has plans (source `onboarding`); ✕, a swipe or a

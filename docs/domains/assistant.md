@@ -489,7 +489,8 @@ spending, no em dashes, in all 11 languages.
 
 - **Secrets** (GitHub → Settings → Secrets and variables → Actions): `CLOUDFLARE_API_TOKEN`,
   `CLOUDFLARE_ACCOUNT_ID`, `ANTHROPIC_API_KEY` (a separate "Tenra" workspace with a spend limit),
-  `REVENUECAT_SECRET_KEY`. The KV namespace id is in `wrangler.toml`. The server is at
+  `ANTHROPIC_EVAL_API_KEY` (the evals' own "Tenra eval" workspace with its own limit; without it
+  the eval jobs stop before calling the API), `REVENUECAT_SECRET_KEY`. The KV namespace id is in `wrangler.toml`. The server is at
   `https://tenra-assistant.dakacom.workers.dev`, its address in the app's Info.plist
   (`TenraAssistantURL`).
 - **Workflow** `Assistant server` (`.github/workflows/assistant.yml`): typecheck and unit tests on
@@ -507,8 +508,9 @@ spending, no em dashes, in all 11 languages.
   in "13,4 млн", or a big number; a year, a model name and a number with a unit such as km or
   m² are not money), a draft instead of "saved", the language, prompt
   injection in a note, `blocks_decode`, `no_refusal`, `noPick`. A prompt change bumps
-  `PROMPT_VERSION` and runs the eval before the deploy. The eval spends from production's
-  workspace and its monthly limit (§11): all cases cost about $0.15 on Haiku, $2.90 on Sonnet
+  `PROMPT_VERSION` and runs the eval before the deploy. The eval spends from its own workspace
+  ("Tenra eval", `ANTHROPIC_EVAL_API_KEY`), never from the limit that keeps Ten talking (§11):
+  all cases cost about $0.15 on Haiku, $2.90 on Sonnet
   and $4.90 on Opus, so a routine check runs Haiku and Sonnet, Opus only when its answer is
   needed. Haiku fails a few cases on `no_money_in_text` in every run, a different few each time:
   compare with the last runs before calling a failure a regression.

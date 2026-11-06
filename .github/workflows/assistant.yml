@@ -8,7 +8,13 @@ name: Assistant server
 # Repository secrets used by the manual jobs:
 #   CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID  deploy
 #   ANTHROPIC_API_KEY, REVENUECAT_SECRET_KEY     uploaded to the Worker on deploy
-#   ANTHROPIC_API_KEY                            eval, eval-valuation
+#   ANTHROPIC_EVAL_API_KEY                       eval, eval-valuation: a key of the separate
+#                                                "Tenra eval" workspace in the Anthropic Console,
+#                                                with its own spend limit, so an eval never spends
+#                                                the limit that keeps Ten talking (2026-11-06: a
+#                                                release eval took the month to the limit and Ten
+#                                                went silent for everyone). Without it the eval
+#                                                jobs stop before calling the API.
 
 on:
   push:
@@ -97,9 +103,17 @@ jobs:
           cache: npm
           cache-dependency-path: server/assistant/package-lock.json
       - run: npm ci
+      - name: Eval key
+        env:
+          ANTHROPIC_EVAL_API_KEY: ${{ secrets.ANTHROPIC_EVAL_API_KEY }}
+        run: |
+          if [ -z "$ANTHROPIC_EVAL_API_KEY" ]; then
+            echo "::error::Add the ANTHROPIC_EVAL_API_KEY secret: a key of the separate 'Tenra eval' workspace (see the header of assistant.yml). The production key is not used for evals."
+            exit 1
+          fi
       - name: Run the eval (spends API credits)
         env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_EVAL_API_KEY }}
           MODELS: ${{ inputs.models }}
           EFFORT: ${{ inputs.effort }}
           CASES: ${{ inputs.cases }}
@@ -127,9 +141,17 @@ jobs:
           cache: npm
           cache-dependency-path: server/assistant/package-lock.json
       - run: npm ci
+      - name: Eval key
+        env:
+          ANTHROPIC_EVAL_API_KEY: ${{ secrets.ANTHROPIC_EVAL_API_KEY }}
+        run: |
+          if [ -z "$ANTHROPIC_EVAL_API_KEY" ]; then
+            echo "::error::Add the ANTHROPIC_EVAL_API_KEY secret: a key of the separate 'Tenra eval' workspace (see the header of assistant.yml). The production key is not used for evals."
+            exit 1
+          fi
       - name: Run the valuation eval (spends API credits and web searches)
         env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_EVAL_API_KEY }}
           MODELS: ${{ inputs.models }}
           EFFORT: ${{ inputs.effort }}
           CASES: ${{ inputs.cases }}

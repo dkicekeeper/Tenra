@@ -321,6 +321,16 @@ final class TransactionStore {
     // Debounce task for coalescing rapid mutations into single sync
     private var syncDebounceTask: Task<Void, Never>?
 
+    /// Returns once the debounced sync the last mutation scheduled has run (and any scheduled
+    /// while waiting). Tests: the sync invalidates the insights, so one still pending from a
+    /// test's setup wipes what the test computes after it.
+    func waitForPendingSync() async {
+        while let task = syncDebounceTask {
+            await task.value
+            if syncDebounceTask == task { return }
+        }
+    }
+
     // Debounce task for category-aggregate persistence. Coalesces a burst of
     // tx mutations (e.g. CSV import, recurring generation) into one CoreData
     // save instead of one per delta.

@@ -37,6 +37,9 @@ struct AppCoordinatorFormatsTests {
             amount: amount, currency: "KZT",
             type: .expense, category: "Food", accountId: account.id
         ))
+        // The add's debounced sync invalidates the insights: let it run now, not in the middle
+        // of the test (under a full run's load it landed after the format change's pass).
+        await coordinator.transactionStore.waitForPendingSync()
         return coordinator
     }
 
@@ -133,6 +136,27 @@ struct AppCoordinatorFormatsTests {
 
             #expect(!insights.takesPendingSignalRewrite(generation: running))
             #expect(insights.takesPendingSignalRewrite(generation: running + 1))
+        }
+    }
+
+    /// A mutation's sync (TransactionStore's debounced `syncTransactionStoreToViewModels`) wipes
+    /// the insights; `waitForPendingSync` returns only once it has run, so a test that adds data
+    /// and then computes insights is never wiped afterwards by its own setup (the flake of
+    /// 2026-11-05: the sync landed after the format change's pass under a full run's load).
+    @Test func waitingForThePendingSyncLetsItRunFirst() async throws {
+        try await withCoordinator({ try await makeCoordinatorWithAnExpense(700) }) { coordinator in
+            let insights = coordinator.insightsViewModel
+            await insights.refreshInsightsAndWait()
+            #expect(insights.precomputedInsight(id: "top_spending", granularity: .month) != nil)
+
+            let account = try #require(coordinator.accountsViewModel.accounts.first)
+            _ = try await coordinator.transactionStore.add(Transaction(
+                id: "", date: FastDateParser.string(from: Date()), description: "Dinner",
+                amount: 300, currency: "KZT", type: .expense, category: "Food", accountId: account.id
+            ))
+            await coordinator.transactionStore.waitForPendingSync()
+            #expect(insights.precomputedInsight(id: "top_spending", granularity: .month) == nil)
+            #expect(insights.isStale)
         }
     }
 

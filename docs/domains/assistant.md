@@ -479,8 +479,9 @@ spending, no em dashes, in all 11 languages.
   ≈ $0.002 a message, ≈ $0.12 for 60 a month, against ≈ $0.67 a month net of an annual Pro.
   Production runs Haiku 5.5: the same eval score as Sonnet and Opus, and the only one within the
   subscription's price. Another model is one line (`ASSISTANT_MODEL`) and a deploy. The Anthropic
-  workspace has a monthly spend limit ($20; $50 with spend alerts at 50 % and 80 % while the ads
-  run; at the limit Ten is silent for everyone until the next month). `GLOBAL_DAILY_CALLS` (1 200)
+  workspace has a monthly spend limit ($50 with spend alerts at 50 % and 80 % while the ads run,
+  $20 after; Console → Settings → Workspaces → Tenra → Spend limits; at the limit Ten is silent
+  for everyone until the next month or until the limit is raised). `GLOBAL_DAILY_CALLS` (1 200)
   keeps one day under a 30th of that limit, about $0.0014 a call, so a busy day silences Ten until
   midnight UTC rather than the limit for the month; raise the two together (calls ≈ limit × 24).
 
@@ -506,7 +507,11 @@ spending, no em dashes, in all 11 languages.
   in "13,4 млн", or a big number; a year, a model name and a number with a unit such as km or
   m² are not money), a draft instead of "saved", the language, prompt
   injection in a note, `blocks_decode`, `no_refusal`, `noPick`. A prompt change bumps
-  `PROMPT_VERSION` and runs the eval before the deploy.
+  `PROMPT_VERSION` and runs the eval before the deploy. The eval spends from production's
+  workspace and its monthly limit (§11): all cases cost about $0.15 on Haiku, $2.90 on Sonnet
+  and $4.90 on Opus, so a routine check runs Haiku and Sonnet, Opus only when its answer is
+  needed. Haiku fails a few cases on `no_money_in_text` in every run, a different few each time:
+  compare with the last runs before calling a failure a regression.
 - **Valuation eval** (`eval/valuation.ts`, `npm run eval:valuation -- --models ... --yes`): the
   endpoint's own code with live web search on 21 cases in 10 countries (`eval/valuation-cases.ts`:
   flats in Almaty, Astana, Shymkent, Karaganda, Kyiv (in US dollars), Seoul, Berlin, Lyon, São

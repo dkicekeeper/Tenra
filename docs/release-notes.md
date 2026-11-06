@@ -149,6 +149,14 @@ Tenra의 새로운 기능:
 
 ## Submission checklist
 
+**Status 2026-11-06:** build 1.8.1 (1) uploaded from Xcode and attached to the version, What's New
+in all 14 localizations, CI green on the code (b926c47), Ten's server eval passed on 1b71ad7 (the
+deploy run follows it). Checked on the Simulator (iOS 27, ru, KZ region, fresh install): the
+balance caption in the picked currency, categories 3 per row with checks, the auto-capture rows,
+the save hint after a pause and a day saving the expense, the reminder offer on Home after it,
+Settings › Formats changing Home's amounts without a relaunch. Left: the phone-only checks of
+item 2 (the push at the set time, VoiceOver, the widget), App Privacy (item 5), the submission.
+
 1. **CI green**, then a TestFlight build from `main` (Actions → TestFlight, [asc.md](asc.md)).
 2. **Device check**: Ten's offer after the first expense on Home and after a draft saved in
    Ten's chat; "Remind me" shows the system prompt; the push at the set time on a day with

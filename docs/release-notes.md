@@ -1,6 +1,6 @@
-# Tenra, next version: What's New (ASC, 13 storefront locales and en-GB)
+# Tenra 1.8.1: What's New (ASC, 13 storefront locales and en-GB)
 
-Version number not set yet (the owner's call). `prepare-version` (Actions → App Store Connect,
+Version 1.8.1 (the owner's call, 2026-11-06). `prepare-version` (Actions → App Store Connect,
 [asc.md](asc.md)) pastes each block into App Store Connect → the version → the locale → "What's
 New in This Version"; en-GB (search in Kazakhstan) carries ru's text. No em dashes (user rule).
 Names of screens as the app shows them (`settings.title`, `settings.spendingReminder.title`).

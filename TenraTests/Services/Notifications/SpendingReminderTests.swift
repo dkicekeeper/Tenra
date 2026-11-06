@@ -67,6 +67,14 @@ struct SpendingReminderTests {
         #expect(SpendingReminder.lastRecorded(defaults: defaults) == later)
     }
 
+    @Test("Creating a recurring payment is the person recording today")
+    func seriesCreatedIsARecord() {
+        let (defaults, _) = freshDefaults()
+        let now = Date(timeIntervalSince1970: 1_793_500_000)
+        SpendingReminder.noteSeriesCreated(now: now, defaults: defaults)
+        #expect(SpendingReminder.lastRecorded(defaults: defaults) == now)
+    }
+
     @Test("An occurrence of a recurring series is not the person recording")
     func recurringRecordIgnored() {
         let (defaults, _) = freshDefaults()

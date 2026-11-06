@@ -83,4 +83,6 @@ enum PaywallSource: String, Sendable {
     case assistantAttachment = "assistant_attachment"
     case insights
     case settings
+    /// The trial offer at the end of onboarding (OnboardingViewModel).
+    case onboarding
 }

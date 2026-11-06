@@ -126,6 +126,15 @@ enum SpendingReminder {
         requestReschedule(now: now, defaults: defaults)
     }
 
+    /// A recurring series was created (TransactionStore.onSeriesCreated): the person recorded
+    /// something today even if its first payment is not due yet, so tonight's reminder goes.
+    /// No hook: a series names no expense of the day.
+    static func noteSeriesCreated(now: Date = Date(), defaults: UserDefaults = .standard) {
+        center.remove([identifier(for: now)])
+        defaults.set(now.timeIntervalSince1970, forKey: lastRecordedKey)
+        requestReschedule(now: now, defaults: defaults)
+    }
+
     /// "Remind me" on Ten's offer: on, and the system's permission prompt.
     static func acceptOffer(defaults: UserDefaults = .standard) async {
         defaults.set(OfferState.accepted.rawValue, forKey: offerKey)

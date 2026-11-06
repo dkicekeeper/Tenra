@@ -128,6 +128,15 @@ struct SpendingReminderPlanTests {
         #expect(SpendingReminderPlan.isUserRecord(transaction(date: "2026-10-03", createdAt: date(5, 9)), now: now, calendar: calendar))
     }
 
+    @Test("Deposit interest Tenra posts is not the person recording")
+    func depositInterestIsNotARecord() {
+        let now = date(5, 18)
+        #expect(!SpendingReminderPlan.isUserRecord(
+            transaction(type: .depositInterestAccrual, createdAt: date(5, 9)), now: now, calendar: calendar
+        ))
+        #expect(SpendingReminderPlan.isUserRecord(transaction(type: .income, createdAt: date(5, 9)), now: now, calendar: calendar))
+    }
+
     @Test("The hook is the latest expense's category; incomes alone give none")
     func hookTakesLatestExpense() {
         let now = date(5, 18)

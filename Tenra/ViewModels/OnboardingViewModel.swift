@@ -33,6 +33,12 @@ final class OnboardingViewModel {
 
     @ObservationIgnored private weak var coordinator: AppCoordinator?
     @ObservationIgnored private let logger = Logger(subsystem: "Tenra", category: "Onboarding")
+    /// Whether "Start" offers the trial (PremiumManager.onboardingOfferDue); tests pass their own.
+    @ObservationIgnored private let offersTrial: @MainActor () -> Bool
+    /// The account and categories are saved: a second "Start" saves nothing again.
+    @ObservationIgnored private var hasCommitted = false
+    /// Onboarding is over: closing the offer twice ends it once.
+    @ObservationIgnored private var hasCompleted = false
 
     // MARK: - Step state
 
@@ -72,6 +78,10 @@ final class OnboardingViewModel {
     /// The list of iCloud backups to restore from, over the welcome screen.
     var showingRestore = false
 
+    /// Tenra Pro's paywall over the last step, after "Start" saved everything (the trial offer,
+    /// promotion-plan §2, 2026-11-06). Onboarding ends once it closes (`trialOfferClosed`).
+    var showingTrialOffer = false
+
     /// The step indicator's symbols: Tenra's three data steps and the auto-capture step.
     static let stepSymbols = OnboardingStepIndicator.tenraSymbols + ["wave.3.right"]
 
@@ -80,8 +90,12 @@ final class OnboardingViewModel {
 
     // MARK: - Init
 
-    init(coordinator: AppCoordinator) {
+    init(
+        coordinator: AppCoordinator,
+        offersTrial: @escaping @MainActor () -> Bool = { PremiumManager.shared.onboardingOfferDue }
+    ) {
         self.coordinator = coordinator
+        self.offersTrial = offersTrial
     }
 
     /// Test-only convenience: builds a VM with no coordinator. The commit pipeline
@@ -92,6 +106,7 @@ final class OnboardingViewModel {
 
     private init() {
         self.coordinator = nil
+        self.offersTrial = { false }
     }
 
     // MARK: - Derived UI helpers
@@ -155,7 +170,7 @@ final class OnboardingViewModel {
         defer { isFinishing = false }
         guard await coordinator.cloudSyncViewModel.restoreFromOnboarding(backup) else { return }
         showingRestore = false
-        coordinator.completeOnboarding()
+        coordinator.completeOnboarding(.restored)
         logger.info("onboarding_restored_backup")
     }
 
@@ -175,7 +190,7 @@ final class OnboardingViewModel {
         defer { isFinishing = false }
 
         await coordinator.settingsViewModel.updateBaseCurrency(draftCurrency)
-        coordinator.completeOnboarding()
+        coordinator.completeOnboarding(.skipped)
         adoptICloudBackups(coordinator)
         logger.info("onboarding_skipped")
     }
@@ -190,6 +205,11 @@ final class OnboardingViewModel {
 
     func finish() async {
         guard let coordinator, !isFinishing else { return }
+        // Saved already, the offer up (or just closed): nothing to save again.
+        if hasCommitted {
+            if !showingTrialOffer { trialOfferClosed() }
+            return
+        }
         isFinishing = true
         defer { isFinishing = false }
 
@@ -242,10 +262,30 @@ final class OnboardingViewModel {
             await coordinator.balanceCoordinator.registerAccounts([account])
             await coordinator.balanceCoordinator.setInitialBalance(account.initialBalance ?? 0, for: account.id)
         }
+        hasCommitted = true
 
+        // Everything is saved first, so a person who leaves on the paywall keeps it all.
+        if offersTrial() {
+            showingTrialOffer = true
+            logger.info("onboarding_trial_offer")
+            return
+        }
+        complete(coordinator)
+    }
+
+    /// The trial offer closed (✕, a swipe, a purchase or a restore): onboarding ends. Once.
+    func trialOfferClosed() {
+        showingTrialOffer = false
+        guard let coordinator, hasCommitted else { return }
+        complete(coordinator)
+    }
+
+    private func complete(_ coordinator: AppCoordinator) {
+        guard !hasCompleted else { return }
+        hasCompleted = true
         // Asked for before Home appears, so the tab bar finds it on its first pass.
         if afterFinish == .statement { coordinator.pickStatement() }
-        coordinator.completeOnboarding()
+        coordinator.completeOnboarding(.finished)
         adoptICloudBackups(coordinator)
         logger.info("onboarding_finished selectedCount=\(self.selectedPresetCount, privacy: .public)")
     }

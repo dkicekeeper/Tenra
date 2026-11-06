@@ -416,10 +416,11 @@ class AppCoordinator {
     /// to decide whether to show `OnboardingFlowView` or `MainTabView`.
     private(set) var needsOnboarding: Bool = !OnboardingState.isCompleted
 
-    func completeOnboarding() {
+    func completeOnboarding(_ outcome: ActivationAttributes.OnboardingOutcome = .finished) {
         OnboardingState.markCompleted()
         needsOnboarding = false
-        logger.info("onboarding_finished")
+        ActivationAttributes.noteOnboarding(outcome)
+        logger.info("onboarding_finished outcome=\(outcome.rawValue, privacy: .public)")
     }
 
     func resetOnboarding() {
@@ -657,8 +658,13 @@ class AppCoordinator {
             self.pendingQuickAdd = stashed
         }
 
-        // Every record, in the app or by a background intent, reaches the evening reminder.
-        transactionStore.onRecorded = { SpendingReminder.noteRecorded($0) }
+        // Every record, in the app or by a background intent, reaches the evening reminder and
+        // the activation milestones; a new recurring payment counts as recording today.
+        transactionStore.onRecorded = { [weak store = transactionStore] transactions in
+            SpendingReminder.noteRecorded(transactions)
+            ActivationAttributes.noteRecorded(transactions, total: store?.transactions.count ?? 0)
+        }
+        transactionStore.onSeriesCreated = { _ in SpendingReminder.noteSeriesCreated() }
 
         // Settings › Formats, or the phone's region: everything that writes dates and amounts.
         formatSettings.onChange = { [weak self] formats in self?.formatsDidChange(formats) }

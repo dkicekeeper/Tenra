@@ -2622,7 +2622,7 @@
 "spendingReminder.farewell.1" = "İhtiyacın olursa Ten burada. Şimdilik rahatsız etmeyeceğim 🙂";
 "spendingReminder.farewell.2" = "Harcamalarını yazmak istersen buradayım. İyi akşamlar!";
 "spendingReminder.offer.title" = "Akşam hatırlatayım mı?";
-"spendingReminder.offer.message" = "Bir gün kayıtsız geçerse Ten sana saat %@ gibi hatırlatır. Spam yok.";
+"spendingReminder.offer.message" = "Bir gün kayıtsız geçerse Ten sana %@ saatinde hatırlatır. Spam yok.";
 "spendingReminder.offer.action" = "Hatırlat";
 "settings.spendingReminder.title" = "Harcama hatırlatıcısı";
 "settings.spendingReminder.toggle" = "Akşam hatırlat";

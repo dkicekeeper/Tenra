@@ -45,8 +45,9 @@ struct AnalyticsTab: View {
                 .navigationTitle(String(localized: "tab.analytics"))
                 .navigationBarTitleDisplayMode(.large)
                 // Aha-moment soft paywall (strategy §5): Insights is where users
-                // first *see* where their money goes. Dismissible, ≥10 logged tx,
-                // max 3 shows / 14-day cooldown — enforced by PremiumManager.
+                // first *see* where their money goes. Dismissible, ≥3 logged tx,
+                // max 3 shows / 14-day cooldown, a day after the onboarding offer —
+                // enforced by PremiumManager.
                 .task {
                     guard premium.shouldShowSoftPaywall(
                         transactionCount: coordinator.transactionStore.transactions.count

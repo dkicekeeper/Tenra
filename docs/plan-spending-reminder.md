@@ -225,7 +225,9 @@ nonisolated enum SpendingReminderPlan {
                           hour: Int, minute: Int, calendar: Calendar = .current) -> [Reminder]
     /// Номер фразы дня: соседние дни разные, повтор не раньше чем через `count` дней.
     static func phraseIndex(for day: Date, count: Int, calendar: Calendar = .current) -> Int  // 1...count
-    /// Операция, записанная человеком сегодня: createdAt в сегодняшнем дне, не регулярная.
+    /// Операция, записанная человеком сегодня: createdAt в сегодняшнем дне, не регулярная и не
+    /// проценты по вкладу (их пишет сверка при запуске). Новая регулярная серия тоже запись дня:
+    /// `SpendingReminder.noteSeriesCreated` через `TransactionStore.onSeriesCreated`.
     static func isUserRecord(_ tx: Transaction, now: Date, calendar: Calendar = .current) -> Bool
     /// Крючок из записанных сейчас операций: категория последнего по createdAt расхода (.expense).
     static func hook(from transactions: [Transaction], now: Date, calendar: Calendar = .current) -> Hook?

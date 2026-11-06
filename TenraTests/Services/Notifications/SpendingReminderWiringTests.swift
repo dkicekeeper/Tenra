@@ -52,6 +52,20 @@ struct SpendingReminderWiringTests {
         #expect(recorded == [["a", "b"]])
     }
 
+    @Test("A new recurring series reaches onSeriesCreated")
+    func createSeriesCallsOnSeriesCreated() async throws {
+        let store = Self.makeStore()
+        store.addCategory(CustomCategory(id: "subs", name: "Подписки", colorHex: "#8b5cf6", type: .expense))
+        var created: [String] = []
+        store.onSeriesCreated = { created.append($0.id) }
+        let series = RecurringSeries(
+            id: "s1", amount: 4990, currency: "KZT", category: "Подписки", description: "Music",
+            frequency: .monthly, startDate: "2026-11-06"
+        )
+        try await store.createSeries(series)
+        #expect(created == ["s1"])
+    }
+
     @Test("A tapped reminder's stash is taken once, by whoever comes first")
     func launchQuickAddTakenOnce() {
         AppCoordinator.pendingQuickAddOnLaunch = AppCoordinator.QuickAdd(category: nil)

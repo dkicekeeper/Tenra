@@ -101,6 +101,7 @@ final class PremiumManager {
         static let isFounder            = "tenra.premium.isFounder.v1"
         static let softPaywallCount     = "tenra.premium.softPaywallCount.v1"
         static let softPaywallLastShown = "tenra.premium.softPaywallLastShown.v1"
+        static let onboardingOfferShown = "tenra.premium.onboardingOfferShown.v1"
         static let lastKnownSubscriber  = "tenra.premium.lastKnownSubscriber.v1"
         /// A production App Store record was read: the first-download date never changes,
         /// so the founder check against it is final.
@@ -110,24 +111,65 @@ final class PremiumManager {
     // MARK: - Soft paywall (aha-moment trigger)
 
     /// Tuning knobs for the dismissible paywall shown on the Insights tab —
-    /// the "aha moment" where users see where their money goes (strategy §5).
-    private static let softPaywallMinTransactions = 10
-    private static let softPaywallMaxShows = 3
-    private static let softPaywallCooldown: TimeInterval = 14 * 86_400
+    /// the "aha moment" where users see where their money goes (strategy §5). Three entries,
+    /// not ten (2026-11-06): most new people never reached ten (promotion-plan §6, the funnel).
+    nonisolated private static let softPaywallMinTransactions = 3
+    nonisolated private static let softPaywallMaxShows = 3
+    nonisolated private static let softPaywallCooldown: TimeInterval = 14 * 86_400
+    /// One unprompted paywall a day at most: the trial offer at the end of onboarding holds
+    /// Analytics' back for this long.
+    nonisolated private static let softPaywallGapAfterOnboardingOffer: TimeInterval = 86_400
 
     /// True when the aha-moment paywall should be offered: non-Pro user who has
     /// logged enough transactions to have felt the product's value, capped at
     /// 3 lifetime shows with a 14-day cooldown so it never feels like nagging
     /// (the contextual feature gates keep selling in between).
     func shouldShowSoftPaywall(transactionCount: Int) -> Bool {
-        guard !isPro else { return false }
-        guard transactionCount >= Self.softPaywallMinTransactions else { return false }
-        guard defaults.integer(forKey: Key.softPaywallCount) < Self.softPaywallMaxShows else { return false }
-        if let last = defaults.object(forKey: Key.softPaywallLastShown) as? Date,
-           Date().timeIntervalSince(last) < Self.softPaywallCooldown {
+        Self.softPaywallDue(
+            isPro: isPro,
+            transactionCount: transactionCount,
+            shows: defaults.integer(forKey: Key.softPaywallCount),
+            lastShown: defaults.object(forKey: Key.softPaywallLastShown) as? Date,
+            onboardingOfferShown: defaults.object(forKey: Key.onboardingOfferShown) as? Date,
+            now: Date()
+        )
+    }
+
+    /// The soft paywall's rule, pure (SoftPaywallRuleTests).
+    nonisolated static func softPaywallDue(
+        isPro: Bool,
+        transactionCount: Int,
+        shows: Int,
+        lastShown: Date?,
+        onboardingOfferShown: Date?,
+        now: Date
+    ) -> Bool {
+        guard !isPro, transactionCount >= softPaywallMinTransactions, shows < softPaywallMaxShows else {
+            return false
+        }
+        if let lastShown, now.timeIntervalSince(lastShown) < softPaywallCooldown { return false }
+        if let onboardingOfferShown,
+           now.timeIntervalSince(onboardingOfferShown) < softPaywallGapAfterOnboardingOffer {
             return false
         }
         return true
+    }
+
+    /// The trial offer at the end of onboarding (promotion-plan §2, 2026-11-06): to a free
+    /// person, when the App Store has something to sell (else the sheet would show its
+    /// "unavailable" state to someone who never asked for it).
+    nonisolated static func onboardingOfferDue(isPro: Bool, canSell: Bool) -> Bool {
+        !isPro && canSell
+    }
+
+    /// Whether onboarding offers the trial now: from what the launch health check found.
+    var onboardingOfferDue: Bool {
+        Self.onboardingOfferDue(isPro: isPro, canSell: offeringsAvailability?.canSell == true)
+    }
+
+    /// Record the onboarding offer (when it is actually presented).
+    func markOnboardingOfferShown() {
+        defaults.set(Date(), forKey: Key.onboardingOfferShown)
     }
 
     /// The paywall was shown from `source`: RevenueCat keeps the latest as the subscriber
@@ -145,6 +187,13 @@ final class PremiumManager {
     func noteSpendingReminder(_ value: String) {
         guard isConfigured else { return }
         Purchases.shared.attribution.setAttributes(["spending_reminder": value])
+    }
+
+    /// An activation milestone (ActivationAttributes): how onboarding ended, the entries
+    /// reached, Ten opened. Anonymous, like the two above.
+    func noteActivation(_ name: String, _ value: String) {
+        guard isConfigured else { return }
+        Purchases.shared.attribution.setAttributes([name: value])
     }
 
     /// Record a soft-paywall impression (call when it is actually presented).

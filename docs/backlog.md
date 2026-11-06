@@ -13,13 +13,10 @@ with the commit of every fix, are in
 
 - **Spending reminder: small things left after the final review** (2026-11-05,
   [plan-spending-reminder.md](plan-spending-reminder.md)): a CSV import keeps each row's date as
-  `createdAt`, so it does not count as recorded today; deposit interest posted at launch, the
-  drained Apple Pay queue and own-transfer pairing count as the person's record (exclude
-  `.depositInterestAccrual` in `SpendingReminderPlan.isUserRecord`), while an expense saved only as
-  a repeating series still gets tonight's reminder; "Remind me" with notifications already denied
-  gives no feedback; the reminder shows as a banner while the person is in the app at its time;
-  `hookDay` is an absolute start-of-day `Date` (a time-zone change can shift yesterday's match);
-  the cards inline `shouldOffer`; tr offer text "saat %@ gibi" reads as "around %@".
+  `createdAt`, so it does not count as recorded today; own-transfer pairing counts as the person's
+  record; "Remind me" with notifications already denied gives no feedback; the reminder shows as a
+  banner while the person is in the app at its time; `hookDay` is an absolute start-of-day `Date`
+  (a time-zone change can shift yesterday's match); the cards inline `shouldOffer`.
 
 - **First run, as a newcomer sees it** (walkthrough 2026-11-04, iPhone 17 Pro Simulator, iOS 26.5,
   Russian, fresh install; 80% of new users open Tenra once, promotion-plan §6). From launch to the

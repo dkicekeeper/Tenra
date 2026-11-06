@@ -388,6 +388,10 @@ final class TransactionStore {
     /// made by a background intent counts as one made in the app.
     @ObservationIgnored var onRecorded: (([Transaction]) -> Void)?
 
+    /// Every recurring series created (a subscription, a regular payment): the person recorded
+    /// something today even when its first occurrence is not due yet. Set by AppCoordinator for
+    /// the spending reminder (SpendingReminder.noteSeriesCreated).
+    @ObservationIgnored var onSeriesCreated: ((RecurringSeries) -> Void)?
 
     // MARK: - Initialization
 
@@ -1240,10 +1244,11 @@ final class TransactionStore {
         //     rows are on disk when the caller resumes, as with the per-row paths.
         await persistBulkChange(event)
 
-        // 4c. Who listens for new records (the spending reminder).
+        // 4c. Who listens for new records (the spending reminder, the activation milestones).
         switch event {
         case .added(let tx): onRecorded?([tx])
         case .bulkAdded(let txs): onRecorded?(txs)
+        case .seriesCreated(let series): onSeriesCreated?(series)
         default: break
         }
 

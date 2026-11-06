@@ -158,7 +158,10 @@ struct AssistantView: View {
         .sheet(isPresented: $showingVoice) {
             AssistantVoiceSheet { start(.question($0, spoken: true)) }
         }
-        .onAppear { model.refreshAllowance() }
+        .onAppear {
+            model.refreshAllowance()
+            ActivationAttributes.noteTenOpened()
+        }
         .task { await model.restore() }
         // Back on the home: the chat just left is in the list.
         .onChange(of: path.isEmpty) { _, isHome in

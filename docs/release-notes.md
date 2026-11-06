@@ -188,3 +188,16 @@ item 2 (the push at the set time, VoiceOver, the widget), on the phone once 1.8.
    `spending_reminder` (on, off, declined, denied) is Product Interaction, used for analytics,
    not linked to the user's identity, not for tracking. Update the answers before sending.
 6. **One submission**: `asc.py prepare-review --version X`; the founder sends it.
+
+## In main for the next version (not in 1.8.1)
+
+Not What's New material; for the next release's device check:
+- The trial offer at the end of onboarding: after "Start" on the auto-capture step, a free person
+  sees Tenra Pro's paywall when the App Store has plans (source `onboarding`); ✕, a swipe or a
+  purchase ends onboarding on Home with the account and categories saved. A founder or Pro, or no
+  plans loaded, goes straight to Home.
+- Analytics' soft paywall from 3 entries (was 10), not within a day of the onboarding offer.
+- Activation attributes in RevenueCat (`onboarding`, `entries`, `ten_opened`): covered by the
+  App Privacy answers of 2026-11-06, nothing to change.
+- The evening reminder: deposit interest posted at launch no longer counts as recording the day; a
+  new recurring payment does. tr offer text reads "%@ saatinde".

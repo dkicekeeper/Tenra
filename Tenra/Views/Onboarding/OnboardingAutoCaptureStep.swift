@@ -6,7 +6,9 @@
 //  Wallet automation for Apple Pay and, on iOS 27, the bank notification automation (their
 //  step-by-step guides, in a sheet), and a bank statement read right after onboarding (Ten where it runs, else the import
 //  tab). The primary button and ✕ both finish onboarding with what was collected: setting up
-//  the automations can wait (Home keeps a card for it, AutoCaptureSetupCard).
+//  the automations can wait (Home keeps a card for it, AutoCaptureSetupCard). Then, to a free
+//  person when the App Store has something to sell, Tenra Pro's paywall with its trial; Home
+//  comes once it closes.
 //
 
 import SwiftUI
@@ -61,6 +63,16 @@ struct OnboardingAutoCaptureStep: View {
                 .multilineTextAlignment(.leading)
                 .screenPadding()
                 .padding(.top, AppSpacing.md)
+            }
+        }
+        // The trial offer once "Start" saved everything (OnboardingViewModel.finish); closing it,
+        // or a purchase, ends onboarding.
+        .paywallSheet(isPresented: $vm.showingTrialOffer, source: .onboarding)
+        .onChange(of: vm.showingTrialOffer) { _, showing in
+            if showing {
+                PremiumManager.shared.markOnboardingOfferShown()
+            } else {
+                vm.trialOfferClosed()
             }
         }
     }

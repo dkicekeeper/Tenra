@@ -78,10 +78,12 @@ nonisolated enum SpendingReminderPlan {
         return ((dayNumber % count) + count) % count + 1
     }
 
-    /// The person recorded it today: created today, whatever its date, and not an occurrence
-    /// Tenra made for a recurring series.
+    /// The person recorded it today: created today, whatever its date, and neither an
+    /// occurrence Tenra made for a recurring series nor deposit interest it posted (the
+    /// reconciler adds that at launch).
     static func isUserRecord(_ transaction: Transaction, now: Date, calendar: Calendar = .current) -> Bool {
         transaction.recurringSeriesId == nil
+            && transaction.type != .depositInterestAccrual
             && calendar.isDate(Date(timeIntervalSince1970: transaction.createdAt), inSameDayAs: now)
     }
 

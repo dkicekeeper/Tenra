@@ -12,7 +12,7 @@ with the commit of every fix, are in
 ## Open
 
 - **Spending reminder: small things left after the final review** (2026-11-05,
-  [plan-spending-reminder.md](plan-spending-reminder.md)): a CSV import keeps each row's date as
+  [archive/plans/plan-spending-reminder.md](archive/plans/plan-spending-reminder.md), in the store with 1.8.1): a CSV import keeps each row's date as
   `createdAt`, so it does not count as recorded today; own-transfer pairing counts as the person's
   record; "Remind me" with notifications already denied gives no feedback; the reminder shows as a
   banner while the person is in the app at its time; `hookDay` is an absolute start-of-day `Date`
@@ -21,13 +21,7 @@ with the commit of every fix, are in
 - **First run, as a newcomer sees it** (walkthrough 2026-11-04, iPhone 17 Pro Simulator, iOS 26.5,
   Russian, fresh install; 80% of new users open Tenra once, promotion-plan §6). From launch to the
   first saved expense: 6 screens, about 12 taps. By likely weight:
-  1. *Nothing brings a manual user back.* (Ten's evening reminder in main since 2026-11-05,
-     [plan-spending-reminder.md](plan-spending-reminder.md); delete this item once it ships.) Notifications are only provisional (weekly digest and
-     insight signals land silently in Notification Center); there is no daily "log today's
-     spending" reminder; the Wallet automation, the "writes itself" promise, is 10 pages and 8
-     steps in Shortcuts. Candidate: after the first saved expense, offer an evening reminder
-     (opt-in, full permission prompt).
-  2. *Not checked (Simulator has no App Attest):* on a phone the action tab is Ten, whose field
+  1. *Not checked (Simulator has no App Attest):* on a phone the action tab is Ten, whose field
      says "Спросите о деньгах…", not "запишите трату"; a typed expense is drafted on the phone.
 
 - **Assistant attachments after a relaunch.** A receipt or statement attached in the chat lives

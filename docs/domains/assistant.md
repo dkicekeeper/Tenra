@@ -221,7 +221,7 @@ free action), "Hide" shows the next. Works without notification permission. A pu
 still opens Analytics. One exception to "only on Home": Ten's offer of the evening spending
 reminder (`SpendingReminderOfferCard`, not an `AssistantNotice`) shows where the first record was
 saved, under the turn in this chat as well as among Home's setup cards
-([plan-spending-reminder.md](../plan-spending-reminder.md) §3.5); its pushes come from Ten too.
+([plan-spending-reminder.md](../archive/plans/plan-spending-reminder.md) §3.5); its pushes come from Ten too.
 
 Auto-capture not set up (`Kind.setup`, `AssistantNotices.setupNudge`): once, after
 `setupAfterEntries` entries, for someone who hid Home's auto-capture card; its button is "Set

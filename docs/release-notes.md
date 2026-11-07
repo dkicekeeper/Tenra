@@ -22,6 +22,8 @@ person asks for by name; App Store Connect still needs a text in every locale. A
   App Privacy answers of 2026-11-06, nothing to change.
 - The evening reminder: deposit interest posted at launch no longer counts as recording the day; a
   new recurring payment does. tr offer text reads "%@ saatinde".
+- Transfer and top-up offer accounts and deposits, no longer loans (a loan is paid on its own
+  screen). In main after build 73: the next TestFlight build carries it.
 
 ## Submission checklist
 

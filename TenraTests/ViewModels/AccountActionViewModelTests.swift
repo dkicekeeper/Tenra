@@ -147,4 +147,39 @@ struct AccountActionViewModelTests {
         vm.selectedCategory = "Salary"
         #expect(vm.selectedCategoryId == nil)
     }
+
+    // MARK: - Loans stay out of transfers and top-ups
+
+    /// A loan is paid through its own screen (`LoanPaymentView`): its balance is
+    /// `remainingPrincipal`, never a sum of transfer legs, so neither carousel offers it,
+    /// and the default target never lands on it.
+    @Test("transfer and top-up offer accounts and deposits, never a loan")
+    func loansAreNotOffered() {
+        let coord = AppCoordinator()
+        let saved = coord.transactionStore.accounts
+        defer { coord.transactionStore.accounts = saved }
+        let card = Account(id: "card", name: "Card", currency: "KZT", order: 0)
+        let loan = Account(id: "loan", name: "Loan", currency: "KZT", loanInfo: LoanInfo(
+            bankName: "Bank", loanType: .annuity, originalPrincipal: 1_000_000, remainingPrincipal: 500_000,
+            interestRateAnnual: 12, termMonths: 24, startDate: "2020-01-01", paymentDay: 10
+        ), order: 1)
+        var deposit = depositAccount()
+        deposit.order = 2
+        coord.transactionStore.accounts = [card, loan, deposit]
+
+        let vm = AccountActionViewModel(
+            account: card,
+            accountsViewModel: coord.accountsViewModel,
+            transactionsViewModel: coord.transactionsViewModel,
+            categoriesViewModel: coord.categoriesViewModel,
+            defaultAction: .transfer
+        )
+        #expect(vm.availableSourceAccounts.map(\.id) == ["card", "d1"])
+        #expect(vm.availableTargetAccounts.map(\.id) == ["card", "d1"])
+        #expect(vm.selectedTargetAccountId == "d1")
+
+        vm.selectedTargetAccountId = "card"
+        vm.handleTargetSelectionChange()
+        #expect(vm.selectedSourceAccountId == "d1")
+    }
 }

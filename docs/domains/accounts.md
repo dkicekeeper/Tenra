@@ -89,6 +89,8 @@ private var refreshTrigger: RefreshKey {
 
 Call site: `AccountsViewModel.suggestedTransferTarget(forSource:)` → `AccountActionViewModel.defaultTargetAccountId(for:)`, which falls back to the carousel neighbour when there's no transfer history. Once the user picks a target themselves (`userPickedTarget`), source changes stop re-suggesting and only nudge on a source == target clash.
 
+The transfer and top-up screen (`AccountActionViewModel.availableSourceAccounts` / `availableTargetAccounts`) offers accounts and deposits, never a loan, and neither the learned target nor the neighbour lands on one: a loan is paid on its own screen (`LoanPaymentView`), its balance is `remainingPrincipal`, never a sum of transfer legs ([loans.md](loans.md)). Pinned by `AccountActionViewModelTests`.
+
 ## Caveats
 
 - `accountAggregatesByAccountId` is `@ObservationIgnored`; see View-layer subscriptions for what makes a body re-read it.

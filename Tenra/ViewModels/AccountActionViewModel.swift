@@ -51,17 +51,24 @@ final class AccountActionViewModel {
 
     // MARK: - Computed Properties
 
-    /// Source picker accounts. Shows ALL accounts (no cross-filter against the target).
-    /// Cross-filtering mutated this list whenever the target changed, which re-laid out
-    /// the source carousel and visibly scrolled it; the same-account case is caught by
-    /// the save-time guard instead. Includes deposits in either role.
-    var availableSourceAccounts: [Account] {
-        accountsViewModel.accounts
+    /// The accounts a transfer or a top-up moves money between: accounts and deposits.
+    /// Never a loan: it is paid on its own screen (`LoanPaymentView`), and its balance is
+    /// `remainingPrincipal`, never a sum of transfer legs.
+    private var transferableAccounts: [Account] {
+        accountsViewModel.accounts.filter { !$0.isLoan }
     }
 
-    /// Target picker accounts — all accounts (same reasoning as `availableSourceAccounts`).
+    /// Source picker accounts. Shows every transferable account (no cross-filter against
+    /// the target). Cross-filtering mutated this list whenever the target changed, which
+    /// re-laid out the source carousel and visibly scrolled it; the same-account case is
+    /// caught by the save-time guard instead. Includes deposits in either role.
+    var availableSourceAccounts: [Account] {
+        transferableAccounts
+    }
+
+    /// Target picker accounts (same reasoning as `availableSourceAccounts`).
     var availableTargetAccounts: [Account] {
-        accountsViewModel.accounts
+        transferableAccounts
     }
 
     /// Every income category the user has, in their order. Previously this was the
@@ -178,7 +185,7 @@ final class AccountActionViewModel {
     /// neighbor for accounts with no transfer history (new users, first transfer).
     private func defaultTargetAccountId(for sourceId: String) -> String? {
         if let learned = accountsViewModel.suggestedTransferTarget(forSource: sourceId),
-           learned.id != sourceId {
+           learned.id != sourceId, !learned.isLoan {
             return learned.id
         }
         return neighborAccountId(of: sourceId)
@@ -189,7 +196,7 @@ final class AccountActionViewModel {
     /// previous one at the end — so a clash shifts to the neighbor instead of jumping
     /// to the first account.
     private func neighborAccountId(of accountId: String) -> String? {
-        let ordered = accountsViewModel.accounts.sortedByOrder()
+        let ordered = transferableAccounts.sortedByOrder()
         guard let idx = ordered.firstIndex(where: { $0.id == accountId }) else {
             return ordered.first(where: { $0.id != accountId })?.id
         }

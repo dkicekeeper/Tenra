@@ -10,12 +10,16 @@
 //  2. the same payment within 90 seconds → the terminal fired twice; the same expense
 //     from the other source (Apple Pay, the bank's notification) within 5 minutes;
 //  3. account and category through WalletPaymentResolver, guesses noted;
-//  4. a subscription's charge the series already recorded → nothing new;
+//  4. a subscription's charge the series recorded ahead → the planned charge takes the real
+//     amount, date and account, nothing new (SubscriptionChargeMatcher; a same-amount charge
+//     with no shared word is only a suggestion in To review);
 //  5. another currency: the cached rate (refreshed first when stale), else one network
 //     request (the only one an intent makes, owner's decision 2026-10-19), else the
 //     payment waits in WalletCaptureStore.pending for a rate; a payment drained from the
 //     queue on a later day takes its own day's rate;
-//  6. saved through TransactionDraftService.commit, journaled in WalletCaptureStore.
+//  6. saved through TransactionDraftService.commit, journaled in WalletCaptureStore; a bank
+//     notification's transfer that is half of a transfer between the person's own banks is
+//     paired with the other half (OwnTransferPairing) and merged into one transfer.
 //
 //  Runs in whatever process the intent got: a cold one has only the fast path
 //  loaded, so the merchant's history comes from a bounded CoreData fetch, never
@@ -32,7 +36,7 @@ enum WalletPaymentRecorder {
         case saved(amount: Double, currency: String, categoryName: String)
         case noAmount
         case duplicate
-        /// The charge of a subscription whose series already recorded it.
+        /// The charge of a subscription whose series recorded it ahead: merged into it.
         case subscription(name: String)
         /// Waits in WalletCaptureStore.pending for an exchange rate.
         case queued
@@ -138,27 +142,36 @@ enum WalletPaymentRecorder {
             }
         ) else { return .noAccount }
 
-        // A subscription paid with Apple Pay: its series already recorded this charge, as a
-        // statement import would see it (ImportDuplicateDetector's window and tolerance).
-        // Only a charge on the payment's account that no earlier payment was taken for: a
-        // second payment at the same gym that week (a friend's pass) is a payment of its own.
+        // A subscription's charge: its series recorded it ahead (SubscriptionChargeMatcher). Only
+        // a planned charge no earlier payment was taken for: a second payment at the same gym
+        // that week (a friend's pass) is a payment of its own.
         let currency = payment.currencyCode
             ?? accounts.first { $0.id == account.accountId }?.currency
             ?? ""
-        let candidates = subscriptionOccurrences(around: payment.date, context: context).filter {
-            $0.accountId == account.accountId && !captures.isMatched(occurrenceId: $0.id)
-        }
+        var subscription: SubscriptionChargeMatcher.Match?
         if payment.isExpense,
-           let day = ImportDuplicateDetector.dayNumber(DateFormatters.dateFormatter.string(from: payment.date)),
-           let occurrence = WalletPaymentResolver.subscriptionOccurrence(
-               amount: payment.amount,
-               currency: currency,
-               day: day,
-               merchant: payment.merchant,
-               occurrences: candidates
-           ) {
-            captures.noteMatched(occurrenceId: occurrence.id)
-            return .subscription(name: occurrence.description)
+           let day = ImportDuplicateDetector.dayNumber(DateFormatters.dateFormatter.string(from: payment.date)) {
+            let memory = SubscriptionMerchantMemory.shared
+            subscription = SubscriptionChargeMatcher.match(
+                SubscriptionChargeMatcher.Charge(amount: payment.amount, currency: currency, day: day, merchant: payment.merchant),
+                occurrences: subscriptionOccurrences(around: payment.date, context: context).filter {
+                    $0.recurringOccurrenceId != nil && !captures.isMatched(occurrenceId: $0.id)
+                },
+                rememberedSeriesId: memory.seriesId(forMerchant: payment.merchant),
+                dismissedSeriesIds: memory.dismissedSeriesIds(forMerchant: payment.merchant),
+                suggests: payment.isTransferLike != true,
+                accountId: account.isGuess ? nil : account.accountId,
+                accountCurrency: { id in accounts.first { $0.id == id }?.currency },
+                convert: { amount, from, to in CurrencyConverter.convertSync(amount: amount, from: from, to: to) }
+            )
+        }
+        let planned = subscription?.isConfident == true ? subscription?.occurrence : nil
+        // The charge goes where the money left. When the card's account is only a guess, the
+        // subscription's own account is the better one.
+        var accountId = account.accountId
+        if account.isGuess, let plannedAccount = planned?.accountId,
+           accounts.contains(where: { $0.id == plannedAccount && !$0.isLoan }) {
+            accountId = plannedAccount
         }
 
         let operation = ParsedOperation(
@@ -166,7 +179,7 @@ enum WalletPaymentRecorder {
             amount: Decimal(payment.amount),
             currencyCode: payment.currencyCode,
             date: payment.date,
-            accountId: account.accountId,
+            accountId: accountId,
             categoryName: category.name,
             subcategoryNames: [],
             note: payment.merchant
@@ -185,7 +198,7 @@ enum WalletPaymentRecorder {
         // one stays if that fails). A payment of another day (it waited in the queue, drained
         // in the app) takes that day's rate. One request at most in the intent.
         let isToday = Calendar.current.isDateInToday(payment.date)
-        let accountCurrency = accounts.first { $0.id == account.accountId }?.currency
+        let accountCurrency = accounts.first { $0.id == accountId }?.currency
         var askedNetwork = false
         if isToday, !CurrencyRateStore.shared.hasFreshRates,
            let from = payment.currencyCode, let to = accountCurrency, from != to {
@@ -215,6 +228,10 @@ enum WalletPaymentRecorder {
         case .failure(.noEligibleAccount): return .noAccount
         case .failure(.missingAmount): return .noAmount
         case .success(let resolved): transactionDraft = resolved
+        }
+
+        if let planned {
+            return await mergeIntoPlanned(planned, draft: transactionDraft, payment: payment, services: services, captures: captures)
         }
 
         // Only remembered subcategories still linked to the category apply. Read from
@@ -253,14 +270,38 @@ enum WalletPaymentRecorder {
             CategorySuggestionService.normalizedMerchant($0.payment.merchant) == merchantKey
                 && (!store.hasCompletedInitialLoad || store.transactionById[$0.id] != nil)
         }
-        captures.record(transactionId: saved.id, payment: payment, guesses: guesses)
-        if !guesses.isEmpty, !merchantAlreadyWaiting {
+        let suggestion = subscription.flatMap { $0.isConfident ? nil : $0.occurrence }
+        captures.record(
+            transactionId: saved.id,
+            payment: payment,
+            guesses: guesses,
+            accountId: saved.accountId ?? accountId,
+            subscriptionSuggestion: suggestion?.recurringSeriesId
+        )
+
+        // Half of a transfer between the person's own banks: the other bank's side may be here.
+        let pair = pairWithOtherBank(saved: saved, payment: payment, accountId: saved.accountId ?? accountId, captures: captures)
+        if let pair {
+            let otherId = pair.outgoingId == saved.id ? pair.incomingId : pair.outgoingId
+            let accountGuessed = guesses.contains(.account)
+                || captures.capture(forTransactionId: otherId).map { !$0.isReviewed && $0.guesses.contains(.account) } == true
+            if !pair.isConfident || accountGuessed {
+                await WalletReviewNotifier.notifyOwnTransfer(
+                    transactionId: saved.id,
+                    from: pair.outgoingId == saved.id ? payment.bankApp ?? "" : otherBankApp(of: pair, besides: saved.id, captures: captures),
+                    to: pair.incomingId == saved.id ? payment.bankApp ?? "" : otherBankApp(of: pair, besides: saved.id, captures: captures)
+                )
+            }
+            WalletReviewNotifier.removeDelivered(transactionId: otherId)
+            await OwnTransferMerger.mergePending(store: services.store, captures: captures)
+        } else if (!guesses.isEmpty || suggestion != nil), !merchantAlreadyWaiting {
             await WalletReviewNotifier.notify(
                 transactionId: saved.id,
                 payment: payment,
                 guesses: guesses,
                 categoryName: saved.category,
-                accountName: accounts.first { $0.id == account.accountId }?.name ?? ""
+                accountName: accounts.first { $0.id == accountId }?.name ?? "",
+                subscriptionName: suggestion?.description
             )
         }
 
@@ -270,6 +311,68 @@ enum WalletPaymentRecorder {
         }
 
         return .saved(amount: saved.amount, currency: saved.currency, categoryName: saved.category)
+    }
+
+    // MARK: - Subscription charges and own transfers
+
+    /// The real charge of a subscription: the planned charge takes its amount, currency,
+    /// conversion, date and account, now when the history is loaded, else once it is
+    /// (SubscriptionChargeLinker.applyPending). A reviewed capture under the planned charge's id
+    /// makes the other source's report of the same payment (Apple Pay and the bank) a duplicate.
+    private static func mergeIntoPlanned(
+        _ planned: Transaction,
+        draft: TransactionDraft,
+        payment: WalletPayment,
+        services: IntentServices,
+        captures: WalletCaptureStore
+    ) async -> Outcome {
+        captures.noteMatched(occurrenceId: planned.id)
+        let accountCurrency = services.accounts.accounts.first { $0.id == draft.accountId }?.currency
+        captures.enqueueChargeMerge(WalletCaptureStore.ChargeMerge(
+            occurrenceId: planned.id,
+            amount: draft.amount,
+            currency: draft.currency,
+            convertedAmount: draft.convertedAmount,
+            targetCurrency: draft.convertedAmount == nil ? nil : accountCurrency,
+            targetAmount: draft.convertedAmount,
+            accountId: draft.accountId,
+            date: DateFormatters.dateFormatter.string(from: draft.date),
+            categoryName: draft.categoryName,
+            note: draft.note
+        ))
+        captures.insert(WalletCaptureStore.Capture(
+            id: planned.id,
+            payment: payment,
+            guesses: [],
+            isReviewed: true,
+            accountId: draft.accountId
+        ))
+        await SubscriptionChargeLinker.applyPending(store: services.store, captures: captures)
+        return .subscription(name: planned.description)
+    }
+
+    /// The pair a bank notification's transfer or top-up makes with the other bank's side,
+    /// recorded earlier (OwnTransferPairing), queued for OwnTransferMerger.
+    private static func pairWithOtherBank(
+        saved: Transaction,
+        payment: WalletPayment,
+        accountId: String,
+        captures: WalletCaptureStore
+    ) -> OwnTransferPairing.Pair? {
+        guard payment.bankApp != nil, payment.isTransferLike == true else { return nil }
+        let side = OwnTransferPairing.Side(transactionId: saved.id, payment: payment, accountId: accountId)
+        guard let pair = OwnTransferPairing.pair(
+            for: side,
+            among: captures.unpairedBankSides(around: payment.date),
+            ownNames: captures.ownNames
+        ) else { return nil }
+        captures.addOwnTransferPair(pair)
+        return pair
+    }
+
+    private static func otherBankApp(of pair: OwnTransferPairing.Pair, besides id: String, captures: WalletCaptureStore) -> String {
+        let other = pair.outgoingId == id ? pair.incomingId : pair.outgoingId
+        return captures.capture(forTransactionId: other)?.payment.bankApp ?? ""
     }
 
     // MARK: - Review
@@ -313,6 +416,17 @@ enum WalletPaymentRecorder {
         }
         if teachesAccount, let accountId = transaction.accountId {
             cards.remember(accountId: accountId, forCard: capture.payment.card)
+        }
+        // A transfer merged from two banks' notifications: the receiving card's account, and the
+        // names on both sides are the person's own (OwnTransferPairing).
+        if let record = capture.ownTransfer {
+            if teachesAccount, let targetId = transaction.targetAccountId {
+                cards.remember(accountId: targetId, forCard: record.incoming.card)
+            }
+            if !capture.isReviewed {
+                captures.rememberOwnNames([capture.payment.merchant, record.incoming.merchant])
+            }
+            record.originals.forEach { WalletReviewNotifier.removeDelivered(transactionId: $0.id) }
         }
         captures.markReviewed(transactionId: transaction.id)
         WalletReviewNotifier.removeDelivered(transactionId: transaction.id)

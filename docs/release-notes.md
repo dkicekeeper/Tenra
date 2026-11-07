@@ -24,6 +24,14 @@ person asks for by name; App Store Connect still needs a text in every locale. A
   new recurring payment does. tr offer text reads "%@ saatinde".
 - Transfer and top-up offer accounts and deposits, no longer loans (a loan is paid on its own
   screen). In main after build 73: the next TestFlight build carries it.
+- A subscription's real charge (a bank's notification, Apple Pay, an expense entered by hand)
+  merges into its planned charge instead of standing beside it: "This is a subscription…" in an
+  expense's repeat menu, Link payments, and "Looks like X" in To review; the merchant is
+  remembered. After build 73.
+- A transfer between two of the person's banks that neither bank marks as one ("Перевод" in one
+  app, "Пополнение" in the other) becomes one transfer instead of an expense and an income; when
+  only the amount and the time say so, To review asks ("Not a transfer" puts them back). After
+  build 73.
 
 ## Submission checklist
 

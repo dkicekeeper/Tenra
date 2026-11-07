@@ -46,6 +46,10 @@ nonisolated struct BankNotification: Equatable, Sendable {
     /// Money came into this bank's account: an income, or the receiving side of a transfer
     /// between own accounts (OwnTransferMatcher pairs it with the sending side).
     var isIncoming: Bool = false
+    /// A transfer or a top-up ("Перевод", "Пополнение", a bare signed amount), not a purchase
+    /// or a payment: one side of a transfer between the person's own banks may be it
+    /// (OwnTransferPairing).
+    var isTransferLike: Bool = false
 }
 
 nonisolated enum BankNotificationParser {
@@ -137,7 +141,8 @@ nonisolated enum BankNotificationParser {
             currencyCode: money.currency,
             counterparty: party,
             cardDigits: digits,
-            isIncoming: kind == .income || (kind == .ownTransfer && incoming)
+            isIncoming: kind == .income || (kind == .ownTransfer && incoming),
+            isTransferLike: word == nil || word?.kind == .transfer || (kind == .income && word?.kind == .income)
         )
     }
 

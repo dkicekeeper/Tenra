@@ -86,7 +86,8 @@ struct LogBankNotificationIntent: AppIntent {
             accountId: nil,
             date: when,
             bankApp: bank,
-            isIncome: operation.kind == .income
+            isIncome: operation.kind == .income,
+            isTransferLike: operation.isTransferLike
         )
 
         switch try await WalletPaymentRecorder.record(payment, services: services) {

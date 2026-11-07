@@ -32,6 +32,7 @@ Both are updated by `stopSeries` / `resumeSeries`.
 4. `Services/Recurring/RecurringDateMath.swift` (occurrence dates for the generator and the reminders)
 5. `Services/Insights/InsightsService.swift` (2 switches)
 6. `Services/Insights/InsightsService+Recurring.swift` (2 switches)
+7. `Services/Recurring/SubscriptionChargeMatcher.swift` (`realChargeWindowDays`)
 
 Other `case .monthly` hits (`CategoryBudgetService`, `InsightsService+Budget`, …) switch over a budget period, not a frequency.
 
@@ -85,6 +86,50 @@ subscription shares no word with the merchant, and its charges stay one-offs. Th
 goes through its text (`Decimal(string:)`), never `Decimal(Double)`'s binary noise. The refresh key holds `mutationVersion`, every series description and today's
 date. Pinned by `SubscriptionCandidateDetectorTests`.
 
+## Real charges
+
+A subscription records its charge ahead (the planned occurrence); the bank reports the real one
+(Apple Pay, a bank's notification, an expense entered by hand). One charge stays one transaction:
+the real charge is **merged into the planned one**. The occurrence keeps its id, series,
+occurrence record, category, name and subcategory links, and takes the real amount, currency,
+conversion, date and account (`SubscriptionChargeMatcher.merged`); the real charge is never saved
+or is deleted. ⚠️ `targetCurrency`/`targetAmount` come from the real charge too, never the planned
+ones: the balance reads `targetAmount` first whenever the currency is not the account's. The
+series itself is never touched (red flag 10).
+
+Which planned charge a real one is (`SubscriptionChargeMatcher.match`), within three days of the
+planned date, the closest first, never one already taken (`WalletCaptureStore.isMatched`):
+
+1. the subscription remembered for the merchant (`SubscriptionMerchantMemory`, normalized
+   merchant → series id), within 30 %;
+2. a brand word the merchant shares with the subscription (`WalletPaymentResolver.billedWords`:
+   "NETFLIX.COM" and "Netflix", "APPLE.COM/BILL" and "iCloud+"), within 5 % in the same currency,
+   10 % across currencies (against the planned account-currency amount when the bank charged in
+   the account's currency, else at the cached rate);
+3. otherwise the same amount is only a **suggestion**: the payment is recorded and To review asks
+   "Looks like X" (Merge, or ✕: never asked again for that merchant). Never for a bank's transfer
+   to a person, a merchant remembered for another subscription, or no merchant.
+
+Any account: the real account wins, except when the card's account was only a guess (then the
+subscription's). An intent's process holds no history, so a confident match from an automation is
+queued (`WalletCaptureStore.chargeMerges`) and applied once the full load lands
+(`SubscriptionChargeLinker.applyPending`, one pass at a time, run by the intent when the app is
+loaded and by `MainTabView` on the foreground and after the full load). The intent saved nothing
+else for the payment, so a queued charge whose planned charge is gone or cannot be updated is saved
+as an expense of its own. A reviewed capture under the planned charge's id makes the other
+source's report of the same payment a duplicate.
+
+**By hand** (`SubscriptionChargeLinker.link`): "This is a subscription…" in the repeat menu of an
+expense's edit screen (`SubscriptionChargePickerView`, subscriptions closest by amount first),
+Link payments on the subscription's screen (`linkAll`) and "Merge" in To review. The nearest
+generated occurrence within half the period (`RecurringFrequency.realChargeWindowDays`) takes the
+expense's values and the expense is deleted (its capture moves to the planned charge); with none
+near, the expense is linked as it is. Which planned charges already hold a real one is known for
+`WalletCaptureStore.retention` (90 days, on the device) only, so an expense older than that is
+linked, never merged. The merchant (the capture's, else the description) is remembered for the
+subscription. Pinned by
+`SubscriptionChargeMatcherTests` and `SubscriptionChargeLinkerTests`.
+
 ## Making an Existing Transaction Recurring
 
 ⚠️ **Never `createSeries(_:)` and then link an existing transaction to the new series.** The generator emits occurrence 0 on `startDate`, which is that transaction's own date, so the date would end up with two transactions. Use `createSeries(_:firstOccurrence:)`: it links the transaction, records it as the occurrence on `series.startDate`, and the generator resumes from the next period (generates nothing more when that date is already in the future). The transaction keeps its id, so its subcategory links survive. `TransactionEditCoordinator.handleRecurringSeries` uses it and aborts the save with the error if the series cannot be created. Pinned by `RecurringFirstOccurrenceTests` and `TransactionEditCoordinatorTests`.
@@ -113,7 +158,7 @@ To unlink in bulk, apply one `.bulkUpdated` event, as `unlinkAllTransactions(fro
 
 ## Link-Payments UI and Matchers
 
-`SubscriptionLinkPaymentsView` wraps the shared `LinkPaymentsView` with `SubscriptionTransactionMatcher`; the view, the matchers and `AmountMatchMode` are documented in [loans.md](loans.md) §Link-Payments UI.
+`SubscriptionLinkPaymentsView` wraps the shared `LinkPaymentsView` with `SubscriptionTransactionMatcher`; the view, the matchers and `AmountMatchMode` are documented in [loans.md](loans.md) §Link-Payments UI. Linking goes through `SubscriptionChargeLinker.linkAll`: each payment takes the place of its period's planned charge (§Real charges), so a linked charge is never there twice.
 
 ## Categories ViewModel Threading in Views
 

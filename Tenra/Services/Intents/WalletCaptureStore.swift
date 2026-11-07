@@ -45,6 +45,10 @@ nonisolated struct WalletPayment: Codable, Equatable, Identifiable, Sendable {
     var bankApp: String? = nil
     /// Money in: a bank notification's top-up or incoming transfer. nil means an expense.
     var isIncome: Bool? = nil
+    /// A bank notification's transfer or top-up, not a purchase (`BankNotification.isTransferLike`):
+    /// one side of a transfer between the person's own banks may be it (OwnTransferPairing).
+    /// nil for Apple Pay and for payments saved before it was kept.
+    var isTransferLike: Bool? = nil
 
     var isExpense: Bool { isIncome != true }
 }
@@ -57,6 +61,19 @@ final class WalletCaptureStore {
     enum Guess: String, Codable, Hashable {
         case category
         case account
+        /// An expense and an income of two banks merged into a transfer on the amount and the
+        /// time alone (OwnTransferPairing).
+        case ownTransfer
+    }
+
+    /// A transfer merged from two bank notifications: what "Not a transfer" puts back.
+    struct OwnTransferRecord: Codable, Equatable {
+        /// The receiving side's notification (the capture's `payment` is the sending side's).
+        let incoming: WalletPayment
+        /// The expense and the income as they were saved.
+        let originals: [Transaction]
+        /// What Tenra guessed for each side, in the order of `originals`: put back with them.
+        var guesses: [Set<Guess>]? = nil
     }
 
     struct Capture: Codable, Equatable, Identifiable {
@@ -65,8 +82,35 @@ final class WalletCaptureStore {
         let payment: WalletPayment
         var guesses: Set<Guess>
         var isReviewed: Bool
+        /// The account it was saved on. nil in captures saved before it was kept.
+        var accountId: String? = nil
+        /// A subscription whose planned charge this payment may be (same amount and date, no
+        /// shared word): To review asks. nil once answered.
+        var subscriptionSuggestion: String? = nil
+        /// Set on a transfer merged from two bank notifications.
+        var ownTransfer: OwnTransferRecord? = nil
+        /// The person said this payment is not half of a transfer: never paired again.
+        var pairingDismissed: Bool? = nil
 
-        var needsReview: Bool { !isReviewed && !guesses.isEmpty }
+        var needsReview: Bool { (!isReviewed && !guesses.isEmpty) || subscriptionSuggestion != nil }
+    }
+
+    /// A real subscription charge an intent matched while the history was not loaded: the
+    /// planned charge takes these values once it is (SubscriptionChargeLinker.applyPending).
+    struct ChargeMerge: Codable, Equatable {
+        let occurrenceId: String
+        let amount: Double
+        let currency: String
+        let convertedAmount: Double?
+        /// The account's currency and the amount in it when `currency` is another one.
+        var targetCurrency: String? = nil
+        var targetAmount: Double? = nil
+        let accountId: String?
+        /// "yyyy-MM-dd".
+        let date: String
+        /// What the payment is saved as when its planned charge is gone (deleted meanwhile).
+        var categoryName: String = ""
+        var note: String = ""
     }
 
     private struct Snapshot: Codable {
@@ -80,6 +124,10 @@ final class WalletCaptureStore {
         /// Sides of transfers between own accounts waiting for their other side. nil in
         /// snapshots saved before it was kept.
         var transferSides: [OwnTransferMatcher.Side]?
+        /// nil in snapshots saved before these were kept.
+        var chargeMerges: [ChargeMerge]?
+        var ownTransferPairs: [OwnTransferPairing.Pair]?
+        var ownNames: [String]?
     }
 
     /// How much the automations record, for Diagnostics and the Home setup card. Local only.
@@ -120,6 +168,13 @@ final class WalletCaptureStore {
     /// One side of a transfer between own accounts per bank notification, until
     /// OwnTransferRecorder pairs it with the other bank's side (or it is two days old).
     private(set) var transferSides: [OwnTransferMatcher.Side]
+    /// Real subscription charges waiting for the full load to merge into their planned charge.
+    private(set) var chargeMerges: [ChargeMerge]
+    /// An expense and an income of two banks waiting for the full load to become one transfer
+    /// (OwnTransferMerger).
+    private(set) var ownTransferPairs: [OwnTransferPairing.Pair]
+    /// Counterparties the person confirmed as themselves (OwnTransferPairing.nameKey).
+    private(set) var ownNames: Set<String>
     /// Set by a tap on a "check a payment" notification (WalletReviewNotifier): MainTabView
     /// presents the To review list. Not persisted.
     var isReviewRequested = false
@@ -133,6 +188,9 @@ final class WalletCaptureStore {
         // Snapshots from before the field: the oldest kept capture is the best answer.
         self.firstCaptureAt = snapshot.firstCaptureAt ?? snapshot.captures.values.map(\.payment.date).min()
         self.transferSides = snapshot.transferSides ?? []
+        self.chargeMerges = snapshot.chargeMerges ?? []
+        self.ownTransferPairs = snapshot.ownTransferPairs ?? []
+        self.ownNames = Set(snapshot.ownNames ?? [])
     }
 
     // MARK: - Transfers between own accounts
@@ -184,11 +242,43 @@ final class WalletCaptureStore {
             .filter { !$0.isEmpty && seen.insert(CategorySuggestionService.normalizedMerchant($0)).inserted }
     }
 
-    func record(transactionId: String, payment: WalletPayment, guesses: Set<Guess>, now: Date = Date()) {
-        guard !transactionId.isEmpty else { return }
+    func record(
+        transactionId: String,
+        payment: WalletPayment,
+        guesses: Set<Guess>,
+        accountId: String? = nil,
+        subscriptionSuggestion: String? = nil,
+        now: Date = Date()
+    ) {
+        insert(Capture(
+            id: transactionId,
+            payment: payment,
+            guesses: guesses,
+            isReviewed: false,
+            accountId: accountId,
+            subscriptionSuggestion: subscriptionSuggestion
+        ), now: now)
+    }
+
+    /// Keeps a capture as it is given: a merged transfer, a side put back by "Not a transfer".
+    func insert(_ capture: Capture, now: Date = Date()) {
+        guard !capture.id.isEmpty else { return }
         captures = captures.filter { now.timeIntervalSince($0.value.payment.date) <= Self.retention }
-        captures[transactionId] = Capture(id: transactionId, payment: payment, guesses: guesses, isReviewed: false)
+        captures[capture.id] = capture
         if firstCaptureAt == nil { firstCaptureAt = now }
+        persist()
+    }
+
+    func removeCapture(transactionId: String) {
+        guard captures.removeValue(forKey: transactionId) != nil else { return }
+        persist()
+    }
+
+    /// The suggested subscription was answered: merged, or not this one.
+    func clearSubscriptionSuggestion(transactionId: String) {
+        guard var capture = captures[transactionId], capture.subscriptionSuggestion != nil else { return }
+        capture.subscriptionSuggestion = nil
+        captures[transactionId] = capture
         persist()
     }
 
@@ -247,6 +337,63 @@ final class WalletCaptureStore {
         persist()
     }
 
+    // MARK: - Real subscription charges
+
+    func enqueueChargeMerge(_ merge: ChargeMerge) {
+        chargeMerges.removeAll { $0.occurrenceId == merge.occurrenceId }
+        chargeMerges.append(merge)
+        persist()
+    }
+
+    func removeChargeMerges(occurrenceIds: Set<String>) {
+        let kept = chargeMerges.filter { !occurrenceIds.contains($0.occurrenceId) }
+        guard kept.count != chargeMerges.count else { return }
+        chargeMerges = kept
+        persist()
+    }
+
+    // MARK: - Transfers between own banks, without the bank's word
+
+    /// The recorded bank notifications a new one may pair with: transfers and top-ups saved
+    /// within `OwnTransferMatcher.window` of `date`, not merged, not put back by the person and
+    /// not already waiting in a pair.
+    func unpairedBankSides(around date: Date) -> [OwnTransferPairing.Side] {
+        let waiting = Set(ownTransferPairs.flatMap { [$0.outgoingId, $0.incomingId] })
+        return captures.values.compactMap { capture in
+            guard let accountId = capture.accountId,
+                  capture.payment.bankApp != nil,
+                  capture.payment.isTransferLike == true,
+                  capture.ownTransfer == nil,
+                  capture.pairingDismissed != true,
+                  !waiting.contains(capture.id),
+                  abs(capture.payment.date.timeIntervalSince(date)) <= OwnTransferMatcher.window
+            else { return nil }
+            return OwnTransferPairing.Side(transactionId: capture.id, payment: capture.payment, accountId: accountId)
+        }
+    }
+
+    func addOwnTransferPair(_ pair: OwnTransferPairing.Pair) {
+        guard !ownTransferPairs.contains(where: {
+            $0.outgoingId == pair.outgoingId || $0.incomingId == pair.incomingId
+        }) else { return }
+        ownTransferPairs.append(pair)
+        persist()
+    }
+
+    func removeOwnTransferPair(_ pair: OwnTransferPairing.Pair) {
+        guard ownTransferPairs.contains(pair) else { return }
+        ownTransferPairs.removeAll { $0 == pair }
+        persist()
+    }
+
+    /// The person confirmed a merged transfer: its names are theirs.
+    func rememberOwnNames(_ counterparties: [String]) {
+        let keys = counterparties.compactMap(OwnTransferPairing.nameKey)
+        guard !Set(keys).isSubset(of: ownNames) else { return }
+        ownNames.formUnion(keys)
+        persist()
+    }
+
     // MARK: - Pending
 
     func enqueue(_ payment: WalletPayment) {
@@ -268,7 +415,7 @@ final class WalletCaptureStore {
     /// notification) reported an expense of the same amount within `crossSourceWindow`.
     func isDuplicate(_ payment: WalletPayment) -> Bool {
         let key = Self.duplicateKey(payment)
-        let recent = captures.values.map(\.payment) + pending
+        let recent = captures.values.map(\.payment) + captures.values.compactMap(\.ownTransfer?.incoming) + pending
         return recent.contains { other in
             guard other.id != payment.id, abs(other.amount - payment.amount) < 0.005 else { return false }
             let gap = abs(other.date.timeIntervalSince(payment.date))
@@ -296,6 +443,9 @@ final class WalletCaptureStore {
         matchedOccurrences = [:]
         firstCaptureAt = nil
         transferSides = []
+        chargeMerges = []
+        ownTransferPairs = []
+        ownNames = []
         defaults.removeObject(forKey: Self.storageKey)
     }
 
@@ -315,7 +465,10 @@ final class WalletCaptureStore {
             pending: pending,
             matchedOccurrences: matchedOccurrences,
             firstCaptureAt: firstCaptureAt,
-            transferSides: transferSides
+            transferSides: transferSides,
+            chargeMerges: chargeMerges,
+            ownTransferPairs: ownTransferPairs,
+            ownNames: Array(ownNames).sorted()
         )
         guard let data = try? JSONEncoder().encode(snapshot) else { return }
         defaults.set(data, forKey: Self.storageKey)

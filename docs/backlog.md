@@ -114,7 +114,6 @@ Found by the docs audit of 2026-10-12, not verified on device yet:
 
 - **Statement import:** a one-tap "align the balance to the statement" after the closing-balance
   check (today it only shows the difference).
-- **Subscriptions as expected payments**, merged with the real charges when they arrive.
 - **Receipt photo straight to the on-device model (iOS 27)** once
   `IntelligenceAvailability.supportsVision` is true on real devices: either an optional image in
   `DocumentSnapshot` or a vision interpreter in front of `ReceiptInterpreter` that falls back to

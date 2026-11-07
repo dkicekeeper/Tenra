@@ -61,6 +61,15 @@ struct BankNotificationParserTests {
         #expect(operation.counterparty == "Мария С.")
     }
 
+    @Test("A transfer or a top-up may be one side of a transfer between own banks; a purchase never")
+    func transferLike() throws {
+        #expect(try #require(parse("Перевод: 2 350 ₸", "Иван П.\nДоступно: 900 ₸")).isTransferLike)
+        #expect(try #require(parse("Пополнение: 60 000 ₸", "Мария С.\nДоступно: 70 000 ₸")).isTransferLike)
+        #expect(try #require(parse("Kaspi.kz", "-100 000 ₸\nДоступно: 900 ₸")).isTransferLike)
+        #expect(try #require(parse("Покупка: 3 200 ₸", "В Магазине\nДоступно: 7 000 ₸")).isTransferLike == false)
+        #expect(try #require(parse("Оплата -1 500 ₸", "Coffee Point\nДоступно 900 ₸")).isTransferLike == false)
+    }
+
     @Test("A fee is added to what leaves the account, never taken for the amount")
     func feeAdded() throws {
         let operation = try #require(parse(

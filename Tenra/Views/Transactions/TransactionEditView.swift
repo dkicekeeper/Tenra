@@ -16,6 +16,11 @@ struct TransactionEditView: View {
     @State private var coordinator: TransactionEditCoordinator
     @State private var calc: CalculatorInputModel
     @FocusState private var descriptionFocused: Bool
+    /// "This is a subscription…" (the repeat menu): the picker of the subscription this charge is.
+    @State private var showingSubscriptionPicker = false
+    /// Set by the picker once linked: the edit screen closes after the picker has (the expense
+    /// may have merged into the planned charge and be gone).
+    @State private var linkedToSubscription = false
 
     // MARK: - Environment
 
@@ -41,6 +46,7 @@ struct TransactionEditView: View {
             transactionStore: transactionStore
         ))
         self._accounts = accounts
+        self._transactionStore = transactionStore
         self._customCategories = customCategories
         self._balanceCoordinator = balanceCoordinator
         // Seed the calculator with the transaction's existing amount so editing starts
@@ -53,6 +59,7 @@ struct TransactionEditView: View {
     // MARK: - Stored Properties (passed from parent, used for UI components)
 
     private let _accounts: [Account]
+    private let _transactionStore: TransactionStore
 
     /// The "≈" line's currency, the way `TransactionEditCoordinator.conversionFields` saves
     /// it: what the target account receives for a transfer, else the account's currency.
@@ -184,6 +191,16 @@ struct TransactionEditView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 toolbarContent
+            }
+            .sheet(isPresented: $showingSubscriptionPicker, onDismiss: {
+                if linkedToSubscription { dismiss() }
+            }) {
+                SubscriptionChargePickerView(
+                    charge: coordinator.transaction,
+                    transactionStore: _transactionStore,
+                    baseCurrency: _transactionStore.baseCurrency,
+                    onLinked: { linkedToSubscription = true }
+                )
             }
             .dateButtonsSafeArea(selectedDate: $bindableCoordinator.formData.selectedDate) { date in
                 coordinator.formData.selectedDate = date
@@ -336,6 +353,18 @@ struct TransactionEditView: View {
                     } else {
                         Text(freq.displayName)
                     }
+                }
+            }
+            // A charge of a subscription already kept (the bank's notification beside the
+            // planned charge): it merges into the planned one (SubscriptionChargeLinker).
+            if coordinator.transaction.type == .expense,
+               coordinator.transaction.recurringSeriesId == nil,
+               !_transactionStore.subscriptions.isEmpty {
+                Divider()
+                Button {
+                    showingSubscriptionPicker = true
+                } label: {
+                    Label(String(localized: "transaction.linkSubscription"), systemImage: "link")
                 }
             }
         } label: {

@@ -90,38 +90,7 @@ enum WalletPaymentResolver {
         return words.union(words.compactMap { billingParent[$0] })
     }
 
-    /// The subscription charge a payment repeats: an occurrence of a recurring series in
-    /// the same currency, within the statement import's window and tolerance
-    /// (`ImportDuplicateDetector.subscriptionDayWindow`, `subscriptionAmountTolerance`), whose
-    /// description shares a brand word with the merchant ("Netflix" and "NETFLIX.COM", or
-    /// the billing company: "iCloud+" and "APPLE.COM/BILL"),
-    /// closest date first. The word is required: a missed match leaves a duplicate the user
-    /// can delete, a false one would drop a real payment (a coffee priced like a
-    /// subscription).
-    nonisolated static func subscriptionOccurrence(
-        amount: Double,
-        currency: String,
-        day: Int,
-        merchant: String,
-        occurrences: [Transaction]
-    ) -> Transaction? {
-        let merchantWords = brandWords(merchant)
-        guard !merchantWords.isEmpty else { return nil }
-        return occurrences
-            .compactMap { occurrence -> (Transaction, Int)? in
-                guard occurrence.recurringSeriesId?.isEmpty == false,
-                      occurrence.type == .expense,
-                      occurrence.currency == currency,
-                      abs(occurrence.amount - amount) <= ImportDuplicateDetector.subscriptionAmountTolerance * amount,
-                      let occurrenceDay = ImportDuplicateDetector.dayNumber(occurrence.date),
-                      abs(occurrenceDay - day) <= ImportDuplicateDetector.subscriptionDayWindow,
-                      !billedWords(occurrence.description).isDisjoint(with: merchantWords)
-                else { return nil }
-                return (occurrence, abs(occurrenceDay - day))
-            }
-            .min { $0.1 != $1.1 ? $0.1 < $1.1 : $0.0.id < $1.0.id }?
-            .0
-    }
+    // Which subscription charge a payment is: SubscriptionChargeMatcher.
 
     // MARK: - Category
 

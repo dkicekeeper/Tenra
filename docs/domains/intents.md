@@ -296,15 +296,16 @@ hid the card ([assistant.md](assistant.md) §6). Settings → Siri & Shortcuts k
 4. Account (`WalletPaymentResolver.account`): fixed in the automation → `CardAccountMemory` for
    the card → the only account a card can pay from → `IntentAccountSuggester` for the category →
    the first one. The last two are guesses; loans and deposits never qualify.
-5. A subscription's charge (`WalletPaymentResolver.subscriptionOccurrence`): an expense of a
-   recurring series on the payment's account, not yet taken for another payment
+5. A subscription's charge (`SubscriptionChargeMatcher`, [recurring.md](recurring.md) §Real
+   charges): a planned charge within 3 days not yet taken for another payment
    (`WalletCaptureStore.noteMatched`, so one charge stands for one payment: a second payment at
-   the same gym that week is recorded), in the same currency, within `ImportDuplicateDetector`'s
-   3 days and 5 %, whose
-   description shares a brand word with the merchant ("Netflix" / "NETFLIX.COM"; generic words like
-   com or bill don't count; a service counts its billing company too: iCloud+ and iTunes as Apple,
-   YouTube as Google) → nothing new, the series already recorded it. Without a shared word
-   the payment is recorded: a duplicate can be deleted, a dropped payment is lost.
+   the same gym that week is recorded), on any account, of the subscription remembered for the
+   merchant (`SubscriptionMerchantMemory`, within 30 %) or of one whose description shares a
+   brand word with the merchant ("Netflix" / "NETFLIX.COM"; generic words like com or bill don't
+   count; a service counts its billing company too: iCloud+ and iTunes as Apple, YouTube as
+   Google; within 5 %, 10 % across currencies) → nothing new: the planned charge takes the
+   payment's amount, date and account (queued in `chargeMerges` until the full load). The same
+   amount without a shared word is recorded with a suggestion ("Looks like X" in To review).
 6. Currency: the passed code, else the account's. Cache (refreshed first when
    `CurrencyRateStore.hasFreshRates` is false; the stale rate stays if that fails), then one
    `CurrencyConverter.convert`, one request in all, else the payment waits in
@@ -326,13 +327,16 @@ the card at once. Guesses are never remembered on their own.
 
 **To review** (`WalletReviewView`, Settings → Wallet, also a sheet over `MainTabView`):
 `WalletCaptureStore.toReview` as `TransactionCard`s; tap edits (saving confirms), swipe right or
-the toolbar confirms. Until the full load (`hasCompletedInitialLoad`) it shows `SkeletonRow`s and
+the toolbar confirms. Above them, DesignKit's `NoticeCard`s for the questions: a transfer two banks'
+notifications were merged into on a guess (§7.3; ✕ keeps it, "Not a transfer" puts the expense
+and the income back) and a payment that may be a subscription's charge ("Merge", or ✕). Until the full load (`hasCompletedInitialLoad`) it shows `SkeletonRow`s and
 no confirm: the partial index would flash an empty list, and a confirm would read the
 subcategories before they load and remember none. Captures of deleted transactions are dropped
 once the store has loaded.
 
 **Notification** (`WalletReviewNotifier`): after a save with a guess, "Check a payment" with the
-merchant and the guessed category (or account), no amount (lock screen). One per merchant while
+merchant and the guessed category (or account), the suggested subscription, or the two banks of a
+transfer guess (`notifyOwnTransfer`), no amount (lock screen). One per merchant while
 an earlier payment there still waits (a deleted one no longer does, once the store has loaded); never asks for the permission. A tap sets
 `WalletCaptureStore.isReviewRequested` (`AppDelegate`), and `MainTabView` presents To review.
 A confirmed payment's notification leaves Notification Center (`removeDelivered`).
@@ -496,7 +500,9 @@ notification, learning on confirm. The "card" is the app plus the card's digits
 (`BankNotificationParser.cardName`: "Freedom •• 1234", or "Kaspi.kz" without a mask), so
 `CardAccountMemory` and Settings → Wallet → Cards hold one account per bank card. An income takes
 an income category from the sender's history (the merchant memory holds expense categories), no
-subscription matching.
+subscription matching. `BankNotification.isTransferLike` (a transfer or top-up word, or a bare
+signed amount; not a purchase or a payment) goes into `WalletPayment.isTransferLike`: such a
+payment is never a subscription suggestion and may be half of a transfer between own banks (§7.3).
 
 Not recorded, with a dialog saying so: a cash withdrawal (the spending is logged later).
 
@@ -512,6 +518,26 @@ up to 1 % less (a fee), within 15 minutes, two different cards, the closest in t
 cards both have an account (`CardAccountMemory`) in the sides' currencies becomes one
 `TransactionStore.transfer`; otherwise it waits. A side alone for 48 hours is dropped. Pinned by
 `OwnTransferMatcherTests`.
+
+**Without the bank's word** (`OwnTransferPairing`): "Перевод −100 000 ₸" in Freedom and
+"Пополнение 100 000 ₸" in Kaspi are each recorded, an expense and an income. When the second is
+recorded, the recorder looks up the first among the kept captures (`unpairedBankSides`): both
+transfer-like, the other direction, two different accounts, the same currency, the receiving
+amount equal or up to 1 % less, within 15 minutes, the closest in time. The pair is queued
+(`WalletCaptureStore.ownTransferPairs`) and `OwnTransferMerger.mergePending` turns it into one
+transfer once the full load lands (in the intent when the app is loaded, else `MainTabView`): from
+the expense's account to the income's, on the expense's date, the two deleted, kept in the
+transfer's capture (`OwnTransferRecord`). Confident, with no question, when the same name is on
+both sides, a side names the other bank ("…, Freedom Bank" with Freedom's app), or a name the
+person confirmed is on either side (`WalletCaptureStore.ownNames`); otherwise a guess
+(`Guess.ownTransfer`): "Check a payment" names the two banks and To review asks. A side's
+unreviewed account guess stays a guess on the transfer (asked too, the cards learned on the
+answer). Confirming remembers both names; "Not a transfer" (`OwnTransferMerger.split`) adds the two
+back as they were saved, with their guesses, before the transfer goes (a failure leaves the
+transfer), and marks them `pairingDismissed`. `mergePending` runs one pass at a time and takes a
+pair off the queue before its first await (the intent and the foreground both call it); a side
+that cannot be deleted rolls the transfer back. Pinned by `OwnTransferPairingTests` and
+`OwnTransferMergerTests`.
 
 ### 7.4 Setup guide and "Check a notification"
 

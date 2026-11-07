@@ -3,7 +3,7 @@
 //  Tenra
 //
 //  Thin wrapper around the shared `LinkPaymentsView` component.
-//  Binds `SubscriptionTransactionMatcher` and subscription linking to the generic UI.
+//  Binds `SubscriptionTransactionMatcher` and `SubscriptionChargeLinker` to the generic UI.
 //
 
 import SwiftUI
@@ -26,11 +26,10 @@ struct SubscriptionLinkPaymentsView: View {
             findCandidates: { all, mode in
                 SubscriptionTransactionMatcher.findCandidates(for: sub, in: all, mode: mode)
             },
+            // Each payment takes the place of the planned charge of its period when there is
+            // one (SubscriptionChargeLinker), so a charge is never there twice.
             performLink: { selected in
-                try await store.linkTransactionsToSubscription(
-                    seriesId: sub.id,
-                    transactions: selected
-                )
+                try await SubscriptionChargeLinker.linkAll(selected, to: sub, store: store)
             },
             options: .subscription,
             transactionStore: transactionStore,

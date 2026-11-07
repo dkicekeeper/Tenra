@@ -277,6 +277,8 @@ struct MainTabView: View {
             if !WalletCaptureStore.shared.transferSides.isEmpty {
                 Task { await OwnTransferRecorder.recordPairs(services: IntentServices(coordinator: coordinator)) }
             }
+            // What the automations matched while only the fast path was loaded.
+            Task { await mergeCapturedCharges() }
             // Merchant logos, looked up once each: Apple Pay merchants, then the history's
             // frequent ones (on device only), once the full load has the history.
             let store = coordinator.transactionStore
@@ -285,6 +287,11 @@ struct MainTabView: View {
                     history: store.hasCompletedInitialLoad ? store.transactions : []
                 )
             }
+        }
+        // The same once the full load lands, for a launch that started from the background.
+        .onChange(of: coordinator.isFullyInitialized) { _, ready in
+            guard ready else { return }
+            Task { await mergeCapturedCharges() }
         }
         // A file opened in Tenra from another app goes to the assistant, which attaches it;
         // without the assistant a PDF (a statement or a receipt) opens in the import tab.
@@ -365,6 +372,16 @@ struct MainTabView: View {
                 selectedTab = previousTab     // Restore previous tab
             }
         }
+    }
+
+    /// Real subscription charges into their planned charges, and an expense and an income of two
+    /// banks into one transfer, as the automations found them while only the fast path was
+    /// loaded (SubscriptionChargeLinker, OwnTransferMerger). Both wait for the full load.
+    private func mergeCapturedCharges() async {
+        let store = coordinator.transactionStore
+        guard store.hasCompletedInitialLoad else { return }
+        await SubscriptionChargeLinker.applyPending(store: store)
+        await OwnTransferMerger.mergePending(store: store)
     }
 
     /// A tapped spending reminder (AppDelegate's stash): the way to record an expense.

@@ -189,23 +189,31 @@ struct AccountDetailView: View {
                 }
             )
         }
-        .alert(
-            String(localized: "account.detail.delete.confirmTitle", defaultValue: "Delete account?"),
-            isPresented: $showingDeleteConfirm
-        ) {
-            Button(String(localized: "quickAdd.cancel"), role: .cancel) {}
-            Button(String(localized: "common.delete", defaultValue: "Delete"), role: .destructive) {
+        // The same choice as the accounts list (AccountsManagementView): keep the account's
+        // transactions in history, or delete them with it.
+        .alert(String(localized: "account.deleteTitle"), isPresented: $showingDeleteConfirm) {
+            Button(String(localized: "button.cancel"), role: .cancel) {}
+            Button(String(localized: "account.deleteOnlyAccount"), role: .destructive) {
                 HapticManager.warning()
-                accountsViewModel.deleteAccount(liveAccount)
-                transactionsViewModel.cleanupDeletedAccount(liveAccount.id)
+                let account = liveAccount
+                accountsViewModel.deleteAccount(account)
+                transactionsViewModel.cleanupDeletedAccount(account.id)
                 transactionsViewModel.syncAccountsFrom(accountsViewModel)
                 dismiss()
             }
+            Button(String(localized: "account.deleteAccountAndTransactions"), role: .destructive) {
+                HapticManager.warning()
+                let account = liveAccount
+                Task {
+                    await transactionStore.deleteTransactions(forAccountId: account.id)
+                }
+                accountsViewModel.deleteAccount(account)
+                transactionsViewModel.cleanupDeletedAccount(account.id)
+                transactionsViewModel.clearAndRebuildAggregateCache()
+                dismiss()
+            }
         } message: {
-            Text(String(
-                localized: "account.detail.delete.confirmMessage",
-                defaultValue: "This will permanently delete the account."
-            ))
+            Text(String(format: String(localized: "account.deleteMessage"), liveAccount.name))
         }
         .task(id: refreshTrigger) {
             await refreshData()
@@ -266,7 +274,7 @@ struct AccountDetailView: View {
         Button {
             showingEdit = true
         } label: {
-            Label(String(localized: "common.edit", defaultValue: "Edit"), systemImage: "pencil")
+            Label(String(localized: "button.edit"), systemImage: "pencil")
         }
 
         if !liveAccount.isDeposit && !liveAccount.isLoan {
@@ -286,7 +294,7 @@ struct AccountDetailView: View {
         Button(role: .destructive) {
             showingDeleteConfirm = true
         } label: {
-            Label(String(localized: "common.delete", defaultValue: "Delete"), systemImage: "trash")
+            Label(String(localized: "button.delete"), systemImage: "trash")
         }
     }
 }

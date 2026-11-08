@@ -157,7 +157,7 @@ struct GoalsListView: View {
             Button {
                 editingGoal = goal
             } label: {
-                Label(String(localized: "button.edit", defaultValue: "Edit"), systemImage: "pencil")
+                Label(String(localized: "button.edit"), systemImage: "pencil")
             }
             Button(role: .destructive) {
                 HapticManager.warning()

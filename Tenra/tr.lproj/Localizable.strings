@@ -19,8 +19,6 @@
 // MARK: - Transaction Preview (Phase 16)
 "transactionPreview.found" = "Bulunan: %d işlem";
 "transactionPreview.selectHint" = "İçe aktarılacak işlemleri seç";
-"transactionPreview.selectAll" = "Tümünü Seç";
-"transactionPreview.deselectAll" = "Seçimi Kaldır";
 "transactionPreview.addSelected" = "Seçilenleri Ekle (%d)";
 "transactionPreview.noAccount" = "Hesap Yok";
 "transactionPreview.noMatchingAccount" = "Bu para biriminde hesap yok";
@@ -72,8 +70,11 @@
 // MARK: - Empty States
 "emptyState.noTransactions" = "İşlem yok";
 "emptyState.noAccounts" = "Hesap yok";
+"account.emptyDescription" = "Tüm bakiyelerini tek yerde görmek için bir kart, nakit veya banka hesabı ekle";
 "emptyState.noCategories" = "Kategori yok";
+"category.emptyDescription" = "Paranın nereye gittiğini görmek için bir kategori ekle";
 "emptyState.noSubcategories" = "Alt kategori yok";
+"subcategory.emptyDescription" = "Harcamalarını daha ayrıntılı görmek için alt kategoriler ekle";
 "emptyState.noData" = "Veri yok";
 "emptyState.searchNoResults" = "Sonuç bulunamadı";
 "emptyState.startTracking" = "Finanslarını takip etmek için işlem eklemeye başla";
@@ -151,11 +152,10 @@
 "alert.deleteAllData.title" = "Tüm veriler silinsin mi?";
 "alert.deleteAllData.message" = "Tüm işlemler, hesaplar ve kategoriler kalıcı olarak silinecek.";
 "alert.deleteAllData.confirm" = "Sil";
-"alert.deleteAllData.cancel" = "İptal";
 "alert.resetLearning.title" = "Sesli giriş tercihleri sıfırlansın mı?";
 "alert.resetLearning.message" = "Ayrıştırıcı, her kategori için genellikle hangi hesabı seçtiğini unutacak. İşlemlerin silinmeyecek.";
 "alert.resetLearning.confirm" = "Sıfırla";
-"alert.importError.title" = "İçe Aktarma Hatası";
+"alert.importError.title" = "İçe aktarma hatası";
 "alert.errorTitle" = "Hata";
 
 // MARK: - Progress
@@ -172,7 +172,7 @@
 "storeUnavailable.message.diskFull" = "Bu cihazda boş alan kalmadı. Biraz yer aç ve tekrar dene.";
 "storeUnavailable.message.other" = "Verilerin açılırken bir sorun oluştu.";
 "storeUnavailable.dataSafe" = "Verilerin hâlâ bu cihazda. Hiçbir şey değiştirilmedi veya silinmedi.";
-"storeUnavailable.contactSupport" = "Destekle İletişime Geç";
+"storeUnavailable.contactSupport" = "Destekle iletişime geç";
 "storeUnavailable.errorCode" = "Hata kodu: %@";
 
 // MARK: - Accessibility
@@ -203,7 +203,6 @@
 // MARK: - Transaction Actions
 "transaction.importTransactions" = "İşlemleri İçe Aktar";
 "transaction.addNew" = "İşlem Ekle";
-"transaction.edit" = "İşlemi Düzenle";
 "transaction.new" = "Yeni İşlem";
 
 // MARK: - Search
@@ -219,12 +218,12 @@
 "search.suggestion.merchant" = "İşyeri";
 
 // MARK: - Modals
-"modal.newAccount" = "Yeni Hesap";
-"modal.editAccount" = "Hesabı Düzenle";
-"modal.newCategory" = "Yeni Kategori";
-"modal.editCategory" = "Kategoriyi Düzenle";
-"modal.newSubcategory" = "Yeni Alt Kategori";
-"modal.editSubcategory" = "Alt Kategoriyi Düzenle";
+"modal.newAccount" = "Yeni hesap";
+"modal.editAccount" = "Hesabı düzenle";
+"modal.newCategory" = "Yeni kategori";
+"modal.editCategory" = "Kategoriyi düzenle";
+"modal.newSubcategory" = "Yeni alt kategori";
+"modal.editSubcategory" = "Alt kategoriyi düzenle";
 
 // MARK: - Common
 "common.name" = "Ad";
@@ -265,8 +264,7 @@
 "transaction.deleteConfirmation.title" = "İşlem silinsin mi?";
 "transaction.stopRecurring.title" = "Tekrarlama durdurulsun mu?";
 "transaction.stopRecurring.message" = "Bu, tekrarlayan işlemi durduracak. Gelecekteki tüm işlemler silinecek.";
-"transaction.stopRecurring.confirm" = "Tekrarlamayı Durdur";
-"transaction.stopRecurring.cancel" = "İptal";
+"transaction.stopRecurring.confirm" = "Tekrarlamayı durdur";
 "accessibility.deleteTransaction" = "İşlemi sil";
 "accessibility.stopRecurring" = "Tekrarlayan işlemi durdur";
 "accessibility.swipeForOptions" = "Seçenekler için sola kaydır";
@@ -279,13 +277,11 @@
 "account.selectLogo" = "Logo Seç";
 "account.popularBanks" = "Popüler Bankalar";
 "account.otherBanks" = "Diğer Bankalar";
-"account.newAccount" = "Yeni Hesap";
-"account.newDeposit" = "Yeni Mevduat";
 "account.namePlaceholder" = "Hesap adı";
-"account.deleteTitle" = "Hesabı Sil";
+"account.deleteTitle" = "Hesap silinsin mi?";
 "account.deleteMessage" = "'%@' hesabındaki işlemlerle ne yapmak istersin?";
-"account.deleteOnlyAccount" = "Yalnızca Hesabı Sil";
-"account.deleteAccountAndTransactions" = "Hesabı ve İşlemleri Sil";
+"account.deleteOnlyAccount" = "Yalnızca hesabı sil";
+"account.deleteAccountAndTransactions" = "Hesabı ve işlemleri sil";
 "common.currency" = "Para Birimi";
 "common.balancePlaceholder" = "0.00";
 "common.error" = "Hata";
@@ -293,9 +289,7 @@
 // MARK: - Deposits
 "deposit.notFound" = "Mevduat bulunamadı";
 "deposit.title" = "Mevduat";
-"deposit.edit" = "Düzenle";
-"deposit.changeRate" = "Faiz Oranını Değiştir";
-"deposit.delete" = "Mevduatı Sil";
+"deposit.changeRate" = "Faiz oranını değiştir";
 "deposit.deleteTitle" = "Mevduat silinsin mi?";
 "deposit.deleteMessage" = "Tüm mevduat verileri ve ilgili işlemler silinecek.";
 "deposit.balance" = "Bakiye";
@@ -320,10 +314,10 @@
 "deposit.date" = "Tarih";
 "deposit.topUpDescription" = "Mevduata para yatırma";
 "deposit.transferFromDescription" = "Mevduattan transfer";
-"deposit.newRate" = "Yeni Faiz Oranı";
+"deposit.newRate" = "Yeni faiz oranı";
 "deposit.effectiveDate" = "Geçerlilik Tarihi";
 "deposit.note" = "Not (isteğe bağlı)";
-"deposit.changeRateTitle" = "Faiz Oranını Değiştir";
+"deposit.changeRateTitle" = "Faiz oranını değiştir";
 "deposit.name" = "Mevduat Adı";
 "deposit.namePlaceholder" = "Ad";
 "deposit.bank" = "Banka";
@@ -340,8 +334,8 @@
 "deposit.capitalizationHint" = "Kapitalizasyon açıkken faiz her ay anaparaya eklenir";
 "deposit.countsForToday" = "\"Bugün için\"de say";
 "deposit.countsForToday.hint" = "İstediğin zaman çekebileceğin para. \"Bugün için\" ve Ten onu kartlarınla birlikte sayar.";
-"deposit.new" = "Yeni Mevduat";
-"deposit.editTitle" = "Mevduatı Düzenle";
+"deposit.new" = "Yeni mevduat";
+"deposit.editTitle" = "Mevduatı düzenle";
 "deposit.interestAccrual.description" = "Faiz";
 "deposit.interestAccrual.category" = "Faiz";
 
@@ -360,7 +354,6 @@
 "category.manageSubcategories" = "Alt Kategorileri Yönet";
 
 // MARK: - Subcategories Management
-"subcategory.new" = "Yeni Alt Kategori";
 "subcategory.namePlaceholder" = "Alt kategori adı";
 "subcategory.notUsed" = "Henüz kullanılmadı";
 "subcategory.reorder" = "Alt Kategoriler";
@@ -370,7 +363,7 @@
 "subcategory.sort.usageCount" = "En çok kullanılan";
 
 // MARK: - Subcategory Search (2026-02-25)
-"subcategorySearch.titleSingle" = "Alt Kategori Seç";
+"subcategorySearch.titleSingle" = "Alt kategori seç";
 "subcategorySearch.searchPrompt" = "Alt kategori bul ya da oluştur";
 "subcategorySearch.unlink" = "Bağlantıyı Kaldır";
 
@@ -439,7 +432,6 @@
 "quickAdd.searchAndAddSubcategories" = "Alt Kategori Ara ve Ekle";
 "quickAdd.selectDate" = "Tarih Seç";
 "quickAdd.done" = "Bitti";
-"quickAdd.cancel" = "İptal";
 
 // MARK: - Validation Errors
 "error.validation.enterAmount" = "Geçerli bir tutar gir";
@@ -454,7 +446,6 @@
 "voice.error" = "Hata";
 "voice.errorMessage" = "Kayıt başlatılamadı";
 "voice.emptyText" = "Metin tanınamadı. Lütfen tekrar dene.";
-"voice.ok" = "Tamam";
 "voice.vadToggle" = "Sessizlikte otomatik durdur";
 "voice.vadDescription" = "Kayıt, 2,5 saniyelik sessizlikten sonra otomatik olarak duracak";
 
@@ -477,18 +468,15 @@
 
 // MARK: - Subscriptions
 "subscriptions.title" = "Abonelikler";
-"subscriptions.empty" = "Abonelik Yok";
+"subscriptions.empty" = "Abonelik yok";
 "subscriptions.emptyDescription" = "Tekrarlayan ödemeleri takip etmek için abonelik ekle";
 "subscriptions.candidates.title" = "Abonelik gibi görünüyor";
 "subscriptions.candidates.footer" = "Bu işyerleri her ay yaklaşık aynı tutarı tahsil etti. Abonelik olarak eklemek için birine dokun: bir sonraki tahsilat planlanır, geçmiş ödemeler olduğu gibi kalır. Gizlemek için basılı tut.";
 "subscriptions.candidates.dismiss" = "Abonelik değil";
-"subscriptions.addSubscription" = "Abonelik Ekle";
 "subscriptions.deleteConfirmTitle" = "Abonelik silinsin mi?";
 "subscriptions.deleteConfirmMessage" = "Tüm abonelik verileri ve ilgili işlemler silinecek.";
-"subscriptions.delete" = "Sil";
-"subscriptions.deleteOnlySubscription" = "Yalnızca Aboneliği Sil";
-"subscriptions.deleteSubscriptionAndTransactions" = "Aboneliği ve İşlemleri Sil";
-"subscriptions.edit" = "Düzenle";
+"subscriptions.deleteOnlySubscription" = "Yalnızca aboneliği sil";
+"subscriptions.deleteSubscriptionAndTransactions" = "Aboneliği ve işlemleri sil";
 "subscriptions.pause" = "Duraklat";
 "subscriptions.resume" = "Devam Ettir";
 "subscriptions.transactionHistory" = "İşlem Geçmişi";
@@ -529,8 +517,8 @@
 "subscription.namePlaceholder" = "Abonelik Adı";
 "subscription.reminders" = "Hatırlatıcılar";
 "subscription.scheduleSection" = "Zamanlama";
-"subscription.newTitle" = "Yeni Abonelik";
-"subscription.editTitle" = "Aboneliği Düzenle";
+"subscription.newTitle" = "Yeni abonelik";
+"subscription.editTitle" = "Aboneliği düzenle";
 
 // Reminders
 "reminder.dayBefore.one" = "1 gün önce";
@@ -600,7 +588,6 @@
 "transactionForm.depositTopUp" = "Mevduata Para Yatır";
 "transactionForm.depositWithdrawal" = "Mevduattan Para Çek";
 "transactionForm.accountTopUp" = "Hesaba Para Yatır";
-"transactionForm.editTransaction" = "İşlemi Düzenle";
 "transactionForm.recurring" = "Tekrarlayan";
 "transactionForm.makeRecurring" = "Tekrarlayan yap";
 "transactionForm.searchSubcategories" = "Alt kategori ara";
@@ -809,8 +796,8 @@
 "reminder.none" = "Hiçbir Zaman";
 
 // MARK: - Filter Buttons (Phase 14)
-"filter.allAccounts" = "Tüm Hesaplar";
-"filter.allCategories" = "Tüm Kategoriler";
+"filter.allAccounts" = "Tüm hesaplar";
+"filter.allCategories" = "Tüm kategoriler";
 "filter.allSubcategories" = "Tüm Alt Kategoriler";
 
 // MARK: - Animated Input (Phase 16)
@@ -1135,7 +1122,7 @@
 "finances.deposits.title" = "Mevduatlar";
 "finances.deposits.empty" = "Mevduat yok";
 "deposit.listTitle" = "Mevduatlar";
-"deposit.emptyTitle" = "Mevduat Yok";
+"deposit.emptyTitle" = "Mevduat yok";
 "deposit.emptyDescription" = "Faiz tahakkukunu ve kapitalizasyonu takip etmek için bir mevduat ekle";
 "account.balanceSection" = "Bakiye";
 "account.includeInBalance" = "Bakiyeye dahil et";
@@ -1151,7 +1138,7 @@
 "loan.filterCredits" = "Krediler";
 "loan.filterInstallments" = "Taksitler";
 "loan.filter" = "Filtre";
-"loan.emptyTitle" = "Kredi Yok";
+"loan.emptyTitle" = "Kredi yok";
 "loan.emptyDescription" = "Ödemeleri ve ilerlemeyi takip etmek için kredilerini ve taksitlerini ekle";
 "loan.totalDebt" = "Toplam Borç";
 "loan.monthlyTotal" = "Aylık";
@@ -1162,21 +1149,19 @@
 "loan.remainingShort" = "%d ödeme kaldı";
 "loan.notFound" = "Kredi bulunamadı";
 "loan.title" = "Kredi";
-"loan.edit" = "Krediyi Düzenle";
-"loan.changeRate" = "Oranı Değiştir";
-"loan.earlyRepayment" = "Erken Ödeme";
+"loan.changeRate" = "Faiz oranını değiştir";
+"loan.earlyRepayment" = "Erken ödeme";
 "loan.history" = "Ödeme Geçmişi";
 "loan.actions" = "Kredi İşlemleri";
-"loan.delete" = "Krediyi Sil";
-"loan.deleteTitle" = "Kredi Silinsin mi?";
+"loan.deleteTitle" = "Kredi silinsin mi?";
 "loan.deleteMessage" = "Bu kredinin ödemeleri hesaplarınızdaki gerçek harcamalardır. Bunları geçmişte tutabilir veya krediyle birlikte silebilirsiniz.";
 "loan.closedSection" = "Kapananlar";
 "loan.statusPaidOff" = "Ödendi";
 "loan.statusPaidThisMonth" = "Bu ay ödendi";
 "loan.statusNotPaid" = "Ödenmedi";
 "loan.closedOn" = "%@ tarihinde kapandı";
-"loan.deleteKeepPayments" = "Sil, ödemeleri koru";
-"loan.deleteWithPayments" = "Hepsini sil";
+"loan.deleteKeepPayments" = "Yalnızca krediyi sil";
+"loan.deleteWithPayments" = "Krediyi ve ödemeleri sil";
 "loan.payoffCelebration" = "Kredi kapandı. Tebrikler.";
 "loan.paidOff" = "Ödendi";
 "loan.remainingPrincipal" = "Kalan";
@@ -1204,8 +1189,8 @@
 "loan.interestShort" = "Faiz: %@";
 "loan.makeEarlyRepayment" = "Erken Ödeme";
 "loan.convertTitle" = "Krediye Dönüştür";
-"loan.editTitle" = "Krediyi Düzenle";
-"loan.newTitle" = "Yeni Kredi";
+"loan.editTitle" = "Krediyi düzenle";
+"loan.newTitle" = "Yeni kredi";
 "loan.nameHeader" = "Ad";
 "loan.namePlaceholder" = "örn. Araç Kredisi";
 "loan.bankHeader" = "Banka";
@@ -1260,21 +1245,21 @@
 "loan.rateChangeImpact" = "Etki";
 "loan.paymentChange" = "Değişim";
 "loan.enterRateForPreview" = "Etkiyi görmek için oran gir";
-"loan.changeRateTitle" = "Oranı Değiştir";
+"loan.changeRateTitle" = "Faiz oranını değiştir";
 "loan.payment.description" = "Kredi ödemesi";
 
 // Loans Phase 5
 "loan.typeLockedHint" = "Kredi türü oluşturulduktan sonra değiştirilemez";
-"loan.makePayment" = "Ödeme Yap";
+"loan.makePayment" = "Ödeme yap";
 "loan.paymentTitle" = "Kredi Ödemesi";
 "loan.paymentAmount" = "Ödeme Tutarı";
-"loan.sourceAccount" = "Kaynak Hesap";
+"loan.sourceAccount" = "Kaynak hesap";
 "loan.selectSourceAccount" = "Ödemenin yapılacağı hesabı seç";
 "loan.scheduledPayment" = "Planlanan: %@";
 "loan.noSourceAccounts" = "Uygun hesap yok";
 "loan.payAll" = "Tümünü Öde";
-"loan.payAllTitle" = "Tüm Kredileri Öde";
-"loan.payAllTotal" = "Toplam Ödeme";
+"loan.payAllTitle" = "Tüm kredileri öde";
+"loan.payAllTotal" = "Toplam ödeme";
 "loan.payAllConfirm" = "Tümünü Öde";
 
 // MARK: - Icon Picker (new categories)
@@ -1352,13 +1337,13 @@
 "settings.cloud.lastSync" = "Son eşitleme: %@";
 "settings.cloud.changes" = "%d gönderildi · %d alındı";
 "settings.cloud.backups" = "Yedekler";
-"settings.cloud.createBackup" = "Yedek Oluştur";
+"settings.cloud.createBackup" = "Yedek oluştur";
 "settings.cloud.backupCreated" = "Yedek başarıyla oluşturuldu";
 "settings.cloud.restore" = "Geri Yükle";
 "settings.cloud.restoreSuccess" = "Veriler başarıyla geri yüklendi";
 "settings.cloud.restoring" = "Geri yükleniyor…";
 "settings.cloud.restoringSubtitle" = "Lütfen uygulamayı kapatma";
-"settings.cloud.delete" = "Sil";
+"settings.cloud.deleteTitle" = "Yedek silinsin mi?";
 "settings.cloud.storage" = "Depolama";
 "settings.cloud.storageUsed" = "%@ / %@";
 "settings.cloud.iCloud.toggle" = "Yedekleri iCloud'a kaydet";
@@ -1369,7 +1354,7 @@
 "settings.cloud.iCloud.movedToLocal" = "Yedekler bu cihaza taşındı";
 "settings.cloud.tapToRestoreHint" = "Geri yüklemek için bir yedeğe dokun. Silmek için basılı tut.";
 "settings.cloud.backupDate" = "%1$@, %2$@";
-"alert.restore.title" = "Yedek Geri Yüklensin mi?";
+"alert.restore.title" = "Yedek geri yüklensin mi?";
 "alert.restore.message" = "Tüm mevcut veriler %@ tarihli yedekle değiştirilecek.";
 "alert.restore.confirm" = "Geri Yükle";
 "alert.disableSync.title" = "iCloud Eşitleme Kapatılsın mı?";
@@ -1386,7 +1371,6 @@
 "error.backup.notDownloaded" = "Bu yedek henüz iCloud'dan indirilmedi. Bağlantını kontrol et ve tekrar dene.";
 
 // MARK: - Loans (Form)
-"loan.addLoan" = "Kredi Ekle";
 "loan.amountLabel" = "Tutar";
 "loan.detailsSection" = "Kredi Bilgileri";
 "loan.noteLabel" = "Not";
@@ -1400,23 +1384,22 @@
 "loan.error.invalidRate" = "Geçerli bir faiz oranı gir";
 "loan.error.invalidTerm" = "Geçerli bir vade gir";
 "loan.error.noSourceAccount" = "Bir kaynak hesap seç";
-"loan.linkPayments" = "Ödemeleri Bağla";
-"loan.linkPayments.title" = "Ödemeleri Bağla";
+"loan.linkPayments" = "Ödemeleri bağla";
+"loan.linkPayments.title" = "Ödemeleri bağla";
 "loan.linkPayments.selected" = "%d seçildi";
 "loan.linkPayments.selectedWithAmount" = "%d seçildi · %@";
 "loan.linkPayments.search" = "Açıklama veya tutara göre ara";
 "loan.linkPayments.link" = "%d Ödemeyi Bağla";
 "loan.linkPayments.empty" = "Eşleşen işlem yok";
 "loan.linkPayments.error.notFound" = "Kredi bulunamadı";
-"loan.add" = "Kredi Ekle";
-"loan.markPaid" = "Ödendi Olarak İşaretle";
-"loan.markUnpaid" = "Ödenmedi Olarak İşaretle";
+"loan.markPaid" = "Ödendi olarak işaretle";
+"loan.markUnpaid" = "Ödenmedi olarak işaretle";
 "loan.paymentFailed" = "Ödeme başarısız oldu. Lütfen tekrar dene.";
 "loan.earlyRepaymentFailed" = "Erken kapama başarısız oldu. Lütfen tekrar dene.";
 "loan.payAllPartialFailed %@" = "Bazı ödemeler başarısız oldu: %@";
 
 // Subscription Link Payments
-"subscription.linkPayments.title" = "Ödemeleri Bağla";
+"subscription.linkPayments.title" = "Ödemeleri bağla";
 "subscription.linkPayments.search" = "Açıklama veya tutara göre ara";
 "subscription.linkPayments.searchPlaceholder" = "Ara";
 "subscription.linkPayments.selectedWithAmount" = "%d seçildi · %@";
@@ -1427,10 +1410,8 @@
 "subscription.linkPayments.amountAll" = "Tümü";
 "subscription.linkPayments.unknownAccount" = "Bilinmeyen hesap";
 "common.done" = "Bitti";
-"deposit.linkInterest.title" = "Faiz Ödemelerini Bağla";
-"deposit.recalculateInterest" = "Faizi Yeniden Hesapla";
-"subscription.linkPayments.selectAll" = "Tümünü Seç";
-"subscription.linkPayments.deselectAll" = "Seçimi Kaldır";
+"deposit.linkInterest.title" = "Faiz ödemelerini bağla";
+"deposit.recalculateInterest" = "Faizi yeniden hesapla";
 "subscriptions.spentAllTime" = "Tüm zamanlarda harcanan";
 "subscription.edit.propagate.title" = "Bağlı işlemler güncellensin mi?";
 "subscription.edit.propagate.message" = "Değişiklikler bu aboneliğe bağlı mevcut işlemlere uygulansın mı?";
@@ -1439,13 +1420,13 @@
 "subscription.edit.propagate.all" = "Tüm işlemler";
 "subscription.unlinkAll" = "Tüm işlemlerin bağlantısını kaldır";
 "subscription.unlinkAll.title" = "Tüm işlemlerin bağlantısı kaldırılsın mı?";
-"subscription.unlinkAll.confirm" = "Bağlantıları Kaldır";
+"subscription.unlinkAll.confirm" = "Bağlantıları kaldır";
 "subscription.unlinkAll.message" = "%d işlemden abonelik bağlantısı kaldırılsın mı? İşlemlerin kendisi olduğu gibi kalır.";
 "subscription.linkPayments.subcategories" = "Alt kategoriler";
 "subscription.filterAll" = "Tümü";
 
 // MARK: - Accounts (Types & Actions)
-"account.convertToDeposit" = "Mevduata Dönüştür";
+"account.convertToDeposit" = "Mevduata dönüştür";
 "account.postingWithInterest" = "Faiz ödemesi: %@ · ";
 "account.type.deposit" = "Mevduatlar";
 "account.type.loan" = "Krediler";
@@ -1536,7 +1517,6 @@
 // MARK: - Accessibility
 "accessibility.accounts.addMenu" = "Ekleme menüsü";
 "accessibility.accounts.doneReordering" = "Sıralamayı bitir";
-"accessibility.accounts.reorder" = "Yeniden sırala";
 "accessibility.category.budgetHint" = "Bütçe kullanımı";
 "accessibility.category.budgetProgress" = "Bütçe ilerlemesi";
 "accessibility.category.label" = "Kategori";
@@ -1549,27 +1529,33 @@
 
 // MARK: - Bulk Selection
 "bulk.select" = "Seç";
-"bulk.selectAll" = "Tümünü Seç";
-"bulk.deselectAll" = "Seçimi Kaldır";
+"bulk.selectAll" = "Tümünü seç";
+"bulk.deselectAll" = "Seçimi kaldır";
 "bulk.done" = "Bitti";
+"bulk.add" = "Ekle";
+"bulk.reorder" = "Yeniden sırala";
+"bulk.moveUp" = "Yukarı taşı";
+"bulk.moveDown" = "Aşağı taşı";
 "bulk.deleteCount" = "Sil (%d)";
 
 // MARK: - Bulk Delete Accounts
 "bulk.deleteAccounts.title" = "%d hesap silinsin mi?";
 "bulk.deleteAccounts.message" = "İlgili işlemler ne yapılsın?";
 "bulk.deleteAccounts.onlyAccounts" = "Yalnızca hesapları sil";
-"bulk.deleteAccounts.withTransactions" = "Tüm işlemlerle birlikte sil";
+"bulk.deleteAccounts.withTransactions" = "Hesapları ve işlemleri sil";
 
 // MARK: - Bulk Delete Categories
 "bulk.deleteCategories.title" = "%d kategori silinsin mi?";
 "bulk.deleteCategories.message" = "İlgili işlemler ne yapılsın?";
 "bulk.deleteCategories.onlyCategories" = "Yalnızca kategorileri sil";
-"bulk.deleteCategories.withTransactions" = "Tüm işlemlerle birlikte sil";
+"bulk.deleteCategories.withTransactions" = "Kategorileri ve işlemleri sil";
 
 // MARK: - Bulk Delete Subcategories
 "bulk.deleteSubcategories.title" = "%d alt kategori silinsin mi?";
 "bulk.deleteDeposits.title" = "%d mevduat silinsin mi?";
 "bulk.deleteLoans.title" = "%d kredi silinsin mi?";
+"bulk.deleteLoans.onlyLoans" = "Yalnızca kredileri sil";
+"bulk.deleteLoans.withPayments" = "Kredileri ve ödemeleri sil";
 "bulk.deleteDebts.title" = "%d borç silinsin mi?";
 "bulk.deleteGoals.title" = "%d hedef silinsin mi?";
 "bulk.deleteSubscriptions.title" = "%d abonelik silinsin mi?";
@@ -1582,15 +1568,11 @@
 "account.detail.totalIncome" = "Toplam gelir";
 "account.detail.totalExpense" = "Toplam gider";
 "account.detail.transactionCount" = "İşlemler";
-"account.detail.delete.confirmTitle" = "Hesap silinsin mi?";
-"account.detail.delete.confirmMessage" = "Bu işlem hesabı kalıcı olarak silecek.";
 "accounts.type" = "Tür";
 "accounts.currency" = "Para birimi";
 "accounts.type.deposit" = "Mevduat";
 "accounts.type.loan" = "Kredi";
 "accounts.type.regular" = "Hesap";
-"common.edit" = "Düzenle";
-"common.delete" = "Sil";
 
 // Category Detail
 "category.detail.actions.addTransaction" = "İşlem ekle";
@@ -1601,8 +1583,6 @@
 "category.detail.subcategories" = "Alt kategoriler";
 "category.detail.transactionCount" = "İşlemler";
 "category.detail.manageSubcategories" = "Alt kategorileri yönet";
-"category.detail.delete.confirmTitle" = "Kategori silinsin mi?";
-"category.detail.delete.confirmMessage" = "Bu işlem kategoriyi silecek.";
 "category.detail.type.expense" = "Gider";
 "category.detail.type.income" = "Gelir";
 
@@ -2201,9 +2181,9 @@
 "assistant.memory.emptyTitle" = "Ten henüz senin hakkında bir şey bilmiyor";
 "assistant.memory.emptyMessage" = "Sohbette Ten’e paranı anlat, örneğin maaşının ne zaman geldiğini ya da ne için biriktirdiğini. Ten bunu hatırlamayı önerir, kararı sen verirsin.";
 "assistant.memory.footer" = "Ten bu bilgileri her sohbette görür. Bu iPhone’da saklanır ve yalnızca sorularınla birlikte dışarı çıkar.";
-"assistant.memory.add" = "Bilgi ekle";
 "assistant.memory.new" = "Yeni bilgi";
 "assistant.memory.edit" = "Bilgiyi düzenle";
+"typing.indicator" = "Yazıyor";
 "assistant.memory.placeholder" = "Örneğin: maaş ayın 10’unda gelir";
 "assistant.memory.editorFooter" = "Paran hakkında kısa bir cümle: maaşın ne zaman geliyor, ne için biriktiriyorsun, ana kartın hangisi. Kart numarası ya da şifre yazma.";
 "assistant.memory.editHint" = "Bilgiyi düzenlemek için açar";
@@ -2249,7 +2229,6 @@
 "goal.reachedSection" = "Ulaşılanlar";
 "goal.contribute" = "Para ekle";
 "goal.contributions" = "Eklenenler";
-"goal.delete" = "Hedefi sil";
 "goal.deleteTitle" = "Hedef silinsin mi?";
 "goal.deleteMessage" = "Hedef ve eklenenler silinecek. Hesaplar ve işlemler değişmez.";
 "goal.notFound" = "Hedef bulunamadı";
@@ -2286,7 +2265,6 @@
 "debt.settle" = "Kapat";
 "debt.reopen" = "Yeniden aç";
 "debt.repayments" = "Geri ödemeler";
-"debt.delete" = "Borcu sil";
 "debt.deleteTitle" = "Borç silinsin mi?";
 "debt.deleteMessage" = "Borç ve geri ödemeleri silinecek. Hesaplar ve işlemler değişmez.";
 "debt.notFound" = "Borç bulunamadı";
@@ -2407,7 +2385,6 @@
 "asset.soldBadge" = "Satıldı";
 "asset.deleteTitle" = "Varlık silinsin mi?";
 "asset.deleteMessage" = "Varlık ve değerlemeleri silinecek. Hesaplar ve işlemler değişmez.";
-"asset.delete" = "Varlığı sil";
 "bulk.deleteAssets.title" = "%d varlık silinsin mi?";
 "asset.notFound" = "Varlık bulunamadı";
 "asset.notFoundDescription" = "Silinmiş olabilir.";

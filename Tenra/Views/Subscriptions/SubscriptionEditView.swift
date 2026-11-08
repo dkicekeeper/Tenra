@@ -198,7 +198,7 @@ struct SubscriptionEditView: View {
             Button(String(localized: "subscription.edit.propagate.all", defaultValue: "All transactions"), role: .destructive) {
                 performSave(series: series, scope: .all)
             }
-            Button(String(localized: "quickAdd.cancel"), role: .cancel) {
+            Button(String(localized: "button.cancel"), role: .cancel) {
                 pendingSeries = nil
             }
         } message: { _ in

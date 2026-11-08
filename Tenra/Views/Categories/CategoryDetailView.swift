@@ -190,24 +190,15 @@ struct CategoryDetailView: View {
             .presentationDetents([.large])
             .presentationDragIndicator(.visible)
         }
-        .confirmationDialog(
-            String(localized: "category.deleteTitle", defaultValue: "Delete category?"),
-            isPresented: $showingDeleteConfirm,
-            titleVisibility: .visible
-        ) {
-            Button(
-                String(localized: "category.deleteOnlyCategory", defaultValue: "Delete category only"),
-                role: .destructive
-            ) {
+        // The same alert as the categories list (CategoriesManagementView).
+        .alert(String(localized: "category.deleteTitle"), isPresented: $showingDeleteConfirm) {
+            Button(String(localized: "button.cancel"), role: .cancel) {}
+            Button(String(localized: "category.deleteOnlyCategory"), role: .destructive) {
                 performDelete(deleteTransactions: false)
             }
-            Button(
-                String(localized: "category.deleteCategoryAndTransactions", defaultValue: "Delete category and transactions"),
-                role: .destructive
-            ) {
+            Button(String(localized: "category.deleteCategoryAndTransactions"), role: .destructive) {
                 performDelete(deleteTransactions: true)
             }
-            Button(String(localized: "button.cancel", defaultValue: "Cancel"), role: .cancel) {}
         } message: {
             Text(String(format: String(localized: "category.deleteMessage"), liveCategory.name))
         }
@@ -448,7 +439,7 @@ struct CategoryDetailView: View {
         Button {
             showingEdit = true
         } label: {
-            Label(String(localized: "common.edit", defaultValue: "Edit"), systemImage: "pencil")
+            Label(String(localized: "button.edit"), systemImage: "pencil")
         }
 
         Divider()
@@ -456,7 +447,7 @@ struct CategoryDetailView: View {
         Button(role: .destructive) {
             showingDeleteConfirm = true
         } label: {
-            Label(String(localized: "common.delete", defaultValue: "Delete"), systemImage: "trash")
+            Label(String(localized: "button.delete"), systemImage: "trash")
         }
     }
 }

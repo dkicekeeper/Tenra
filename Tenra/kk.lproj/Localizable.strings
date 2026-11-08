@@ -19,8 +19,6 @@
 // MARK: - Transaction Preview (Phase 16)
 "transactionPreview.found" = "Табылды: %d операция";
 "transactionPreview.selectHint" = "Қосу үшін операцияларды таңдаңыз";
-"transactionPreview.selectAll" = "Барлығын таңдау";
-"transactionPreview.deselectAll" = "Таңдауды алып тастау";
 "transactionPreview.addSelected" = "Таңдалғандарды қосу (%d)";
 "transactionPreview.noAccount" = "Шотсыз";
 "transactionPreview.noMatchingAccount" = "Бұл валютада шот жоқ";
@@ -72,8 +70,11 @@
 // MARK: - Empty States
 "emptyState.noTransactions" = "Операциялар жоқ";
 "emptyState.noAccounts" = "Шоттар жоқ";
+"account.emptyDescription" = "Барлық қалдықты бір жерден көру үшін карта, қолма-қол ақша немесе банк шотын қосыңыз";
 "emptyState.noCategories" = "Санаттар жоқ";
+"category.emptyDescription" = "Ақшаңыз неге жұмсалатынын көру үшін санат қосыңыз";
 "emptyState.noSubcategories" = "Ішкі санаттар жоқ";
+"subcategory.emptyDescription" = "Шығыстарды толығырақ бөлу үшін ішкі санаттар қосыңыз";
 "emptyState.noData" = "Деректер жоқ";
 "emptyState.searchNoResults" = "Ештеңе табылмады";
 "emptyState.startTracking" = "Қаржыңызды бақылау үшін операцияларды қоса бастаңыз";
@@ -151,7 +152,6 @@
 "alert.deleteAllData.title" = "Барлық деректер жойылсын ба?";
 "alert.deleteAllData.message" = "Барлық операциялар, шоттар мен санаттар біржола жойылады.";
 "alert.deleteAllData.confirm" = "Жою";
-"alert.deleteAllData.cancel" = "Бас тарту";
 "alert.resetLearning.title" = "Дауыс қалаулары тазалансын ба?";
 "alert.resetLearning.message" = "Талдаушы әр санат үшін әдетте қай шотты таңдайтыныңызды ұмытады. Операцияларыңыз жойылмайды.";
 "alert.resetLearning.confirm" = "Тазалау";
@@ -203,7 +203,6 @@
 // MARK: - Transaction Actions
 "transaction.importTransactions" = "Операцияларды импорттау";
 "transaction.addNew" = "Операция қосу";
-"transaction.edit" = "Операцияны өзгерту";
 "transaction.new" = "Жаңа операция";
 
 // MARK: - Search
@@ -266,7 +265,6 @@
 "transaction.stopRecurring.title" = "Қайталау тоқтатылсын ба?";
 "transaction.stopRecurring.message" = "Операцияның қайталануы тоқтатылады. Барлық болашақ операциялар жойылады.";
 "transaction.stopRecurring.confirm" = "Қайталауды тоқтату";
-"transaction.stopRecurring.cancel" = "Бас тарту";
 "accessibility.deleteTransaction" = "Операцияны жою";
 "accessibility.stopRecurring" = "Операцияның қайталануын тоқтату";
 "accessibility.swipeForOptions" = "Әрекеттер үшін солға сырғытыңыз";
@@ -279,10 +277,8 @@
 "account.selectLogo" = "Логотипті таңдау";
 "account.popularBanks" = "Танымал банктер";
 "account.otherBanks" = "Басқа банктер";
-"account.newAccount" = "Жаңа шот";
-"account.newDeposit" = "Жаңа депозит";
 "account.namePlaceholder" = "Шот атауы";
-"account.deleteTitle" = "Шотты жою";
+"account.deleteTitle" = "Шот жойылсын ба?";
 "account.deleteMessage" = "«%@» шотындағы операциялармен не істеу керек?";
 "account.deleteOnlyAccount" = "Тек шотты жою";
 "account.deleteAccountAndTransactions" = "Шот пен операцияларды жою";
@@ -293,9 +289,7 @@
 // MARK: - Deposits
 "deposit.notFound" = "Депозит табылмады";
 "deposit.title" = "Депозит";
-"deposit.edit" = "Өзгерту";
 "deposit.changeRate" = "Мөлшерлемені өзгерту";
-"deposit.delete" = "Депозитті жою";
 "deposit.deleteTitle" = "Депозит жойылсын ба?";
 "deposit.deleteMessage" = "Депозиттің барлық деректері мен байланысты операциялар жойылады.";
 "deposit.balance" = "Баланс";
@@ -360,7 +354,6 @@
 "category.manageSubcategories" = "Ішкі санаттарды басқару";
 
 // MARK: - Subcategories Management
-"subcategory.new" = "Жаңа ішкі санат";
 "subcategory.namePlaceholder" = "Ішкі санат атауы";
 "subcategory.notUsed" = "Әлі қолданылмаған";
 "subcategory.reorder" = "Ішкі санаттар";
@@ -439,7 +432,6 @@
 "quickAdd.searchAndAddSubcategories" = "Ішкі санаттарды іздеу және қосу";
 "quickAdd.selectDate" = "Күнді таңдаңыз";
 "quickAdd.done" = "Дайын";
-"quickAdd.cancel" = "Бас тарту";
 
 // MARK: - Validation Errors
 "error.validation.enterAmount" = "Дұрыс соманы енгізіңіз";
@@ -454,7 +446,6 @@
 "voice.error" = "Қате";
 "voice.errorMessage" = "Жазуды бастау мүмкін болмады";
 "voice.emptyText" = "Мәтін танылмады. Қайталап көріңіз.";
-"voice.ok" = "ОК";
 "voice.vadToggle" = "Үнсіздікте автоматты тоқтату";
 "voice.vadDescription" = "2,5 секунд үнсіздіктен кейін жазу автоматты түрде тоқтайды";
 
@@ -482,13 +473,10 @@
 "subscriptions.candidates.title" = "Жазылымға ұқсайды";
 "subscriptions.candidates.footer" = "Бұл сатушылар ай сайын шамамен бірдей соманы шегеріп отырған. Жазылым ретінде қосу үшін біреуін басыңыз: келесі шегеру жоспарланады, өткен төлемдер өзгеріссіз қалады. Жасыру үшін басып тұрыңыз.";
 "subscriptions.candidates.dismiss" = "Бұл жазылым емес";
-"subscriptions.addSubscription" = "Жазылым қосу";
 "subscriptions.deleteConfirmTitle" = "Жазылым жойылсын ба?";
 "subscriptions.deleteConfirmMessage" = "Жазылымның барлық деректері мен байланысты операциялар жойылады.";
-"subscriptions.delete" = "Жою";
 "subscriptions.deleteOnlySubscription" = "Тек жазылымды жою";
 "subscriptions.deleteSubscriptionAndTransactions" = "Жазылым мен операцияларды жою";
-"subscriptions.edit" = "Өзгерту";
 "subscriptions.pause" = "Тоқтата тұру";
 "subscriptions.resume" = "Жалғастыру";
 "subscriptions.transactionHistory" = "Операциялар тарихы";
@@ -600,7 +588,6 @@
 "transactionForm.depositTopUp" = "Депозитті толықтыру";
 "transactionForm.depositWithdrawal" = "Депозиттен алу";
 "transactionForm.accountTopUp" = "Шотты толықтыру";
-"transactionForm.editTransaction" = "Операцияны өзгерту";
 "transactionForm.recurring" = "Қайталанатын";
 "transactionForm.makeRecurring" = "Қайталанатын ету";
 "transactionForm.searchSubcategories" = "Ішкі санаттарды іздеу";
@@ -1162,21 +1149,19 @@
 "loan.remainingShort" = "%d төлем қалды";
 "loan.notFound" = "Несие табылмады";
 "loan.title" = "Несие";
-"loan.edit" = "Несиені өзгерту";
 "loan.changeRate" = "Мөлшерлемені өзгерту";
 "loan.earlyRepayment" = "Мерзімінен бұрын өтеу";
 "loan.history" = "Төлемдер тарихы";
 "loan.actions" = "Несие әрекеттері";
-"loan.delete" = "Несиені жою";
-"loan.deleteTitle" = "Несиені жою керек пе?";
+"loan.deleteTitle" = "Несие жойылсын ба?";
 "loan.deleteMessage" = "Бұл несие бойынша төлемдер шоттарыңызда нақты шығыс ретінде тіркелген. Оларды тарихта қалдыруға немесе несиемен бірге жоюға болады.";
 "loan.closedSection" = "Жабылған";
 "loan.statusPaidOff" = "Өтелді";
 "loan.statusPaidThisMonth" = "Осы айда төленді";
 "loan.statusNotPaid" = "Төленбеген";
 "loan.closedOn" = "%@ жабылды";
-"loan.deleteKeepPayments" = "Жою, төлемдерді қалдыру";
-"loan.deleteWithPayments" = "Барлығын жою";
+"loan.deleteKeepPayments" = "Тек несиені жою";
+"loan.deleteWithPayments" = "Несие мен төлемдерді жою";
 "loan.payoffCelebration" = "Несие өтелді. Керемет нәтиже.";
 "loan.paidOff" = "Өтелді";
 "loan.remainingPrincipal" = "Қалдық";
@@ -1358,7 +1343,7 @@
 "settings.cloud.restoreSuccess" = "Деректер қалпына келтірілді";
 "settings.cloud.restoring" = "Қалпына келтірілуде…";
 "settings.cloud.restoringSubtitle" = "Қолданбаны жаппаңыз";
-"settings.cloud.delete" = "Жою";
+"settings.cloud.deleteTitle" = "Сақтық көшірме жойылсын ба?";
 "settings.cloud.storage" = "Қойма";
 "settings.cloud.storageUsed" = "%@ / %@";
 "settings.cloud.iCloud.toggle" = "Көшірмелерді iCloud-та сақтау";
@@ -1386,7 +1371,6 @@
 "error.backup.notDownloaded" = "Бұл сақтық көшірме iCloud-тан әлі толық жүктелмеген. Байланысты тексеріп, қайталап көріңіз.";
 
 // MARK: - Loans (Form)
-"loan.addLoan" = "Несие қосу";
 "loan.amountLabel" = "Сома";
 "loan.detailsSection" = "Несие мәліметтері";
 "loan.noteLabel" = "Жазба";
@@ -1408,7 +1392,6 @@
 "loan.linkPayments.link" = "%d төлемді байланыстыру";
 "loan.linkPayments.empty" = "Сәйкес операциялар жоқ";
 "loan.linkPayments.error.notFound" = "Несие табылмады";
-"loan.add" = "Несие қосу";
 "loan.markPaid" = "Төленді деп белгілеу";
 "loan.markUnpaid" = "Төленбеді деп белгілеу";
 "loan.paymentFailed" = "Төлем орындалмады. Қайталап көріңіз.";
@@ -1429,8 +1412,6 @@
 "common.done" = "Дайын";
 "deposit.linkInterest.title" = "Пайыз төлемдерін байланыстыру";
 "deposit.recalculateInterest" = "Пайызды қайта есептеу";
-"subscription.linkPayments.selectAll" = "Барлығын таңдау";
-"subscription.linkPayments.deselectAll" = "Таңдауды алып тастау";
 "subscriptions.spentAllTime" = "Барлық уақытта жұмсалды";
 "subscription.edit.propagate.title" = "Байланысты операцияларды жаңарту керек пе?";
 "subscription.edit.propagate.message" = "Өзгерістерді осы жазылымға байланысты бар операцияларға қолдану керек пе?";
@@ -1536,7 +1517,6 @@
 // MARK: - Accessibility
 "accessibility.accounts.addMenu" = "Қосу мәзірі";
 "accessibility.accounts.doneReordering" = "Ретін өзгертуді аяқтау";
-"accessibility.accounts.reorder" = "Ретін өзгерту";
 "accessibility.category.budgetHint" = "Бюджеттің пайдаланылуы";
 "accessibility.category.budgetProgress" = "Бюджет барысы";
 "accessibility.category.label" = "Санат";
@@ -1552,28 +1532,34 @@
 "bulk.selectAll" = "Барлығын таңдау";
 "bulk.deselectAll" = "Таңдауды алып тастау";
 "bulk.done" = "Дайын";
+"bulk.add" = "Қосу";
+"bulk.reorder" = "Ретін өзгерту";
+"bulk.moveUp" = "Жоғары жылжыту";
+"bulk.moveDown" = "Төмен жылжыту";
 "bulk.deleteCount" = "Жою (%d)";
 
 // MARK: - Bulk Delete Accounts
-"bulk.deleteAccounts.title" = "%d шотты жою керек пе?";
+"bulk.deleteAccounts.title" = "%d шот жойылсын ба?";
 "bulk.deleteAccounts.message" = "Байланысты операциялармен не істеу керек?";
 "bulk.deleteAccounts.onlyAccounts" = "Тек шоттарды жою";
-"bulk.deleteAccounts.withTransactions" = "Барлық операциялармен бірге жою";
+"bulk.deleteAccounts.withTransactions" = "Шоттар мен операцияларды жою";
 
 // MARK: - Bulk Delete Categories
-"bulk.deleteCategories.title" = "%d санатты жою керек пе?";
+"bulk.deleteCategories.title" = "%d санат жойылсын ба?";
 "bulk.deleteCategories.message" = "Байланысты операциялармен не істеу керек?";
 "bulk.deleteCategories.onlyCategories" = "Тек санаттарды жою";
-"bulk.deleteCategories.withTransactions" = "Барлық операциялармен бірге жою";
+"bulk.deleteCategories.withTransactions" = "Санаттар мен операцияларды жою";
 
 // MARK: - Bulk Delete Subcategories
-"bulk.deleteSubcategories.title" = "%d ішкі санатты жою керек пе?";
-"bulk.deleteDeposits.title" = "%d депозитті жою керек пе?";
-"bulk.deleteLoans.title" = "%d несиені жою керек пе?";
-"bulk.deleteDebts.title" = "%d қарызды жою керек пе?";
-"bulk.deleteGoals.title" = "%d мақсатты жою керек пе?";
-"bulk.deleteSubscriptions.title" = "%d жазылымды жою керек пе?";
-"subcategory.deleteTitle" = "Ішкі санатты жою керек пе?";
+"bulk.deleteSubcategories.title" = "%d ішкі санат жойылсын ба?";
+"bulk.deleteDeposits.title" = "%d депозит жойылсын ба?";
+"bulk.deleteLoans.title" = "%d несие жойылсын ба?";
+"bulk.deleteLoans.onlyLoans" = "Тек несиелерді жою";
+"bulk.deleteLoans.withPayments" = "Несиелер мен төлемдерді жою";
+"bulk.deleteDebts.title" = "%d қарыз жойылсын ба?";
+"bulk.deleteGoals.title" = "%d мақсат жойылсын ба?";
+"bulk.deleteSubscriptions.title" = "%d жазылым жойылсын ба?";
+"subcategory.deleteTitle" = "Ішкі санат жойылсын ба?";
 "bulk.deleteSubcategories.confirm" = "Жою";
 
 // MARK: - Account Detail View
@@ -1582,15 +1568,11 @@
 "account.detail.totalIncome" = "Барлық кіріс";
 "account.detail.totalExpense" = "Барлық шығыс";
 "account.detail.transactionCount" = "Операциялар";
-"account.detail.delete.confirmTitle" = "Шотты жою керек пе?";
-"account.detail.delete.confirmMessage" = "Шот біржола жойылады.";
 "accounts.type" = "Түрі";
 "accounts.currency" = "Валюта";
 "accounts.type.deposit" = "Депозит";
 "accounts.type.loan" = "Несие";
 "accounts.type.regular" = "Шот";
-"common.edit" = "Өзгерту";
-"common.delete" = "Жою";
 
 // Category Detail
 "category.detail.actions.addTransaction" = "Операция қосу";
@@ -1601,8 +1583,6 @@
 "category.detail.subcategories" = "Ішкі санаттар";
 "category.detail.transactionCount" = "Операциялар";
 "category.detail.manageSubcategories" = "Ішкі санаттарды басқару";
-"category.detail.delete.confirmTitle" = "Санатты жою керек пе?";
-"category.detail.delete.confirmMessage" = "Санат жойылады.";
 "category.detail.type.expense" = "Шығыс";
 "category.detail.type.income" = "Кіріс";
 
@@ -2201,9 +2181,9 @@
 "assistant.memory.emptyTitle" = "Тэн сіз туралы әзірге ештеңе білмейді";
 "assistant.memory.emptyMessage" = "Чатта Тэнге ақшаңыз туралы айтыңыз, мысалы, жалақы қашан түсетінін немесе неге ақша жинап жүргеніңізді. Тэн мұны есте сақтауды ұсынады, ал шешімді өзіңіз қабылдайсыз.";
 "assistant.memory.footer" = "Тэн бұл фактілерді әр чатта көреді. Олар осы iPhone-да сақталады және одан тек сұрақтарыңызбен бірге ғана жіберіледі.";
-"assistant.memory.add" = "Факт қосу";
 "assistant.memory.new" = "Жаңа факт";
 "assistant.memory.edit" = "Фактіні өзгерту";
+"typing.indicator" = "Жазып жатыр";
 "assistant.memory.placeholder" = "Мысалы: жалақы айдың 10-ы түседі";
 "assistant.memory.editorFooter" = "Ақшаңыз туралы бір қысқа сөйлем: жалақы қашан түседі, неге ақша жинайсыз, қай карта негізгі. Карта нөмірлері мен құпиясөздерсіз.";
 "assistant.memory.editHint" = "Өзгерту үшін фактіні ашады";
@@ -2249,8 +2229,7 @@
 "goal.reachedSection" = "Қол жеткізілгендер";
 "goal.contribute" = "Толықтыру";
 "goal.contributions" = "Толықтырулар";
-"goal.delete" = "Мақсатты жою";
-"goal.deleteTitle" = "Мақсатты жоясыз ба?";
+"goal.deleteTitle" = "Мақсат жойылсын ба?";
 "goal.deleteMessage" = "Мақсат пен оның толықтырулары жойылады. Шоттар мен операциялар өзгеріссіз қалады.";
 "goal.notFound" = "Мақсат табылмады";
 "goal.notFoundDescription" = "Ол жойылған болуы мүмкін.";
@@ -2286,8 +2265,7 @@
 "debt.settle" = "Өтеу";
 "debt.reopen" = "Қайта ашу";
 "debt.repayments" = "Қайтарулар";
-"debt.delete" = "Қарызды жою";
-"debt.deleteTitle" = "Қарызды жоясыз ба?";
+"debt.deleteTitle" = "Қарыз жойылсын ба?";
 "debt.deleteMessage" = "Қарыз бен оның қайтарулары жойылады. Шоттар мен операциялар өзгеріссіз қалады.";
 "debt.notFound" = "Қарыз табылмады";
 "debt.notFoundDescription" = "Ол жойылған болуы мүмкін.";
@@ -2405,10 +2383,9 @@
 "asset.valuedOn" = "Бағалау: %@";
 "asset.soldOn" = "Сатылды: %@";
 "asset.soldBadge" = "Сатылды";
-"asset.deleteTitle" = "Активті жою керек пе?";
+"asset.deleteTitle" = "Актив жойылсын ба?";
 "asset.deleteMessage" = "Актив пен оның бағалаулары жойылады. Шоттар мен операциялар өзгеріссіз қалады.";
-"asset.delete" = "Активті жою";
-"bulk.deleteAssets.title" = "%d активті жою керек пе?";
+"bulk.deleteAssets.title" = "%d актив жойылсын ба?";
 "asset.notFound" = "Актив табылмады";
 "asset.notFoundDescription" = "Ол жойылған болуы мүмкін.";
 "asset.namePlaceholder" = "Бұл не?";

@@ -313,7 +313,7 @@ struct VoiceInputConfirmationView: View {
                 get: { saveErrorMessage != nil },
                 set: { if !$0 { saveErrorMessage = nil } }
             )) {
-                Button(String(localized: "voice.ok")) { saveErrorMessage = nil }
+                Button(String(localized: "button.ok")) { saveErrorMessage = nil }
             } message: {
                 Text(saveErrorMessage ?? "")
             }

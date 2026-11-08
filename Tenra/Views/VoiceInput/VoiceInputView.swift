@@ -143,7 +143,7 @@ struct VoiceInputView: View {
             Text(permissionMessage.isEmpty ? String(localized: "voice.errorMessage") : permissionMessage)
         }
         .alert(String(localized: "voice.error"), isPresented: $showingErrorAlert) {
-            Button(String(localized: "voice.ok")) {
+            Button(String(localized: "button.ok")) {
                 if !embeddedInTab { dismiss() }
             }
         } message: {
@@ -400,7 +400,7 @@ struct VoiceInputView: View {
 
     @ViewBuilder
     private var permissionAlertButtons: some View {
-        Button(String(localized: "voice.ok")) {
+        Button(String(localized: "button.ok")) {
             if !embeddedInTab { dismiss() }
         }
         if isPermissionDenied {

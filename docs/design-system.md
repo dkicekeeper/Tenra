@@ -254,6 +254,33 @@ ScrollView
   rows' own 12 pt at its edges, dividers inset past the row's icon, a deleted entry dissolving
   (§7).
 
+### Actions: names, menus, confirmations
+
+One name per action across the app (the action audit of 2026-11-08: "Изменить" on accounts and
+"Редактировать" on deposits came from copies of one key).
+
+- **One key per common action**: `button.edit`, `button.delete`, `button.cancel`, `button.ok`,
+  `button.save`, `bulk.selectAll` / `bulk.deselectAll` (DesignKit's list toolbar reads the same
+  two). No per-screen copies (`deposit.edit`, `common.delete`, `quickAdd.cancel`, `voice.ok` were
+  folded into these): a copy drifts in some locale.
+- **A menu names the verb only**: a context menu and a detail screen's toolbar menu say "Edit" and
+  "Delete", never "Edit loan"; the entity's name goes in the sheet's title and the confirmation.
+- **Order of a menu**: Ask Ten (where the screen has it), Edit, the entity's own actions (change
+  rate, link payments, estimate, pause or resume, …), a divider, Delete (destructive, last).
+  `TransactionCard`: Edit, Stop recurring or Resume, a divider, Delete. Symbols: `pencil`,
+  `trash`, `link.badge.plus` (link payments), `pause.circle`, `play.circle`, `stop.circle`.
+- **Sheet titles**: "New X" (`modal.newAccount`, `deposit.new`, `goal.new`, …) to create, "Edit X"
+  to change. A list's add button (`cardListToolbar(addLabel:)`) and its empty state's button use
+  the same "New X" key; the empty state's text says what the list is for, not "start adding
+  transactions".
+- **Delete confirmations are `.alert`s** (not `.confirmationDialog`): title "Delete X?", a message
+  saying what happens, Cancel, then the destructive button. Where transactions stand behind the
+  entity it offers "Delete X only" and "Delete X and transactions" (accounts, categories,
+  subscriptions; a loan's "and payments"), the same from its list and from its own screen; a
+  selection of several uses the `bulk.delete*` keys.
+- The words per language (ru "Изменить", pt-BR "Excluir", sentence case in en): [localization.md](localization.md)
+  §Action words.
+
 ### Lists
 
 Every list of things the person keeps is DesignKit's `CardList` with `.cardListToolbar` (8.0.0):
@@ -302,7 +329,7 @@ one glass card with the day and its total (`SectionHeader(day) { day total }`) o
 44 pt icon). The card is padded at the sides; 12 pt above the day, then the rows' own 12 pt
 (`TransactionRow`, DesignKit 8.6.0) under it and at the bottom. Entity detail screens and link payments show their days the same way
 (`GroupedTransactionList`). `TransactionCard` adds the edit sheet and the context menu (Edit,
-Delete, the recurring series' Stop or Resume; no swipe actions) to `TransactionCardView`, which
+the recurring series' Stop recurring or Resume, Delete; no swipe actions) to `TransactionCardView`, which
 maps the transaction onto DesignKit's `TransactionRow`. Sections are sliced with an
 infinite-scroll trigger (`LoadMoreFooter`), so a long history renders a bounded number of days
 (CLAUDE.md rule #4). Per-row data (style, accounts) is resolved at the `ForEach` (§6).
@@ -666,6 +693,6 @@ Where each DesignKit effect is used in Tenra, so a new screen reuses the pattern
    bodySmall → `sm`, body → `md`; `scalesWithText: false` in a control of a fixed size), from
    44 pt a tile on its plate (`HeroSymbol` for a screen's big symbol). A toolbar's, menu's, swipe
    action's, tab's or segment's symbol stays an `Image`: iOS draws it.
-4. Strings in all 11 locales (CLAUDE.md rule #13); no em dashes in user-facing text.
+4. Strings in all 12 locales (CLAUDE.md rule #13), an action named as §4 Actions says; no em dashes in user-facing text.
 5. `python3 scripts/design_lint.py` passes. A new `safeAreaBar` names its scroll edge style, a new `NavigationStack` carries `.softScrollEdges()` (§4).
 6. Don't change a shipped screen's layout as a side effect; the owner checks UI on device.

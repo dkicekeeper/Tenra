@@ -57,6 +57,32 @@ is in [archive/localization-2026-07/](archive/localization-2026-07/).
   `String(format: NSLocalizedString("key", comment: ...), n)`, as the Finances cards do;
   `PluralCountStringsTests` pins the forms.
 
+## Action words
+
+One word per action in each language (the action audit of 2026-11-08); the keys and where the
+words go on screen: [design-system.md](design-system.md) §4 Actions.
+
+- **Edit**: ru "Изменить" (never "Редактировать"), uk "Змінити", kk "Өзгерту", ko "편집" (not
+  "수정"), ja "編集", de "bearbeiten", fr "Modifier", es and pt-BR "Editar", it "Modifica", tr
+  "düzenle". The same verb in the menu ("Изменить") and in the sheet's title ("Изменить счёт").
+- **Delete**: pt-BR "Excluir" (the keypad's backspace stays "Apagar"), es and it "Eliminar", fr
+  "Supprimer", tr "sil". A confirmation asks the same way in a language: tr "X silinsin mi?", kk
+  "X жойылсын ба?", ja "Xを削除しますか？", ko "X을/를 삭제할까요?", fr with a space before "?".
+- **New**: the creating sheet's title and the add button are one key, "New X" ("Новый счёт").
+- **Case**: en, tr and pt-BR write buttons, menus, titles and dialogs in sentence case ("Edit
+  account", "Hesabı düzenle", "Nova assinatura"); a capital inside only for a name (Tenra, Apple
+  Pay, the Settings and Shortcuts apps, the Shortcuts action "Set Variable").
+- **Terms**: ru "счёт" with ё in every form ("счёта", "счёту"; the plural "счета" has none); a
+  deposit is "депозит" in ru and uk (not "вклад"), "Sparkonto" in de, "compte épargne" in fr; a
+  loan is "crédit" in fr. ja writes サブスク, ko writes a personal debt as 기록.
+- **DesignKit's keys**: DesignKit ships no strings; its components read keys from Tenra's tables
+  ([localization-keys.md](https://github.com/dkicekeeper/DesignKit/blob/main/docs/localization-keys.md)).
+  Every key a component on a Tenra screen reads is in all 12 locales (`bulk.add`, `bulk.reorder`,
+  `bulk.moveUp`, `bulk.moveDown` for every list's toolbar and VoiceOver, `typing.indicator` for
+  Ten's chat), else VoiceOver speaks the English default. A key with no use in Tenra's code may
+  still be DesignKit's (`bulk.*`, `common.cancel`, `common.retry`, `calculator.*`): check that
+  list before deleting one.
+
 ## Permission prompts
 
 Every locale has `InfoPlist.strings` with the five usage strings (`NSCameraUsageDescription`,

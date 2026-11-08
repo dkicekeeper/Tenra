@@ -76,7 +76,7 @@ struct AssistantMemoryView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Button(String(localized: "assistant.memory.add"), systemImage: "plus") {
+                Button(String(localized: "assistant.memory.new"), systemImage: "plus") {
                     editing = Editing(fact: nil)
                 }
                 .disabled(!memory.isLoaded || memory.facts.count >= AgentMemory.limit)
@@ -115,7 +115,7 @@ struct AssistantMemoryView: View {
             Button {
                 editing = Editing(fact: fact)
             } label: {
-                Label(String(localized: "button.edit", defaultValue: "Edit"), systemImage: "pencil")
+                Label(String(localized: "button.edit"), systemImage: "pencil")
             }
             Button(role: .destructive) {
                 HapticManager.warning()

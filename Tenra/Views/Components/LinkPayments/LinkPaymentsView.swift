@@ -422,8 +422,8 @@ struct LinkPaymentsView: View {
                 HStack(spacing: AppSpacing.sm) {
                     Button(action: toggleSelectAll) {
                         Text(cachedAreAllFilteredSelected
-                             ? String(localized: "subscription.linkPayments.deselectAll", defaultValue: "Deselect All")
-                             : String(localized: "subscription.linkPayments.selectAll", defaultValue: "Select All"))
+                             ? String(localized: "bulk.deselectAll")
+                             : String(localized: "bulk.selectAll"))
                             .frame(maxWidth: .infinity)
                     }
                     .dsButton(.secondary)

@@ -45,11 +45,11 @@ struct BackupRowView: View {
                 Button(role: .destructive) {
                     onDelete()
                 } label: {
-                    Label(String(localized: "settings.cloud.delete"), systemImage: "trash")
+                    Label(String(localized: "button.delete"), systemImage: "trash")
                 }
             }
         }
-        .accessibilityAction(named: Text(String(localized: "settings.cloud.delete"))) {
+        .accessibilityAction(named: Text(String(localized: "button.delete"))) {
             onDelete?()
         }
     }

@@ -99,7 +99,7 @@ struct LoansListView: View {
                     icon: "creditcard",
                     title: String(localized: "loan.emptyTitle", defaultValue: "No Loans"),
                     description: String(localized: "loan.emptyDescription", defaultValue: "Add your credits and installments to track payments and progress"),
-                    actionTitle: String(localized: "loan.addLoan", defaultValue: "Add Loan"),
+                    actionTitle: String(localized: "loan.newTitle"),
                     action: addLoan,
                     line: String(localized: "assistant.empty.loans")
                 )
@@ -154,7 +154,7 @@ struct LoansListView: View {
             selection: $selection,
             allIDs: filteredLoans.map(\.id),
             canReorder: selectedFilter == .all,
-            addLabel: String(localized: "loan.add", defaultValue: "Add Loan"),
+            addLabel: String(localized: "loan.newTitle"),
             onAdd: addLoan,
             onDeleteSelected: {
                 confirmDelete(filteredLoans.filter { selection.contains($0.id) })
@@ -173,20 +173,29 @@ struct LoansListView: View {
         }
         // As on the loan's own screen: retiring a loan keeps its payments (real expenses),
         // one entered by mistake goes with them.
-        .confirmationDialog(
+        .alert(
             loansToDelete.count > 1
-                ? String(format: String(localized: "bulk.deleteLoans.title", defaultValue: "Delete %d loans?"), loansToDelete.count)
-                : String(localized: "loan.deleteTitle", defaultValue: "Delete Loan?"),
-            isPresented: Binding(get: { !loansToDelete.isEmpty }, set: { if !$0 { loansToDelete = [] } }),
-            titleVisibility: .visible
+                ? String(format: String(localized: "bulk.deleteLoans.title"), loansToDelete.count)
+                : String(localized: "loan.deleteTitle"),
+            isPresented: Binding(get: { !loansToDelete.isEmpty }, set: { if !$0 { loansToDelete = [] } })
         ) {
-            Button(String(localized: "loan.deleteKeepPayments", defaultValue: "Delete, keep payments")) {
+            Button(String(localized: "button.cancel"), role: .cancel) {}
+            Button(
+                loansToDelete.count > 1
+                    ? String(localized: "bulk.deleteLoans.onlyLoans")
+                    : String(localized: "loan.deleteKeepPayments"),
+                role: .destructive
+            ) {
                 deleteLoans(keepingPayments: true)
             }
-            Button(String(localized: "loan.deleteWithPayments", defaultValue: "Delete everything"), role: .destructive) {
+            Button(
+                loansToDelete.count > 1
+                    ? String(localized: "bulk.deleteLoans.withPayments")
+                    : String(localized: "loan.deleteWithPayments"),
+                role: .destructive
+            ) {
                 deleteLoans(keepingPayments: false)
             }
-            Button(String(localized: "button.cancel"), role: .cancel) {}
         } message: {
             Text(String(localized: "loan.deleteMessage", defaultValue: "Payments made on this loan are real expenses on your bank accounts. You can keep them in history, or delete them along with the loan."))
         }
@@ -237,7 +246,7 @@ struct LoansListView: View {
         Button {
             editingLoan = loan
         } label: {
-            Label(String(localized: "button.edit", defaultValue: "Edit"), systemImage: "pencil")
+            Label(String(localized: "button.edit"), systemImage: "pencil")
         }
         Button(role: .destructive) {
             confirmDelete([loan])

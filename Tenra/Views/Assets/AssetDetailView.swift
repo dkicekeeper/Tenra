@@ -286,6 +286,12 @@ struct AssetDetailView: View {
             },
             toolbarMenu: {
                 AskAssistantMenuItem(topic: .asset(name: asset.name))
+                Button {
+                    HapticManager.selection()
+                    showingEdit = true
+                } label: {
+                    Label(String(localized: "button.edit"), systemImage: "pencil")
+                }
                 if canEstimate(asset) {
                     Button {
                         HapticManager.selection()
@@ -297,12 +303,6 @@ struct AssetDetailView: View {
                     } label: {
                         Label(String(localized: "asset.estimate.action"), systemImage: "magnifyingglass")
                     }
-                }
-                Button {
-                    HapticManager.selection()
-                    showingEdit = true
-                } label: {
-                    Label(String(localized: "button.edit"), systemImage: "pencil")
                 }
                 // Payments by hand: any expense or income linked to it, the ones its category
                 // counts taken out, and given back.
@@ -333,7 +333,7 @@ struct AssetDetailView: View {
                     HapticManager.warning()
                     showingDelete = true
                 } label: {
-                    Label(String(localized: "asset.delete"), systemImage: "trash")
+                    Label(String(localized: "button.delete"), systemImage: "trash")
                 }
             }
         )

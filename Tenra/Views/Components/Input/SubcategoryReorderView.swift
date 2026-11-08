@@ -26,7 +26,7 @@ struct SubcategoryReorderView: View {
                     EmptyState(
                         icon: "list.bullet",
                         title: String(localized: "emptyState.noSubcategories"),
-                        description: String(localized: "emptyState.startTracking"),
+                        description: String(localized: "subcategory.emptyDescription"),
                         actionTitle: String(localized: "category.addSubcategory"),
                         action: { showingSubcategorySearch = true }
                     )

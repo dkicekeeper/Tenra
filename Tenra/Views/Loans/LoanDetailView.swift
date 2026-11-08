@@ -468,13 +468,11 @@ struct LoanDetailView: View {
         // Two genuinely different intents hide behind "delete a loan": retiring a loan
         // the user actually had (its payments are real expenses and must survive), and
         // removing one entered by mistake (its payments are noise). Asking is the only
-        // way to tell them apart — the old single-button alert always did the latter.
-        .confirmationDialog(
-            String(localized: "loan.deleteTitle", defaultValue: "Delete Loan?"),
-            isPresented: $showingDeleteConfirmation,
-            titleVisibility: .visible
-        ) {
-            Button(String(localized: "loan.deleteKeepPayments", defaultValue: "Delete, keep payments")) {
+        // way to tell them apart. The same alert as the accounts' "only the account" / "the
+        // account and its transactions".
+        .alert(String(localized: "loan.deleteTitle"), isPresented: $showingDeleteConfirmation) {
+            Button(String(localized: "button.cancel"), role: .cancel) {}
+            Button(String(localized: "loan.deleteKeepPayments"), role: .destructive) {
                 HapticManager.warning()
                 let payingAccounts = counterpartAccountIds(of: account.id)
                 Task {
@@ -486,7 +484,7 @@ struct LoanDetailView: View {
                     dismiss()
                 }
             }
-            Button(String(localized: "loan.deleteWithPayments", defaultValue: "Delete everything"), role: .destructive) {
+            Button(String(localized: "loan.deleteWithPayments"), role: .destructive) {
                 HapticManager.warning()
                 let payingAccounts = counterpartAccountIds(of: account.id)
                 Task {
@@ -496,7 +494,6 @@ struct LoanDetailView: View {
                     dismiss()
                 }
             }
-            Button(String(localized: "button.cancel"), role: .cancel) {}
         } message: {
             Text(String(localized: "loan.deleteMessage", defaultValue: "Payments made on this loan are real expenses on your bank accounts. You can keep them in history, or delete them along with the loan."))
         }
@@ -844,7 +841,7 @@ struct LoanDetailView: View {
             HapticManager.selection()
             showingEditView = true
         } label: {
-            Label(String(localized: "loan.edit", defaultValue: "Edit Loan"), systemImage: "pencil")
+            Label(String(localized: "button.edit"), systemImage: "pencil")
         }
 
         // Rate changes don't apply to installments (always 0% by definition), and are
@@ -854,7 +851,7 @@ struct LoanDetailView: View {
                 HapticManager.selection()
                 showingRateChange = true
             } label: {
-                Label(String(localized: "loan.changeRate", defaultValue: "Change Rate"), systemImage: "chart.line.uptrend.xyaxis")
+                Label(String(localized: "loan.changeRate"), systemImage: "chart.line.uptrend.xyaxis")
             }
         }
 
@@ -865,7 +862,7 @@ struct LoanDetailView: View {
             HapticManager.selection()
             showingLinkPayments = true
         } label: {
-            Label(String(localized: "loan.linkPayments", defaultValue: "Link Payments"), systemImage: "link")
+            Label(String(localized: "loan.linkPayments"), systemImage: "link.badge.plus")
         }
 
         Divider()
@@ -874,7 +871,7 @@ struct LoanDetailView: View {
             HapticManager.warning()
             showingDeleteConfirmation = true
         } label: {
-            Label(String(localized: "loan.delete", defaultValue: "Delete Loan"), systemImage: "trash")
+            Label(String(localized: "button.delete"), systemImage: "trash")
         }
     }
 

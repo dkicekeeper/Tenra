@@ -3,7 +3,8 @@
 //  Tenra
 //
 //  The field at the bottom of the assistant's home and of a chat: in a chat, the questions Ten
-//  suggests after its reply, one row that scrolls sideways edge to edge; how many free answers
+//  suggests after its reply (in a new chat from "Ask Ten", the questions about that screen),
+//  one row that scrolls sideways edge to edge; how many free answers
 //  are left (without Pro, from 3), a line when an attachment could not be read, and the
 //  composer with the paperclip's attach menu and the microphone (AssistantAttachmentMenu,
 //  AssistantVoiceSheet). What sending does is the page's own: the home starts a new chat, a

@@ -27,11 +27,14 @@ the device has App Attest. There the action tab ("+") is Ten (`CreatureTabLabel`
 assistant is that tab's page (`AssistantTab`); elsewhere (Simulator, Mac, no App Attest) "+" stays
 "Voice | Import". iOS 26+.
 
-**Entry points** (`AssistantEntryPoints`): the tab; "Ask Ten" in the "…" menu of an account,
-category, goal, debt and asset, and as a button with Ten's glyph in an insight, History and For today
-on Analytics (the
-assistant opens with questions about that object, nothing is sent until one is chosen); "Go through
-it" on a Home notice; a PDF or CSV opened in Tenra from another app.
+**Entry points** (`AssistantEntryPoints`): the tab; "Ask Ten" first in the "…" menu of an
+account, deposit, loan, subscription, category, goal, debt and asset, and as a button with Ten's
+glyph in an insight, History and For today on Analytics: the tab opens a **new chat** (the open
+one stays kept) with two or three questions about that object over the field
+(`AssistantViewModel.startChat(suggesting:)`, shown as the chat's suggestions until the first
+message); nothing is sent until the person picks one or types. While a reply is still coming its
+chat cannot be left, so the questions show on the assistant's home instead. "Go through it" on a
+Home notice; a PDF or CSV opened in Tenra from another app.
 
 ## 2. Architecture
 
@@ -261,7 +264,8 @@ once every store has loaded), and
 
 - **Navigation** (owner's decisions, 2026-10-14): the tab's root is the assistant's home
   (`AssistantView`: Ten, ready questions or questions about the screen, recent chats, the
-  composer); each chat is a page over it (`AssistantChatView`). The chat has only "back" and Ten
+  composer); each chat is a page over it (`AssistantChatView`), and "Ask Ten" on another screen
+  opens a new, empty one directly (§1 Entry points). The chat has only "back" and Ten
   in the middle of the navigation bar, 120 pt, on the bar's backing (`safeAreaBar`), its lower half
   over the start of the thread, which scrolls under the hard scroll edge (the owner's choice,
   [design-system.md](../design-system.md) §4); Ten stays on top (thinking, answering, mood). No

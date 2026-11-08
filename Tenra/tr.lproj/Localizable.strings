@@ -2290,6 +2290,12 @@
 "assistant.topic.debt.plan" = "%@ borcunu zamanında nasıl öderim?";
 "assistant.topic.allowance.enough" = "Param bir sonraki gelire kadar yeter mi?";
 "assistant.topic.allowance.save" = "Günlük daha fazla kalması için nerede tasarruf edebilirim?";
+"assistant.topic.deposit.earned" = "“%@” ne kadar faiz getirdi?";
+"assistant.topic.deposit.grow" = "“%@” nasıl daha hızlı büyür?";
+"assistant.topic.loan.payoff" = "“%@” kredisini ne zaman kapatırım?";
+"assistant.topic.loan.early" = "“%@” kredisini erken kapatırsam ne kadar tasarruf ederim?";
+"assistant.topic.subscription.cost" = "“%@” bana yılda kaça mal oluyor?";
+"assistant.topic.subscription.price" = "“%@” zamlandı mı?";
 
 /* Ten's lines around the conversation (AssistantChatter, DesignKit 4.10). */
 "assistant.chatter.morning" = "Günaydın!";

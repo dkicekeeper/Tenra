@@ -238,7 +238,9 @@ struct SubscriptionDetailView: View {
 
     @ViewBuilder
     private var subscriptionToolbarMenu: some View {
-        // Edit first, as on every detail menu; then the subscription's own actions.
+        AskAssistantMenuItem(topic: .subscription(name: liveSubscription.description))
+
+        // Edit first after Ask Ten, as on every detail menu; then the subscription's own actions.
         Button {
             showingEditView = true
         } label: {

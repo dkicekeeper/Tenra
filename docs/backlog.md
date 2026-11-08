@@ -107,8 +107,6 @@ Found by the docs audit of 2026-10-12, not verified on device yet:
 
 Left by the action audit of 2026-11-08 (the rules: [design-system.md](design-system.md) §4 Actions,
 [localization.md](localization.md) §Action words):
-- **"Ask Ten" in the menus of deposits, loans and subscriptions:** accounts, categories, goals,
-  debts and assets have it; these three need a topic in `AssistantEntryPoints` and its prompt.
 - **Title case left in en (and tr, pt-BR) outside actions:** CSV mapping fields ("Target Account",
   "Amount in Account Currency"), some navigation titles ("Filter by Categories", "Transaction
   Preview"), Insights labels ("Net Flow", "Available Balance"), "Rounded Square".

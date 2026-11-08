@@ -313,6 +313,10 @@ struct DepositDetailView: View {
 
     @ViewBuilder
     private var depositToolbarMenu: some View {
+        if let account = liveAccount {
+            AskAssistantMenuItem(topic: .deposit(name: account.name))
+        }
+
         Button {
             HapticManager.selection()
             showingEditView = true

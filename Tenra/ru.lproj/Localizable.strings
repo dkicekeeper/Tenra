@@ -2290,6 +2290,12 @@
 "assistant.topic.debt.plan" = "Как вернуть долг вовремя: %@?";
 "assistant.topic.allowance.enough" = "Хватит ли денег до следующего дохода?";
 "assistant.topic.allowance.save" = "Где сэкономить, чтобы на день оставалось больше?";
+"assistant.topic.deposit.earned" = "Сколько процентов принёс депозит «%@»?";
+"assistant.topic.deposit.grow" = "Как быстрее нарастить депозит «%@»?";
+"assistant.topic.loan.payoff" = "Когда я закрою кредит «%@»?";
+"assistant.topic.loan.early" = "Сколько я сэкономлю, если погашу «%@» досрочно?";
+"assistant.topic.subscription.cost" = "Сколько мне стоит «%@» в год?";
+"assistant.topic.subscription.price" = "Дорожала ли подписка «%@»?";
 
 /* Ten's lines around the conversation (AssistantChatter, DesignKit 4.10). */
 "assistant.chatter.morning" = "Доброе утро!";

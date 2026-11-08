@@ -15,6 +15,9 @@ struct AssistantTopicTests {
 
     @Test(arguments: [
         AssistantTopic.account(name: "Kaspi Gold"),
+        .deposit(name: "Halyk Депозит"),
+        .loan(name: "Ипотека"),
+        .subscription(name: "Netflix"),
         .category(name: "Кафе", isIncome: false),
         .category(name: "Зарплата", isIncome: true),
         .insight(title: "Траты на кафе выросли"),
@@ -27,6 +30,9 @@ struct AssistantTopicTests {
         let name: String
         switch topic {
         case .account(let value): name = value
+        case .deposit(let value): name = value
+        case .loan(let value): name = value
+        case .subscription(let value): name = value
         case .category(let value, _): name = value
         case .insight(let value): name = value
         case .history, .allowance: name = ""
@@ -36,6 +42,19 @@ struct AssistantTopicTests {
         }
         #expect(!topic.questions.isEmpty)
         #expect(topic.questions.allSatisfy { $0.contains(name) })
+    }
+
+    /// A deposit, a loan and a subscription: two different questions each, read as questions
+    /// (they go to the model, never drafted as a record).
+    @Test(arguments: [
+        AssistantTopic.deposit(name: "Halyk Депозит"),
+        .loan(name: "Ипотека"),
+        .subscription(name: "Netflix"),
+    ])
+    func moneyTopicsAskTwoQuestions(_ topic: AssistantTopic) {
+        #expect(topic.questions.count == 2)
+        #expect(Set(topic.questions).count == 2)
+        #expect(topic.questions.allSatisfy { AgentFastPath.readsAsQuestion($0) })
     }
 
     @Test func historyAsksAboutTheMonth() {

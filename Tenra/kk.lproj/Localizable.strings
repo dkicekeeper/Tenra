@@ -2290,6 +2290,12 @@
 "assistant.topic.debt.plan" = "Қарызды уақытында қалай қайтарамын: %@?";
 "assistant.topic.allowance.enough" = "Келесі табысқа дейін ақша жете ме?";
 "assistant.topic.allowance.save" = "Күніне көбірек қалуы үшін неден үнемдеуге болады?";
+"assistant.topic.deposit.earned" = "«%@» депозиті қанша пайыз әкелді?";
+"assistant.topic.deposit.grow" = "«%@» депозитін қалай тезірек көбейтемін?";
+"assistant.topic.loan.payoff" = "«%@» несиесін қашан жабамын?";
+"assistant.topic.loan.early" = "«%@» несиесін мерзімінен бұрын жапсам, қанша үнемдеймін?";
+"assistant.topic.subscription.cost" = "«%@» маған жылына қанша тұрады?";
+"assistant.topic.subscription.price" = "«%@» жазылымы қымбаттады ма?";
 
 /* Ten's lines around the conversation (AssistantChatter, DesignKit 4.10). */
 "assistant.chatter.morning" = "Қайырлы таң!";

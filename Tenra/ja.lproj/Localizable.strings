@@ -2290,6 +2290,12 @@
 "assistant.topic.debt.plan" = "%@に期限内に返すには？";
 "assistant.topic.allowance.enough" = "次の収入までお金は足りる？";
 "assistant.topic.allowance.save" = "1日に使える額を増やすにはどこを節約すればいい？";
+"assistant.topic.deposit.earned" = "「%@」の利息はいくら？";
+"assistant.topic.deposit.grow" = "「%@」をもっと早く増やすには？";
+"assistant.topic.loan.payoff" = "「%@」はいつ完済できる？";
+"assistant.topic.loan.early" = "「%@」を繰り上げ返済したらいくら得する？";
+"assistant.topic.subscription.cost" = "「%@」は年間いくら？";
+"assistant.topic.subscription.price" = "「%@」は値上がりした？";
 
 /* Ten's lines around the conversation (AssistantChatter, DesignKit 4.10). */
 "assistant.chatter.morning" = "おはようございます！";

@@ -41,6 +41,10 @@ person asks for by name; App Store Connect still needs a text in every locale. A
   accounts, categories and subcategories say what they are for. VoiceOver reads the lists'
   reorder button and Ten's typing in the person's language. pt-BR says "Excluir" throughout, en,
   tr and pt-BR buttons are in sentence case, ru writes "счёт".
+- "Ask Ten" opens a new chat (not Ten's home) with questions about the screen over the field, and
+  is now in the menus of a deposit ("How much interest has it earned?"), a loan ("When will I pay
+  it off?", "How much would paying it off early save?") and a subscription ("What does it cost a
+  year?", "Has it gone up?"). Not in build 74.
 
 ## Submission checklist
 
@@ -61,5 +65,8 @@ person asks for by name; App Store Connect still needs a text in every locale. A
    subscription on their lists and open their menus: "Изменить" first, "Удалить" last; delete an
    account from its own screen (both choices), a loan (both choices) and a transaction (alert, not
    a sheet); the transaction menu of a recurring payment shows "Прекратить повторение".
+   "Спросить Ten" on an account, a deposit, a loan and a subscription opens a new empty chat with
+   two questions over the field; the previous chat is in the home's list; a question tapped goes
+   (the consent sheet first on a fresh install).
 5. **What's New** in this file (14 localizations), then `prepare-version --version 1.8.2 --build 74`.
 6. **One submission**: `asc.py prepare-review --version 1.8.2`; the founder sends it.

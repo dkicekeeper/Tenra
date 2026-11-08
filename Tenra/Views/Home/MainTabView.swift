@@ -327,7 +327,8 @@ struct MainTabView: View {
                 previousTab = .home
             }
         }
-        // "Ask Ten" on an account, a category, an insight or the history.
+        // "Ask Ten" on a screen (an account, a deposit, a loan, a subscription, a category, an
+        // insight, …): the assistant's tab, which opens a new chat about it (AssistantView).
         .onChange(of: coordinator.assistantTopic) { _, topic in
             if topic != nil { openAssistant() }
         }

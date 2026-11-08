@@ -2290,6 +2290,12 @@
 "assistant.topic.debt.plan" = "%@에게 기한 안에 갚으려면?";
 "assistant.topic.allowance.enough" = "다음 수입까지 돈이 충분할까?";
 "assistant.topic.allowance.save" = "하루에 더 쓰려면 어디서 아껴야 할까?";
+"assistant.topic.deposit.earned" = "‘%@’ 이자는 얼마나 받았어?";
+"assistant.topic.deposit.grow" = "‘%@’를 더 빨리 불리려면?";
+"assistant.topic.loan.payoff" = "‘%@’ 대출은 언제 다 갚아?";
+"assistant.topic.loan.early" = "‘%@’를 미리 갚으면 얼마나 아낄 수 있어?";
+"assistant.topic.subscription.cost" = "‘%@’는 1년에 얼마야?";
+"assistant.topic.subscription.price" = "‘%@’ 가격이 올랐어?";
 
 /* Ten's lines around the conversation (AssistantChatter, DesignKit 4.10). */
 "assistant.chatter.morning" = "좋은 아침이에요!";

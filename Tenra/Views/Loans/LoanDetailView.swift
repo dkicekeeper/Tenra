@@ -837,6 +837,10 @@ struct LoanDetailView: View {
 
     @ViewBuilder
     private var loanToolbarMenu: some View {
+        if let account = liveAccount {
+            AskAssistantMenuItem(topic: .loan(name: account.name))
+        }
+
         Button {
             HapticManager.selection()
             showingEditView = true

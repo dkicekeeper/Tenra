@@ -127,6 +127,9 @@ final class AssistantViewModel {
         return nil
     }
 
+    /// Ready questions about the screen a new chat was opened from ("Ask Ten",
+    /// AssistantEntryPoints): over the field until the first message, nothing sent before.
+    private(set) var openingQuestions: [String] = []
     /// The latest kept threads but the open one, for the history (at most `recentLimit`).
     private(set) var recentThreads: [AgentThreadSummary] = []
     /// The free allowance; nil with Pro.
@@ -194,10 +197,23 @@ final class AssistantViewModel {
         guard !restoreDone, let persistence else { return }
         restoreDone = true
         defer { Task { await refreshRecent() } }
+        let opened = threadId
         guard entries.isEmpty, !isWorking, let snapshot = await persistence.load() else { return }
-        // A question may have gone while the thread was loading.
-        guard entries.isEmpty, !isWorking else { return }
+        // A question may have gone while the thread was loading, or "Ask Ten" opened a new
+        // chat (startChat), still empty.
+        guard entries.isEmpty, !isWorking, threadId == opened else { return }
         apply(snapshot)
+    }
+
+    /// "Ask Ten" on a screen: a new, empty chat in place of the open one (which stays kept),
+    /// with ready questions about that screen over the field. False while a reply is still
+    /// coming: its chat cannot be left.
+    @discardableResult
+    func startChat(suggesting questions: [String]) -> Bool {
+        guard !isWorking, !draftingLocally else { return false }
+        reset()
+        openingQuestions = questions
+        return true
     }
 
     /// Opens a kept thread from the history in place of the open one, which stays kept.
@@ -265,6 +281,7 @@ final class AssistantViewModel {
     /// failed question, the step and the streamed reply.
     private func clearThreadState() {
         phase = .idle
+        openingQuestions = []
         failedEntryId = nil
         streamingReply = []
         drafts?.clear()
@@ -357,9 +374,10 @@ final class AssistantViewModel {
     }
 
     /// The suggestions of the latest reply, while nothing else is going on; after a statement,
-    /// to go through it.
+    /// to go through it; in a new chat from "Ask Ten", the questions about its screen.
     var suggestions: [String] {
         guard phase == .idle else { return [] }
+        if entries.isEmpty { return openingQuestions }
         switch entries.last?.content {
         case .reply(let reply, _)?: return reply.suggestions
         case .attachment(let summary)? where summary.kind == .statement:

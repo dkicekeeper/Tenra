@@ -2290,6 +2290,12 @@
 "assistant.topic.debt.plan" = "Wie zahle ich %@ pünktlich zurück?";
 "assistant.topic.allowance.enough" = "Reicht mein Geld bis zur nächsten Einnahme?";
 "assistant.topic.allowance.save" = "Wo kann ich sparen, damit pro Tag mehr bleibt?";
+"assistant.topic.deposit.earned" = "Wie viel Zinsen hat „%@“ gebracht?";
+"assistant.topic.deposit.grow" = "Wie wächst „%@“ schneller?";
+"assistant.topic.loan.payoff" = "Wann ist „%@“ abbezahlt?";
+"assistant.topic.loan.early" = "Wie viel spare ich, wenn ich „%@“ früher tilge?";
+"assistant.topic.subscription.cost" = "Was kostet mich „%@“ im Jahr?";
+"assistant.topic.subscription.price" = "Ist „%@“ teurer geworden?";
 
 /* Ten's lines around the conversation (AssistantChatter, DesignKit 4.10). */
 "assistant.chatter.morning" = "Guten Morgen!";

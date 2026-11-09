@@ -83,7 +83,7 @@ struct SubscriptionsListView: View {
             mode: $mode,
             selection: $selection,
             allIDs: transactionStore.subscriptions.map(\.id),
-            addLabel: String(localized: "subscriptions.addSubscription"),
+            addLabel: String(localized: "subscription.newTitle"),
             onAdd: { sheetItem = .new },
             onDeleteSelected: { subscriptionsToDelete = Array(selection) }
         )
@@ -94,7 +94,7 @@ struct SubscriptionsListView: View {
                 : String(localized: "subscriptions.deleteConfirmTitle"),
             isPresented: Binding(get: { !subscriptionsToDelete.isEmpty }, set: { if !$0 { subscriptionsToDelete = [] } })
         ) {
-            Button(String(localized: "quickAdd.cancel"), role: .cancel) {}
+            Button(String(localized: "button.cancel"), role: .cancel) {}
             Button(String(localized: "subscriptions.deleteOnlySubscription"), role: .destructive) {
                 deleteSubscriptions(deleteTransactions: false)
             }
@@ -146,7 +146,7 @@ struct SubscriptionsListView: View {
             icon: "creditcard",
             title: String(localized: "subscriptions.empty"),
             description: String(localized: "subscriptions.emptyDescription"),
-            actionTitle: String(localized: "subscriptions.addSubscription"),
+            actionTitle: String(localized: "subscription.newTitle"),
             action: {
                 sheetItem = .new
             },
@@ -272,7 +272,7 @@ struct SubscriptionsListView: View {
                 Button {
                     sheetItem = .edit(subscription)
                 } label: {
-                    Label(String(localized: "button.edit", defaultValue: "Edit"), systemImage: "pencil")
+                    Label(String(localized: "button.edit"), systemImage: "pencil")
                 }
                 Button(role: .destructive) {
                     HapticManager.warning()

@@ -19,8 +19,6 @@
 // MARK: - Transaction Preview (Phase 16)
 "transactionPreview.found" = "Trovate: %d operazioni";
 "transactionPreview.selectHint" = "Seleziona le operazioni da importare";
-"transactionPreview.selectAll" = "Seleziona tutto";
-"transactionPreview.deselectAll" = "Deseleziona tutto";
 "transactionPreview.addSelected" = "Aggiungi selezionate (%d)";
 "transactionPreview.noAccount" = "Nessun conto";
 "transactionPreview.noMatchingAccount" = "Nessun conto in questa valuta";
@@ -72,8 +70,11 @@
 // MARK: - Empty States
 "emptyState.noTransactions" = "Nessuna operazione";
 "emptyState.noAccounts" = "Nessun conto";
+"account.emptyDescription" = "Aggiungi una carta, i contanti o un conto bancario per vedere tutti i saldi in un unico posto";
 "emptyState.noCategories" = "Nessuna categoria";
+"category.emptyDescription" = "Aggiungi una categoria per vedere dove vanno i tuoi soldi";
 "emptyState.noSubcategories" = "Nessuna sottocategoria";
+"subcategory.emptyDescription" = "Aggiungi sottocategorie per suddividere le spese più nel dettaglio";
 "emptyState.noData" = "Nessun dato disponibile";
 "emptyState.searchNoResults" = "Nessun risultato";
 "emptyState.startTracking" = "Inizia ad aggiungere operazioni per tenere sotto controllo le tue finanze";
@@ -151,7 +152,6 @@
 "alert.deleteAllData.title" = "Eliminare tutti i dati?";
 "alert.deleteAllData.message" = "Tutte le operazioni, i conti e le categorie verranno eliminati definitivamente.";
 "alert.deleteAllData.confirm" = "Elimina";
-"alert.deleteAllData.cancel" = "Annulla";
 "alert.resetLearning.title" = "Reimpostare le preferenze vocali?";
 "alert.resetLearning.message" = "Il parser dimenticherà quale conto scegli di solito per ogni categoria. Le tue operazioni non verranno eliminate.";
 "alert.resetLearning.confirm" = "Reimposta";
@@ -203,7 +203,6 @@
 // MARK: - Transaction Actions
 "transaction.importTransactions" = "Importa operazioni";
 "transaction.addNew" = "Aggiungi operazione";
-"transaction.edit" = "Modifica operazione";
 "transaction.new" = "Nuova operazione";
 
 // MARK: - Search
@@ -266,7 +265,6 @@
 "transaction.stopRecurring.title" = "Interrompere la ricorrenza?";
 "transaction.stopRecurring.message" = "Questo interromperà l'operazione ricorrente. Tutte le operazioni future verranno eliminate.";
 "transaction.stopRecurring.confirm" = "Interrompi ricorrenza";
-"transaction.stopRecurring.cancel" = "Annulla";
 "accessibility.deleteTransaction" = "Elimina operazione";
 "accessibility.stopRecurring" = "Interrompi operazione ricorrente";
 "accessibility.swipeForOptions" = "Scorri a sinistra per le opzioni";
@@ -279,10 +277,8 @@
 "account.selectLogo" = "Seleziona logo";
 "account.popularBanks" = "Banche popolari";
 "account.otherBanks" = "Altre banche";
-"account.newAccount" = "Nuovo conto";
-"account.newDeposit" = "Nuovo deposito";
 "account.namePlaceholder" = "Nome del conto";
-"account.deleteTitle" = "Elimina conto";
+"account.deleteTitle" = "Eliminare il conto?";
 "account.deleteMessage" = "Cosa vuoi fare con le operazioni di '%@'?";
 "account.deleteOnlyAccount" = "Elimina solo il conto";
 "account.deleteAccountAndTransactions" = "Elimina conto e operazioni";
@@ -293,9 +289,7 @@
 // MARK: - Deposits
 "deposit.notFound" = "Deposito non trovato";
 "deposit.title" = "Deposito";
-"deposit.edit" = "Modifica";
 "deposit.changeRate" = "Modifica tasso";
-"deposit.delete" = "Elimina deposito";
 "deposit.deleteTitle" = "Eliminare il deposito?";
 "deposit.deleteMessage" = "Tutti i dati del deposito e le operazioni correlate verranno eliminati.";
 "deposit.balance" = "Saldo";
@@ -360,7 +354,6 @@
 "category.manageSubcategories" = "Gestisci sottocategorie";
 
 // MARK: - Subcategories Management
-"subcategory.new" = "Nuova sottocategoria";
 "subcategory.namePlaceholder" = "Nome della sottocategoria";
 "subcategory.notUsed" = "Non ancora usata";
 "subcategory.reorder" = "Sottocategorie";
@@ -439,7 +432,6 @@
 "quickAdd.searchAndAddSubcategories" = "Cerca e aggiungi sottocategorie";
 "quickAdd.selectDate" = "Seleziona data";
 "quickAdd.done" = "Fine";
-"quickAdd.cancel" = "Annulla";
 
 // MARK: - Validation Errors
 "error.validation.enterAmount" = "Inserisci un importo valido";
@@ -454,7 +446,6 @@
 "voice.error" = "Errore";
 "voice.errorMessage" = "Impossibile avviare la registrazione";
 "voice.emptyText" = "Nessun testo riconosciuto. Riprova.";
-"voice.ok" = "OK";
 "voice.vadToggle" = "Stop automatico in silenzio";
 "voice.vadDescription" = "La registrazione si interrompe automaticamente dopo 2,5 secondi di silenzio";
 
@@ -482,13 +473,10 @@
 "subscriptions.candidates.title" = "Sembra un abbonamento";
 "subscriptions.candidates.footer" = "Questi esercenti ti hanno addebitato più o meno lo stesso importo ogni mese. Tocca per aggiungerlo come abbonamento: il prossimo addebito viene pianificato, i pagamenti passati restano come sono. Tieni premuto per nasconderlo.";
 "subscriptions.candidates.dismiss" = "Non è un abbonamento";
-"subscriptions.addSubscription" = "Aggiungi abbonamento";
 "subscriptions.deleteConfirmTitle" = "Eliminare l'abbonamento?";
 "subscriptions.deleteConfirmMessage" = "Tutti i dati dell'abbonamento e le operazioni collegate verranno eliminati.";
-"subscriptions.delete" = "Elimina";
 "subscriptions.deleteOnlySubscription" = "Elimina solo l'abbonamento";
 "subscriptions.deleteSubscriptionAndTransactions" = "Elimina abbonamento e operazioni";
-"subscriptions.edit" = "Modifica";
 "subscriptions.pause" = "Sospendi";
 "subscriptions.resume" = "Riprendi";
 "subscriptions.transactionHistory" = "Cronologia operazioni";
@@ -600,7 +588,6 @@
 "transactionForm.depositTopUp" = "Ricarica deposito";
 "transactionForm.depositWithdrawal" = "Preleva dal deposito";
 "transactionForm.accountTopUp" = "Ricarica conto";
-"transactionForm.editTransaction" = "Modifica operazione";
 "transactionForm.recurring" = "Ricorrente";
 "transactionForm.makeRecurring" = "Rendi ricorrente";
 "transactionForm.searchSubcategories" = "Cerca sottocategorie";
@@ -1162,12 +1149,10 @@
 "loan.remainingShort" = "%d ancora da pagare";
 "loan.notFound" = "Prestito non trovato";
 "loan.title" = "Prestito";
-"loan.edit" = "Modifica prestito";
-"loan.changeRate" = "Cambia tasso";
+"loan.changeRate" = "Modifica tasso";
 "loan.earlyRepayment" = "Estinzione anticipata";
 "loan.history" = "Cronologia pagamenti";
 "loan.actions" = "Azioni prestito";
-"loan.delete" = "Elimina prestito";
 "loan.deleteTitle" = "Eliminare il prestito?";
 "loan.deleteMessage" = "I pagamenti di questo prestito sono spese reali sui tuoi conti. Puoi mantenerli nella cronologia o eliminarli insieme al prestito.";
 "loan.closedSection" = "Estinti";
@@ -1175,8 +1160,8 @@
 "loan.statusPaidThisMonth" = "Pagato questo mese";
 "loan.statusNotPaid" = "Non pagato";
 "loan.closedOn" = "Estinto il %@";
-"loan.deleteKeepPayments" = "Elimina, mantieni i pagamenti";
-"loan.deleteWithPayments" = "Elimina tutto";
+"loan.deleteKeepPayments" = "Elimina solo il prestito";
+"loan.deleteWithPayments" = "Elimina prestito e pagamenti";
 "loan.payoffCelebration" = "Prestito estinto. Ottimo lavoro.";
 "loan.paidOff" = "Estinto";
 "loan.remainingPrincipal" = "Residuo";
@@ -1260,7 +1245,7 @@
 "loan.rateChangeImpact" = "Impatto";
 "loan.paymentChange" = "Variazione";
 "loan.enterRateForPreview" = "Inserisci il tasso per vedere l'impatto";
-"loan.changeRateTitle" = "Cambia tasso";
+"loan.changeRateTitle" = "Modifica tasso";
 "loan.payment.description" = "Pagamento del prestito";
 
 // Loans Phase 5
@@ -1358,7 +1343,7 @@
 "settings.cloud.restoreSuccess" = "Dati ripristinati correttamente";
 "settings.cloud.restoring" = "Ripristino…";
 "settings.cloud.restoringSubtitle" = "Non chiudere l'app";
-"settings.cloud.delete" = "Elimina";
+"settings.cloud.deleteTitle" = "Eliminare il backup?";
 "settings.cloud.storage" = "Spazio";
 "settings.cloud.storageUsed" = "%@ di %@";
 "settings.cloud.iCloud.toggle" = "Salva i backup su iCloud";
@@ -1386,7 +1371,6 @@
 "error.backup.notDownloaded" = "Questo backup non è ancora stato scaricato da iCloud. Controlla la connessione e riprova.";
 
 // MARK: - Loans (Form)
-"loan.addLoan" = "Aggiungi prestito";
 "loan.amountLabel" = "Importo";
 "loan.detailsSection" = "Dettagli del prestito";
 "loan.noteLabel" = "Nota";
@@ -1408,7 +1392,6 @@
 "loan.linkPayments.link" = "Collega %d pagamenti";
 "loan.linkPayments.empty" = "Nessuna operazione corrispondente";
 "loan.linkPayments.error.notFound" = "Prestito non trovato";
-"loan.add" = "Aggiungi prestito";
 "loan.markPaid" = "Segna come pagato";
 "loan.markUnpaid" = "Segna come non pagato";
 "loan.paymentFailed" = "Pagamento non riuscito. Riprova.";
@@ -1429,8 +1412,6 @@
 "common.done" = "Fine";
 "deposit.linkInterest.title" = "Collega pagamenti di interessi";
 "deposit.recalculateInterest" = "Ricalcola interessi";
-"subscription.linkPayments.selectAll" = "Seleziona tutti";
-"subscription.linkPayments.deselectAll" = "Deseleziona tutti";
 "subscriptions.spentAllTime" = "Speso da sempre";
 "subscription.edit.propagate.title" = "Aggiornare le operazioni collegate?";
 "subscription.edit.propagate.message" = "Applicare le modifiche alle operazioni esistenti collegate a questo abbonamento?";
@@ -1536,7 +1517,6 @@
 // MARK: - Accessibility
 "accessibility.accounts.addMenu" = "Menu aggiungi";
 "accessibility.accounts.doneReordering" = "Riordino completato";
-"accessibility.accounts.reorder" = "Riordina";
 "accessibility.category.budgetHint" = "Utilizzo del budget";
 "accessibility.category.budgetProgress" = "Avanzamento del budget";
 "accessibility.category.label" = "Categoria";
@@ -1552,24 +1532,30 @@
 "bulk.selectAll" = "Seleziona tutto";
 "bulk.deselectAll" = "Deseleziona tutto";
 "bulk.done" = "Fine";
+"bulk.add" = "Aggiungi";
+"bulk.reorder" = "Riordina";
+"bulk.moveUp" = "Sposta su";
+"bulk.moveDown" = "Sposta giù";
 "bulk.deleteCount" = "Elimina (%d)";
 
 // MARK: - Bulk Delete Accounts
 "bulk.deleteAccounts.title" = "Eliminare %d conti?";
 "bulk.deleteAccounts.message" = "Cosa fare con le operazioni collegate?";
 "bulk.deleteAccounts.onlyAccounts" = "Elimina solo i conti";
-"bulk.deleteAccounts.withTransactions" = "Elimina con tutte le operazioni";
+"bulk.deleteAccounts.withTransactions" = "Elimina conti e operazioni";
 
 // MARK: - Bulk Delete Categories
 "bulk.deleteCategories.title" = "Eliminare %d categorie?";
 "bulk.deleteCategories.message" = "Cosa fare con le operazioni collegate?";
 "bulk.deleteCategories.onlyCategories" = "Elimina solo le categorie";
-"bulk.deleteCategories.withTransactions" = "Elimina con tutte le operazioni";
+"bulk.deleteCategories.withTransactions" = "Elimina categorie e operazioni";
 
 // MARK: - Bulk Delete Subcategories
 "bulk.deleteSubcategories.title" = "Eliminare %d sottocategorie?";
 "bulk.deleteDeposits.title" = "Eliminare %d depositi?";
 "bulk.deleteLoans.title" = "Eliminare %d prestiti?";
+"bulk.deleteLoans.onlyLoans" = "Elimina solo i prestiti";
+"bulk.deleteLoans.withPayments" = "Elimina prestiti e pagamenti";
 "bulk.deleteDebts.title" = "Eliminare %d debiti?";
 "bulk.deleteGoals.title" = "Eliminare %d obiettivi?";
 "bulk.deleteSubscriptions.title" = "Eliminare %d abbonamenti?";
@@ -1582,15 +1568,11 @@
 "account.detail.totalIncome" = "Entrate totali";
 "account.detail.totalExpense" = "Spese totali";
 "account.detail.transactionCount" = "Operazioni";
-"account.detail.delete.confirmTitle" = "Eliminare il conto?";
-"account.detail.delete.confirmMessage" = "Il conto verrà eliminato definitivamente.";
 "accounts.type" = "Tipo";
 "accounts.currency" = "Valuta";
 "accounts.type.deposit" = "Deposito";
 "accounts.type.loan" = "Prestito";
 "accounts.type.regular" = "Conto";
-"common.edit" = "Modifica";
-"common.delete" = "Elimina";
 
 // Category Detail
 "category.detail.actions.addTransaction" = "Aggiungi operazione";
@@ -1601,8 +1583,6 @@
 "category.detail.subcategories" = "Sottocategorie";
 "category.detail.transactionCount" = "Operazioni";
 "category.detail.manageSubcategories" = "Gestisci sottocategorie";
-"category.detail.delete.confirmTitle" = "Eliminare la categoria?";
-"category.detail.delete.confirmMessage" = "Questo eliminerà la categoria.";
 "category.detail.type.expense" = "Spesa";
 "category.detail.type.income" = "Entrata";
 
@@ -2201,9 +2181,9 @@
 "assistant.memory.emptyTitle" = "Ten non sa ancora nulla di te";
 "assistant.memory.emptyMessage" = "Racconta a Ten dei tuoi soldi nella chat, per esempio quando arriva lo stipendio o per cosa risparmi. Ten propone di ricordarlo, e decidi tu.";
 "assistant.memory.footer" = "Ten vede queste informazioni in ogni chat. Restano su questo iPhone e lo lasciano solo insieme alle tue domande.";
-"assistant.memory.add" = "Aggiungi un'informazione";
 "assistant.memory.new" = "Nuova informazione";
 "assistant.memory.edit" = "Modifica informazione";
+"typing.indicator" = "Sta scrivendo";
 "assistant.memory.placeholder" = "Per esempio: lo stipendio arriva il 10";
 "assistant.memory.editorFooter" = "Una frase breve sui tuoi soldi: quando arriva lo stipendio, per cosa risparmi, qual è la carta principale. Niente numeri di carta o password.";
 "assistant.memory.editHint" = "Apre l'informazione per modificarla";
@@ -2249,7 +2229,6 @@
 "goal.reachedSection" = "Raggiunti";
 "goal.contribute" = "Aggiungi";
 "goal.contributions" = "Versamenti";
-"goal.delete" = "Elimina obiettivo";
 "goal.deleteTitle" = "Eliminare l’obiettivo?";
 "goal.deleteMessage" = "L’obiettivo e i suoi versamenti verranno eliminati. Conti e movimenti restano invariati.";
 "goal.notFound" = "Obiettivo non trovato";
@@ -2286,7 +2265,6 @@
 "debt.settle" = "Salda";
 "debt.reopen" = "Riapri";
 "debt.repayments" = "Restituzioni";
-"debt.delete" = "Elimina debito";
 "debt.deleteTitle" = "Eliminare il debito?";
 "debt.deleteMessage" = "Il debito e le sue restituzioni verranno eliminati. Conti e movimenti restano invariati.";
 "debt.notFound" = "Debito non trovato";
@@ -2312,6 +2290,12 @@
 "assistant.topic.debt.plan" = "Come restituisco a %@ in tempo?";
 "assistant.topic.allowance.enough" = "I soldi mi bastano fino alla prossima entrata?";
 "assistant.topic.allowance.save" = "Dove posso risparmiare per avere di più ogni giorno?";
+"assistant.topic.deposit.earned" = "Quanti interessi ha reso «%@»?";
+"assistant.topic.deposit.grow" = "Come faccio crescere «%@» più in fretta?";
+"assistant.topic.loan.payoff" = "Quando finirò di pagare «%@»?";
+"assistant.topic.loan.early" = "Quanto risparmierei estinguendo «%@» prima?";
+"assistant.topic.subscription.cost" = "Quanto mi costa «%@» all'anno?";
+"assistant.topic.subscription.price" = "«%@» è aumentato di prezzo?";
 
 /* Ten's lines around the conversation (AssistantChatter, DesignKit 4.10). */
 "assistant.chatter.morning" = "Buongiorno!";
@@ -2407,7 +2391,6 @@
 "asset.soldBadge" = "Venduto";
 "asset.deleteTitle" = "Eliminare il bene?";
 "asset.deleteMessage" = "Il bene e le sue valutazioni verranno eliminati. Conti e movimenti restano invariati.";
-"asset.delete" = "Elimina bene";
 "bulk.deleteAssets.title" = "Eliminare %d beni?";
 "asset.notFound" = "Bene non trovato";
 "asset.notFoundDescription" = "Potrebbe essere stato eliminato.";

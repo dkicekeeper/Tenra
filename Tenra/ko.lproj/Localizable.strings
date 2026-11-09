@@ -19,8 +19,6 @@
 // MARK: - Transaction Preview (Phase 16)
 "transactionPreview.found" = "거래 %d건을 찾았어요";
 "transactionPreview.selectHint" = "가져올 거래를 선택하세요";
-"transactionPreview.selectAll" = "전체 선택";
-"transactionPreview.deselectAll" = "전체 해제";
 "transactionPreview.addSelected" = "선택 항목 추가 (%d)";
 "transactionPreview.noAccount" = "계좌 없음";
 "transactionPreview.noMatchingAccount" = "이 통화의 계좌가 없습니다";
@@ -72,8 +70,11 @@
 // MARK: - Empty States
 "emptyState.noTransactions" = "거래가 없어요";
 "emptyState.noAccounts" = "계좌가 없어요";
+"account.emptyDescription" = "카드, 현금, 은행 계좌를 추가하면 모든 잔액을 한곳에서 볼 수 있어요";
 "emptyState.noCategories" = "카테고리가 없어요";
+"category.emptyDescription" = "카테고리를 추가하면 돈이 어디에 쓰이는지 알 수 있어요";
 "emptyState.noSubcategories" = "하위 카테고리가 없어요";
+"subcategory.emptyDescription" = "하위 카테고리를 추가하면 지출을 더 자세히 나눠 볼 수 있어요";
 "emptyState.noData" = "표시할 데이터가 없어요";
 "emptyState.searchNoResults" = "결과가 없어요";
 "emptyState.startTracking" = "거래를 추가해 재정을 관리해 보세요";
@@ -151,7 +152,6 @@
 "alert.deleteAllData.title" = "모든 데이터를 삭제할까요?";
 "alert.deleteAllData.message" = "모든 거래, 계좌, 카테고리가 영구적으로 삭제돼요.";
 "alert.deleteAllData.confirm" = "삭제";
-"alert.deleteAllData.cancel" = "취소";
 "alert.resetLearning.title" = "음성 설정을 초기화할까요?";
 "alert.resetLearning.message" = "파서가 각 카테고리에 자주 선택하던 계좌를 잊게 돼요. 거래는 삭제되지 않아요.";
 "alert.resetLearning.confirm" = "초기화";
@@ -203,7 +203,6 @@
 // MARK: - Transaction Actions
 "transaction.importTransactions" = "거래 가져오기";
 "transaction.addNew" = "거래 추가";
-"transaction.edit" = "거래 편집";
 "transaction.new" = "새 거래";
 
 // MARK: - Search
@@ -266,7 +265,6 @@
 "transaction.stopRecurring.title" = "반복을 중지할까요?";
 "transaction.stopRecurring.message" = "반복 거래가 중지돼요. 앞으로 생성될 모든 거래가 삭제돼요.";
 "transaction.stopRecurring.confirm" = "반복 중지";
-"transaction.stopRecurring.cancel" = "취소";
 "accessibility.deleteTransaction" = "거래 삭제";
 "accessibility.stopRecurring" = "반복 거래 중지";
 "accessibility.swipeForOptions" = "왼쪽으로 밀어 옵션 보기";
@@ -279,10 +277,8 @@
 "account.selectLogo" = "로고 선택";
 "account.popularBanks" = "인기 은행";
 "account.otherBanks" = "기타 은행";
-"account.newAccount" = "새 계좌";
-"account.newDeposit" = "새 예금";
 "account.namePlaceholder" = "계좌 이름";
-"account.deleteTitle" = "계좌 삭제";
+"account.deleteTitle" = "계좌를 삭제할까요?";
 "account.deleteMessage" = "'%@'의 거래를 어떻게 할까요?";
 "account.deleteOnlyAccount" = "계좌만 삭제";
 "account.deleteAccountAndTransactions" = "계좌와 거래 삭제";
@@ -293,9 +289,7 @@
 // MARK: - Deposits
 "deposit.notFound" = "예금을 찾을 수 없어요";
 "deposit.title" = "예금";
-"deposit.edit" = "편집";
 "deposit.changeRate" = "금리 변경";
-"deposit.delete" = "예금 삭제";
 "deposit.deleteTitle" = "예금을 삭제할까요?";
 "deposit.deleteMessage" = "모든 예금 데이터와 관련 거래가 삭제돼요.";
 "deposit.balance" = "잔액";
@@ -360,7 +354,6 @@
 "category.manageSubcategories" = "하위 카테고리 관리";
 
 // MARK: - Subcategories Management
-"subcategory.new" = "새 하위 카테고리";
 "subcategory.namePlaceholder" = "하위 카테고리 이름";
 "subcategory.notUsed" = "아직 사용 안 함";
 "subcategory.reorder" = "하위 카테고리";
@@ -439,7 +432,6 @@
 "quickAdd.searchAndAddSubcategories" = "하위 카테고리 검색 및 추가";
 "quickAdd.selectDate" = "날짜 선택";
 "quickAdd.done" = "완료";
-"quickAdd.cancel" = "취소";
 
 // MARK: - Validation Errors
 "error.validation.enterAmount" = "올바른 금액을 입력해요";
@@ -454,7 +446,6 @@
 "voice.error" = "오류";
 "voice.errorMessage" = "녹음을 시작하지 못했어요";
 "voice.emptyText" = "인식된 내용이 없어요. 다시 시도해 주세요.";
-"voice.ok" = "확인";
 "voice.vadToggle" = "무음 시 자동 정지";
 "voice.vadDescription" = "2.5초 동안 소리가 없으면 녹음이 자동으로 멈춰요";
 
@@ -482,13 +473,10 @@
 "subscriptions.candidates.title" = "구독으로 보여요";
 "subscriptions.candidates.footer" = "이 가맹점들은 매달 거의 같은 금액을 청구했어요. 탭해서 구독으로 추가하면 다음 결제가 예정되고, 지난 결제는 그대로 남아요. 길게 눌러 숨길 수 있어요.";
 "subscriptions.candidates.dismiss" = "구독이 아니에요";
-"subscriptions.addSubscription" = "구독 추가";
 "subscriptions.deleteConfirmTitle" = "구독을 삭제할까요?";
 "subscriptions.deleteConfirmMessage" = "모든 구독 데이터와 관련 거래가 삭제돼요.";
-"subscriptions.delete" = "삭제";
 "subscriptions.deleteOnlySubscription" = "구독만 삭제";
 "subscriptions.deleteSubscriptionAndTransactions" = "구독과 거래 모두 삭제";
-"subscriptions.edit" = "편집";
 "subscriptions.pause" = "일시정지";
 "subscriptions.resume" = "재개";
 "subscriptions.transactionHistory" = "거래 내역";
@@ -600,7 +588,6 @@
 "transactionForm.depositTopUp" = "예금 입금";
 "transactionForm.depositWithdrawal" = "예금 출금";
 "transactionForm.accountTopUp" = "계좌 충전";
-"transactionForm.editTransaction" = "거래 편집";
 "transactionForm.recurring" = "반복";
 "transactionForm.makeRecurring" = "반복 거래로 만들기";
 "transactionForm.searchSubcategories" = "하위 카테고리 검색";
@@ -1162,12 +1149,10 @@
 "loan.remainingShort" = "%d회 남음";
 "loan.notFound" = "대출을 찾을 수 없어요";
 "loan.title" = "대출";
-"loan.edit" = "대출 수정";
 "loan.changeRate" = "금리 변경";
 "loan.earlyRepayment" = "중도 상환";
 "loan.history" = "상환 내역";
 "loan.actions" = "대출 작업";
-"loan.delete" = "대출 삭제";
 "loan.deleteTitle" = "대출을 삭제할까요?";
 "loan.deleteMessage" = "이 대출의 상환 내역은 계좌의 실제 지출이에요. 내역을 남겨 두거나 대출과 함께 삭제할 수 있어요.";
 "loan.closedSection" = "상환 완료";
@@ -1175,8 +1160,8 @@
 "loan.statusPaidThisMonth" = "이번 달 상환 완료";
 "loan.statusNotPaid" = "미상환";
 "loan.closedOn" = "%@에 상환 완료";
-"loan.deleteKeepPayments" = "삭제하고 상환 내역 유지";
-"loan.deleteWithPayments" = "모두 삭제";
+"loan.deleteKeepPayments" = "대출만 삭제";
+"loan.deleteWithPayments" = "대출과 상환 내역 삭제";
 "loan.payoffCelebration" = "대출을 모두 갚았어요. 수고하셨어요.";
 "loan.paidOff" = "상환 완료";
 "loan.remainingPrincipal" = "남은 금액";
@@ -1204,7 +1189,7 @@
 "loan.interestShort" = "이자: %@";
 "loan.makeEarlyRepayment" = "중도 상환";
 "loan.convertTitle" = "대출로 전환";
-"loan.editTitle" = "대출 수정";
+"loan.editTitle" = "대출 편집";
 "loan.newTitle" = "새 대출";
 "loan.nameHeader" = "이름";
 "loan.namePlaceholder" = "예: 자동차 대출";
@@ -1358,7 +1343,7 @@
 "settings.cloud.restoreSuccess" = "데이터가 복원됐어요";
 "settings.cloud.restoring" = "복원 중…";
 "settings.cloud.restoringSubtitle" = "앱을 닫지 말아 주세요";
-"settings.cloud.delete" = "삭제";
+"settings.cloud.deleteTitle" = "백업을 삭제할까요?";
 "settings.cloud.storage" = "저장 공간";
 "settings.cloud.storageUsed" = "%@ / %@";
 "settings.cloud.iCloud.toggle" = "iCloud에 백업 저장";
@@ -1386,7 +1371,6 @@
 "error.backup.notDownloaded" = "이 백업이 아직 iCloud에서 다운로드되지 않았어요. 연결을 확인한 뒤 다시 시도하세요.";
 
 // MARK: - Loans (Form)
-"loan.addLoan" = "대출 추가";
 "loan.amountLabel" = "금액";
 "loan.detailsSection" = "대출 정보";
 "loan.noteLabel" = "메모";
@@ -1408,7 +1392,6 @@
 "loan.linkPayments.link" = "상환 %d건 연결";
 "loan.linkPayments.empty" = "일치하는 거래가 없어요";
 "loan.linkPayments.error.notFound" = "대출을 찾을 수 없어요";
-"loan.add" = "대출 추가";
 "loan.markPaid" = "상환 완료로 표시";
 "loan.markUnpaid" = "미상환으로 표시";
 "loan.paymentFailed" = "상환에 실패했어요. 다시 시도해 주세요.";
@@ -1429,8 +1412,6 @@
 "common.done" = "완료";
 "deposit.linkInterest.title" = "이자 지급 연결";
 "deposit.recalculateInterest" = "이자 다시 계산";
-"subscription.linkPayments.selectAll" = "전체 선택";
-"subscription.linkPayments.deselectAll" = "전체 선택 해제";
 "subscriptions.spentAllTime" = "전체 기간 지출";
 "subscription.edit.propagate.title" = "연결된 거래도 업데이트할까요?";
 "subscription.edit.propagate.message" = "이 구독에 연결된 기존 거래에도 변경 사항을 적용할까요?";
@@ -1536,7 +1517,6 @@
 // MARK: - Accessibility
 "accessibility.accounts.addMenu" = "추가 메뉴";
 "accessibility.accounts.doneReordering" = "순서 변경 완료";
-"accessibility.accounts.reorder" = "순서 변경";
 "accessibility.category.budgetHint" = "예산 사용량";
 "accessibility.category.budgetProgress" = "예산 진행률";
 "accessibility.category.label" = "카테고리";
@@ -1552,25 +1532,31 @@
 "bulk.selectAll" = "전체 선택";
 "bulk.deselectAll" = "전체 선택 해제";
 "bulk.done" = "완료";
+"bulk.add" = "추가";
+"bulk.reorder" = "순서 변경";
+"bulk.moveUp" = "위로 이동";
+"bulk.moveDown" = "아래로 이동";
 "bulk.deleteCount" = "삭제 (%d)";
 
 // MARK: - Bulk Delete Accounts
 "bulk.deleteAccounts.title" = "계좌 %d개를 삭제할까요?";
 "bulk.deleteAccounts.message" = "관련 거래는 어떻게 할까요?";
 "bulk.deleteAccounts.onlyAccounts" = "계좌만 삭제";
-"bulk.deleteAccounts.withTransactions" = "모든 거래와 함께 삭제";
+"bulk.deleteAccounts.withTransactions" = "계좌와 거래 삭제";
 
 // MARK: - Bulk Delete Categories
 "bulk.deleteCategories.title" = "카테고리 %d개를 삭제할까요?";
 "bulk.deleteCategories.message" = "관련 거래는 어떻게 할까요?";
 "bulk.deleteCategories.onlyCategories" = "카테고리만 삭제";
-"bulk.deleteCategories.withTransactions" = "모든 거래와 함께 삭제";
+"bulk.deleteCategories.withTransactions" = "카테고리와 거래 삭제";
 
 // MARK: - Bulk Delete Subcategories
 "bulk.deleteSubcategories.title" = "하위 카테고리 %d개를 삭제할까요?";
 "bulk.deleteDeposits.title" = "예금 %d개를 삭제할까요?";
 "bulk.deleteLoans.title" = "대출 %d개를 삭제할까요?";
-"bulk.deleteDebts.title" = "빚 %d개를 삭제할까요?";
+"bulk.deleteLoans.onlyLoans" = "대출만 삭제";
+"bulk.deleteLoans.withPayments" = "대출과 상환 내역 삭제";
+"bulk.deleteDebts.title" = "기록 %d개를 삭제할까요?";
 "bulk.deleteGoals.title" = "목표 %d개를 삭제할까요?";
 "bulk.deleteSubscriptions.title" = "구독 %d개를 삭제할까요?";
 "subcategory.deleteTitle" = "하위 카테고리를 삭제할까요?";
@@ -1582,15 +1568,11 @@
 "account.detail.totalIncome" = "총 수입";
 "account.detail.totalExpense" = "총 지출";
 "account.detail.transactionCount" = "거래";
-"account.detail.delete.confirmTitle" = "계좌를 삭제할까요?";
-"account.detail.delete.confirmMessage" = "이 계좌가 영구적으로 삭제돼요.";
 "accounts.type" = "유형";
 "accounts.currency" = "통화";
 "accounts.type.deposit" = "예금";
 "accounts.type.loan" = "대출";
 "accounts.type.regular" = "계좌";
-"common.edit" = "편집";
-"common.delete" = "삭제";
 
 // Category Detail
 "category.detail.actions.addTransaction" = "거래 추가";
@@ -1601,8 +1583,6 @@
 "category.detail.subcategories" = "하위 카테고리";
 "category.detail.transactionCount" = "거래";
 "category.detail.manageSubcategories" = "하위 카테고리 관리";
-"category.detail.delete.confirmTitle" = "카테고리를 삭제할까요?";
-"category.detail.delete.confirmMessage" = "이 카테고리가 삭제돼요.";
 "category.detail.type.expense" = "지출";
 "category.detail.type.income" = "수입";
 
@@ -2201,9 +2181,9 @@
 "assistant.memory.emptyTitle" = "텐은 아직 당신을 잘 몰라요";
 "assistant.memory.emptyMessage" = "채팅에서 텐에게 돈 이야기를 들려주세요. 예를 들어 월급날이나 무엇을 위해 저축하는지요. 텐이 기억해 둘지 물어보고, 결정은 당신이 해요.";
 "assistant.memory.footer" = "텐은 모든 채팅에서 이 정보를 봐요. 이 iPhone에 저장되고 질문과 함께일 때만 밖으로 나가요.";
-"assistant.memory.add" = "정보 추가";
 "assistant.memory.new" = "새 정보";
 "assistant.memory.edit" = "정보 편집";
+"typing.indicator" = "입력 중";
 "assistant.memory.placeholder" = "예: 월급은 매달 10일";
 "assistant.memory.editorFooter" = "돈에 관한 짧은 한 문장: 월급날, 저축 목적, 주로 쓰는 카드 등. 카드 번호나 비밀번호는 적지 마세요.";
 "assistant.memory.editHint" = "정보를 열어 편집해요";
@@ -2249,7 +2229,6 @@
 "goal.reachedSection" = "달성한 목표";
 "goal.contribute" = "입금";
 "goal.contributions" = "입금 기록";
-"goal.delete" = "목표 삭제";
 "goal.deleteTitle" = "목표를 삭제할까요?";
 "goal.deleteMessage" = "목표와 입금 기록이 삭제돼요. 계좌와 거래는 그대로예요.";
 "goal.notFound" = "목표를 찾을 수 없어요";
@@ -2286,7 +2265,6 @@
 "debt.settle" = "완료하기";
 "debt.reopen" = "다시 열기";
 "debt.repayments" = "상환 기록";
-"debt.delete" = "기록 삭제";
 "debt.deleteTitle" = "기록을 삭제할까요?";
 "debt.deleteMessage" = "이 기록과 상환 내역이 삭제돼요. 계좌와 거래는 그대로예요.";
 "debt.notFound" = "기록을 찾을 수 없어요";
@@ -2312,6 +2290,12 @@
 "assistant.topic.debt.plan" = "%@에게 기한 안에 갚으려면?";
 "assistant.topic.allowance.enough" = "다음 수입까지 돈이 충분할까?";
 "assistant.topic.allowance.save" = "하루에 더 쓰려면 어디서 아껴야 할까?";
+"assistant.topic.deposit.earned" = "‘%@’ 이자는 얼마나 받았어?";
+"assistant.topic.deposit.grow" = "‘%@’를 더 빨리 불리려면?";
+"assistant.topic.loan.payoff" = "‘%@’ 대출은 언제 다 갚아?";
+"assistant.topic.loan.early" = "‘%@’를 미리 갚으면 얼마나 아낄 수 있어?";
+"assistant.topic.subscription.cost" = "‘%@’는 1년에 얼마야?";
+"assistant.topic.subscription.price" = "‘%@’ 가격이 올랐어?";
 
 /* Ten's lines around the conversation (AssistantChatter, DesignKit 4.10). */
 "assistant.chatter.morning" = "좋은 아침이에요!";
@@ -2407,7 +2391,6 @@
 "asset.soldBadge" = "판매됨";
 "asset.deleteTitle" = "자산을 삭제할까요?";
 "asset.deleteMessage" = "자산과 평가 기록이 삭제돼요. 계좌와 거래는 그대로예요.";
-"asset.delete" = "자산 삭제";
 "bulk.deleteAssets.title" = "자산 %d개를 삭제할까요?";
 "asset.notFound" = "자산을 찾을 수 없어요";
 "asset.notFoundDescription" = "삭제되었을 수 있어요.";
@@ -2598,7 +2581,7 @@
 "asset.estimate.failed" = "매물 정보를 가져오지 못했습니다. 잠시 후 다시 시도해 주세요.";
 "asset.estimate.more" = "Tenra Pro로 더 많이";
 "asset.estimate.note" = "매물 %1$d건 (%2$@)";
-"asset.valuation.editTitle" = "평가액 수정";
+"asset.valuation.editTitle" = "평가액 편집";
 "asset.valuation.day" = "평가일";
 "asset.includeInNetWorth" = "순자산에 포함";
 "asset.yieldOnShare" = "내 지분 기준 수익률";

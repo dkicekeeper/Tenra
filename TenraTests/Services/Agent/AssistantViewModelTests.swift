@@ -340,6 +340,88 @@ struct AssistantViewModelTests {
         #expect(box.saved?.id == kept.id)
     }
 
+    /// "Ask Ten" on a screen: a new, empty chat in place of the open one (kept), its questions
+    /// about the screen over the field until the first message; nothing is sent before.
+    @Test func askTenOpensANewChatWithItsQuestions() async throws {
+        let box = ThreadBox()
+        let transport = ScriptedTransport([
+            [AgentScript.done([AgentScript.render("toolu_1", source: "none", suggestions: ["Ещё"])])],
+            [AgentScript.done([AgentScript.render("toolu_2", source: "none", suggestions: ["Дальше"])])],
+        ])
+        let model = AssistantViewModel(
+            conversation: AgentConversation(transport: transport, toolkit: FakeToolkit()),
+            context: { "<app_context>a</app_context>" },
+            persistence: box.persistence
+        )
+        await model.send("Привет")
+        let firstId = try #require(box.saved?.id)
+
+        #expect(model.startChat(suggesting: ["Когда я закрою кредит?", "Сколько я сэкономлю?"]))
+        #expect(model.entries.isEmpty)
+        #expect(model.suggestions == ["Когда я закрою кредит?", "Сколько я сэкономлю?"])
+        #expect(model.threadId != firstId)
+        #expect(transport.calls.count == 1)
+
+        await model.send("Когда я закрою кредит?")
+        #expect(model.suggestions == ["Дальше"])
+        #expect(box.saved?.id != firstId)
+        #expect(box.saved?.title == "Когда я закрою кредит?")
+
+        // Another chat drops the screen's questions.
+        model.reset()
+        #expect(model.suggestions.isEmpty)
+    }
+
+    /// The kept thread loads once, at the first appearance of the assistant; a chat "Ask Ten"
+    /// opened meanwhile stays on screen.
+    @Test func aKeptThreadDoesNotReplaceAChatAskTenOpened() async throws {
+        let box = ThreadBox()
+        let first = AssistantViewModel(
+            conversation: AgentConversation(transport: ScriptedTransport([
+                [AgentScript.done([AgentScript.render("toolu_1", source: "none")])],
+            ]), toolkit: FakeToolkit()),
+            context: { "<app_context>a</app_context>" },
+            persistence: box.persistence
+        )
+        await first.send("Привет")
+        let kept = try #require(box.saved)
+
+        // Opened before the load.
+        let before = AssistantViewModel(
+            conversation: AgentConversation(transport: ScriptedTransport([]), toolkit: FakeToolkit()),
+            context: { "<app_context>a</app_context>" },
+            persistence: box.persistence
+        )
+        #expect(before.startChat(suggesting: ["Вопрос"]))
+        await before.restore()
+        #expect(before.entries.isEmpty)
+        #expect(before.suggestions == ["Вопрос"])
+
+        // Opened while the kept thread loads.
+        let slot = ModelSlot()
+        let during = AssistantViewModel(
+            conversation: AgentConversation(transport: ScriptedTransport([]), toolkit: FakeToolkit()),
+            context: { "<app_context>a</app_context>" },
+            persistence: AssistantViewModel.Persistence(
+                load: {
+                    slot.model?.startChat(suggesting: ["Вопрос"])
+                    return kept
+                },
+                save: { _ in }
+            )
+        )
+        slot.model = during
+        await during.restore()
+        #expect(during.entries.isEmpty)
+        #expect(during.suggestions == ["Вопрос"])
+        #expect(during.threadId != kept.id)
+    }
+
+    @MainActor
+    private final class ModelSlot {
+        var model: AssistantViewModel?
+    }
+
     @Test func aNewChatIsAnotherThread() async throws {
         let box = ThreadBox()
         let model = AssistantViewModel(

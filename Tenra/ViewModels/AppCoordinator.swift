@@ -85,7 +85,7 @@ class AppCoordinator {
     private(set) var pendingAttachment: URL?
 
     /// What a screen asked Ten about ("Ask Ten" on an account, a category, an insight, the
-    /// history): the assistant opens with questions about it. Cleared once taken.
+    /// history, …): the assistant opens a new chat with questions about it. Cleared once taken.
     private(set) var assistantTopic: AssistantTopic?
 
     /// A message Ten wrote that the person chose to go through on Home: the assistant opens and

@@ -88,7 +88,7 @@ struct SubcategoriesManagementView: View {
             Button {
                 editingSubcategory = subcategory
             } label: {
-                Label(String(localized: "button.edit", defaultValue: "Edit"), systemImage: "pencil")
+                Label(String(localized: "button.edit"), systemImage: "pencil")
             }
             Button(role: .destructive) {
                 HapticManager.warning()
@@ -105,8 +105,8 @@ struct SubcategoriesManagementView: View {
                 EmptyState(
                     icon: "list.bullet",
                     title: String(localized: "emptyState.noSubcategories"),
-                    description: String(localized: "emptyState.startTracking"),
-                    actionTitle: String(localized: "subcategory.new"),
+                    description: String(localized: "subcategory.emptyDescription"),
+                    actionTitle: String(localized: "modal.newSubcategory"),
                     action: {
                         showingAddSubcategory = true
                     }
@@ -148,7 +148,7 @@ struct SubcategoriesManagementView: View {
             selection: $selection,
             allIDs: sortedSubcategories.map(\.id),
             canReorder: false,
-            addLabel: String(localized: "subcategory.new"),
+            addLabel: String(localized: "modal.newSubcategory"),
             onAdd: { showingAddSubcategory = true },
             onDeleteSelected: { subcategoriesToDelete = selection }
         )

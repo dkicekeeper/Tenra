@@ -110,7 +110,7 @@ struct GoalDetailView: View {
                     HapticManager.warning()
                     showingDelete = true
                 } label: {
-                    Label(String(localized: "goal.delete"), systemImage: "trash")
+                    Label(String(localized: "button.delete"), systemImage: "trash")
                 }
             }
         )

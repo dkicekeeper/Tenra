@@ -1,15 +1,141 @@
 # Tenra 1.8.2: What's New (ASC, 13 storefront locales and en-GB)
 
-Version 1.8.2 in the project since 2026-11-06, TestFlight build 74 (from the cloud, 2026-11-07) for
-the device check. 1.8.1 is in the store since 2026-11-06/07 (its notes and checklist:
+Version 1.8.2 in the project since 2026-11-06, TestFlight build 75 (from the cloud, 2026-11-09,
+branch `claude/cool-wozniak-3jwa99`: `main` plus the action audit and "Ask Ten" opening a new chat,
+not merged yet; build 74 of 2026-11-07 is `main` without them) for the device check. 1.8.1 is in the store since 2026-11-06/07 (its notes and checklist:
 [archive/release-notes-1.8.1.md](archive/release-notes-1.8.1.md)), so 1.8.2 can go to review once the
 device check below passes. `prepare-version` (Actions → App Store Connect, [asc.md](asc.md)) pastes
 each block into App Store Connect; en-GB (search in Kazakhstan) carries ru's text. No em dashes
 (user rule).
 
-**What's New: not written yet.** The changes are the funnel (below) and a reminder fix, nothing a
-person asks for by name; App Store Connect still needs a text in every locale. A short
-"Improvements and fixes" style note in 14 localizations is enough, written before `prepare-version`.
+Names of screens as the app shows them (`walletReview.title`, `assistant.ask`). The trial offer
+at the end of onboarding and the soft paywall are not announced.
+
+## en-US
+
+```
+What's new in Tenra:
+• A subscription's real charge, from a bank notification, Apple Pay or entered by hand, now becomes its planned payment instead of standing next to it. The amount and date come from the bank.
+• A transfer between your own accounts in two banks is recorded as one transfer, not an expense and an income. When in doubt, Tenra asks in To review.
+• "Ask Ten" opens a new chat with questions about the screen you're on, and now works on deposits, loans and subscriptions too. Actions have the same name on every screen, and deleting an account always asks whether to keep its transactions.
+```
+
+## ru
+
+```
+Что нового в Tenra:
+• Реальное списание подписки из уведомления банка, Apple Pay или введённое вручную теперь становится её запланированным платежом, а не встаёт рядом. Сумма и дата берутся из банка.
+• Перевод между своими счетами в двух банках записывается одним переводом, а не расходом и доходом. Если есть сомнения, Tenra спросит в разделе «На проверку».
+• «Спросить Тэна» открывает новый чат с вопросами про экран, на котором вы находитесь, и теперь есть у депозитов, кредитов и подписок. Действия называются одинаково на всех экранах, а при удалении счёта Tenra всегда спрашивает, оставить ли его операции.
+```
+
+## en-GB
+
+```
+Что нового в Tenra:
+• Реальное списание подписки из уведомления банка, Apple Pay или введённое вручную теперь становится её запланированным платежом, а не встаёт рядом. Сумма и дата берутся из банка.
+• Перевод между своими счетами в двух банках записывается одним переводом, а не расходом и доходом. Если есть сомнения, Tenra спросит в разделе «На проверку».
+• «Спросить Тэна» открывает новый чат с вопросами про экран, на котором вы находитесь, и теперь есть у депозитов, кредитов и подписок. Действия называются одинаково на всех экранах, а при удалении счёта Tenra всегда спрашивает, оставить ли его операции.
+```
+
+## de-DE
+
+```
+Neu in Tenra:
+• Die echte Abbuchung eines Abos, aus einer Bankmitteilung, über Apple Pay oder von Hand eingetragen, wird jetzt zur geplanten Zahlung, statt daneben zu stehen. Betrag und Datum kommen von der Bank.
+• Eine Überweisung zwischen Ihren eigenen Konten bei zwei Banken wird als eine Überweisung erfasst, nicht als Ausgabe und Einnahme. Im Zweifel fragt Tenra unter „Zu prüfen“ nach.
+• „Ten fragen“ öffnet einen neuen Chat mit Fragen zum aktuellen Bildschirm und ist jetzt auch bei Sparkonten, Krediten und Abos da. Aktionen heißen überall gleich, und beim Löschen eines Kontos fragt Tenra immer, ob seine Transaktionen bleiben sollen.
+```
+
+## es-ES
+
+```
+Novedades de Tenra:
+• El cargo real de una suscripción, de una notificación del banco, de Apple Pay o anotado a mano, ahora se convierte en su pago previsto en lugar de quedar al lado. El importe y la fecha vienen del banco.
+• Una transferencia entre tus propias cuentas en dos bancos se registra como una sola transferencia, no como un gasto y un ingreso. Si hay dudas, Tenra te pregunta en Por revisar.
+• «Preguntar a Ten» abre un chat nuevo con preguntas sobre la pantalla en la que estás, y ahora también está en depósitos, préstamos y suscripciones. Las acciones se llaman igual en todas las pantallas y, al eliminar una cuenta, Tenra siempre pregunta si conservar sus transacciones.
+```
+
+## es-MX
+
+```
+Novedades de Tenra:
+• El cargo real de una suscripción, de una notificación del banco, de Apple Pay o anotado a mano, ahora se convierte en su pago previsto en lugar de quedar al lado. El importe y la fecha vienen del banco.
+• Una transferencia entre tus propias cuentas en dos bancos se registra como una sola transferencia, no como un gasto y un ingreso. Si hay dudas, Tenra te pregunta en Por revisar.
+• «Preguntar a Ten» abre un chat nuevo con preguntas sobre la pantalla en la que estás, y ahora también está en depósitos, préstamos y suscripciones. Las acciones se llaman igual en todas las pantallas y, al eliminar una cuenta, Tenra siempre pregunta si conservar sus transacciones.
+```
+
+## fr-FR
+
+```
+Nouveautés de Tenra :
+• Le prélèvement réel d'un abonnement, venu d'une notification de la banque, d'Apple Pay ou saisi à la main, devient désormais son paiement prévu au lieu de s'ajouter à côté. Le montant et la date viennent de la banque.
+• Un virement entre vos propres comptes dans deux banques est enregistré comme un seul virement, et non comme une dépense et un revenu. En cas de doute, Tenra vous pose la question dans À vérifier.
+• « Demander à Ten » ouvre une nouvelle discussion avec des questions sur l'écran où vous êtes, et il est maintenant disponible pour les comptes épargne, les crédits et les abonnements. Les actions portent le même nom sur tous les écrans, et la suppression d'un compte vous demande toujours s'il faut garder ses opérations.
+```
+
+## fr-CA
+
+```
+Nouveautés de Tenra :
+• Le prélèvement réel d'un abonnement, venu d'une notification de la banque, d'Apple Pay ou saisi à la main, devient désormais son paiement prévu au lieu de s'ajouter à côté. Le montant et la date viennent de la banque.
+• Un virement entre vos propres comptes dans deux banques est enregistré comme un seul virement, et non comme une dépense et un revenu. En cas de doute, Tenra vous pose la question dans À vérifier.
+• « Demander à Ten » ouvre une nouvelle discussion avec des questions sur l'écran où vous êtes, et il est maintenant disponible pour les comptes épargne, les crédits et les abonnements. Les actions portent le même nom sur tous les écrans, et la suppression d'un compte vous demande toujours s'il faut garder ses opérations.
+```
+
+## tr
+
+```
+Tenra'da yenilikler:
+• Bir aboneliğin banka bildiriminden, Apple Pay'den ya da elle girilen gerçek ödemesi artık yanında ayrıca durmuyor, planlanan ödemesine dönüşüyor. Tutar ve tarih bankadan alınıyor.
+• İki bankadaki kendi hesapların arasındaki transfer, bir gider ve bir gelir yerine tek transfer olarak kaydediliyor. Emin olmadığında Tenra, Kontrol edilecekler bölümünde soruyor.
+• “Ten’e sor” bulunduğun ekranla ilgili sorularla yeni bir sohbet açıyor ve artık mevduat, kredi ve aboneliklerde de var. Eylemler her ekranda aynı adı taşıyor ve bir hesabı silerken Tenra işlemlerinin kalıp kalmayacağını her zaman soruyor.
+```
+
+## pt-BR
+
+```
+Novidades do Tenra:
+• A cobrança real de uma assinatura, vinda de uma notificação do banco, do Apple Pay ou lançada à mão, agora vira o pagamento previsto dela em vez de ficar ao lado. O valor e a data vêm do banco.
+• Uma transferência entre suas próprias contas em dois bancos é registrada como uma só transferência, não como uma despesa e uma receita. Na dúvida, o Tenra pergunta em Para revisar.
+• "Perguntar ao Ten" abre uma conversa nova com perguntas sobre a tela em que você está, e agora também aparece em depósitos, empréstimos e assinaturas. As ações têm o mesmo nome em todas as telas e, ao excluir uma conta, o Tenra sempre pergunta se você quer manter as transações dela.
+```
+
+## it
+
+```
+Novità di Tenra:
+• L'addebito reale di un abbonamento, da una notifica della banca, da Apple Pay o inserito a mano, ora diventa il suo pagamento previsto invece di comparire accanto. Importo e data arrivano dalla banca.
+• Un trasferimento tra i tuoi conti in due banche viene registrato come un solo trasferimento, non come una spesa e un'entrata. Nel dubbio, Tenra te lo chiede in Da controllare.
+• «Chiedi a Ten» apre una nuova chat con domande sulla schermata in cui ti trovi, e ora c'è anche per depositi, prestiti e abbonamenti. Le azioni hanno lo stesso nome in ogni schermata e, quando elimini un conto, Tenra chiede sempre se tenere le sue operazioni.
+```
+
+## uk
+
+```
+Що нового в Tenra:
+• Реальне списання підписки з повідомлення банку, Apple Pay або введене вручну тепер стає її запланованим платежем, а не з'являється поруч. Сума й дата беруться з банку.
+• Переказ між вашими рахунками у двох банках записується одним переказом, а не витратою й доходом. Якщо є сумніви, Tenra запитає в розділі «На перевірку».
+• «Запитати Тена» відкриває новий чат із запитаннями про екран, на якому ви перебуваєте, і тепер є в депозитах, кредитах і підписках. Дії називаються однаково на всіх екранах, а під час видалення рахунку Tenra завжди питає, чи залишити його операції.
+```
+
+## ja
+
+```
+Tenra の新機能：
+• サブスクの実際の引き落としは、銀行の通知、Apple Pay、手入力のどれから来ても、横に並ばず予定の支払いにまとまるようになりました。金額と日付は銀行のものを使います。
+• 2つの銀行にある自分の口座間の振替は、支出と収入ではなく1件の振替として記録されます。判断に迷うときは「確認待ち」でお尋ねします。
+• 「テンに聞く」で、今いる画面についての質問を添えた新しいチャットが開くようになり、預金・ローン・サブスクでも使えます。操作の名前はすべての画面でそろえ、口座を削除するときは取引を残すかどうかを必ず確認します。
+```
+
+## ko
+
+```
+Tenra의 새로운 기능:
+• 은행 알림, Apple Pay, 직접 입력으로 들어온 구독의 실제 결제가 이제 옆에 따로 남지 않고 예정된 결제로 합쳐져요. 금액과 날짜는 은행 기준을 따라요.
+• 두 은행에 있는 내 계좌 사이의 이체는 지출과 수입이 아니라 하나의 이체로 기록돼요. 확실하지 않을 때는 Tenra가 '확인할 결제'에서 물어봐요.
+• '텐에게 묻기'는 지금 보고 있는 화면에 대한 질문과 함께 새 대화를 열고, 이제 예금, 대출, 구독에서도 쓸 수 있어요. 동작 이름을 모든 화면에서 통일했고, 계좌를 삭제할 때는 거래를 남길지 항상 물어봐요.
+```
 
 ## In 1.8.2 (main since 2026-11-06)
 
@@ -32,6 +158,19 @@ person asks for by name; App Store Connect still needs a text in every locale. A
   app, "Пополнение" in the other) becomes one transfer instead of an expense and an income; when
   only the amount and the time say so, To review asks ("Not a transfer" puts them back). From
   build 74.
+- Actions read the same everywhere (from build 75): "Изменить" on every screen
+  (deposits, loans and subscriptions said "Редактировать"), menus say only "Edit" and "Delete"
+  with Edit first and Delete last, sheets are "New X" / "Edit X" and the list's add button names
+  the same "New X". Deleting is one alert everywhere: an account deleted from its own screen
+  offers "only the account" or "with its transactions" as the list does, a loan "only the loan" or
+  "with its payments"; a transaction's menu says "Stop recurring" (was "Recurring"). Empty
+  accounts, categories and subcategories say what they are for. VoiceOver reads the lists'
+  reorder button and Ten's typing in the person's language. pt-BR says "Excluir" throughout, en,
+  tr and pt-BR buttons are in sentence case, ru writes "счёт".
+- "Ask Ten" opens a new chat (not Ten's home) with questions about the screen over the field, and
+  is now in the menus of a deposit ("How much interest has it earned?"), a loan ("When will I pay
+  it off?", "How much would paying it off early save?") and a subscription ("What does it cost a
+  year?", "Has it gone up?"). From build 75.
 
 ## Submission checklist
 
@@ -48,5 +187,13 @@ person asks for by name; App Store Connect still needs a text in every locale. A
    set time on a day with nothing recorded and none after an entry (manual, Ten's draft, Apple Pay
    capture); a tap opens Ten; VoiceOver reads amounts in "1’234.56" and "1.234,56"; the widget
    shows a chosen format.
-4. **What's New** in this file (14 localizations), then `prepare-version --version 1.8.2 --build 74`.
-5. **One submission**: `asc.py prepare-review --version 1.8.2`; the founder sends it.
+4. **Actions** (build 75): long press a deposit, a loan and a
+   subscription on their lists and open their menus: "Изменить" first, "Удалить" last; delete an
+   account from its own screen (both choices), a loan (both choices) and a transaction (alert, not
+   a sheet); the transaction menu of a recurring payment shows "Прекратить повторение".
+   "Спросить Ten" on an account, a deposit, a loan and a subscription opens a new empty chat with
+   two questions over the field; the previous chat is in the home's list; a question tapped goes
+   (the consent sheet first on a fresh install).
+5. **What's New** in this file (done 2026-11-09, 14 localizations), then
+   `prepare-version --version 1.8.2 --build 75` once the branch is merged into `main`.
+6. **One submission**: `asc.py prepare-review --version 1.8.2`; the founder sends it.

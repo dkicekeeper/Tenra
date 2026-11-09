@@ -78,7 +78,7 @@ struct DepositsListView: View {
                     icon: "lock.square.stack.fill",
                     title: String(localized: "deposit.emptyTitle", defaultValue: "No Deposits"),
                     description: String(localized: "deposit.emptyDescription", defaultValue: "Add a deposit to track interest accrual and capitalization"),
-                    actionTitle: String(localized: "account.newDeposit", defaultValue: "New Deposit"),
+                    actionTitle: String(localized: "deposit.new"),
                     action: addDeposit,
                     line: String(localized: "assistant.empty.deposits")
                 )
@@ -102,7 +102,7 @@ struct DepositsListView: View {
                             Button {
                                 editingDeposit = deposit
                             } label: {
-                                Label(String(localized: "button.edit", defaultValue: "Edit"), systemImage: "pencil")
+                                Label(String(localized: "button.edit"), systemImage: "pencil")
                             }
                             Button(role: .destructive) {
                                 confirmDelete(deposit)
@@ -136,7 +136,7 @@ struct DepositsListView: View {
             mode: $mode,
             selection: $selection,
             allIDs: deposits.map(\.id),
-            addLabel: String(localized: "account.newDeposit", defaultValue: "New Deposit"),
+            addLabel: String(localized: "deposit.new"),
             onAdd: addDeposit,
             onDeleteSelected: { showingBulkDeleteDialog = true }
         )

@@ -108,7 +108,7 @@ struct AccountsManagementView: View {
             Button {
                 editingAccount = account
             } label: {
-                Label(String(localized: "button.edit", defaultValue: "Edit"), systemImage: "pencil")
+                Label(String(localized: "button.edit"), systemImage: "pencil")
             }
 
             Button(role: .destructive) {
@@ -125,8 +125,8 @@ struct AccountsManagementView: View {
                 MascotEmptyState(
                     icon: "creditcard",
                     title: String(localized: "emptyState.noAccounts"),
-                    description: String(localized: "emptyState.startTracking"),
-                    actionTitle: String(localized: "account.newAccount"),
+                    description: String(localized: "account.emptyDescription"),
+                    actionTitle: String(localized: "modal.newAccount"),
                     action: {
                         showingAddAccount = true
                     },
@@ -156,7 +156,7 @@ struct AccountsManagementView: View {
             mode: $mode,
             selection: $selection,
             allIDs: sortedAccounts.map(\.id),
-            addLabel: String(localized: "account.newAccount"),
+            addLabel: String(localized: "modal.newAccount"),
             onAdd: addAccount,
             onDeleteSelected: { showingBulkDeleteDialog = true }
         )

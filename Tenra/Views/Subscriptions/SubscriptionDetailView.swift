@@ -138,7 +138,7 @@ struct SubscriptionDetailView: View {
             )
         }
         .alert(String(localized: "subscriptions.deleteConfirmTitle"), isPresented: $showingDeleteConfirmation) {
-            Button(String(localized: "quickAdd.cancel"), role: .cancel) {}
+            Button(String(localized: "button.cancel"), role: .cancel) {}
 
             Button(String(localized: "subscriptions.deleteOnlySubscription"), role: .destructive) {
                 Task { await deleteSeries(deleteTransactions: false) }
@@ -154,7 +154,7 @@ struct SubscriptionDetailView: View {
             String(localized: "subscription.unlinkAll.title", defaultValue: "Unlink all transactions?"),
             isPresented: $showingUnlinkAllConfirmation
         ) {
-            Button(String(localized: "quickAdd.cancel"), role: .cancel) {}
+            Button(String(localized: "button.cancel"), role: .cancel) {}
             Button(String(localized: "subscription.unlinkAll.confirm", defaultValue: "Unlink All"), role: .destructive) {
                 Task {
                     try? await transactionStore.unlinkAllTransactions(fromSeriesId: subscription.id)
@@ -238,17 +238,19 @@ struct SubscriptionDetailView: View {
 
     @ViewBuilder
     private var subscriptionToolbarMenu: some View {
-        Button {
-            showingLinkPayments = true
-        } label: {
-            Label(String(localized: "subscription.linkPayments.title", defaultValue: "Link Payments"),
-                  systemImage: "link.badge.plus")
-        }
+        AskAssistantMenuItem(topic: .subscription(name: liveSubscription.description))
 
+        // Edit first after Ask Ten, as on every detail menu; then the subscription's own actions.
         Button {
             showingEditView = true
         } label: {
-            Label(String(localized: "subscriptions.edit"), systemImage: "pencil")
+            Label(String(localized: "button.edit"), systemImage: "pencil")
+        }
+
+        Button {
+            showingLinkPayments = true
+        } label: {
+            Label(String(localized: "subscription.linkPayments.title"), systemImage: "link.badge.plus")
         }
 
         if liveSubscription.subscriptionStatus == .active {
@@ -315,7 +317,7 @@ struct SubscriptionDetailView: View {
         Button(role: .destructive) {
             showingDeleteConfirmation = true
         } label: {
-            Label(String(localized: "subscriptions.delete"), systemImage: "trash")
+            Label(String(localized: "button.delete"), systemImage: "trash")
         }
     }
 

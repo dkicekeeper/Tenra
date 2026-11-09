@@ -148,22 +148,22 @@ struct CloudBackupsView: View {
                     Task { await cloudSyncViewModel.restoreBackup(backup) }
                 }
             }
-            Button(String(localized: "alert.deleteAllData.cancel"), role: .cancel) {}
+            Button(String(localized: "button.cancel"), role: .cancel) {}
         } message: {
             if let backup = backupToRestore {
                 Text(String(format: String(localized: "alert.restore.message"), backup.formattedDate))
             }
         }
         .alert(
-            String(localized: "settings.cloud.delete"),
+            String(localized: "settings.cloud.deleteTitle"),
             isPresented: $showingDeleteAlert
         ) {
-            Button(String(localized: "settings.cloud.delete"), role: .destructive) {
+            Button(String(localized: "button.delete"), role: .destructive) {
                 if let backup = backupToDelete {
                     cloudSyncViewModel.deleteBackup(backup)
                 }
             }
-            Button(String(localized: "alert.deleteAllData.cancel"), role: .cancel) {}
+            Button(String(localized: "button.cancel"), role: .cancel) {}
         }
         .task {
             cloudSyncViewModel.loadBackups()

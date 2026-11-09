@@ -105,6 +105,18 @@ Found by the docs audit of 2026-10-12, not verified on device yet:
   aggregate services in `TransactionCacheManager`, the "no Other category" case in
   `LogTransactionIntent`).
 
+Left by the action audit of 2026-11-08 (the rules: [design-system.md](design-system.md) §4 Actions,
+[localization.md](localization.md) §Action words):
+- **Title case left in en (and tr, pt-BR) outside actions:** CSV mapping fields ("Target Account",
+  "Amount in Account Currency"), some navigation titles ("Filter by Categories", "Transaction
+  Preview"), Insights labels ("Net Flow", "Available Balance"), "Rounded Square".
+- **`steps.position`** (VoiceOver "Step 2 of 4" of DesignKit's `StepTracker` in the CSV import) is
+  not in Tenra's tables: the key takes its numbers from `defaultValue`'s interpolation, so check
+  on a device that a table value with `%lld` gets them before adding it.
+- **About 290 keys in `Localizable.strings` have no use** in Tenra's code, in a run-time built key
+  or in DesignKit's list (`emptyState.*`, `quickAdd.*`, `csvImport.*`, `button.change`, …).
+  Remove them in one pass, keeping DesignKit's keys.
+
 ## Ideas, not planned yet
 
 - **Assets, next:** planned in [plan-assets-roadmap.md](plan-assets-roadmap.md) (phase 5 of

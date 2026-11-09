@@ -19,8 +19,6 @@
 // MARK: - Transaction Preview (Phase 16)
 "transactionPreview.found" = "%d件の取引が見つかりました";
 "transactionPreview.selectHint" = "取り込む取引を選択してください";
-"transactionPreview.selectAll" = "すべて選択";
-"transactionPreview.deselectAll" = "選択を解除";
 "transactionPreview.addSelected" = "選択した項目を追加（%d）";
 "transactionPreview.noAccount" = "口座なし";
 "transactionPreview.noMatchingAccount" = "この通貨の口座がありません";
@@ -72,8 +70,11 @@
 // MARK: - Empty States
 "emptyState.noTransactions" = "取引がありません";
 "emptyState.noAccounts" = "口座がありません";
+"account.emptyDescription" = "カード、現金、銀行口座を追加すると、すべての残高をひと目で確認できます";
 "emptyState.noCategories" = "カテゴリがありません";
+"category.emptyDescription" = "カテゴリを追加すると、お金の使い道がわかります";
 "emptyState.noSubcategories" = "サブカテゴリがありません";
+"subcategory.emptyDescription" = "サブカテゴリを追加すると、支出をさらに細かく分けられます";
 "emptyState.noData" = "データがありません";
 "emptyState.searchNoResults" = "見つかりませんでした";
 "emptyState.startTracking" = "取引を追加して家計の管理を始めましょう";
@@ -151,7 +152,6 @@
 "alert.deleteAllData.title" = "すべてのデータを削除しますか？";
 "alert.deleteAllData.message" = "すべての取引・口座・カテゴリが完全に削除されます。";
 "alert.deleteAllData.confirm" = "削除";
-"alert.deleteAllData.cancel" = "キャンセル";
 "alert.resetLearning.title" = "音声入力の設定をリセットしますか？";
 "alert.resetLearning.message" = "各カテゴリでいつも選んでいる口座を、パーサーが忘れます。取引は削除されません。";
 "alert.resetLearning.confirm" = "リセット";
@@ -203,7 +203,6 @@
 // MARK: - Transaction Actions
 "transaction.importTransactions" = "取引をインポート";
 "transaction.addNew" = "取引を追加";
-"transaction.edit" = "取引を編集";
 "transaction.new" = "新しい取引";
 
 // MARK: - Search
@@ -266,7 +265,6 @@
 "transaction.stopRecurring.title" = "定期取引を停止しますか？";
 "transaction.stopRecurring.message" = "定期取引を停止します。今後の取引はすべて削除されます。";
 "transaction.stopRecurring.confirm" = "定期を停止";
-"transaction.stopRecurring.cancel" = "キャンセル";
 "accessibility.deleteTransaction" = "取引を削除";
 "accessibility.stopRecurring" = "定期取引を停止";
 "accessibility.swipeForOptions" = "左にスワイプして操作を表示";
@@ -279,10 +277,8 @@
 "account.selectLogo" = "ロゴを選択";
 "account.popularBanks" = "よく使う銀行";
 "account.otherBanks" = "その他の銀行";
-"account.newAccount" = "新しい口座";
-"account.newDeposit" = "新しい預金";
 "account.namePlaceholder" = "口座名";
-"account.deleteTitle" = "口座を削除";
+"account.deleteTitle" = "口座を削除しますか？";
 "account.deleteMessage" = "「%@」の取引をどうしますか？";
 "account.deleteOnlyAccount" = "口座のみ削除";
 "account.deleteAccountAndTransactions" = "口座と取引を削除";
@@ -293,9 +289,7 @@
 // MARK: - Deposits
 "deposit.notFound" = "預金が見つかりません";
 "deposit.title" = "預金";
-"deposit.edit" = "編集";
 "deposit.changeRate" = "金利を変更";
-"deposit.delete" = "預金を削除";
 "deposit.deleteTitle" = "預金を削除しますか？";
 "deposit.deleteMessage" = "すべての預金データと関連する取引が削除されます。";
 "deposit.balance" = "残高";
@@ -360,7 +354,6 @@
 "category.manageSubcategories" = "サブカテゴリを管理";
 
 // MARK: - Subcategories Management
-"subcategory.new" = "新しいサブカテゴリ";
 "subcategory.namePlaceholder" = "サブカテゴリ名";
 "subcategory.notUsed" = "まだ使用していません";
 "subcategory.reorder" = "サブカテゴリ";
@@ -439,7 +432,6 @@
 "quickAdd.searchAndAddSubcategories" = "サブカテゴリを検索して追加";
 "quickAdd.selectDate" = "日付を選択";
 "quickAdd.done" = "完了";
-"quickAdd.cancel" = "キャンセル";
 
 // MARK: - Validation Errors
 "error.validation.enterAmount" = "有効な金額を入力してください";
@@ -454,7 +446,6 @@
 "voice.error" = "エラー";
 "voice.errorMessage" = "録音を開始できませんでした";
 "voice.emptyText" = "テキストを認識できませんでした。もう一度お試しください。";
-"voice.ok" = "OK";
 "voice.vadToggle" = "無音で自動停止";
 "voice.vadDescription" = "2.5秒間の無音で録音を自動的に停止します";
 
@@ -482,13 +473,10 @@
 "subscriptions.candidates.title" = "サブスクリプションのようです";
 "subscriptions.candidates.footer" = "これらの店舗は毎月ほぼ同じ金額を請求しています。タップしてサブスクリプションとして追加すると、次回の請求が予定され、過去の支払いはそのまま残ります。長押しで非表示にできます。";
 "subscriptions.candidates.dismiss" = "サブスクリプションではない";
-"subscriptions.addSubscription" = "サブスクを追加";
 "subscriptions.deleteConfirmTitle" = "サブスクを削除しますか？";
 "subscriptions.deleteConfirmMessage" = "サブスクのすべてのデータと関連する取引が削除されます。";
-"subscriptions.delete" = "削除";
 "subscriptions.deleteOnlySubscription" = "サブスクのみ削除";
 "subscriptions.deleteSubscriptionAndTransactions" = "サブスクと取引を削除";
-"subscriptions.edit" = "編集";
 "subscriptions.pause" = "一時停止";
 "subscriptions.resume" = "再開";
 "subscriptions.transactionHistory" = "取引履歴";
@@ -600,7 +588,6 @@
 "transactionForm.depositTopUp" = "預金に入金";
 "transactionForm.depositWithdrawal" = "預金から引き出し";
 "transactionForm.accountTopUp" = "口座に入金";
-"transactionForm.editTransaction" = "取引を編集";
 "transactionForm.recurring" = "定期";
 "transactionForm.makeRecurring" = "これを定期にする";
 "transactionForm.searchSubcategories" = "サブカテゴリを検索";
@@ -1162,12 +1149,10 @@
 "loan.remainingShort" = "残り%d回の支払い";
 "loan.notFound" = "ローンが見つかりません";
 "loan.title" = "ローン";
-"loan.edit" = "ローンを編集";
 "loan.changeRate" = "金利を変更";
 "loan.earlyRepayment" = "繰上げ返済";
 "loan.history" = "支払い履歴";
 "loan.actions" = "ローンの操作";
-"loan.delete" = "ローンを削除";
 "loan.deleteTitle" = "ローンを削除しますか？";
 "loan.deleteMessage" = "このローンの支払いは、口座の実際の支出です。履歴に残すことも、ローンと一緒に削除することもできます。";
 "loan.closedSection" = "完済済み";
@@ -1175,8 +1160,8 @@
 "loan.statusPaidThisMonth" = "今月支払い済み";
 "loan.statusNotPaid" = "未払い";
 "loan.closedOn" = "%@に完済";
-"loan.deleteKeepPayments" = "削除して支払いは残す";
-"loan.deleteWithPayments" = "すべて削除";
+"loan.deleteKeepPayments" = "ローンのみ削除";
+"loan.deleteWithPayments" = "ローンと支払いを削除";
 "loan.payoffCelebration" = "ローンを完済しました。お疲れさまでした。";
 "loan.paidOff" = "完済";
 "loan.remainingPrincipal" = "残り";
@@ -1358,7 +1343,7 @@
 "settings.cloud.restoreSuccess" = "データを復元しました";
 "settings.cloud.restoring" = "復元中…";
 "settings.cloud.restoringSubtitle" = "アプリを閉じないでください";
-"settings.cloud.delete" = "削除";
+"settings.cloud.deleteTitle" = "バックアップを削除しますか？";
 "settings.cloud.storage" = "ストレージ";
 "settings.cloud.storageUsed" = "%@ / %@";
 "settings.cloud.iCloud.toggle" = "iCloudにバックアップを保存";
@@ -1386,7 +1371,6 @@
 "error.backup.notDownloaded" = "このバックアップはまだiCloudからダウンロードされていません。接続を確認して、もう一度お試しください。";
 
 // MARK: - Loans (Form)
-"loan.addLoan" = "ローンを追加";
 "loan.amountLabel" = "金額";
 "loan.detailsSection" = "ローンの詳細";
 "loan.noteLabel" = "メモ";
@@ -1408,7 +1392,6 @@
 "loan.linkPayments.link" = "%d件の返済を紐づける";
 "loan.linkPayments.empty" = "一致する取引がありません";
 "loan.linkPayments.error.notFound" = "ローンが見つかりません";
-"loan.add" = "ローンを追加";
 "loan.markPaid" = "支払い済みにする";
 "loan.markUnpaid" = "未払いに戻す";
 "loan.paymentFailed" = "支払いに失敗しました。もう一度お試しください。";
@@ -1429,8 +1412,6 @@
 "common.done" = "完了";
 "deposit.linkInterest.title" = "利息の入金を紐づける";
 "deposit.recalculateInterest" = "利息を再計算";
-"subscription.linkPayments.selectAll" = "すべて選択";
-"subscription.linkPayments.deselectAll" = "選択を解除";
 "subscriptions.spentAllTime" = "累計の支出";
 "subscription.edit.propagate.title" = "紐づいた取引を更新しますか？";
 "subscription.edit.propagate.message" = "このサブスクに紐づく既存の取引に変更を反映しますか？";
@@ -1536,7 +1517,6 @@
 // MARK: - Accessibility
 "accessibility.accounts.addMenu" = "追加メニュー";
 "accessibility.accounts.doneReordering" = "並べ替えを完了";
-"accessibility.accounts.reorder" = "並べ替え";
 "accessibility.category.budgetHint" = "予算の使用状況";
 "accessibility.category.budgetProgress" = "予算の進捗";
 "accessibility.category.label" = "カテゴリ";
@@ -1552,27 +1532,33 @@
 "bulk.selectAll" = "すべて選択";
 "bulk.deselectAll" = "選択を解除";
 "bulk.done" = "完了";
+"bulk.add" = "追加";
+"bulk.reorder" = "並べ替え";
+"bulk.moveUp" = "上へ移動";
+"bulk.moveDown" = "下へ移動";
 "bulk.deleteCount" = "削除（%d）";
 
 // MARK: - Bulk Delete Accounts
 "bulk.deleteAccounts.title" = "%d件の口座を削除しますか？";
 "bulk.deleteAccounts.message" = "関連する取引はどうしますか？";
 "bulk.deleteAccounts.onlyAccounts" = "口座のみ削除";
-"bulk.deleteAccounts.withTransactions" = "すべての取引ごと削除";
+"bulk.deleteAccounts.withTransactions" = "口座と取引を削除";
 
 // MARK: - Bulk Delete Categories
 "bulk.deleteCategories.title" = "%d件のカテゴリを削除しますか？";
 "bulk.deleteCategories.message" = "関連する取引はどうしますか？";
 "bulk.deleteCategories.onlyCategories" = "カテゴリのみ削除";
-"bulk.deleteCategories.withTransactions" = "すべての取引ごと削除";
+"bulk.deleteCategories.withTransactions" = "カテゴリと取引を削除";
 
 // MARK: - Bulk Delete Subcategories
 "bulk.deleteSubcategories.title" = "%d件のサブカテゴリを削除しますか？";
 "bulk.deleteDeposits.title" = "%d件の預金を削除しますか？";
 "bulk.deleteLoans.title" = "%d件のローンを削除しますか？";
+"bulk.deleteLoans.onlyLoans" = "ローンのみ削除";
+"bulk.deleteLoans.withPayments" = "ローンと支払いを削除";
 "bulk.deleteDebts.title" = "%d件の貸し借りを削除しますか？";
 "bulk.deleteGoals.title" = "%d件の目標を削除しますか？";
-"bulk.deleteSubscriptions.title" = "%d件のサブスクリプションを削除しますか？";
+"bulk.deleteSubscriptions.title" = "%d件のサブスクを削除しますか？";
 "subcategory.deleteTitle" = "サブカテゴリを削除しますか？";
 "bulk.deleteSubcategories.confirm" = "削除";
 
@@ -1582,15 +1568,11 @@
 "account.detail.totalIncome" = "収入の合計";
 "account.detail.totalExpense" = "支出の合計";
 "account.detail.transactionCount" = "取引数";
-"account.detail.delete.confirmTitle" = "口座を削除しますか？";
-"account.detail.delete.confirmMessage" = "この口座は完全に削除されます。";
 "accounts.type" = "種類";
 "accounts.currency" = "通貨";
 "accounts.type.deposit" = "預金";
 "accounts.type.loan" = "ローン";
 "accounts.type.regular" = "口座";
-"common.edit" = "編集";
-"common.delete" = "削除";
 
 // Category Detail
 "category.detail.actions.addTransaction" = "取引を追加";
@@ -1601,8 +1583,6 @@
 "category.detail.subcategories" = "サブカテゴリ";
 "category.detail.transactionCount" = "取引数";
 "category.detail.manageSubcategories" = "サブカテゴリを管理";
-"category.detail.delete.confirmTitle" = "カテゴリを削除しますか？";
-"category.detail.delete.confirmMessage" = "このカテゴリを削除します。";
 "category.detail.type.expense" = "支出";
 "category.detail.type.income" = "収入";
 
@@ -2201,9 +2181,9 @@
 "assistant.memory.emptyTitle" = "テンはまだあなたのことを知りません";
 "assistant.memory.emptyMessage" = "チャットでお金のことをテンに話してください。たとえば給料日や、何のために貯金しているかなど。テンが覚えるよう提案し、決めるのはあなたです。";
 "assistant.memory.footer" = "テンはどのチャットでもこれらの情報を参照します。この iPhone に保存され、質問と一緒にのみ送信されます。";
-"assistant.memory.add" = "情報を追加";
 "assistant.memory.new" = "新しい情報";
 "assistant.memory.edit" = "情報を編集";
+"typing.indicator" = "入力中";
 "assistant.memory.placeholder" = "例: 給料は毎月10日";
 "assistant.memory.editorFooter" = "お金に関する短い一文: 給料日、貯金の目的、メインのカードなど。カード番号やパスワードは書かないでください。";
 "assistant.memory.editHint" = "情報を開いて編集します";
@@ -2249,7 +2229,6 @@
 "goal.reachedSection" = "達成済み";
 "goal.contribute" = "入金";
 "goal.contributions" = "入金履歴";
-"goal.delete" = "目標を削除";
 "goal.deleteTitle" = "目標を削除しますか？";
 "goal.deleteMessage" = "この目標と入金履歴が削除されます。口座と取引は変わりません。";
 "goal.notFound" = "目標が見つかりません";
@@ -2286,7 +2265,6 @@
 "debt.settle" = "完済にする";
 "debt.reopen" = "再開";
 "debt.repayments" = "返済履歴";
-"debt.delete" = "貸し借りを削除";
 "debt.deleteTitle" = "貸し借りを削除しますか？";
 "debt.deleteMessage" = "この貸し借りと返済の記録が削除されます。口座と取引は変わりません。";
 "debt.notFound" = "見つかりません";
@@ -2312,6 +2290,12 @@
 "assistant.topic.debt.plan" = "%@に期限内に返すには？";
 "assistant.topic.allowance.enough" = "次の収入までお金は足りる？";
 "assistant.topic.allowance.save" = "1日に使える額を増やすにはどこを節約すればいい？";
+"assistant.topic.deposit.earned" = "「%@」の利息はいくら？";
+"assistant.topic.deposit.grow" = "「%@」をもっと早く増やすには？";
+"assistant.topic.loan.payoff" = "「%@」はいつ完済できる？";
+"assistant.topic.loan.early" = "「%@」を繰り上げ返済したらいくら得する？";
+"assistant.topic.subscription.cost" = "「%@」は年間いくら？";
+"assistant.topic.subscription.price" = "「%@」は値上がりした？";
 
 /* Ten's lines around the conversation (AssistantChatter, DesignKit 4.10). */
 "assistant.chatter.morning" = "おはようございます！";
@@ -2407,7 +2391,6 @@
 "asset.soldBadge" = "売却済み";
 "asset.deleteTitle" = "資産を削除しますか？";
 "asset.deleteMessage" = "この資産と評価の履歴が削除されます。口座と取引は変わりません。";
-"asset.delete" = "資産を削除";
 "bulk.deleteAssets.title" = "%d件の資産を削除しますか？";
 "asset.notFound" = "資産が見つかりません";
 "asset.notFoundDescription" = "削除された可能性があります。";

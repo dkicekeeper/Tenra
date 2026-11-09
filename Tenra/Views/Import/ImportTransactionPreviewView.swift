@@ -192,28 +192,28 @@ struct ImportTransactionPreviewView: View {
                             selectedTransactions = Set(transactions.filter { startsSelected($0) }.map(\.id))
                         }
                     } label: {
-                        Text("transactionPreview.selectAll")
+                        Text("bulk.selectAll")
                             .frame(maxWidth: .infinity)
                             .padding(AppSpacing.md)
                             .background(AppColors.pale(AppColors.accent))
                             .foregroundStyle(AppColors.accent)
                             .clipShape(.rect(cornerRadius: AppRadius.button))
                     }
-                    .accessibilityLabel(String(localized: "transactionPreview.selectAll"))
+                    .accessibilityLabel(String(localized: "bulk.selectAll"))
 
                     Button {
                         withAnimation(AppAnimation.contentSpring) {
                             selectedTransactions.removeAll()
                         }
                     } label: {
-                        Text("transactionPreview.deselectAll")
+                        Text("bulk.deselectAll")
                             .frame(maxWidth: .infinity)
                             .padding(AppSpacing.md)
                             .background(AppColors.bgMuted)
                             .foregroundStyle(AppColors.textSecondary)
                             .clipShape(.rect(cornerRadius: AppRadius.button))
                     }
-                    .accessibilityLabel(String(localized: "transactionPreview.deselectAll"))
+                    .accessibilityLabel(String(localized: "bulk.deselectAll"))
                 }
                 .cardContentPadding()
 

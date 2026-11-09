@@ -423,7 +423,7 @@ struct MerchantDetailView: View {
             Button {
                 editing = known
             } label: {
-                Label(String(localized: "common.edit", defaultValue: "Edit"), systemImage: "pencil")
+                Label(String(localized: "button.edit"), systemImage: "pencil")
             }
         }
         Button {

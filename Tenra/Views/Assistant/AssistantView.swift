@@ -3,12 +3,13 @@
 //  Tenra
 //
 //  The assistant's home, the action tab's page (docs/domains/assistant.md §1, §9): Ten in the
-//  greeting, ready-made questions (or questions about the screen "Ask Ten" came from,
-//  AssistantEntryPoints), the latest chats and the field. Whatever goes from here starts a new
-//  chat, pushed as a page of its own (AssistantChatView): a question, a voice message, an
-//  attachment, "Go through it" on a message Ten wrote on Home (AssistantNoticesSection), a
-//  file opened in Tenra. A chat in the list opens again; a long press deletes it. The chat
-//  open last stays at the top of the list, written or not.
+//  greeting, ready-made questions, the latest chats and the field. Whatever goes from here
+//  starts a new chat, pushed as a page of its own (AssistantChatView): a question, a voice
+//  message, an attachment, "Go through it" on a message Ten wrote on Home
+//  (AssistantNoticesSection), a file opened in Tenra. "Ask Ten" on another screen
+//  (AssistantEntryPoints) opens a new, empty chat with questions about that screen over its
+//  field. A chat in the list opens again; a long press deletes it. The chat open last stays
+//  at the top of the list, written or not.
 //
 //  Nothing leaves the phone before the person agrees: the first question opens the consent
 //  sheet (App Review 5.1.2(i)) and goes once they turn the cloud mode on; a plain record is
@@ -168,11 +169,19 @@ struct AssistantView: View {
             if isHome { Task { await model.refreshRecent() } }
         }
         .onChange(of: premium.isPro) { model.refreshAllowance() }
-        // "Ask Ten" on an account, a category, an insight or the history.
+        // "Ask Ten" on a screen: a new chat, its questions about that screen over the field
+        // (nothing goes before the person picks one or types). While a reply is still coming
+        // its chat cannot be left: the home offers the questions instead.
         .onChange(of: coordinator.assistantTopic, initial: true) { _, topic in
             guard topic != nil, let topic = coordinator.consumeAssistantTopic() else { return }
-            path = NavigationPath()
-            topicQuestions = topic.questions
+            if model.startChat(suggesting: topic.questions) {
+                topicQuestions = []
+                draft = ""
+                showChat()
+            } else {
+                path = NavigationPath()
+                topicQuestions = topic.questions
+            }
         }
         // "Go through it" on Home.
         .onChange(of: coordinator.pendingNotice, initial: true) { _, notice in

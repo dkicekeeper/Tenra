@@ -313,11 +313,15 @@ struct DepositDetailView: View {
 
     @ViewBuilder
     private var depositToolbarMenu: some View {
+        if let account = liveAccount {
+            AskAssistantMenuItem(topic: .deposit(name: account.name))
+        }
+
         Button {
             HapticManager.selection()
             showingEditView = true
         } label: {
-            Label(String(localized: "deposit.edit"), systemImage: "pencil")
+            Label(String(localized: "button.edit"), systemImage: "pencil")
         }
 
         Button {
@@ -360,7 +364,7 @@ struct DepositDetailView: View {
             HapticManager.warning()
             showingDeleteConfirmation = true
         } label: {
-            Label(String(localized: "deposit.delete"), systemImage: "trash")
+            Label(String(localized: "button.delete"), systemImage: "trash")
         }
     }
 

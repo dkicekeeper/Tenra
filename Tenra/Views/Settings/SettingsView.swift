@@ -133,7 +133,7 @@ struct SettingsView: View {
                     await settingsViewModel.resetAllData()
                 }
             }
-            Button(String(localized: "alert.deleteAllData.cancel"), role: .cancel) {}
+            Button(String(localized: "button.cancel"), role: .cancel) {}
         } message: {
             Text(String(localized: "alert.deleteAllData.message"))
         }
@@ -144,7 +144,7 @@ struct SettingsView: View {
             Button(String(localized: "alert.resetLearning.confirm"), role: .destructive) {
                 VoiceLearningStore.shared.reset()
             }
-            Button(String(localized: "alert.deleteAllData.cancel"), role: .cancel) {}
+            Button(String(localized: "button.cancel"), role: .cancel) {}
         } message: {
             Text(String(localized: "alert.resetLearning.message"))
         }

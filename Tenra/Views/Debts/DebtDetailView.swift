@@ -119,7 +119,7 @@ struct DebtDetailView: View {
                     HapticManager.warning()
                     showingDelete = true
                 } label: {
-                    Label(String(localized: "debt.delete"), systemImage: "trash")
+                    Label(String(localized: "button.delete"), systemImage: "trash")
                 }
             }
         )

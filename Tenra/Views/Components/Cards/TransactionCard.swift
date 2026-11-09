@@ -157,8 +157,8 @@ struct TransactionCard: View, Equatable {
         // `.bounce` gives the row a subtle press-scale — this card renders inside a
         // LazyVStack (not a List), so there is no system row highlight otherwise.
         .buttonStyle(.bounce)
-        // DesignKit 8.0.0's one set of actions: a tap edits, a long press shows Edit, Delete and
-        // the recurring series' actions; no swipe actions.
+        // DesignKit 8.0.0's one set of actions: a tap edits, a long press shows Edit, the
+        // recurring series' action and Delete; no swipe actions.
         .contextMenu {
             if let menuAction {
                 Button(action: menuAction.action) {
@@ -171,21 +171,16 @@ struct TransactionCard: View, Equatable {
                 HapticManager.selection()
                 showingEditModal = true
             } label: {
-                Label(String(localized: "button.edit", defaultValue: "Edit"), systemImage: "pencil")
+                Label(String(localized: "button.edit"), systemImage: "pencil")
             }
 
-            Button(role: .destructive) {
-                HapticManager.warning()
-                showingDeleteConfirmation = true
-            } label: {
-                Label(String(localized: "button.delete"), systemImage: "trash")
-            }
-
+            // The series' action is named by what it does ("Stop recurring"), as the alert's
+            // button; Delete closes the menu after a divider, as on every other menu.
             if isSeriesActive {
                 Button {
                     showingStopRecurringConfirmation = true
                 } label: {
-                    Label(String(localized: "transaction.recurring"), systemImage: "arrow.clockwise")
+                    Label(String(localized: "transaction.stopRecurring.confirm"), systemImage: "stop.circle")
                 }
             }
 
@@ -197,12 +192,21 @@ struct TransactionCard: View, Equatable {
                     Label(String(localized: "transaction.resumeRecurring", defaultValue: "Resume"), systemImage: "play.circle")
                 }
             }
+
+            Divider()
+
+            Button(role: .destructive) {
+                HapticManager.warning()
+                showingDeleteConfirmation = true
+            } label: {
+                Label(String(localized: "button.delete"), systemImage: "trash")
+            }
         }
         .accessibilityAction(named: Text(String(localized: "button.delete"))) {
             showingDeleteConfirmation = true
         }
         .alert(String(localized: "transaction.stopRecurring.title"), isPresented: $showingStopRecurringConfirmation) {
-            Button(String(localized: "transaction.stopRecurring.cancel"), role: .cancel) {}
+            Button(String(localized: "button.cancel"), role: .cancel) {}
             Button(String(localized: "transaction.stopRecurring.confirm"), role: .destructive) {
                 HapticManager.warning()
                 if let viewModel = viewModel, let seriesId = transaction.recurringSeriesId {
@@ -212,12 +216,12 @@ struct TransactionCard: View, Equatable {
         } message: {
             Text(String(localized: "transaction.stopRecurring.message"))
         }
-        .confirmationDialog(
-            String(localized: "transaction.deleteConfirmation.title", defaultValue: "Delete Transaction?"),
-            isPresented: $showingDeleteConfirmation,
-            titleVisibility: .visible
+        .alert(
+            String(localized: "transaction.deleteConfirmation.title"),
+            isPresented: $showingDeleteConfirmation
         ) {
-            Button(String(localized: "button.delete", defaultValue: "Delete"), role: .destructive) {
+            Button(String(localized: "button.cancel"), role: .cancel) {}
+            Button(String(localized: "button.delete"), role: .destructive) {
                 Task {
                     do {
                         try await transactionStore.delete(transaction)

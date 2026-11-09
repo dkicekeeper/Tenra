@@ -91,7 +91,7 @@ struct AssistantVoiceSheet: View {
         }
         .softScrollEdges()
         .alert(String(localized: "voice.error"), isPresented: $showingPermissionAlert) {
-            Button(String(localized: "voice.ok")) { dismiss() }
+            Button(String(localized: "button.ok")) { dismiss() }
             if isPermissionDenied {
                 Button(String(localized: "voice.openSettings")) {
                     if let url = URL(string: UIApplication.openSettingsURLString) {

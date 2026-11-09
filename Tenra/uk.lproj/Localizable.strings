@@ -19,8 +19,6 @@
 // MARK: - Transaction Preview (Phase 16)
 "transactionPreview.found" = "Знайдено: %d операцій";
 "transactionPreview.selectHint" = "Виберіть операції для імпорту";
-"transactionPreview.selectAll" = "Вибрати всі";
-"transactionPreview.deselectAll" = "Зняти вибір";
 "transactionPreview.addSelected" = "Додати вибрані (%d)";
 "transactionPreview.noAccount" = "Без рахунку";
 "transactionPreview.noMatchingAccount" = "Немає рахунку в цій валюті";
@@ -59,7 +57,7 @@
 "button.copy" = "Копіювати";
 "button.paste" = "Вставити";
 "button.add" = "Додати";
-"button.edit" = "Редагувати";
+"button.edit" = "Змінити";
 "button.done" = "Готово";
 "button.continue" = "Продовжити";
 "button.ok" = "Гаразд";
@@ -72,8 +70,11 @@
 // MARK: - Empty States
 "emptyState.noTransactions" = "Немає операцій";
 "emptyState.noAccounts" = "Немає рахунків";
+"account.emptyDescription" = "Додайте картку, готівку або банківський рахунок, щоб бачити всі залишки в одному місці";
 "emptyState.noCategories" = "Немає категорій";
+"category.emptyDescription" = "Додайте категорію, щоб бачити, на що йдуть гроші";
 "emptyState.noSubcategories" = "Немає підкатегорій";
+"subcategory.emptyDescription" = "Додайте підкатегорії, щоб розбирати витрати докладніше";
 "emptyState.noData" = "Немає даних";
 "emptyState.searchNoResults" = "Нічого не знайдено";
 "emptyState.startTracking" = "Почніть додавати операції, щоб стежити за своїми фінансами";
@@ -151,7 +152,6 @@
 "alert.deleteAllData.title" = "Видалити всі дані?";
 "alert.deleteAllData.message" = "Усі операції, рахунки та категорії буде видалено назавжди.";
 "alert.deleteAllData.confirm" = "Видалити";
-"alert.deleteAllData.cancel" = "Скасувати";
 "alert.resetLearning.title" = "Скинути голосові вподобання?";
 "alert.resetLearning.message" = "Парсер забуде, який рахунок ви зазвичай обираєте для кожної категорії. Ваші операції не буде видалено.";
 "alert.resetLearning.confirm" = "Скинути";
@@ -203,7 +203,6 @@
 // MARK: - Transaction Actions
 "transaction.importTransactions" = "Імпортувати операції";
 "transaction.addNew" = "Додати операцію";
-"transaction.edit" = "Редагувати операцію";
 "transaction.new" = "Нова операція";
 
 // MARK: - Search
@@ -220,11 +219,11 @@
 
 // MARK: - Modals
 "modal.newAccount" = "Новий рахунок";
-"modal.editAccount" = "Редагувати рахунок";
+"modal.editAccount" = "Змінити рахунок";
 "modal.newCategory" = "Нова категорія";
-"modal.editCategory" = "Редагувати категорію";
+"modal.editCategory" = "Змінити категорію";
 "modal.newSubcategory" = "Нова підкатегорія";
-"modal.editSubcategory" = "Редагувати підкатегорію";
+"modal.editSubcategory" = "Змінити підкатегорію";
 
 // MARK: - Common
 "common.name" = "Назва";
@@ -266,7 +265,6 @@
 "transaction.stopRecurring.title" = "Зупинити регулярну операцію?";
 "transaction.stopRecurring.message" = "Це зупинить регулярну операцію. Усі майбутні операції буде видалено.";
 "transaction.stopRecurring.confirm" = "Зупинити регулярну";
-"transaction.stopRecurring.cancel" = "Скасувати";
 "accessibility.deleteTransaction" = "Видалити операцію";
 "accessibility.stopRecurring" = "Зупинити регулярну операцію";
 "accessibility.swipeForOptions" = "Проведіть ліворуч для параметрів";
@@ -279,10 +277,8 @@
 "account.selectLogo" = "Виберіть логотип";
 "account.popularBanks" = "Популярні банки";
 "account.otherBanks" = "Інші банки";
-"account.newAccount" = "Новий рахунок";
-"account.newDeposit" = "Новий депозит";
 "account.namePlaceholder" = "Назва рахунку";
-"account.deleteTitle" = "Видалити рахунок";
+"account.deleteTitle" = "Видалити рахунок?";
 "account.deleteMessage" = "Що зробити з операціями рахунку «%@»?";
 "account.deleteOnlyAccount" = "Видалити лише рахунок";
 "account.deleteAccountAndTransactions" = "Видалити рахунок і операції";
@@ -293,9 +289,7 @@
 // MARK: - Deposits
 "deposit.notFound" = "Депозит не знайдено";
 "deposit.title" = "Депозит";
-"deposit.edit" = "Редагувати";
 "deposit.changeRate" = "Змінити ставку";
-"deposit.delete" = "Видалити депозит";
 "deposit.deleteTitle" = "Видалити депозит?";
 "deposit.deleteMessage" = "Усі дані депозиту та пов'язані операції буде видалено.";
 "deposit.balance" = "Баланс";
@@ -341,7 +335,7 @@
 "deposit.countsForToday" = "Враховувати в «На сьогодні»";
 "deposit.countsForToday.hint" = "Гроші, які можна зняти будь-коли. «На сьогодні» і Тен рахують їх разом із картками.";
 "deposit.new" = "Новий депозит";
-"deposit.editTitle" = "Редагувати депозит";
+"deposit.editTitle" = "Змінити депозит";
 "deposit.interestAccrual.description" = "Відсотки";
 "deposit.interestAccrual.category" = "Відсотки";
 
@@ -360,7 +354,6 @@
 "category.manageSubcategories" = "Керувати підкатегоріями";
 
 // MARK: - Subcategories Management
-"subcategory.new" = "Нова підкатегорія";
 "subcategory.namePlaceholder" = "Назва підкатегорії";
 "subcategory.notUsed" = "Ще не використовується";
 "subcategory.reorder" = "Підкатегорії";
@@ -439,7 +432,6 @@
 "quickAdd.searchAndAddSubcategories" = "Знайти й додати підкатегорії";
 "quickAdd.selectDate" = "Виберіть дату";
 "quickAdd.done" = "Готово";
-"quickAdd.cancel" = "Скасувати";
 
 // MARK: - Validation Errors
 "error.validation.enterAmount" = "Введіть коректну суму";
@@ -454,7 +446,6 @@
 "voice.error" = "Помилка";
 "voice.errorMessage" = "Не вдалося почати запис";
 "voice.emptyText" = "Не вдалося розпізнати текст. Спробуйте ще раз.";
-"voice.ok" = "OK";
 "voice.vadToggle" = "Автоматична зупинка в тиші";
 "voice.vadDescription" = "Запис зупиниться автоматично після 2,5 секунди тиші";
 
@@ -482,13 +473,10 @@
 "subscriptions.candidates.title" = "Схоже на підписку";
 "subscriptions.candidates.footer" = "Ці продавці списували приблизно однакову суму щомісяця. Натисніть, щоб додати підписку: заплановано наступне списання, минулі платежі залишаться як є. Утримуйте, щоб приховати.";
 "subscriptions.candidates.dismiss" = "Це не підписка";
-"subscriptions.addSubscription" = "Додати підписку";
 "subscriptions.deleteConfirmTitle" = "Видалити підписку?";
 "subscriptions.deleteConfirmMessage" = "Усі дані підписки та пов'язані операції буде видалено.";
-"subscriptions.delete" = "Видалити";
 "subscriptions.deleteOnlySubscription" = "Видалити лише підписку";
 "subscriptions.deleteSubscriptionAndTransactions" = "Видалити підписку й операції";
-"subscriptions.edit" = "Редагувати";
 "subscriptions.pause" = "Призупинити";
 "subscriptions.resume" = "Відновити";
 "subscriptions.transactionHistory" = "Історія операцій";
@@ -530,7 +518,7 @@
 "subscription.reminders" = "Нагадування";
 "subscription.scheduleSection" = "Розклад";
 "subscription.newTitle" = "Нова підписка";
-"subscription.editTitle" = "Редагувати підписку";
+"subscription.editTitle" = "Змінити підписку";
 
 // Reminders
 "reminder.dayBefore.one" = "за 1 день до";
@@ -600,7 +588,6 @@
 "transactionForm.depositTopUp" = "Поповнити депозит";
 "transactionForm.depositWithdrawal" = "Зняти з депозиту";
 "transactionForm.accountTopUp" = "Поповнити рахунок";
-"transactionForm.editTransaction" = "Редагувати операцію";
 "transactionForm.recurring" = "Регулярна";
 "transactionForm.makeRecurring" = "Зробити регулярною";
 "transactionForm.searchSubcategories" = "Пошук підкатегорій";
@@ -1162,12 +1149,10 @@
 "loan.remainingShort" = "Залишилося сплатити %d";
 "loan.notFound" = "Кредит не знайдено";
 "loan.title" = "Кредит";
-"loan.edit" = "Редагувати кредит";
 "loan.changeRate" = "Змінити ставку";
 "loan.earlyRepayment" = "Дострокове погашення";
 "loan.history" = "Історія платежів";
 "loan.actions" = "Дії з кредитом";
-"loan.delete" = "Видалити кредит";
 "loan.deleteTitle" = "Видалити кредит?";
 "loan.deleteMessage" = "Платежі за цим кредитом записані як реальні витрати на ваших рахунках. Їх можна залишити в історії або видалити разом із кредитом.";
 "loan.closedSection" = "Закриті";
@@ -1175,8 +1160,8 @@
 "loan.statusPaidThisMonth" = "Оплачено цього місяця";
 "loan.statusNotPaid" = "Не оплачено";
 "loan.closedOn" = "Закрито %@";
-"loan.deleteKeepPayments" = "Видалити, залишити платежі";
-"loan.deleteWithPayments" = "Видалити все";
+"loan.deleteKeepPayments" = "Видалити лише кредит";
+"loan.deleteWithPayments" = "Видалити кредит і платежі";
 "loan.payoffCelebration" = "Кредит погашено. Чудова робота.";
 "loan.paidOff" = "Погашено";
 "loan.remainingPrincipal" = "Залишок";
@@ -1204,7 +1189,7 @@
 "loan.interestShort" = "Відсотки: %@";
 "loan.makeEarlyRepayment" = "Дострокове погашення";
 "loan.convertTitle" = "Перетворити на кредит";
-"loan.editTitle" = "Редагувати кредит";
+"loan.editTitle" = "Змінити кредит";
 "loan.newTitle" = "Новий кредит";
 "loan.nameHeader" = "Назва";
 "loan.namePlaceholder" = "напр. Автокредит";
@@ -1358,7 +1343,7 @@
 "settings.cloud.restoreSuccess" = "Дані успішно відновлено";
 "settings.cloud.restoring" = "Відновлення…";
 "settings.cloud.restoringSubtitle" = "Будь ласка, не закривайте застосунок";
-"settings.cloud.delete" = "Видалити";
+"settings.cloud.deleteTitle" = "Видалити резервну копію?";
 "settings.cloud.storage" = "Сховище";
 "settings.cloud.storageUsed" = "%@ із %@";
 "settings.cloud.iCloud.toggle" = "Зберігати резервні копії в iCloud";
@@ -1386,7 +1371,6 @@
 "error.backup.notDownloaded" = "Резервна копія ще не завантажилася з iCloud. Перевірте з'єднання і спробуйте ще раз.";
 
 // MARK: - Loans (Form)
-"loan.addLoan" = "Додати кредит";
 "loan.amountLabel" = "Сума";
 "loan.detailsSection" = "Деталі кредиту";
 "loan.noteLabel" = "Нотатка";
@@ -1408,7 +1392,6 @@
 "loan.linkPayments.link" = "Прив'язати %d платежів";
 "loan.linkPayments.empty" = "Немає відповідних операцій";
 "loan.linkPayments.error.notFound" = "Кредит не знайдено";
-"loan.add" = "Додати кредит";
 "loan.markPaid" = "Позначити як оплачений";
 "loan.markUnpaid" = "Позначити як неоплачений";
 "loan.paymentFailed" = "Платіж не вдався. Спробуйте ще раз.";
@@ -1429,8 +1412,6 @@
 "common.done" = "Готово";
 "deposit.linkInterest.title" = "Прив'язати виплати відсотків";
 "deposit.recalculateInterest" = "Перерахувати відсотки";
-"subscription.linkPayments.selectAll" = "Обрати всі";
-"subscription.linkPayments.deselectAll" = "Зняти вибір з усіх";
 "subscriptions.spentAllTime" = "Витрачено за весь час";
 "subscription.edit.propagate.title" = "Оновити пов'язані операції?";
 "subscription.edit.propagate.message" = "Застосувати зміни до наявних операцій, пов'язаних із цією підпискою?";
@@ -1536,7 +1517,6 @@
 // MARK: - Accessibility
 "accessibility.accounts.addMenu" = "Меню додавання";
 "accessibility.accounts.doneReordering" = "Завершити впорядкування";
-"accessibility.accounts.reorder" = "Впорядкувати";
 "accessibility.category.budgetHint" = "Використання бюджету";
 "accessibility.category.budgetProgress" = "Прогрес бюджету";
 "accessibility.category.label" = "Категорія";
@@ -1548,28 +1528,34 @@
 "accessibility.transaction.history" = "Історія операцій";
 
 // MARK: - Bulk Selection
-"bulk.select" = "Обрати";
-"bulk.selectAll" = "Обрати всі";
-"bulk.deselectAll" = "Зняти вибір з усіх";
+"bulk.select" = "Вибрати";
+"bulk.selectAll" = "Вибрати всі";
+"bulk.deselectAll" = "Зняти вибір";
 "bulk.done" = "Готово";
+"bulk.add" = "Додати";
+"bulk.reorder" = "Змінити порядок";
+"bulk.moveUp" = "Перемістити вище";
+"bulk.moveDown" = "Перемістити нижче";
 "bulk.deleteCount" = "Видалити (%d)";
 
 // MARK: - Bulk Delete Accounts
 "bulk.deleteAccounts.title" = "Видалити %d рахунків?";
 "bulk.deleteAccounts.message" = "Що зробити з пов'язаними операціями?";
 "bulk.deleteAccounts.onlyAccounts" = "Видалити лише рахунки";
-"bulk.deleteAccounts.withTransactions" = "Видалити з усіма операціями";
+"bulk.deleteAccounts.withTransactions" = "Видалити рахунки й операції";
 
 // MARK: - Bulk Delete Categories
 "bulk.deleteCategories.title" = "Видалити %d категорій?";
 "bulk.deleteCategories.message" = "Що зробити з пов'язаними операціями?";
 "bulk.deleteCategories.onlyCategories" = "Видалити лише категорії";
-"bulk.deleteCategories.withTransactions" = "Видалити з усіма операціями";
+"bulk.deleteCategories.withTransactions" = "Видалити категорії й операції";
 
 // MARK: - Bulk Delete Subcategories
 "bulk.deleteSubcategories.title" = "Видалити %d підкатегорій?";
-"bulk.deleteDeposits.title" = "Видалити %d вкладів?";
+"bulk.deleteDeposits.title" = "Видалити %d депозитів?";
 "bulk.deleteLoans.title" = "Видалити %d кредитів?";
+"bulk.deleteLoans.onlyLoans" = "Видалити лише кредити";
+"bulk.deleteLoans.withPayments" = "Видалити кредити й платежі";
 "bulk.deleteDebts.title" = "Видалити %d боргів?";
 "bulk.deleteGoals.title" = "Видалити %d цілей?";
 "bulk.deleteSubscriptions.title" = "Видалити %d підписок?";
@@ -1582,15 +1568,11 @@
 "account.detail.totalIncome" = "Загальний дохід";
 "account.detail.totalExpense" = "Загальні витрати";
 "account.detail.transactionCount" = "Операції";
-"account.detail.delete.confirmTitle" = "Видалити рахунок?";
-"account.detail.delete.confirmMessage" = "Це назавжди видалить рахунок.";
 "accounts.type" = "Тип";
 "accounts.currency" = "Валюта";
 "accounts.type.deposit" = "Депозит";
 "accounts.type.loan" = "Кредит";
 "accounts.type.regular" = "Рахунок";
-"common.edit" = "Редагувати";
-"common.delete" = "Видалити";
 
 // Category Detail
 "category.detail.actions.addTransaction" = "Додати операцію";
@@ -1601,8 +1583,6 @@
 "category.detail.subcategories" = "Підкатегорії";
 "category.detail.transactionCount" = "Операції";
 "category.detail.manageSubcategories" = "Керувати підкатегоріями";
-"category.detail.delete.confirmTitle" = "Видалити категорію?";
-"category.detail.delete.confirmMessage" = "Це видалить категорію.";
 "category.detail.type.expense" = "Витрата";
 "category.detail.type.income" = "Дохід";
 
@@ -2201,9 +2181,9 @@
 "assistant.memory.emptyTitle" = "Тен поки нічого про вас не знає";
 "assistant.memory.emptyMessage" = "Розкажіть Тену про свої гроші в чаті, наприклад коли приходить зарплата або на що ви збираєте. Тен запропонує це запам'ятати, а вирішувати вам.";
 "assistant.memory.footer" = "Тен бачить ці факти в кожному чаті. Вони зберігаються на цьому iPhone і йдуть із нього лише разом із вашими запитаннями.";
-"assistant.memory.add" = "Додати факт";
 "assistant.memory.new" = "Новий факт";
 "assistant.memory.edit" = "Змінити факт";
+"typing.indicator" = "Друкує";
 "assistant.memory.placeholder" = "Наприклад: зарплата приходить 10-го";
 "assistant.memory.editorFooter" = "Одне коротке речення про ваші гроші: коли приходить зарплата, на що збираєте, яка картка основна. Без номерів карток і паролів.";
 "assistant.memory.editHint" = "Відкриває факт для зміни";
@@ -2249,7 +2229,6 @@
 "goal.reachedSection" = "Досягнуті";
 "goal.contribute" = "Поповнити";
 "goal.contributions" = "Поповнення";
-"goal.delete" = "Видалити ціль";
 "goal.deleteTitle" = "Видалити ціль?";
 "goal.deleteMessage" = "Ціль і її поповнення буде видалено. Рахунки та операції не зміняться.";
 "goal.notFound" = "Ціль не знайдено";
@@ -2286,7 +2265,6 @@
 "debt.settle" = "Погасити";
 "debt.reopen" = "Відкрити знову";
 "debt.repayments" = "Повернення";
-"debt.delete" = "Видалити борг";
 "debt.deleteTitle" = "Видалити борг?";
 "debt.deleteMessage" = "Борг і всі повернення за ним буде видалено. Рахунки та операції не зміняться.";
 "debt.notFound" = "Борг не знайдено";
@@ -2312,6 +2290,12 @@
 "assistant.topic.debt.plan" = "Як повернути борг вчасно: %@?";
 "assistant.topic.allowance.enough" = "Чи вистачить грошей до наступного доходу?";
 "assistant.topic.allowance.save" = "Де заощадити, щоб на день лишалося більше?";
+"assistant.topic.deposit.earned" = "Скільки відсотків приніс депозит «%@»?";
+"assistant.topic.deposit.grow" = "Як швидше збільшити депозит «%@»?";
+"assistant.topic.loan.payoff" = "Коли я закрию кредит «%@»?";
+"assistant.topic.loan.early" = "Скільки я заощаджу, якщо погашу «%@» достроково?";
+"assistant.topic.subscription.cost" = "Скільки мені коштує «%@» на рік?";
+"assistant.topic.subscription.price" = "Чи дорожчала підписка «%@»?";
 
 /* Ten's lines around the conversation (AssistantChatter, DesignKit 4.10). */
 "assistant.chatter.morning" = "Доброго ранку!";
@@ -2407,7 +2391,6 @@
 "asset.soldBadge" = "Продано";
 "asset.deleteTitle" = "Видалити актив?";
 "asset.deleteMessage" = "Актив і його оцінки буде видалено. Рахунки та операції не зміняться.";
-"asset.delete" = "Видалити актив";
 "bulk.deleteAssets.title" = "Видалити %d активів?";
 "asset.notFound" = "Актив не знайдено";
 "asset.notFoundDescription" = "Можливо, його було видалено.";

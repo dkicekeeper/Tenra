@@ -3,9 +3,10 @@
 //  Tenra
 //
 //  Asking Ten from where the question comes up (docs/domains/assistant.md §7, context entry
-//  points): an account, a category, an insight, the history, a goal, a debt, an asset, For today. The screen names its topic
-//  (`AppCoordinator.ask(about:)`), the assistant opens over the tabs with ready-made questions
-//  about it in place of its general ones; nothing is sent before the person picks one or types.
+//  points): an account, a deposit, a loan, a subscription, a category, an insight, the history,
+//  a goal, a debt, an asset, For today. The screen names its topic (`AppCoordinator.ask(about:)`)
+//  and the assistant's tab opens a new chat with ready-made questions about it over the field
+//  (AssistantViewModel.startChat); nothing is sent before the person picks one or types.
 //  The entries show only where the assistant works (`AssistantAvailability`).
 //
 
@@ -31,6 +32,9 @@ enum AssistantAvailability {
 /// What a screen asks Ten about.
 enum AssistantTopic: Equatable, Sendable {
     case account(name: String)
+    case deposit(name: String)
+    case loan(name: String)
+    case subscription(name: String)
     case category(name: String, isIncome: Bool)
     case insight(title: String)
     case history
@@ -48,6 +52,21 @@ enum AssistantTopic: Equatable, Sendable {
                 String(format: String(localized: "assistant.topic.account.status"), name),
                 String(format: String(localized: "assistant.topic.account.spending"), name),
                 String(format: String(localized: "assistant.topic.account.forecast"), name),
+            ]
+        case .deposit(let name):
+            return [
+                String(format: String(localized: "assistant.topic.deposit.earned"), name),
+                String(format: String(localized: "assistant.topic.deposit.grow"), name),
+            ]
+        case .loan(let name):
+            return [
+                String(format: String(localized: "assistant.topic.loan.payoff"), name),
+                String(format: String(localized: "assistant.topic.loan.early"), name),
+            ]
+        case .subscription(let name):
+            return [
+                String(format: String(localized: "assistant.topic.subscription.cost"), name),
+                String(format: String(localized: "assistant.topic.subscription.price"), name),
             ]
         case .category(let name, let isIncome):
             if isIncome {

@@ -126,7 +126,7 @@ struct CategoriesManagementView: View {
             Button {
                 editingCategory = category
             } label: {
-                Label(String(localized: "button.edit", defaultValue: "Edit"), systemImage: "pencil")
+                Label(String(localized: "button.edit"), systemImage: "pencil")
             }
 
             Button(role: .destructive) {
@@ -155,8 +155,8 @@ struct CategoriesManagementView: View {
                 EmptyState(
                     icon: "folder",
                     title: String(localized: "emptyState.noCategories"),
-                    description: String(localized: "emptyState.startTracking"),
-                    actionTitle: String(localized: "button.add"),
+                    description: String(localized: "category.emptyDescription"),
+                    actionTitle: String(localized: "modal.newCategory"),
                     action: {
                         showingAddCategory = true
                     }
@@ -174,6 +174,7 @@ struct CategoriesManagementView: View {
             mode: $mode,
             selection: $selection,
             allIDs: filteredCategories.map(\.id),
+            addLabel: String(localized: "modal.newCategory"),
             onAdd: { showingAddCategory = true },
             onDeleteSelected: { showingBulkDeleteDialog = true }
         )

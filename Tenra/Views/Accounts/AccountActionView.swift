@@ -150,7 +150,7 @@ struct AccountActionView: View {
             if should { dismiss() }
         }
         .alert(String(localized: "common.error"), isPresented: $viewModel.showingError) {
-            Button(String(localized: "voice.ok"), role: .cancel) {}
+            Button(String(localized: "button.ok"), role: .cancel) {}
         } message: {
             Text(viewModel.errorMessage)
         }

@@ -4,31 +4,18 @@
 */
 
 // MARK: - Navigation Titles
-"navigation.home" = "Início";
 "navigation.history" = "Histórico";
 "navigation.categories" = "Categorias";
-"navigation.settings" = "Ajustes";
-"navigation.accounts" = "Contas";
-"navigation.subscriptions" = "Assinaturas";
 "navigation.categoryFilter" = "Filtrar por categorias";
-"navigation.logoSearch" = "Buscar logo";
-"navigation.entityMapping" = "Mapeamento de entidades";
-"navigation.csvPreview" = "Prévia do CSV";
 "navigation.transactionPreview" = "Prévia das transações";
 
 // MARK: - Transaction Preview (Phase 16)
 "transactionPreview.found" = "Encontradas: %d transações";
 "transactionPreview.selectHint" = "Selecione as transações para importar";
 "transactionPreview.addSelected" = "Adicionar selecionadas (%d)";
-"transactionPreview.noAccount" = "Sem conta";
 "transactionPreview.noMatchingAccount" = "Nenhuma conta nesta moeda";
 "transactionPreview.account" = "Conta";
-"navigation.voiceInput" = "Entrada por voz";
 "navigation.subcategorySearch" = "Buscar subcategorias";
-"navigation.selectDate" = "Selecionar data";
-"navigation.selectIcon" = "Selecionar ícone";
-"navigation.selectLogo" = "Selecionar logo";
-"navigation.importResult" = "Resultado da importação";
 
 // MARK: - Time Filters
 "timeFilter.title" = "Filtro de período";
@@ -52,8 +39,6 @@
 "button.cancel" = "Cancelar";
 "button.delete" = "Excluir";
 "button.close" = "Fechar";
-"button.import" = "Importar";
-"button.export" = "Exportar";
 "button.copy" = "Copiar";
 "button.paste" = "Colar";
 "button.add" = "Adicionar";
@@ -62,9 +47,7 @@
 "button.continue" = "Continuar";
 "button.ok" = "OK";
 "button.retry" = "Tentar novamente";
-"button.change" = "Alterar";
 "button.select" = "Selecionar";
-"button.remove" = "Remover";
 "button.apply" = "Aplicar";
 
 // MARK: - Empty States
@@ -75,7 +58,6 @@
 "category.emptyDescription" = "Adicione uma categoria para ver para onde vai o seu dinheiro";
 "emptyState.noSubcategories" = "Nenhuma subcategoria";
 "subcategory.emptyDescription" = "Adicione subcategorias para detalhar melhor os seus gastos";
-"emptyState.noData" = "Nenhum dado disponível";
 "emptyState.searchNoResults" = "Nada encontrado";
 "emptyState.startTracking" = "Comece a adicionar transações para acompanhar suas finanças";
 "emptyState.tryDifferentSearch" = "Tente mudar sua busca";
@@ -92,9 +74,7 @@
 "currency.noResults.title" = "Nenhuma moeda encontrada";
 "currency.noResults.description" = "Tente outro nome ou código.";
 "currency.customize" = "Personalizar moedas";
-"currency.accountCurrencies" = "Moedas das contas";
 "currency.customizeAction" = "Personalizar...";
-"settings.wallpaper" = "Papel de parede do Início";
 "settings.background" = "Fundo";
 "settings.merchantLogos" = "Logotipos dos estabelecimentos";
 "home.hint.categories" = "Toque em uma categoria para adicionar um gasto";
@@ -126,11 +106,8 @@
 "settings.background.removePhoto" = "Remover foto";
 "settings.background.choosePhoto" = "Escolher uma foto";
 "settings.background.changePhoto" = "Trocar foto";
-"settings.background.preview" = "Prévia do fundo";
 "settings.background.opacity" = "Intensidade da cor";
 "settings.background.opacityTitle" = "Cor das despesas";
-"settings.dataManagement" = "Gerenciamento de dados";
-"settings.categories" = "Categorias";
 "settings.subcategories" = "Subcategorias";
 "settings.accounts" = "Contas";
 "settings.exportImport" = "Exportar e importar";
@@ -156,17 +133,14 @@
 "alert.resetLearning.message" = "O reconhecimento vai esquecer qual conta você costuma escolher para cada categoria. Suas transações não serão excluídas.";
 "alert.resetLearning.confirm" = "Redefinir";
 "alert.importError.title" = "Erro de importação";
-"alert.errorTitle" = "Erro";
 
 // MARK: - Progress
-"progress.loadingData" = "Carregando dados...";
 "progress.processingPDF" = "Processando PDF...";
 "progress.recognizingText" = "Reconhecendo texto: página %d de %d";
 "progress.page" = "Página %d de %d";
 
 // MARK: - Errors
 "error.generic.title" = "Erro";
-"error.importFailed" = "Falha na importação";
 "storeUnavailable.title" = "Não foi possível abrir seus dados";
 "storeUnavailable.message.migration" = "O Tenra não conseguiu converter seus dados para esta versão do app.";
 "storeUnavailable.message.diskFull" = "Este dispositivo está sem espaço de armazenamento. Libere espaço e tente novamente.";
@@ -179,35 +153,19 @@
 "accessibility.accountCard.label" = "%@, saldo %@";
 "accessibility.accountCard.hint" = "Toque para ver os detalhes da conta";
 
-// MARK: - Account Actions
-"account.transfer" = "Transferir";
-"account.topUp" = "Adicionar dinheiro";
-"account.withdrawal" = "Saque";
-
 // MARK: - Analytics
 "analytics.history" = "Histórico";
 "analytics.planned" = "Planejado";
 "history.section.title" = "Histórico";
 
 // MARK: - Transaction Form
-"transaction.account" = "Conta";
 "transaction.amount" = "Valor";
-"transaction.description" = "Descrição";
 "transaction.date" = "Data";
 "transaction.recurring" = "Recorrente";
-"transaction.frequency" = "Frequência";
 "transaction.category" = "Categoria";
-"transaction.subcategories" = "Subcategorias";
-"transaction.currency" = "Moeda";
-
-// MARK: - Transaction Actions
-"transaction.importTransactions" = "Importar transações";
-"transaction.addNew" = "Adicionar transação";
-"transaction.new" = "Nova transação";
 
 // MARK: - Search
 "search.placeholder" = "Buscar por valor, categoria ou descrição";
-"search.subcategories" = "Buscar subcategorias";
 "search.recent" = "Recentes";
 "search.recent.clear" = "Limpar";
 "search.recent.remove" = "Remover";
@@ -227,31 +185,16 @@
 
 // MARK: - Common
 "common.name" = "Nome";
-"common.balance" = "Saldo";
 "common.type" = "Tipo";
-"common.icon" = "Ícone";
 "common.color" = "Cor";
-"common.logo" = "Logo";
-"common.all" = "Tudo";
-"common.selected" = "Selecionado";
-"common.none" = "Nenhum";
-"common.uncategorized" = "Sem categoria";
-"common.unknown" = "Desconhecido";
 "common.cancel" = "Cancelar";
-"common.back" = "Voltar";
 "common.select" = "Selecionar";
-"common.selectAccount" = "Selecionar conta";
-"common.selectCategory" = "Selecionar categoria";
-"common.selectSubcategory" = "Selecionar subcategoria";
-"common.selectColor" = "Selecionar cor";
-"common.filterBy" = "Filtrar por";
 "common.frequency" = "Frequência";
 "common.startDate" = "Data de início";
 
 // MARK: - Date Labels
 "date.today" = "Hoje";
 "date.yesterday" = "Ontem";
-"date.tomorrow" = "Amanhã";
 "date.selectDate" = "Data";
 "date.choose" = "Escolher data";
 
@@ -265,25 +208,16 @@
 "transaction.stopRecurring.title" = "Parar recorrência?";
 "transaction.stopRecurring.message" = "Isso vai interromper a transação recorrente. Todas as transações futuras serão excluídas.";
 "transaction.stopRecurring.confirm" = "Parar recorrência";
-"accessibility.deleteTransaction" = "Excluir transação";
-"accessibility.stopRecurring" = "Parar transação recorrente";
-"accessibility.swipeForOptions" = "Deslize para a esquerda para ver as opções";
 
 // MARK: - Accounts Management
 "accounts.title" = "Contas";
-"account.interestToday" = "Juros hoje: %@";
 "account.interestTodayPrefix" = "Juros hoje: ";
 "account.nextPosting" = "Próximo lançamento: %@";
-"account.selectLogo" = "Selecionar logo";
-"account.popularBanks" = "Bancos populares";
-"account.otherBanks" = "Outros bancos";
 "account.namePlaceholder" = "Nome da conta";
 "account.deleteTitle" = "Excluir conta?";
 "account.deleteMessage" = "O que você quer fazer com as transações de '%@'?";
 "account.deleteOnlyAccount" = "Excluir só a conta";
 "account.deleteAccountAndTransactions" = "Excluir conta e transações";
-"common.currency" = "Moeda";
-"common.balancePlaceholder" = "0,00";
 "common.error" = "Erro";
 
 // MARK: - Deposits
@@ -292,7 +226,6 @@
 "deposit.changeRate" = "Alterar taxa";
 "deposit.deleteTitle" = "Excluir depósito?";
 "deposit.deleteMessage" = "Todos os dados do depósito e as transações relacionadas serão excluídos.";
-"deposit.balance" = "Saldo";
 "deposit.interestToday" = "Juros hoje";
 "deposit.rate" = "Taxa";
 "deposit.rateAnnual" = "% ao ano";
@@ -300,56 +233,31 @@
 "deposit.capitalizationEnabled" = "Ativada";
 "deposit.capitalizationDisabled" = "Desativada";
 "deposit.postingDay" = "Dia do lançamento";
-"deposit.nextPosting" = "Próximo lançamento";
-"deposit.topUp" = "Adicionar dinheiro";
-"deposit.transferToAccount" = "Transferir para conta";
-"deposit.topUpTitle" = "Adicionar dinheiro ao depósito";
-"deposit.transferFromTitle" = "Transferir do depósito";
-"deposit.sourceAccount" = "Conta de origem";
-"deposit.targetAccount" = "Conta de destino";
-"deposit.noOtherAccounts" = "Nenhuma outra conta para transferência";
-"deposit.amount" = "Valor";
-"deposit.description" = "Descrição";
-"deposit.descriptionOptional" = "Descrição (opcional)";
-"deposit.date" = "Data";
-"deposit.topUpDescription" = "Aporte no depósito";
-"deposit.transferFromDescription" = "Transferência do depósito";
 "deposit.newRate" = "Nova taxa de juros";
 "deposit.effectiveDate" = "Data de vigência";
 "deposit.note" = "Observação (opcional)";
 "deposit.changeRateTitle" = "Alterar taxa";
-"deposit.name" = "Nome do depósito";
 "deposit.namePlaceholder" = "Nome";
 "deposit.bank" = "Banco";
-"deposit.bankName" = "Nome do banco";
 "deposit.bankNamePlaceholder" = "Nome do banco";
-"deposit.selectLogo" = "Selecionar logo";
-"deposit.initialAmount" = "Valor inicial";
 "deposit.interestRate" = "Taxa de juros";
-"deposit.postingDayTitle" = "Dia do lançamento dos juros";
 "deposit.dayOfMonth" = "Dia do mês";
-"deposit.postingDayHint" = "Se o mês tiver menos dias, o lançamento será feito no último dia do mês";
-"deposit.capitalizationTitle" = "Capitalização";
 "deposit.enableCapitalization" = "Ativar capitalização";
 "deposit.capitalizationHint" = "Com a capitalização ativada, os juros são somados ao valor principal todo mês";
 "deposit.countsForToday" = "Contar em \"Para hoje\"";
 "deposit.countsForToday.hint" = "Dinheiro que você pode sacar a qualquer momento. \"Para hoje\" e o Ten o somam aos seus cartões.";
 "deposit.new" = "Novo depósito";
 "deposit.editTitle" = "Editar depósito";
-"deposit.interestAccrual.description" = "Juros";
 "deposit.interestAccrual.category" = "Juros";
 
 // MARK: - Categories Management
 "categories.expenseCategories" = "Categorias de despesas";
-"categories.incomeCategories" = "Categorias de receitas";
 "category.uncategorized" = "Sem categoria";
 "category.deleteTitle" = "Excluir categoria?";
 "category.deleteOnlyCategory" = "Excluir só a categoria";
 "category.deleteCategoryAndTransactions" = "Excluir categoria e transações";
 "category.deleteMessage" = "Escolha o que fazer com as transações da categoria \"%@\".";
 "category.namePlaceholder" = "Nome da categoria";
-"category.tapToSelect" = "Toque para selecionar";
-"category.subcategories" = "Subcategorias";
 "category.addSubcategory" = "Adicionar subcategoria";
 "category.manageSubcategories" = "Gerenciar subcategorias";
 
@@ -394,12 +302,7 @@
 "iconPicker.gaming" = "Games";
 "iconPicker.devTools" = "Ferramentas de desenvolvimento e IA";
 "iconPicker.services" = "Serviços";
-"iconPicker.popularBanks" = "Bancos populares";
-"iconPicker.otherBanks" = "Outros bancos";
 "iconPicker.searchOnline" = "Buscar logo da marca...";
-"iconPicker.noLogo" = "Sem logo";
-"iconPicker.searching" = "Buscando...";
-"iconPicker.searchResults" = "Resultados da busca";
 
 // MARK: - Category Filter
 "categoryFilter.allCategories" = "Todas as categorias";
@@ -415,23 +318,10 @@
 "accessibility.voiceInputHint" = "Grave uma transação usando a voz";
 "accessibility.calendar" = "Calendário";
 "accessibility.calendarHint" = "Selecione o período para filtrar as transações";
-"accessibility.settings" = "Ajustes";
-"accessibility.settingsHint" = "Abrir os ajustes do aplicativo";
 
 // MARK: - Quick Add Transaction / Add Transaction Modal
-"quickAdd.account" = "Conta";
-"quickAdd.amount" = "Valor";
-"quickAdd.description" = "Descrição";
 "quickAdd.descriptionPlaceholder" = "Descrição (opcional)";
 "quickAdd.balanceAfter" = "Saldo depois";
-"quickAdd.recurring" = "Transação recorrente";
-"quickAdd.makeRecurring" = "Recorrente";
-"quickAdd.frequency" = "Frequência";
-"quickAdd.subcategories" = "Subcategorias";
-"quickAdd.searchSubcategories" = "Buscar subcategorias";
-"quickAdd.searchAndAddSubcategories" = "Buscar e adicionar subcategorias";
-"quickAdd.selectDate" = "Selecionar data";
-"quickAdd.done" = "Concluído";
 
 // MARK: - Validation Errors
 "error.validation.enterAmount" = "Insira um valor válido";
@@ -442,19 +332,14 @@
 // MARK: - Voice Input
 "voice.title" = "Entrada por Voz";
 "voice.speak" = "Fale...";
-"voice.recording" = "Gravando...";
 "voice.error" = "Erro";
 "voice.errorMessage" = "Falha ao iniciar a gravação";
 "voice.emptyText" = "Nenhum texto foi reconhecido. Tente novamente.";
-"voice.vadToggle" = "Parar automaticamente no silêncio";
-"voice.vadDescription" = "A gravação será interrompida automaticamente após 2,5 segundos de silêncio";
 
 // MARK: - Voice Input Confirmation
 "voiceConfirmation.title" = "Revisar Operação";
 "voiceConfirmation.confirm" = "Confirmar";
-"voiceConfirmation.type" = "Tipo de Operação";
 "voiceConfirmation.noAccounts" = "Nenhuma conta disponível";
-"voiceConfirmation.selectCategory" = "Selecione a categoria";
 "voiceConfirmation.warning.accountNotFound" = "Conta não encontrada: selecionada por padrão";
 "voiceConfirmation.warning.accountNotRecognized" = "Conta não reconhecida: selecionada por padrão";
 "voiceConfirmation.warning.enterAmount" = "Insira o valor";
@@ -462,7 +347,6 @@
 "voiceConfirmation.warning.selectAccount" = "Selecione uma conta";
 "voiceConfirmation.warning.accountNotSelected" = "Conta não selecionada: usando a padrão";
 "voiceConfirmation.warning.categoryNotRecognized" = "Categoria não reconhecida: selecionada por padrão";
-"voiceConfirmation.warning.selectCategory" = "Selecione a categoria";
 "voiceConfirmation.warning.categoryNotSelected" = "Categoria não selecionada: usando a padrão";
 "voiceConfirmation.warning.categoryNotFound" = "Falha ao encontrar a categoria";
 
@@ -479,7 +363,6 @@
 "subscriptions.deleteSubscriptionAndTransactions" = "Excluir assinatura e transações";
 "subscriptions.pause" = "Pausar";
 "subscriptions.resume" = "Retomar";
-"subscriptions.transactionHistory" = "Histórico de Transações";
 "subscriptions.category" = "Categoria";
 "subscriptions.frequency" = "Frequência";
 "subscriptions.nextCharge" = "Próxima cobrança";
@@ -513,7 +396,6 @@
 "frequency.yearly" = "Anual";
 
 // Subscription Form
-"subscription.basicInfo" = "Informações Básicas";
 "subscription.namePlaceholder" = "Nome da Assinatura";
 "subscription.reminders" = "Lembretes";
 "subscription.scheduleSection" = "Agendamento";
@@ -531,12 +413,10 @@
 "account.selectAccount" = "Selecionar conta";
 
 // Category messages
-"category.selectCategory" = "Selecionar categoria";
 
 // Error messages
 "error.subscriptionNameRequired" = "Insira o nome da assinatura";
 "error.invalidAmount" = "Insira um valor válido";
-"error.categoryRequired" = "Selecione a categoria";
 "error.accountRequired" = "Selecione a conta de pagamento";
 "error.accountNameRequired" = "Insira o nome da conta";
 "error.categoryNameRequired" = "Insira o nome da categoria";
@@ -549,26 +429,10 @@
 "yearly" = "Anual";
 "budget_reset_day" = "Reiniciar no dia";
 "budget_reset_day_description" = "O dia do mês em que o orçamento é reiniciado (1-31)";
-"budget_settings" = "Ajustes do Orçamento";
-"current_budget" = "Orçamento Atual";
-"current_settings" = "Ajustes Atuais";
-"remove_budget" = "Remover Orçamento";
-"set_budget_for" = "Definir Orçamento para";
 "save" = "Salvar";
-"cancel" = "Cancelar";
 "category.noBudgetSet" = "Nenhum orçamento definido";
 
-// MARK: - Calendar
-"calendar.upcomingPayments" = "Próximos Pagamentos";
-"calendar.month" = "Mês";
-"calendar.halfYear" = "6 Meses";
-"calendar.year" = "Ano";
-"calendar.noUpcomingPayments" = "Nenhum pagamento próximo";
-"calendar.currentMonth" = "Mês Atual";
-
 // MARK: - Transaction Forms
-"transactionForm.amount" = "Valor";
-"transactionForm.description" = "Descrição";
 "transactionForm.descriptionPlaceholder" = "Descrição (opcional)";
 "transactionForm.category" = "Categoria";
 "transactionForm.selectCategory" = "Selecione a categoria";
@@ -576,7 +440,6 @@
 "transactionForm.transfer" = "Transferência";
 "transactionForm.topUp" = "Adicionar Saldo";
 "transactionForm.toAccount" = "Para a Conta";
-"transactionForm.fromAccount" = "Da Conta";
 "transactionForm.fromHeader" = "De";
 "transactionForm.toHeader" = "Para";
 "transactionForm.noAccountsForTransfer" = "Nenhuma outra conta para transferência";
@@ -585,16 +448,10 @@
 "transactionForm.cannotTransferToSame" = "Não é possível transferir para a mesma conta";
 "transactionForm.accountNotFound" = "Conta não encontrada";
 "transactionForm.selectTargetAccount" = "Selecione a conta de destino";
-"transactionForm.depositTopUp" = "Adicionar ao Depósito";
-"transactionForm.depositWithdrawal" = "Sacar do Depósito";
 "transactionForm.accountTopUp" = "Adicionar Saldo à Conta";
-"transactionForm.recurring" = "Recorrente";
-"transactionForm.makeRecurring" = "Tornar recorrente";
 "transactionForm.searchSubcategories" = "Buscar subcategorias";
 "transactionForm.addSubcategory" = "Adicionar subcategoria";
 "transactionForm.createSubcategory" = "Criar \"%@\"";
-"transactionForm.searchAndAddSubcategories" = "Busque e adicione subcategorias";
-"transactionForm.searchOrCreateSubcategory" = "Encontre ou crie uma subcategoria";
 // MARK: - Recurring Transactions Errors
 "recurring.error.seriesNotFound" = "Série recorrente não encontrada";
 "recurring.error.invalidFrequency" = "Frequência selecionada inválida";
@@ -605,9 +462,6 @@
 "recurring.error.emptyCurrency" = "A moeda é obrigatória";
 "recurring.error.missingSubscriptionStatus" = "O status da assinatura é obrigatório";
 "recurring.error.invalidReminderOffsets" = "Os dias de lembrete devem ser positivos";
-"recurring.validation.amountRequired" = "O valor é obrigatório";
-"recurring.validation.descriptionRequired" = "A descrição é obrigatória";
-
 
 // MARK: - CSV Import
 "category.other" = "Outros";
@@ -624,10 +478,6 @@
 "csvImport.error.noHeaders" = "O arquivo não tem cabeçalhos";
 "csvImport.error.invalidFormat" = "Formato CSV inválido";
 "csvImport.error.persistenceFailed" = "Não foi possível salvar os dados importados no banco de dados.";
-"csvImport.progress.parsing" = "Analisando arquivo CSV...";
-"csvImport.progress.validating" = "Validando linhas...";
-"csvImport.progress.importing" = "Importando transações...";
-"csvImport.progress.finalizing" = "Finalizando importação...";
 "csvImport.result.imported" = "%d importadas";
 "csvImport.result.skipped" = "%d ignoradas";
 "csvImport.result.duplicates" = "%d duplicadas";
@@ -637,8 +487,6 @@
 "csvImport.result.duration" = "Duração";
 "csvImport.result.speed" = "Velocidade";
 "csvImport.result.title" = "Importação Concluída";
-"csvImport.button.cancel" = "Cancelar Importação";
-"csvImport.button.retry" = "Tentar Novamente";
 "csvImport.button.viewErrors" = "Ver Erros";
 "csvImport.preview.title" = "Pré-visualização do CSV";
 "csvImport.preview.rows" = "Linhas";
@@ -655,14 +503,9 @@
 "csvImport.mapping.currency" = "Moeda";
 "csvImport.mapping.account" = "Conta";
 "csvImport.mapping.none" = "Nenhum";
-"csvImport.entityMapping.title" = "Mapeamento de Entidades";
-"csvImport.entityMapping.accounts" = "Contas";
-"csvImport.entityMapping.categories" = "Categorias";
-"csvImport.entityMapping.autoCreate" = "Será criado automaticamente";
 "csvImport.preview.fileInfo" = "Informações do Arquivo";
 "csvImport.preview.headersTitle" = "Colunas no Arquivo";
 "csvImport.preview.dataPreview" = "Pré-visualização dos Dados (primeiras %d linhas)";
-"csvImport.preview.empty" = "(vazio)";
 "csvImport.mapping.category" = "Categoria";
 "csvImport.mapping.targetAccount" = "Conta de Destino";
 "csvImport.mapping.targetCurrency" = "Moeda de Destino";
@@ -727,25 +570,6 @@
 "error.export.fileWriteFailed" = "Falha ao gravar o arquivo de exportação: %@";
 "error.export.insufficientSpace" = "Espaço em disco insuficiente para a exportação";
 
-// MARK: - Alert Titles (Settings)
-"alert.recalculateBalances.title" = "Recalcular Saldos?";
-"alert.recalculateBalances.message" = "Isso recalculará todos os saldos das contas do zero com base nas transações. Use se os saldos estiverem sendo exibidos incorretamente.";
-"alert.recalculateBalances.confirm" = "Recalcular";
-"alert.selectWallpaper.title" = "Selecionar Papel de Parede";
-"alert.removeWallpaper.title" = "Remover Papel de Parede?";
-"alert.removeWallpaper.message" = "Isso removerá o papel de parede atual da tela inicial";
-"alert.exportSuccess.title" = "Exportação Concluída";
-"alert.exportSuccess.message" = "Dados exportados para %@";
-"alert.importSuccess.title" = "Importação Concluída";
-"alert.importSuccess.message" = "%d transações importadas";
-
-// MARK: - Settings Labels (Additional)
-"settings.recalculateBalances" = "Recalcular Saldos das Contas";
-"settings.wallpaperHistory" = "Histórico de Papéis de Parede";
-"settings.recentCurrencies" = "Moedas Recentes";
-"settings.exportProgress" = "Exportando... %d%%";
-"settings.importProgress" = "Importando... %d%%";
-
 // MARK: - Success Messages
 "success.settings.currencyUpdated" = "Moeda atualizada com sucesso";
 "success.settings.wallpaperUpdated" = "Papel de parede atualizado com sucesso";
@@ -755,7 +579,6 @@
 "success.recalculation.completed" = "Saldos recalculados com sucesso";
 
 // MARK: - Import Errors (Phase 2)
-"error.import.coordinatorNotAvailable" = "Coordenador de importação não disponível";
 "error.import.viewModelsNotAvailable" = "View models necessários não disponíveis";
 
 // MARK: - Import Progress (Phase 2)
@@ -789,7 +612,6 @@
 "iconStyle.tint.palette" = "Paleta";
 "iconStyle.tint.original" = "Cores Originais";
 "iconStyle.preset.categoryIcon" = "Ícone de Categoria";
-"iconStyle.preset.bankLogo" = "Logo do Banco";
 "iconStyle.preset.serviceLogo" = "Logo do Serviço";
 "iconStyle.preset.placeholder" = "Espaço Reservado";
 "recurring.never" = "Nunca";
@@ -799,11 +621,6 @@
 "filter.allAccounts" = "Todas as contas";
 "filter.allCategories" = "Todas as categorias";
 "filter.allSubcategories" = "Todas as Subcategorias";
-
-// MARK: - Animated Input (Phase 16)
-"input.amountPlaceholder" = "0";
-"input.titleHint" = "Toque para editar o nome";
-"input.balanceHint" = "Toque para editar o saldo";
 
 // MARK: - Insights (Phase 17)
 "insights.title" = "Análises";
@@ -818,7 +635,6 @@
 "insights.availableBalance" = "Saldo Disponível";
 "insights.topMonths.best" = "Top 10 melhores meses";
 "insights.topMonths.worst" = "Top 10 piores meses";
-"insights.loading" = "Analisando suas finanças...";
 "insights.emptyState.title" = "Nenhuma análise ainda";
 "insights.emptyState.description" = "Adicione transações para ver suas análises financeiras";
 "insights.noInsightsForFilter" = "Nenhuma análise para esta categoria";
@@ -836,13 +652,11 @@
 "insights.vsPreviousPeriod" = "vs período anterior";
 "insights.vsAverage" = "vs média";
 "insights.budgetOver" = "Acima do orçamento";
-"insights.budgetUnder" = "Dentro do orçamento";
 "insights.budgetHeadroom" = "Folga no orçamento";
 "insights.projectedOverspend" = "Estouro projetado";
 "insights.categoriesOverBudget" = "%d categorias acima do orçamento";
 "insights.categoriesAtRisk" = "%d categorias em risco";
 "insights.categoriesUnderBudget" = "%d categorias dentro do previsto";
-"insights.categoriesUnit" = "categorias";
 "insights.totalRecurring" = "Custos recorrentes mensais";
 "insights.totalRecurring.week" = "Recorrentes semanais";
 "insights.totalRecurring.month" = "Custos recorrentes mensais";
@@ -884,11 +698,9 @@
 "insights.projectedBalance" = "Saldo projetado";
 "insights.in30Days" = "em 30 dias";
 "insights.recurringAndExpenses" = "Recorrentes + despesas médias";
-"insights.projected" = "variação projetada";
 "insights.currentBalance" = "Saldo atual";
 "insights.cashFlowTrend" = "Tendência do fluxo de caixa";
 "insights.breakdown" = "Detalhamento";
-"insights.monthlyBreakdown" = "Detalhamento mensal";
 "insights.breakdown.week" = "Detalhamento semanal";
 "insights.breakdown.month" = "Detalhamento mensal";
 "insights.breakdown.quarter" = "Detalhamento trimestral";
@@ -901,8 +713,6 @@
 "insights.other" = "Outros";
 "insights.noSubcategory" = "Sem subcategoria";
 "insights.spendingTrend" = "Tendência de gastos";
-"insights.subcategories" = "Subcategorias";
-"insights.periodComparison" = "Comparação de períodos";
 "insights.daysLeft" = "%d dias restantes";
 
 // Granularity picker
@@ -917,7 +727,6 @@
 "insights.granularity.year.short" = "Ano";
 "insights.granularity.allTime.short" = "Tudo";
 "insights.bucket.week.label" = "Últimos 7 dias";
-"insights.summary.windowTotalsLabel" = "Em toda a janela do gráfico";
 "insights.formula.value.months" = "%.1f meses";
 "insights.formula.howCalculated" = "Como é calculado";
 "insights.formula.value.days" = "%d dias";
@@ -954,21 +763,8 @@
 "insights.formula.spendingForecast.rec.overrun" = "No ritmo atual, você vai ultrapassar a renda em %@. Revise os gastos não essenciais ou adie compras opcionais para o próximo mês.";
 "insights.formula.spendingForecast.rec.onTrack" = "A previsão deixa uma folga de %@. Garanta essa folga evitando compras fora do planejado, ou mande o valor para a poupança agora.";
 "insights.formula.spendingForecast.rec.noIncome" = "Nenhuma receita registrada neste mês: a previsão é apenas informativa.";
-"insights.formula.balanceRunway.title" = "Fôlego do saldo";
-"insights.formula.balanceRunway.heroLabel" = "Meses até o saldo acabar no ritmo atual de gastos";
-"insights.formula.balanceRunway.heroLabel.growing" = "Excedente mensal médio";
-"insights.formula.balanceRunway.formulaHeader" = "Como é calculado";
-"insights.formula.balanceRunway.row.balance" = "Saldo atual";
-"insights.formula.balanceRunway.row.avgIncome" = "Receita mensal média (3 meses)";
-"insights.formula.balanceRunway.row.avgExpenses" = "Despesa mensal média (3 meses)";
-"insights.formula.balanceRunway.row.burn" = "Queima mensal (despesas − receitas)";
 "insights.formula.balanceRunway.row.netFlow" = "Fluxo líquido médio";
 "insights.formula.balanceRunway.row.runway" = "Fôlego";
-"insights.formula.balanceRunway.explainer" = "Saldo ÷ queima mensal. O limite de 3 meses corresponde a uma reserva de emergência saudável; abaixo de 1 mês, um único ciclo de pagamento ruim esgota o colchão.";
-"insights.formula.balanceRunway.explainer.growing" = "A receita supera as despesas, então o saldo está crescendo. O valor em destaque é seu excedente mensal médio: nesse ritmo, seu saldo tem fôlego indefinido.";
-"insights.formula.balanceRunway.rec.growing" = "Você está no positivo: direcione o excedente para metas, dívidas ou aplicações com maior rendimento em vez de deixá-lo parado.";
-"insights.formula.balanceRunway.rec.long" = "Mais de 3 meses de fôlego: você está bem protegido. Considere aplicar o excedente em instrumentos de prazo mais longo.";
-"insights.formula.balanceRunway.rec.short" = "Abaixo de 3 meses. Corte ~%@/mês nos gastos para chegar a um colchão de 3 meses; comece pela maior categoria não essencial.";
 "insights.formula.balanceRunway.rec.critical" = "Menos de um mês de fôlego: feche essa lacuna com urgência. Até pausar um pagamento recorrente grande já ganha alguns dias.";
 "insights.formula.yearOverYear.title" = "Gastos ano a ano";
 "insights.formula.yearOverYear.heroLabel" = "Variação vs mesmo mês do ano passado";
@@ -1038,7 +834,6 @@
 "insights.categoryTrend" = "Tendência de gastos";
 "insights.categoryTrend.risingMonths" = "Subindo há %d meses";
 "insights.subscriptionGrowth" = "Crescimento das assinaturas";
-"insights.vsThreeMonthsAgo" = "vs 3 meses atrás";
 
 // Forecasting
 "insights.forecasting" = "Previsão";
@@ -1108,7 +903,6 @@
 "tab.home" = "Início";
 "tab.analytics" = "Análises";
 "tab.finances" = "Finanças";
-"tab.settings" = "Ajustes";
 "tab.voice" = "Voz";
 "tab.ocr" = "Importar";
 "tab.add" = "Adicionar";
@@ -1117,7 +911,6 @@
 // MARK: - Finances
 "finances.title" = "Finanças";
 "finances.accounts.title" = "Contas";
-"finances.accounts.totalLabel" = "Saldo total";
 "finances.accounts.empty" = "Sem contas";
 "finances.deposits.title" = "Depósitos";
 "finances.deposits.empty" = "Sem depósitos";
@@ -1145,14 +938,11 @@
 "loan.unpaidThisMonth" = "Em aberto este mês";
 "loan.typeAnnuityShort" = "Crédito";
 "loan.typeInstallmentShort" = "Parcelamento";
-"loan.of" = "de";
 "loan.remainingShort" = "faltam %d a pagar";
 "loan.notFound" = "Empréstimo não encontrado";
 "loan.title" = "Empréstimo";
 "loan.changeRate" = "Alterar taxa";
 "loan.earlyRepayment" = "Amortização antecipada";
-"loan.history" = "Histórico de pagamentos";
-"loan.actions" = "Ações do empréstimo";
 "loan.deleteTitle" = "Excluir empréstimo?";
 "loan.deleteMessage" = "Os pagamentos deste empréstimo são despesas reais nas suas contas. Você pode mantê-los no histórico ou excluí-los junto com o empréstimo.";
 "loan.closedSection" = "Quitados";
@@ -1164,7 +954,6 @@
 "loan.deleteWithPayments" = "Excluir empréstimo e pagamentos";
 "loan.payoffCelebration" = "Empréstimo quitado. Muito bem.";
 "loan.paidOff" = "Quitado";
-"loan.remainingPrincipal" = "Restante";
 "loan.nextPayment" = "Próximo pagamento: %@";
 "loan.currentPaymentBreakdown" = "Composição do pagamento atual";
 "loan.principalPortion" = "Principal";
@@ -1187,46 +976,26 @@
 "loan.noSchedule" = "Nenhuma tabela disponível";
 "loan.showAllPayments" = "Mostrar todos os %d pagamentos";
 "loan.interestShort" = "Juros: %@";
-"loan.makeEarlyRepayment" = "Amortização antecipada";
 "loan.convertTitle" = "Converter em empréstimo";
 "loan.editTitle" = "Editar empréstimo";
 "loan.newTitle" = "Novo empréstimo";
-"loan.nameHeader" = "Nome";
 "loan.namePlaceholder" = "ex.: Financiamento do carro";
-"loan.bankHeader" = "Banco";
 "loan.bankLabel" = "Banco";
 "loan.bankPlaceholder" = "Nome do banco";
-"loan.typeHeader" = "Tipo de empréstimo";
 "loan.typePicker" = "Tipo";
-"loan.typeAnnuity" = "Crédito (com juros)";
-"loan.typeInstallment" = "Parcelamento";
 "loan.installmentHint" = "Parcelamento = 0% de juros, parcelas iguais";
-"loan.principalHeader" = "Valor do empréstimo";
-"loan.principalPlaceholder" = "Valor total do empréstimo";
-"loan.interestRateHeader" = "Taxa de juros";
 "loan.interestRateLabel" = "Taxa (ano)";
-"loan.rateAnnualSuffix" = "% ao ano";
-"loan.termHeader" = "Prazo";
-"loan.termPlaceholder" = "Número de meses";
-"loan.months" = "meses";
-"loan.paymentDayHeader" = "Dia do pagamento";
 "loan.paymentDay" = "Dia do mês";
-"loan.paymentDayHint" = "Dia do mês em que o pagamento vence";
-"loan.startDateHeader" = "Data de início";
 "loan.startDate" = "Data de início do empréstimo";
-"loan.repaymentAmount" = "Valor da amortização";
 "loan.amountPlaceholder" = "Valor";
 "loan.remainingBalance" = "Restante: %@";
-"loan.repaymentDate" = "Data";
 "loan.date" = "Data";
-"loan.repaymentType" = "Estratégia de amortização";
 "loan.strategy" = "Estratégia";
 "loan.reduceTerm" = "Reduzir prazo";
 "loan.reducePayment" = "Reduzir parcela";
 "loan.reduceTermHint" = "Manter a parcela mensal e terminar antes";
 "loan.reducePaymentHint" = "Manter o prazo e diminuir a parcela mensal";
 "loan.impact" = "Impacto";
-"loan.note" = "Observação";
 "loan.notePlaceholder" = "Observação opcional";
 "loan.defaultTagging" = "Categoria padrão";
 "loan.defaultTaggingHint" = "Preenche o formulário de pagamento automaticamente. A última categoria usada em pagamentos anteriores tem prioridade.";
@@ -1234,33 +1003,24 @@
 "loan.subcategoryEmpty" = "Escolha uma categoria acima para adicionar subcategorias";
 "loan.noDefaultCategory" = "Sem categoria";
 "loan.noDefaultSubcategory" = "Sem subcategoria";
-"loan.earlyRepaymentTitle" = "Amortização antecipada";
 "loan.termReduction" = "Prazo reduzido em";
 "loan.monthsValue" = "%d meses";
 "loan.newEndDate" = "Nova data final";
 "loan.paymentReduction" = "Parcela reduzida em";
 "loan.newMonthlyPayment" = "Nova parcela mensal";
-"loan.newRate" = "Nova taxa de juros";
 "loan.effectiveDate" = "Válida a partir de";
 "loan.rateChangeImpact" = "Impacto";
 "loan.paymentChange" = "Variação";
-"loan.enterRateForPreview" = "Informe a taxa para ver o impacto";
 "loan.changeRateTitle" = "Alterar taxa";
-"loan.payment.description" = "Pagamento de empréstimo";
 
 // Loans Phase 5
 "loan.typeLockedHint" = "O tipo de empréstimo não pode ser alterado após a criação";
 "loan.makePayment" = "Fazer pagamento";
-"loan.paymentTitle" = "Pagamento do empréstimo";
-"loan.paymentAmount" = "Valor do pagamento";
 "loan.sourceAccount" = "Conta de origem";
-"loan.selectSourceAccount" = "Selecione a conta para pagar";
 "loan.scheduledPayment" = "Programado: %@";
 "loan.noSourceAccounts" = "Nenhuma conta disponível";
-"loan.payAll" = "Pagar tudo";
 "loan.payAllTitle" = "Pagar todos os empréstimos";
 "loan.payAllTotal" = "Pagamento total";
-"loan.payAllConfirm" = "Pagar tudo";
 
 // MARK: - Icon Picker (new categories)
 "iconPicker.localServices" = "Serviços locais";
@@ -1326,16 +1086,6 @@
 
 // MARK: - iCloud Sync
 "settings.cloud" = "Backups";
-"settings.cloud.sync" = "Sincronização com o iCloud";
-"settings.cloud.status.synced" = "Sincronizado";
-"settings.cloud.status.syncing" = "Sincronizando...";
-"settings.cloud.status.initialSync" = "Sincronização inicial";
-"settings.cloud.status.initialSyncMessage" = "Isso pode levar alguns minutos";
-"settings.cloud.status.error" = "Erro de sincronização";
-"settings.cloud.status.disabled" = "Desativado";
-"settings.cloud.status.noAccount" = "Entre no iCloud nos Ajustes";
-"settings.cloud.lastSync" = "Última sincronização: %@";
-"settings.cloud.changes" = "%d enviadas · %d recebidas";
 "settings.cloud.backups" = "Backups";
 "settings.cloud.createBackup" = "Criar backup";
 "settings.cloud.backupCreated" = "Backup criado com sucesso";
@@ -1344,8 +1094,6 @@
 "settings.cloud.restoring" = "Restaurando…";
 "settings.cloud.restoringSubtitle" = "Não feche o app, por favor";
 "settings.cloud.deleteTitle" = "Excluir backup?";
-"settings.cloud.storage" = "Armazenamento";
-"settings.cloud.storageUsed" = "%@ de %@";
 "settings.cloud.iCloud.toggle" = "Salvar backups no iCloud";
 "settings.cloud.iCloud.moving" = "Movendo seus dados…";
 "settings.cloud.iCloud.footer" = "Os backups ficam no seu iCloud, ocultos no app Arquivos, e disponíveis no Tenra nos seus outros dispositivos.";
@@ -1357,9 +1105,6 @@
 "alert.restore.title" = "Restaurar backup?";
 "alert.restore.message" = "Todos os dados atuais serão substituídos pelo backup de %@.";
 "alert.restore.confirm" = "Restaurar";
-"alert.disableSync.title" = "Desativar a sincronização com o iCloud?";
-"alert.disableSync.message" = "Os dados ficarão armazenados apenas neste dispositivo.";
-"alert.disableSync.confirm" = "Desativar";
 
 // Backup errors
 "error.backup.noActiveStore" = "Nenhum banco de dados ativo encontrado";
@@ -1371,7 +1116,6 @@
 "error.backup.notDownloaded" = "Este backup ainda não terminou de baixar do iCloud. Verifique sua conexão e tente novamente.";
 
 // MARK: - Loans (Form)
-"loan.amountLabel" = "Valor";
 "loan.detailsSection" = "Detalhes do empréstimo";
 "loan.noteLabel" = "Nota";
 "loan.payAllLoans" = "Empréstimos";
@@ -1386,11 +1130,6 @@
 "loan.error.noSourceAccount" = "Selecione uma conta de origem";
 "loan.linkPayments" = "Vincular pagamentos";
 "loan.linkPayments.title" = "Vincular pagamentos";
-"loan.linkPayments.selected" = "%d selecionados";
-"loan.linkPayments.selectedWithAmount" = "%d selecionados · %@";
-"loan.linkPayments.search" = "Buscar por descrição ou valor";
-"loan.linkPayments.link" = "Vincular %d pagamentos";
-"loan.linkPayments.empty" = "Nenhuma transação correspondente";
 "loan.linkPayments.error.notFound" = "Empréstimo não encontrado";
 "loan.markPaid" = "Marcar como pago";
 "loan.markUnpaid" = "Marcar como não pago";
@@ -1400,7 +1139,6 @@
 
 // Subscription Link Payments
 "subscription.linkPayments.title" = "Vincular pagamentos";
-"subscription.linkPayments.search" = "Buscar por descrição ou valor";
 "subscription.linkPayments.searchPlaceholder" = "Buscar";
 "subscription.linkPayments.selectedWithAmount" = "%d selecionados · %@";
 "subscription.linkPayments.link" = "Vincular %d";
@@ -1409,7 +1147,6 @@
 "subscription.linkPayments.amountTolerance" = "±30%";
 "subscription.linkPayments.amountAll" = "Todos";
 "subscription.linkPayments.unknownAccount" = "Conta desconhecida";
-"common.done" = "OK";
 "deposit.linkInterest.title" = "Vincular pagamentos de juros";
 "deposit.recalculateInterest" = "Recalcular juros";
 "subscriptions.spentAllTime" = "Gasto total";
@@ -1455,12 +1192,6 @@
 
 // MARK: - Insights
 "insights.remaining" = "restante";
-"insights.range.totalExpenses" = "Despesas do período";
-"insights.range.netFlow" = "Fluxo líquido do período";
-"insights.range.wealthChange" = "Variação do patrimônio";
-"insights.range.totalIncome" = "Receitas do período";
-"insights.range.reset" = "Redefinir";
-"insights.zoom.reset" = "Ajustar";
 "insights.chart.line" = "Linha";
 "insights.chart.bar" = "Barras";
 "insights.today" = "Hoje";
@@ -1470,9 +1201,7 @@
 "insights.empty.subtitle" = "O gráfico aparecerá assim que você tiver um histórico de transações";
 
 // MARK: - Voice Input
-"voice.noTextRecognizedYet" = "Nenhum texto reconhecido ainda";
 "voice.stopRecording" = "Parar gravação";
-"voice.tapToFinish" = "Toque para concluir";
 "voice.tour.orb" = "Toque na esfera quando terminar. Ela ouve enquanto você fala.";
 
 // MARK: - Voice Input Errors
@@ -1487,7 +1216,6 @@
 "voiceError.speechBecameUnavailable" = "O reconhecimento de fala ficou indisponível";
 "voiceError.audioSessionSetup %@" = "Falha ao configurar a sessão de áudio: %@";
 "voiceError.recognitionRequestFailed" = "Falha ao criar a solicitação de reconhecimento";
-"voiceError.audioEngineCreateFailed" = "Falha ao criar o mecanismo de áudio";
 "voiceError.audioEngineStartFailed %@" = "Falha ao iniciar o mecanismo de áudio: %@";
 "voiceConfirmation.saveError" = "Erro ao salvar";
 
@@ -1504,7 +1232,6 @@
 "csvImport.error.missingDependency %@" = "Dependência ausente: %@";
 
 // MARK: - Progress
-"progress.loadingAccounts" = "Carregando contas";
 "progress.loadingTransactions" = "Carregando transações";
 "progress.saving" = "Salvando";
 
@@ -1515,14 +1242,10 @@
 "timeFilter.customRange" = "Período personalizado";
 
 // MARK: - Accessibility
-"accessibility.accounts.addMenu" = "Menu de adição";
-"accessibility.accounts.doneReordering" = "Concluir reordenação";
 "accessibility.category.budgetHint" = "Uso do orçamento";
 "accessibility.category.budgetProgress" = "Progresso do orçamento";
 "accessibility.category.label" = "Categoria";
 "accessibility.category.overBudget" = "Acima do orçamento";
-"accessibility.deposit.history" = "Histórico de transações";
-"accessibility.deposit.moreActions" = "Mais ações";
 "accessibility.insights.granularityPicker" = "Seletor de período";
 "accessibility.insights.granularityPickerHint" = "Selecione a granularidade: mês, trimestre ou ano";
 "accessibility.transaction.history" = "Histórico de transações";
@@ -1580,9 +1303,6 @@
 "category.detail.totalEarned" = "Total recebido";
 "category.detail.avgMonthly" = "Média mensal";
 "category.detail.budget" = "Orçamento";
-"category.detail.subcategories" = "Subcategorias";
-"category.detail.transactionCount" = "Transações";
-"category.detail.manageSubcategories" = "Gerenciar subcategorias";
 "category.detail.type.expense" = "Despesa";
 "category.detail.type.income" = "Receita";
 
@@ -1601,7 +1321,6 @@
 "pager.previous" = "Anterior";
 "pager.next" = "Próximo";
 "onboarding.cta.start" = "Começar";
-"onboarding.cta.done" = "OK";
 "onboarding.cta.skip" = "Pular";
 "onboarding.stepIndicator.label" = "Etapa %d de %d";
 
@@ -1611,11 +1330,7 @@
 "onboarding.account.title" = "Adicione sua primeira conta";
 "onboarding.account.subtitle" = "Pode ser um cartão, dinheiro em espécie ou uma conta bancária. Você pode adicionar mais depois.";
 "onboarding.account.namePlaceholder" = "ex.: Nubank";
-"onboarding.account.nameLabel" = "Nome";
-"onboarding.account.iconLabel" = "Ícone";
-"onboarding.account.balanceLabel" = "Saldo inicial";
 "onboarding.account.balanceCaption" = "Saldo inicial (%@)";
-"onboarding.account.currencyChangedBanner" = "A moeda do app foi alterada. A moeda da conta permanece a mesma. Você pode alterá-la no editor da conta.";
 
 "onboarding.categories.title" = "Escolha as categorias de gastos";
 "onboarding.categories.subtitle" = "Selecione as que você vai usar. Você pode adicionar mais depois.";
@@ -1909,7 +1624,6 @@
 "settings.wallet.cards" = "Cartões";
 "settings.wallet.footer" = "Pagamentos com Apple Pay salvos pela automação do Wallet: confira os que foram adivinhados e defina uma categoria para cada estabelecimento e uma conta para cada cartão.";
 
-
 /* MARK: - Document import */
 "import.source.statement.title" = "Extrato bancário";
 "import.source.statement.subtitle" = "Importe um extrato em PDF do seu banco";
@@ -1966,7 +1680,6 @@
 "onboarding.autoCapture.notifications.hint" = "Transferências, pagamentos por QR e online das notificações de qualquer banco";
 "onboarding.autoCapture.statement.title" = "Um extrato bancário";
 "onboarding.autoCapture.statement.hint" = "Carregue o PDF do mês passado e o Ten organiza os lançamentos";
-"onboarding.autoCapture.afterStart" = "Depois de começar";
 "onboarding.restore" = "Restaurar um backup";
 "onboarding.cta.nextWithCount" = "Avançar • %d selecionadas";
 "onboarding.restore.hint" = "Toque em um backup para trazer seus dados de volta a este iPhone.";

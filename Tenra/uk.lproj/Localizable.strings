@@ -4,31 +4,18 @@
 */
 
 // MARK: - Navigation Titles
-"navigation.home" = "Головна";
 "navigation.history" = "Історія";
 "navigation.categories" = "Категорії";
-"navigation.settings" = "Налаштування";
-"navigation.accounts" = "Рахунки";
-"navigation.subscriptions" = "Підписки";
 "navigation.categoryFilter" = "Фільтр за категоріями";
-"navigation.logoSearch" = "Пошук логотипа";
-"navigation.entityMapping" = "Зіставлення сутностей";
-"navigation.csvPreview" = "Перегляд CSV";
 "navigation.transactionPreview" = "Перегляд операцій";
 
 // MARK: - Transaction Preview (Phase 16)
 "transactionPreview.found" = "Знайдено: %d операцій";
 "transactionPreview.selectHint" = "Виберіть операції для імпорту";
 "transactionPreview.addSelected" = "Додати вибрані (%d)";
-"transactionPreview.noAccount" = "Без рахунку";
 "transactionPreview.noMatchingAccount" = "Немає рахунку в цій валюті";
 "transactionPreview.account" = "Рахунок";
-"navigation.voiceInput" = "Голосове введення";
 "navigation.subcategorySearch" = "Пошук підкатегорій";
-"navigation.selectDate" = "Виберіть дату";
-"navigation.selectIcon" = "Виберіть іконку";
-"navigation.selectLogo" = "Виберіть логотип";
-"navigation.importResult" = "Результат імпорту";
 
 // MARK: - Time Filters
 "timeFilter.title" = "Фільтр за часом";
@@ -52,8 +39,6 @@
 "button.cancel" = "Скасувати";
 "button.delete" = "Видалити";
 "button.close" = "Закрити";
-"button.import" = "Імпортувати";
-"button.export" = "Експортувати";
 "button.copy" = "Копіювати";
 "button.paste" = "Вставити";
 "button.add" = "Додати";
@@ -62,9 +47,7 @@
 "button.continue" = "Продовжити";
 "button.ok" = "Гаразд";
 "button.retry" = "Повторити";
-"button.change" = "Змінити";
 "button.select" = "Вибрати";
-"button.remove" = "Прибрати";
 "button.apply" = "Застосувати";
 
 // MARK: - Empty States
@@ -75,7 +58,6 @@
 "category.emptyDescription" = "Додайте категорію, щоб бачити, на що йдуть гроші";
 "emptyState.noSubcategories" = "Немає підкатегорій";
 "subcategory.emptyDescription" = "Додайте підкатегорії, щоб розбирати витрати докладніше";
-"emptyState.noData" = "Немає даних";
 "emptyState.searchNoResults" = "Нічого не знайдено";
 "emptyState.startTracking" = "Почніть додавати операції, щоб стежити за своїми фінансами";
 "emptyState.tryDifferentSearch" = "Спробуйте змінити пошуковий запит";
@@ -92,9 +74,7 @@
 "currency.noResults.title" = "Валют не знайдено";
 "currency.noResults.description" = "Спробуйте іншу назву або код.";
 "currency.customize" = "Налаштувати валюти";
-"currency.accountCurrencies" = "Валюти рахунків";
 "currency.customizeAction" = "Налаштувати...";
-"settings.wallpaper" = "Шпалери головної";
 "settings.background" = "Тло";
 "settings.merchantLogos" = "Логотипи магазинів";
 "home.hint.categories" = "Натисніть на категорію, щоб додати витрату";
@@ -126,11 +106,8 @@
 "settings.background.removePhoto" = "Прибрати фото";
 "settings.background.choosePhoto" = "Вибрати фото";
 "settings.background.changePhoto" = "Змінити фото";
-"settings.background.preview" = "Перегляд тла";
 "settings.background.opacity" = "Інтенсивність кольору";
 "settings.background.opacityTitle" = "Колір витрат";
-"settings.dataManagement" = "Керування даними";
-"settings.categories" = "Категорії";
 "settings.subcategories" = "Підкатегорії";
 "settings.accounts" = "Рахунки";
 "settings.exportImport" = "Експорт та імпорт";
@@ -156,17 +133,14 @@
 "alert.resetLearning.message" = "Парсер забуде, який рахунок ви зазвичай обираєте для кожної категорії. Ваші операції не буде видалено.";
 "alert.resetLearning.confirm" = "Скинути";
 "alert.importError.title" = "Помилка імпорту";
-"alert.errorTitle" = "Помилка";
 
 // MARK: - Progress
-"progress.loadingData" = "Завантаження даних...";
 "progress.processingPDF" = "Обробка PDF...";
 "progress.recognizingText" = "Розпізнавання тексту: сторінка %d з %d";
 "progress.page" = "Сторінка %d з %d";
 
 // MARK: - Errors
 "error.generic.title" = "Помилка";
-"error.importFailed" = "Не вдалося імпортувати";
 "storeUnavailable.title" = "Не вдається відкрити ваші дані";
 "storeUnavailable.message.migration" = "Не вдалося перенести ваші дані у формат цієї версії застосунку.";
 "storeUnavailable.message.diskFull" = "На пристрої закінчилося місце. Звільніть місце й спробуйте знову.";
@@ -179,35 +153,19 @@
 "accessibility.accountCard.label" = "%@ баланс %@";
 "accessibility.accountCard.hint" = "Торкніться, щоб переглянути деталі рахунку";
 
-// MARK: - Account Actions
-"account.transfer" = "Переказ";
-"account.topUp" = "Поповнити";
-"account.withdrawal" = "Зняття";
-
 // MARK: - Analytics
 "analytics.history" = "Історія";
 "analytics.planned" = "Заплановано";
 "history.section.title" = "Історія";
 
 // MARK: - Transaction Form
-"transaction.account" = "Рахунок";
 "transaction.amount" = "Сума";
-"transaction.description" = "Опис";
 "transaction.date" = "Дата";
 "transaction.recurring" = "Регулярна";
-"transaction.frequency" = "Періодичність";
 "transaction.category" = "Категорія";
-"transaction.subcategories" = "Підкатегорії";
-"transaction.currency" = "Валюта";
-
-// MARK: - Transaction Actions
-"transaction.importTransactions" = "Імпортувати операції";
-"transaction.addNew" = "Додати операцію";
-"transaction.new" = "Нова операція";
 
 // MARK: - Search
 "search.placeholder" = "Пошук за сумою, категорією чи описом";
-"search.subcategories" = "Пошук підкатегорій";
 "search.recent" = "Нещодавні";
 "search.recent.clear" = "Очистити";
 "search.recent.remove" = "Прибрати";
@@ -227,31 +185,16 @@
 
 // MARK: - Common
 "common.name" = "Назва";
-"common.balance" = "Баланс";
 "common.type" = "Тип";
-"common.icon" = "Іконка";
 "common.color" = "Колір";
-"common.logo" = "Логотип";
-"common.all" = "Усі";
-"common.selected" = "Вибрано";
-"common.none" = "Немає";
-"common.uncategorized" = "Без категорії";
-"common.unknown" = "Невідомо";
 "common.cancel" = "Скасувати";
-"common.back" = "Назад";
 "common.select" = "Вибрати";
-"common.selectAccount" = "Виберіть рахунок";
-"common.selectCategory" = "Виберіть категорію";
-"common.selectSubcategory" = "Виберіть підкатегорію";
-"common.selectColor" = "Виберіть колір";
-"common.filterBy" = "Фільтрувати за";
 "common.frequency" = "Періодичність";
 "common.startDate" = "Дата початку";
 
 // MARK: - Date Labels
 "date.today" = "Сьогодні";
 "date.yesterday" = "Учора";
-"date.tomorrow" = "Завтра";
 "date.selectDate" = "Дата";
 "date.choose" = "Виберіть дату";
 
@@ -265,25 +208,16 @@
 "transaction.stopRecurring.title" = "Зупинити регулярну операцію?";
 "transaction.stopRecurring.message" = "Це зупинить регулярну операцію. Усі майбутні операції буде видалено.";
 "transaction.stopRecurring.confirm" = "Зупинити регулярну";
-"accessibility.deleteTransaction" = "Видалити операцію";
-"accessibility.stopRecurring" = "Зупинити регулярну операцію";
-"accessibility.swipeForOptions" = "Проведіть ліворуч для параметрів";
 
 // MARK: - Accounts Management
 "accounts.title" = "Рахунки";
-"account.interestToday" = "Відсотки сьогодні: %@";
 "account.interestTodayPrefix" = "Відсотки сьогодні: ";
 "account.nextPosting" = "Наступне нарахування: %@";
-"account.selectLogo" = "Виберіть логотип";
-"account.popularBanks" = "Популярні банки";
-"account.otherBanks" = "Інші банки";
 "account.namePlaceholder" = "Назва рахунку";
 "account.deleteTitle" = "Видалити рахунок?";
 "account.deleteMessage" = "Що зробити з операціями рахунку «%@»?";
 "account.deleteOnlyAccount" = "Видалити лише рахунок";
 "account.deleteAccountAndTransactions" = "Видалити рахунок і операції";
-"common.currency" = "Валюта";
-"common.balancePlaceholder" = "0.00";
 "common.error" = "Помилка";
 
 // MARK: - Deposits
@@ -292,7 +226,6 @@
 "deposit.changeRate" = "Змінити ставку";
 "deposit.deleteTitle" = "Видалити депозит?";
 "deposit.deleteMessage" = "Усі дані депозиту та пов'язані операції буде видалено.";
-"deposit.balance" = "Баланс";
 "deposit.interestToday" = "Відсотки сьогодні";
 "deposit.rate" = "Ставка";
 "deposit.rateAnnual" = "% річних";
@@ -300,56 +233,31 @@
 "deposit.capitalizationEnabled" = "Увімкнено";
 "deposit.capitalizationDisabled" = "Вимкнено";
 "deposit.postingDay" = "День нарахування";
-"deposit.nextPosting" = "Наступне нарахування";
-"deposit.topUp" = "Поповнити";
-"deposit.transferToAccount" = "Переказати на рахунок";
-"deposit.topUpTitle" = "Поповнити депозит";
-"deposit.transferFromTitle" = "Переказ із депозиту";
-"deposit.sourceAccount" = "Рахунок-джерело";
-"deposit.targetAccount" = "Рахунок-отримувач";
-"deposit.noOtherAccounts" = "Немає інших рахунків для переказу";
-"deposit.amount" = "Сума";
-"deposit.description" = "Опис";
-"deposit.descriptionOptional" = "Опис (необов'язково)";
-"deposit.date" = "Дата";
-"deposit.topUpDescription" = "Поповнення депозиту";
-"deposit.transferFromDescription" = "Переказ із депозиту";
 "deposit.newRate" = "Нова відсоткова ставка";
 "deposit.effectiveDate" = "Дата набуття чинності";
 "deposit.note" = "Примітка (необов'язково)";
 "deposit.changeRateTitle" = "Змінити ставку";
-"deposit.name" = "Назва депозиту";
 "deposit.namePlaceholder" = "Назва";
 "deposit.bank" = "Банк";
-"deposit.bankName" = "Назва банку";
 "deposit.bankNamePlaceholder" = "Назва банку";
-"deposit.selectLogo" = "Виберіть логотип";
-"deposit.initialAmount" = "Початкова сума";
 "deposit.interestRate" = "Відсоткова ставка";
-"deposit.postingDayTitle" = "День нарахування відсотків";
 "deposit.dayOfMonth" = "День місяця";
-"deposit.postingDayHint" = "Якщо в місяці менше днів, нарахування відбудеться в останній день місяця";
-"deposit.capitalizationTitle" = "Капіталізація";
 "deposit.enableCapitalization" = "Увімкнути капіталізацію";
 "deposit.capitalizationHint" = "Коли капіталізацію ввімкнено, відсотки щомісяця додаються до основної суми";
 "deposit.countsForToday" = "Враховувати в «На сьогодні»";
 "deposit.countsForToday.hint" = "Гроші, які можна зняти будь-коли. «На сьогодні» і Тен рахують їх разом із картками.";
 "deposit.new" = "Новий депозит";
 "deposit.editTitle" = "Змінити депозит";
-"deposit.interestAccrual.description" = "Відсотки";
 "deposit.interestAccrual.category" = "Відсотки";
 
 // MARK: - Categories Management
 "categories.expenseCategories" = "Категорії витрат";
-"categories.incomeCategories" = "Категорії доходів";
 "category.uncategorized" = "Без категорії";
 "category.deleteTitle" = "Видалити категорію?";
 "category.deleteOnlyCategory" = "Видалити лише категорію";
 "category.deleteCategoryAndTransactions" = "Видалити категорію та операції";
 "category.deleteMessage" = "Виберіть, що зробити з операціями в категорії «%@».";
 "category.namePlaceholder" = "Назва категорії";
-"category.tapToSelect" = "Торкніться, щоб вибрати";
-"category.subcategories" = "Підкатегорії";
 "category.addSubcategory" = "Додати підкатегорію";
 "category.manageSubcategories" = "Керувати підкатегоріями";
 
@@ -394,12 +302,7 @@
 "iconPicker.gaming" = "Ігри";
 "iconPicker.devTools" = "Інструменти розробника та ШІ";
 "iconPicker.services" = "Сервіси";
-"iconPicker.popularBanks" = "Популярні банки";
-"iconPicker.otherBanks" = "Інші банки";
 "iconPicker.searchOnline" = "Пошук логотипа бренду...";
-"iconPicker.noLogo" = "Без логотипа";
-"iconPicker.searching" = "Пошук...";
-"iconPicker.searchResults" = "Результати пошуку";
 
 // MARK: - Category Filter
 "categoryFilter.allCategories" = "Усі категорії";
@@ -415,23 +318,10 @@
 "accessibility.voiceInputHint" = "Записати операцію голосом";
 "accessibility.calendar" = "Календар";
 "accessibility.calendarHint" = "Виберіть діапазон дат для фільтрування операцій";
-"accessibility.settings" = "Налаштування";
-"accessibility.settingsHint" = "Відкрити налаштування застосунку";
 
 // MARK: - Quick Add Transaction / Add Transaction Modal
-"quickAdd.account" = "Рахунок";
-"quickAdd.amount" = "Сума";
-"quickAdd.description" = "Опис";
 "quickAdd.descriptionPlaceholder" = "Опис (необов'язково)";
 "quickAdd.balanceAfter" = "Залишиться на рахунку";
-"quickAdd.recurring" = "Регулярна операція";
-"quickAdd.makeRecurring" = "Регулярна";
-"quickAdd.frequency" = "Періодичність";
-"quickAdd.subcategories" = "Підкатегорії";
-"quickAdd.searchSubcategories" = "Пошук підкатегорій";
-"quickAdd.searchAndAddSubcategories" = "Знайти й додати підкатегорії";
-"quickAdd.selectDate" = "Виберіть дату";
-"quickAdd.done" = "Готово";
 
 // MARK: - Validation Errors
 "error.validation.enterAmount" = "Введіть коректну суму";
@@ -442,19 +332,14 @@
 // MARK: - Voice Input
 "voice.title" = "Голосове введення";
 "voice.speak" = "Говоріть...";
-"voice.recording" = "Запис...";
 "voice.error" = "Помилка";
 "voice.errorMessage" = "Не вдалося почати запис";
 "voice.emptyText" = "Не вдалося розпізнати текст. Спробуйте ще раз.";
-"voice.vadToggle" = "Автоматична зупинка в тиші";
-"voice.vadDescription" = "Запис зупиниться автоматично після 2,5 секунди тиші";
 
 // MARK: - Voice Input Confirmation
 "voiceConfirmation.title" = "Перегляд операції";
 "voiceConfirmation.confirm" = "Підтвердити";
-"voiceConfirmation.type" = "Тип операції";
 "voiceConfirmation.noAccounts" = "Немає доступних рахунків";
-"voiceConfirmation.selectCategory" = "Виберіть категорію";
 "voiceConfirmation.warning.accountNotFound" = "Рахунок не знайдено, вибрано за замовчуванням";
 "voiceConfirmation.warning.accountNotRecognized" = "Рахунок не розпізнано, вибрано за замовчуванням";
 "voiceConfirmation.warning.enterAmount" = "Введіть суму";
@@ -462,7 +347,6 @@
 "voiceConfirmation.warning.selectAccount" = "Виберіть рахунок";
 "voiceConfirmation.warning.accountNotSelected" = "Рахунок не вибрано, використовується за замовчуванням";
 "voiceConfirmation.warning.categoryNotRecognized" = "Категорію не розпізнано, вибрано за замовчуванням";
-"voiceConfirmation.warning.selectCategory" = "Виберіть категорію";
 "voiceConfirmation.warning.categoryNotSelected" = "Категорію не вибрано, використовується за замовчуванням";
 "voiceConfirmation.warning.categoryNotFound" = "Не вдалося знайти категорію";
 
@@ -479,7 +363,6 @@
 "subscriptions.deleteSubscriptionAndTransactions" = "Видалити підписку й операції";
 "subscriptions.pause" = "Призупинити";
 "subscriptions.resume" = "Відновити";
-"subscriptions.transactionHistory" = "Історія операцій";
 "subscriptions.category" = "Категорія";
 "subscriptions.frequency" = "Періодичність";
 "subscriptions.nextCharge" = "Наступне списання";
@@ -513,7 +396,6 @@
 "frequency.yearly" = "Щороку";
 
 // Subscription Form
-"subscription.basicInfo" = "Основна інформація";
 "subscription.namePlaceholder" = "Назва підписки";
 "subscription.reminders" = "Нагадування";
 "subscription.scheduleSection" = "Розклад";
@@ -531,12 +413,10 @@
 "account.selectAccount" = "Виберіть рахунок";
 
 // Category messages
-"category.selectCategory" = "Виберіть категорію";
 
 // Error messages
 "error.subscriptionNameRequired" = "Введіть назву підписки";
 "error.invalidAmount" = "Введіть коректну суму";
-"error.categoryRequired" = "Виберіть категорію";
 "error.accountRequired" = "Виберіть рахунок для оплати";
 "error.accountNameRequired" = "Введіть назву рахунку";
 "error.categoryNameRequired" = "Введіть назву категорії";
@@ -549,26 +429,10 @@
 "yearly" = "Щороку";
 "budget_reset_day" = "Скидання в день";
 "budget_reset_day_description" = "День місяця, коли бюджет скидається (1–31)";
-"budget_settings" = "Налаштування бюджету";
-"current_budget" = "Поточний бюджет";
-"current_settings" = "Поточні налаштування";
-"remove_budget" = "Видалити бюджет";
-"set_budget_for" = "Встановити бюджет для";
 "save" = "Зберегти";
-"cancel" = "Скасувати";
 "category.noBudgetSet" = "Бюджет не встановлено";
 
-// MARK: - Calendar
-"calendar.upcomingPayments" = "Найближчі платежі";
-"calendar.month" = "Місяць";
-"calendar.halfYear" = "6 місяців";
-"calendar.year" = "Рік";
-"calendar.noUpcomingPayments" = "Немає найближчих платежів";
-"calendar.currentMonth" = "Поточний місяць";
-
 // MARK: - Transaction Forms
-"transactionForm.amount" = "Сума";
-"transactionForm.description" = "Опис";
 "transactionForm.descriptionPlaceholder" = "Опис (необов'язково)";
 "transactionForm.category" = "Категорія";
 "transactionForm.selectCategory" = "Виберіть категорію";
@@ -576,7 +440,6 @@
 "transactionForm.transfer" = "Переказ";
 "transactionForm.topUp" = "Поповнити";
 "transactionForm.toAccount" = "На рахунок";
-"transactionForm.fromAccount" = "З рахунку";
 "transactionForm.fromHeader" = "Звідки";
 "transactionForm.toHeader" = "Куди";
 "transactionForm.noAccountsForTransfer" = "Немає інших рахунків для переказу";
@@ -585,16 +448,10 @@
 "transactionForm.cannotTransferToSame" = "Неможливо переказати на той самий рахунок";
 "transactionForm.accountNotFound" = "Рахунок не знайдено";
 "transactionForm.selectTargetAccount" = "Виберіть рахунок призначення";
-"transactionForm.depositTopUp" = "Поповнити депозит";
-"transactionForm.depositWithdrawal" = "Зняти з депозиту";
 "transactionForm.accountTopUp" = "Поповнити рахунок";
-"transactionForm.recurring" = "Регулярна";
-"transactionForm.makeRecurring" = "Зробити регулярною";
 "transactionForm.searchSubcategories" = "Пошук підкатегорій";
 "transactionForm.addSubcategory" = "Додати підкатегорію";
 "transactionForm.createSubcategory" = "Створити \"%@\"";
-"transactionForm.searchAndAddSubcategories" = "Знайдіть і додайте підкатегорії";
-"transactionForm.searchOrCreateSubcategory" = "Знайти або створити підкатегорію";
 // MARK: - Recurring Transactions Errors
 "recurring.error.seriesNotFound" = "Регулярну серію не знайдено";
 "recurring.error.invalidFrequency" = "Вибрано некоректну періодичність";
@@ -605,9 +462,6 @@
 "recurring.error.emptyCurrency" = "Потрібно вказати валюту";
 "recurring.error.missingSubscriptionStatus" = "Потрібно вказати статус підписки";
 "recurring.error.invalidReminderOffsets" = "Дні нагадування мають бути додатними";
-"recurring.validation.amountRequired" = "Потрібно вказати суму";
-"recurring.validation.descriptionRequired" = "Потрібно вказати опис";
-
 
 // MARK: - CSV Import
 "category.other" = "Інше";
@@ -624,10 +478,6 @@
 "csvImport.error.noHeaders" = "Файл не має заголовків";
 "csvImport.error.invalidFormat" = "Некоректний формат CSV";
 "csvImport.error.persistenceFailed" = "Не вдалося зберегти імпортовані дані в базу даних.";
-"csvImport.progress.parsing" = "Розбір файлу CSV...";
-"csvImport.progress.validating" = "Перевірка рядків...";
-"csvImport.progress.importing" = "Імпорт операцій...";
-"csvImport.progress.finalizing" = "Завершення імпорту...";
 "csvImport.result.imported" = "%d імпортовано";
 "csvImport.result.skipped" = "%d пропущено";
 "csvImport.result.duplicates" = "%d дублікатів";
@@ -637,8 +487,6 @@
 "csvImport.result.duration" = "Тривалість";
 "csvImport.result.speed" = "Швидкість";
 "csvImport.result.title" = "Імпорт завершено";
-"csvImport.button.cancel" = "Скасувати імпорт";
-"csvImport.button.retry" = "Повторити";
 "csvImport.button.viewErrors" = "Переглянути помилки";
 "csvImport.preview.title" = "Попередній перегляд CSV";
 "csvImport.preview.rows" = "Рядки";
@@ -655,14 +503,9 @@
 "csvImport.mapping.currency" = "Валюта";
 "csvImport.mapping.account" = "Рахунок";
 "csvImport.mapping.none" = "Немає";
-"csvImport.entityMapping.title" = "Зіставлення сутностей";
-"csvImport.entityMapping.accounts" = "Рахунки";
-"csvImport.entityMapping.categories" = "Категорії";
-"csvImport.entityMapping.autoCreate" = "Буде створено автоматично";
 "csvImport.preview.fileInfo" = "Інформація про файл";
 "csvImport.preview.headersTitle" = "Стовпці у файлі";
 "csvImport.preview.dataPreview" = "Попередній перегляд даних (перші %d рядків)";
-"csvImport.preview.empty" = "(порожньо)";
 "csvImport.mapping.category" = "Категорія";
 "csvImport.mapping.targetAccount" = "Рахунок призначення";
 "csvImport.mapping.targetCurrency" = "Валюта призначення";
@@ -727,25 +570,6 @@
 "error.export.fileWriteFailed" = "Не вдалося записати файл експорту: %@";
 "error.export.insufficientSpace" = "Недостатньо місця на диску для експорту";
 
-// MARK: - Alert Titles (Settings)
-"alert.recalculateBalances.title" = "Перерахувати баланси?";
-"alert.recalculateBalances.message" = "Це перерахує баланси всіх рахунків з нуля на основі операцій. Скористайтеся цим, якщо баланси показуються неправильно.";
-"alert.recalculateBalances.confirm" = "Перерахувати";
-"alert.selectWallpaper.title" = "Вибрати шпалери";
-"alert.removeWallpaper.title" = "Видалити шпалери?";
-"alert.removeWallpaper.message" = "Це видалить поточні шпалери з головного екрана";
-"alert.exportSuccess.title" = "Експорт успішний";
-"alert.exportSuccess.message" = "Дані експортовано до %@";
-"alert.importSuccess.title" = "Імпорт успішний";
-"alert.importSuccess.message" = "Імпортовано %d операцій";
-
-// MARK: - Settings Labels (Additional)
-"settings.recalculateBalances" = "Перерахувати баланси рахунків";
-"settings.wallpaperHistory" = "Історія шпалер";
-"settings.recentCurrencies" = "Нещодавні валюти";
-"settings.exportProgress" = "Експортування... %d%%";
-"settings.importProgress" = "Імпортування... %d%%";
-
 // MARK: - Success Messages
 "success.settings.currencyUpdated" = "Валюту успішно оновлено";
 "success.settings.wallpaperUpdated" = "Шпалери успішно оновлено";
@@ -755,7 +579,6 @@
 "success.recalculation.completed" = "Баланси успішно перераховано";
 
 // MARK: - Import Errors (Phase 2)
-"error.import.coordinatorNotAvailable" = "Координатор імпорту недоступний";
 "error.import.viewModelsNotAvailable" = "Потрібні моделі подання недоступні";
 
 // MARK: - Import Progress (Phase 2)
@@ -789,7 +612,6 @@
 "iconStyle.tint.palette" = "Палітра";
 "iconStyle.tint.original" = "Оригінальні кольори";
 "iconStyle.preset.categoryIcon" = "Іконка категорії";
-"iconStyle.preset.bankLogo" = "Логотип банку";
 "iconStyle.preset.serviceLogo" = "Логотип сервісу";
 "iconStyle.preset.placeholder" = "Заповнювач";
 "recurring.never" = "Ніколи";
@@ -799,11 +621,6 @@
 "filter.allAccounts" = "Усі рахунки";
 "filter.allCategories" = "Усі категорії";
 "filter.allSubcategories" = "Усі підкатегорії";
-
-// MARK: - Animated Input (Phase 16)
-"input.amountPlaceholder" = "0";
-"input.titleHint" = "Торкніться, щоб змінити назву";
-"input.balanceHint" = "Торкніться, щоб змінити баланс";
 
 // MARK: - Insights (Phase 17)
 "insights.title" = "Аналітика";
@@ -818,7 +635,6 @@
 "insights.availableBalance" = "Доступний баланс";
 "insights.topMonths.best" = "10 найкращих місяців";
 "insights.topMonths.worst" = "10 найгірших місяців";
-"insights.loading" = "Аналізуємо ваші фінанси...";
 "insights.emptyState.title" = "Ще немає аналітики";
 "insights.emptyState.description" = "Додайте кілька операцій, щоб побачити аналітику ваших фінансів";
 "insights.noInsightsForFilter" = "Немає аналітики для цієї категорії";
@@ -836,13 +652,11 @@
 "insights.vsPreviousPeriod" = "порівняно з попереднім періодом";
 "insights.vsAverage" = "порівняно із середнім";
 "insights.budgetOver" = "Перевищення бюджету";
-"insights.budgetUnder" = "У межах бюджету";
 "insights.budgetHeadroom" = "Запас бюджету";
 "insights.projectedOverspend" = "Прогнозоване перевищення";
 "insights.categoriesOverBudget" = "%d категорій із перевищенням бюджету";
 "insights.categoriesAtRisk" = "%d категорій під ризиком";
 "insights.categoriesUnderBudget" = "%d категорій у межах норми";
-"insights.categoriesUnit" = "категорій";
 "insights.totalRecurring" = "Щомісячні регулярні витрати";
 "insights.totalRecurring.week" = "Щотижневі регулярні";
 "insights.totalRecurring.month" = "Щомісячні регулярні витрати";
@@ -884,11 +698,9 @@
 "insights.projectedBalance" = "Прогнозований баланс";
 "insights.in30Days" = "за 30 днів";
 "insights.recurringAndExpenses" = "Регулярні + середні витрати";
-"insights.projected" = "прогнозована зміна";
 "insights.currentBalance" = "Поточний баланс";
 "insights.cashFlowTrend" = "Динаміка грошового потоку";
 "insights.breakdown" = "Розподіл";
-"insights.monthlyBreakdown" = "Розподіл за місяцями";
 "insights.breakdown.week" = "Розподіл за тижнями";
 "insights.breakdown.month" = "Розподіл за місяцями";
 "insights.breakdown.quarter" = "Розподіл за кварталами";
@@ -901,8 +713,6 @@
 "insights.other" = "Інше";
 "insights.noSubcategory" = "Без підкатегорії";
 "insights.spendingTrend" = "Динаміка витрат";
-"insights.subcategories" = "Підкатегорії";
-"insights.periodComparison" = "Порівняння періодів";
 "insights.daysLeft" = "Залишилося %d днів";
 
 // Granularity picker
@@ -917,7 +727,6 @@
 "insights.granularity.year.short" = "Рік";
 "insights.granularity.allTime.short" = "Усе";
 "insights.bucket.week.label" = "Останні 7 днів";
-"insights.summary.windowTotalsLabel" = "За все вікно графіка";
 "insights.formula.value.months" = "%.1f міс";
 "insights.formula.howCalculated" = "Як розраховується";
 "insights.formula.value.days" = "%d днів";
@@ -954,21 +763,8 @@
 "insights.formula.spendingForecast.rec.overrun" = "Ви прямуєте до перевищення доходу на %@. Перегляньте необов'язкові витрати або відкладіть додаткові покупки до наступного місяця.";
 "insights.formula.spendingForecast.rec.onTrack" = "Прогноз залишає запас у %@. Закріпіть його, уникаючи незапланованих покупок, або переведіть у заощадження вже зараз.";
 "insights.formula.spendingForecast.rec.noIncome" = "Цього місяця ще не зафіксовано доходу, тож прогноз має лише інформаційний характер.";
-"insights.formula.balanceRunway.title" = "Запас балансу";
-"insights.formula.balanceRunway.heroLabel" = "Місяців до вичерпання балансу за поточних темпів витрат";
-"insights.formula.balanceRunway.heroLabel.growing" = "Середній місячний надлишок";
-"insights.formula.balanceRunway.formulaHeader" = "Як це обчислюється";
-"insights.formula.balanceRunway.row.balance" = "Поточний баланс";
-"insights.formula.balanceRunway.row.avgIncome" = "Середній дохід за місяць (3 міс)";
-"insights.formula.balanceRunway.row.avgExpenses" = "Середні витрати за місяць (3 міс)";
-"insights.formula.balanceRunway.row.burn" = "Місячні витрати (витрати − дохід)";
 "insights.formula.balanceRunway.row.netFlow" = "Середній чистий потік";
 "insights.formula.balanceRunway.row.runway" = "Запас балансу";
-"insights.formula.balanceRunway.explainer" = "Баланс ÷ місячні витрати. Поріг у 3 місяці відповідає здоровій фінансовій подушці; менше ніж місяць означає, що один невдалий платіжний цикл вичерпає запас.";
-"insights.formula.balanceRunway.explainer.growing" = "Дохід перевищує витрати, тож баланс зростає. Головним значенням є ваш середній місячний надлишок; за таких темпів запас балансу необмежений.";
-"insights.formula.balanceRunway.rec.growing" = "Ви в плюсі, тож спрямуйте надлишок на цілі, борги чи заощадження з вищою дохідністю, а не залишайте його без діла.";
-"insights.formula.balanceRunway.rec.long" = "Понад 3 місяці запасу: у вас надійна подушка. Подумайте, щоб розмістити зайві кошти в довгострокові інструменти.";
-"insights.formula.balanceRunway.rec.short" = "Нижче 3 місяців. Скоротіть витрати приблизно на %@/міс, щоб досягти запасу на 3 місяці; почніть із найбільшої необов'язкової категорії.";
 "insights.formula.balanceRunway.rec.critical" = "Менше місяця запасу: терміново закрийте розрив. Навіть призупинка одного великого регулярного платежу дає кілька днів.";
 "insights.formula.yearOverYear.title" = "Витрати рік до року";
 "insights.formula.yearOverYear.heroLabel" = "Зміна порівняно з тим самим місяцем торік";
@@ -1038,7 +834,6 @@
 "insights.categoryTrend" = "Динаміка витрат";
 "insights.categoryTrend.risingMonths" = "Зростає %d місяців";
 "insights.subscriptionGrowth" = "Зростання підписок";
-"insights.vsThreeMonthsAgo" = "порівняно з періодом 3 місяці тому";
 
 // Forecasting
 "insights.forecasting" = "Прогноз";
@@ -1108,7 +903,6 @@
 "tab.home" = "Головна";
 "tab.analytics" = "Аналітика";
 "tab.finances" = "Фінанси";
-"tab.settings" = "Налаштування";
 "tab.voice" = "Голос";
 "tab.ocr" = "Імпорт";
 "tab.add" = "Додати";
@@ -1117,7 +911,6 @@
 // MARK: - Finances
 "finances.title" = "Фінанси";
 "finances.accounts.title" = "Рахунки";
-"finances.accounts.totalLabel" = "Загальний баланс";
 "finances.accounts.empty" = "Немає рахунків";
 "finances.deposits.title" = "Депозити";
 "finances.deposits.empty" = "Немає депозитів";
@@ -1145,14 +938,11 @@
 "loan.unpaidThisMonth" = "Не оплачено цього місяця";
 "loan.typeAnnuityShort" = "Кредит";
 "loan.typeInstallmentShort" = "Розстрочка";
-"loan.of" = "із";
 "loan.remainingShort" = "Залишилося сплатити %d";
 "loan.notFound" = "Кредит не знайдено";
 "loan.title" = "Кредит";
 "loan.changeRate" = "Змінити ставку";
 "loan.earlyRepayment" = "Дострокове погашення";
-"loan.history" = "Історія платежів";
-"loan.actions" = "Дії з кредитом";
 "loan.deleteTitle" = "Видалити кредит?";
 "loan.deleteMessage" = "Платежі за цим кредитом записані як реальні витрати на ваших рахунках. Їх можна залишити в історії або видалити разом із кредитом.";
 "loan.closedSection" = "Закриті";
@@ -1164,7 +954,6 @@
 "loan.deleteWithPayments" = "Видалити кредит і платежі";
 "loan.payoffCelebration" = "Кредит погашено. Чудова робота.";
 "loan.paidOff" = "Погашено";
-"loan.remainingPrincipal" = "Залишок";
 "loan.nextPayment" = "Наступний платіж: %@";
 "loan.currentPaymentBreakdown" = "Розподіл поточного платежу";
 "loan.principalPortion" = "Основна сума";
@@ -1187,46 +976,26 @@
 "loan.noSchedule" = "Графік недоступний";
 "loan.showAllPayments" = "Показати всі %d платежів";
 "loan.interestShort" = "Відсотки: %@";
-"loan.makeEarlyRepayment" = "Дострокове погашення";
 "loan.convertTitle" = "Перетворити на кредит";
 "loan.editTitle" = "Змінити кредит";
 "loan.newTitle" = "Новий кредит";
-"loan.nameHeader" = "Назва";
 "loan.namePlaceholder" = "напр. Автокредит";
-"loan.bankHeader" = "Банк";
 "loan.bankLabel" = "Банк";
 "loan.bankPlaceholder" = "Назва банку";
-"loan.typeHeader" = "Тип кредиту";
 "loan.typePicker" = "Тип";
-"loan.typeAnnuity" = "Ануїтет (кредит)";
-"loan.typeInstallment" = "Розстрочка";
 "loan.installmentHint" = "Розстрочка = 0% відсотків, рівні платежі";
-"loan.principalHeader" = "Сума кредиту";
-"loan.principalPlaceholder" = "Загальна сума кредиту";
-"loan.interestRateHeader" = "Відсоткова ставка";
 "loan.interestRateLabel" = "Ставка (рік)";
-"loan.rateAnnualSuffix" = "% річних";
-"loan.termHeader" = "Термін";
-"loan.termPlaceholder" = "Кількість місяців";
-"loan.months" = "місяців";
-"loan.paymentDayHeader" = "День платежу";
 "loan.paymentDay" = "День місяця";
-"loan.paymentDayHint" = "День місяця, коли настає платіж";
-"loan.startDateHeader" = "Дата початку";
 "loan.startDate" = "Дата початку кредиту";
-"loan.repaymentAmount" = "Сума погашення";
 "loan.amountPlaceholder" = "Сума";
 "loan.remainingBalance" = "Залишок: %@";
-"loan.repaymentDate" = "Дата";
 "loan.date" = "Дата";
-"loan.repaymentType" = "Стратегія погашення";
 "loan.strategy" = "Стратегія";
 "loan.reduceTerm" = "Скоротити термін";
 "loan.reducePayment" = "Зменшити платіж";
 "loan.reduceTermHint" = "Зберегти місячний платіж, завершити раніше";
 "loan.reducePaymentHint" = "Зберегти термін, знизити місячний платіж";
 "loan.impact" = "Вплив";
-"loan.note" = "Нотатка";
 "loan.notePlaceholder" = "Необов'язкова нотатка";
 "loan.defaultTagging" = "Категорія за замовчуванням";
 "loan.defaultTaggingHint" = "Заповнює форму платежу заздалегідь. Пріоритет має категорія, використана в попередніх платежах.";
@@ -1234,33 +1003,24 @@
 "loan.subcategoryEmpty" = "Оберіть категорію вище, щоб додати теги підкатегорій";
 "loan.noDefaultCategory" = "Без категорії";
 "loan.noDefaultSubcategory" = "Без підкатегорії";
-"loan.earlyRepaymentTitle" = "Дострокове погашення";
 "loan.termReduction" = "Термін скорочено на";
 "loan.monthsValue" = "%d місяців";
 "loan.newEndDate" = "Нова дата завершення";
 "loan.paymentReduction" = "Платіж зменшено на";
 "loan.newMonthlyPayment" = "Новий місячний платіж";
-"loan.newRate" = "Нова відсоткова ставка";
 "loan.effectiveDate" = "Діє з";
 "loan.rateChangeImpact" = "Вплив";
 "loan.paymentChange" = "Зміна";
-"loan.enterRateForPreview" = "Введіть ставку, щоб побачити вплив";
 "loan.changeRateTitle" = "Змінити ставку";
-"loan.payment.description" = "Платіж за кредитом";
 
 // Loans Phase 5
 "loan.typeLockedHint" = "Тип кредиту не можна змінити після створення";
 "loan.makePayment" = "Здійснити платіж";
-"loan.paymentTitle" = "Платіж за кредитом";
-"loan.paymentAmount" = "Сума платежу";
 "loan.sourceAccount" = "Рахунок списання";
-"loan.selectSourceAccount" = "Оберіть рахунок для оплати";
 "loan.scheduledPayment" = "За графіком: %@";
 "loan.noSourceAccounts" = "Немає доступних рахунків";
-"loan.payAll" = "Сплатити все";
 "loan.payAllTitle" = "Сплатити всі кредити";
 "loan.payAllTotal" = "Загальний платіж";
-"loan.payAllConfirm" = "Сплатити все";
 
 // MARK: - Icon Picker (new categories)
 "iconPicker.localServices" = "Локальні сервіси";
@@ -1326,16 +1086,6 @@
 
 // MARK: - iCloud Sync
 "settings.cloud" = "Резервні копії";
-"settings.cloud.sync" = "Синхронізація iCloud";
-"settings.cloud.status.synced" = "Синхронізовано";
-"settings.cloud.status.syncing" = "Синхронізація…";
-"settings.cloud.status.initialSync" = "Початкова синхронізація";
-"settings.cloud.status.initialSyncMessage" = "Це може зайняти кілька хвилин";
-"settings.cloud.status.error" = "Помилка синхронізації";
-"settings.cloud.status.disabled" = "Вимкнено";
-"settings.cloud.status.noAccount" = "Увійдіть в iCloud у Налаштуваннях";
-"settings.cloud.lastSync" = "Остання синхронізація: %@";
-"settings.cloud.changes" = "%d надіслано · %d отримано";
 "settings.cloud.backups" = "Резервні копії";
 "settings.cloud.createBackup" = "Створити резервну копію";
 "settings.cloud.backupCreated" = "Резервну копію успішно створено";
@@ -1344,8 +1094,6 @@
 "settings.cloud.restoring" = "Відновлення…";
 "settings.cloud.restoringSubtitle" = "Будь ласка, не закривайте застосунок";
 "settings.cloud.deleteTitle" = "Видалити резервну копію?";
-"settings.cloud.storage" = "Сховище";
-"settings.cloud.storageUsed" = "%@ із %@";
 "settings.cloud.iCloud.toggle" = "Зберігати резервні копії в iCloud";
 "settings.cloud.iCloud.moving" = "Переносимо дані…";
 "settings.cloud.iCloud.footer" = "Копії зберігаються у вашому iCloud, приховані з програми «Файли» і доступні в Tenra на інших ваших пристроях.";
@@ -1357,9 +1105,6 @@
 "alert.restore.title" = "Відновити резервну копію?";
 "alert.restore.message" = "Усі поточні дані буде замінено резервною копією від %@.";
 "alert.restore.confirm" = "Відновити";
-"alert.disableSync.title" = "Вимкнути синхронізацію iCloud?";
-"alert.disableSync.message" = "Дані зберігатимуться лише локально на цьому пристрої.";
-"alert.disableSync.confirm" = "Вимкнути";
 
 // Backup errors
 "error.backup.noActiveStore" = "Активної бази даних не знайдено";
@@ -1371,7 +1116,6 @@
 "error.backup.notDownloaded" = "Резервна копія ще не завантажилася з iCloud. Перевірте з'єднання і спробуйте ще раз.";
 
 // MARK: - Loans (Form)
-"loan.amountLabel" = "Сума";
 "loan.detailsSection" = "Деталі кредиту";
 "loan.noteLabel" = "Нотатка";
 "loan.payAllLoans" = "Кредити";
@@ -1386,11 +1130,6 @@
 "loan.error.noSourceAccount" = "Оберіть рахунок-джерело";
 "loan.linkPayments" = "Прив'язати платежі";
 "loan.linkPayments.title" = "Прив'язати платежі";
-"loan.linkPayments.selected" = "%d обрано";
-"loan.linkPayments.selectedWithAmount" = "%d обрано · %@";
-"loan.linkPayments.search" = "Пошук за описом або сумою";
-"loan.linkPayments.link" = "Прив'язати %d платежів";
-"loan.linkPayments.empty" = "Немає відповідних операцій";
 "loan.linkPayments.error.notFound" = "Кредит не знайдено";
 "loan.markPaid" = "Позначити як оплачений";
 "loan.markUnpaid" = "Позначити як неоплачений";
@@ -1400,7 +1139,6 @@
 
 // Subscription Link Payments
 "subscription.linkPayments.title" = "Прив'язати платежі";
-"subscription.linkPayments.search" = "Пошук за описом або сумою";
 "subscription.linkPayments.searchPlaceholder" = "Пошук";
 "subscription.linkPayments.selectedWithAmount" = "%d обрано · %@";
 "subscription.linkPayments.link" = "Прив'язати %d";
@@ -1409,7 +1147,6 @@
 "subscription.linkPayments.amountTolerance" = "±30%";
 "subscription.linkPayments.amountAll" = "Усі";
 "subscription.linkPayments.unknownAccount" = "Невідомий рахунок";
-"common.done" = "Готово";
 "deposit.linkInterest.title" = "Прив'язати виплати відсотків";
 "deposit.recalculateInterest" = "Перерахувати відсотки";
 "subscriptions.spentAllTime" = "Витрачено за весь час";
@@ -1455,12 +1192,6 @@
 
 // MARK: - Insights
 "insights.remaining" = "залишилось";
-"insights.range.totalExpenses" = "Витрати за період";
-"insights.range.netFlow" = "Чистий потік за період";
-"insights.range.wealthChange" = "Зміна капіталу";
-"insights.range.totalIncome" = "Дохід за період";
-"insights.range.reset" = "Скинути";
-"insights.zoom.reset" = "Вмістити";
 "insights.chart.line" = "Лінія";
 "insights.chart.bar" = "Стовпці";
 "insights.today" = "Сьогодні";
@@ -1470,9 +1201,7 @@
 "insights.empty.subtitle" = "Графік з'явиться, щойно у вас буде історія операцій";
 
 // MARK: - Voice Input
-"voice.noTextRecognizedYet" = "Текст ще не розпізнано";
 "voice.stopRecording" = "Зупинити запис";
-"voice.tapToFinish" = "Торкніться, щоб завершити";
 "voice.tour.orb" = "Торкніться кулі, коли закінчите. Вона слухає, поки ви говорите.";
 
 // MARK: - Voice Input Errors
@@ -1487,7 +1216,6 @@
 "voiceError.speechBecameUnavailable" = "Розпізнавання мовлення стало недоступним";
 "voiceError.audioSessionSetup %@" = "Не вдалося налаштувати аудіосесію: %@";
 "voiceError.recognitionRequestFailed" = "Не вдалося створити запит на розпізнавання";
-"voiceError.audioEngineCreateFailed" = "Не вдалося створити аудіорушій";
 "voiceError.audioEngineStartFailed %@" = "Не вдалося запустити аудіорушій: %@";
 "voiceConfirmation.saveError" = "Помилка збереження";
 
@@ -1504,7 +1232,6 @@
 "csvImport.error.missingDependency %@" = "Відсутня залежність: %@";
 
 // MARK: - Progress
-"progress.loadingAccounts" = "Завантаження рахунків";
 "progress.loadingTransactions" = "Завантаження операцій";
 "progress.saving" = "Збереження";
 
@@ -1515,14 +1242,10 @@
 "timeFilter.customRange" = "Довільний діапазон";
 
 // MARK: - Accessibility
-"accessibility.accounts.addMenu" = "Меню додавання";
-"accessibility.accounts.doneReordering" = "Завершити впорядкування";
 "accessibility.category.budgetHint" = "Використання бюджету";
 "accessibility.category.budgetProgress" = "Прогрес бюджету";
 "accessibility.category.label" = "Категорія";
 "accessibility.category.overBudget" = "Перевищення бюджету";
-"accessibility.deposit.history" = "Історія операцій";
-"accessibility.deposit.moreActions" = "Більше дій";
 "accessibility.insights.granularityPicker" = "Вибір періоду";
 "accessibility.insights.granularityPickerHint" = "Оберіть деталізацію: місяць, квартал або рік";
 "accessibility.transaction.history" = "Історія операцій";
@@ -1580,9 +1303,6 @@
 "category.detail.totalEarned" = "Усього отримано";
 "category.detail.avgMonthly" = "Середньо за місяць";
 "category.detail.budget" = "Бюджет";
-"category.detail.subcategories" = "Підкатегорії";
-"category.detail.transactionCount" = "Операції";
-"category.detail.manageSubcategories" = "Керувати підкатегоріями";
 "category.detail.type.expense" = "Витрата";
 "category.detail.type.income" = "Дохід";
 
@@ -1601,7 +1321,6 @@
 "pager.previous" = "Назад";
 "pager.next" = "Вперед";
 "onboarding.cta.start" = "Почати";
-"onboarding.cta.done" = "Готово";
 "onboarding.cta.skip" = "Пропустити";
 "onboarding.stepIndicator.label" = "Крок %d з %d";
 
@@ -1611,11 +1330,7 @@
 "onboarding.account.title" = "Додайте перший рахунок";
 "onboarding.account.subtitle" = "Це може бути картка, готівка або банківський рахунок. Більше можна додати згодом.";
 "onboarding.account.namePlaceholder" = "напр., monobank";
-"onboarding.account.nameLabel" = "Назва";
-"onboarding.account.iconLabel" = "Піктограма";
-"onboarding.account.balanceLabel" = "Початковий баланс";
 "onboarding.account.balanceCaption" = "Початковий баланс (%@)";
-"onboarding.account.currencyChangedBanner" = "Валюту застосунку змінено. Валюта рахунку залишається незмінною. Ви можете змінити її в редакторі рахунку.";
 
 "onboarding.categories.title" = "Оберіть категорії витрат";
 "onboarding.categories.subtitle" = "Оберіть ті, якими користуватиметесь. Більше можна додати згодом.";
@@ -1909,7 +1624,6 @@
 "settings.wallet.cards" = "Картки";
 "settings.wallet.footer" = "Оплати Apple Pay, записані автоматизацією Wallet: перевірте вгадані, призначте категорію кожному продавцю і рахунок кожній картці.";
 
-
 /* MARK: - Document import */
 "import.source.statement.title" = "Банківська виписка";
 "import.source.statement.subtitle" = "Імпортуйте PDF-виписку з вашого банку";
@@ -1966,7 +1680,6 @@
 "onboarding.autoCapture.notifications.hint" = "Перекази, оплати за QR та онлайн зі сповіщень будь-якого банку";
 "onboarding.autoCapture.statement.title" = "Виписка з банку";
 "onboarding.autoCapture.statement.hint" = "Завантажте PDF за минулий місяць, і Тен рознесе операції";
-"onboarding.autoCapture.afterStart" = "Після старту";
 "onboarding.restore" = "Відновити з копії";
 "onboarding.cta.nextWithCount" = "Далі • обрано %d";
 "onboarding.restore.hint" = "Торкніться копії, щоб повернути дані на цей iPhone.";

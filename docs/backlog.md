@@ -107,9 +107,6 @@ Left by the action audit of 2026-11-08 (the rules: [design-system.md](design-sys
 - **`steps.position`** (VoiceOver "Step 2 of 4" of DesignKit's `StepTracker` in the CSV import) is
   not in Tenra's tables: the key takes its numbers from `defaultValue`'s interpolation, so check
   on a device that a table value with `%lld` gets them before adding it.
-- **About 290 keys in `Localizable.strings` have no use** in Tenra's code, in a run-time built key
-  or in DesignKit's list (`emptyState.*`, `quickAdd.*`, `csvImport.*`, `button.change`, …).
-  Remove them in one pass, keeping DesignKit's keys.
 
 ## Ideas, not planned yet
 

@@ -3,9 +3,9 @@
 Version 1.8.2 in the project since 2026-11-06, TestFlight build 75 (from the cloud, 2026-11-09,
 with the action audit and "Ask Ten" opening a new chat, merged into `main` the same day, #138;
 build 74 of 2026-11-07 is without them). **Status 2026-11-09:** version 1.8.2 created in App Store
-Connect (released after approval), What's New in all 14 localizations, build 75 selected; the draft
-review submission (`prepare-review`) is being made, then the founder's "Submit for Review"; the
-device checks below not done. 1.8.1 is in the store since 2026-11-06/07 (its notes and checklist:
+Connect (released after approval), What's New in all 14 localizations, build 75 selected, a draft
+review submission with the version (no custom page versions in preparation) waiting for the
+founder's "Submit for Review"; the device checks below not done. 1.8.1 is in the store since 2026-11-06/07 (its notes and checklist:
 [archive/release-notes-1.8.1.md](archive/release-notes-1.8.1.md)), so 1.8.2 can go to review once the
 device check below passes. `prepare-version` (Actions → App Store Connect, [asc.md](asc.md)) pastes
 each block into App Store Connect; en-GB (search in Kazakhstan) carries ru's text. No em dashes
@@ -198,5 +198,6 @@ Tenra의 새로운 기능:
    two questions over the field; the previous chat is in the home's list; a question tapped goes
    (the consent sheet first on a fresh install).
 5. **What's New** in this file and `prepare-version --version 1.8.2 --build 75` (done 2026-11-09).
-6. **One submission**: `asc.py prepare-review --version 1.8.2` (started 2026-11-09); the founder
-   sends it: App Store Connect → Tenra → 1.8.2 → "Add for Review" / "Submit for Review".
+6. **One submission**: `asc.py prepare-review --version 1.8.2` (draft made 2026-11-09, 1 item);
+   the founder sends it: App Store Connect → Tenra → Distribution → the draft submission →
+   "Submit for Review".

@@ -6,8 +6,8 @@
 // MARK: - Navigation Titles
 "navigation.history" = "Geçmiş";
 "navigation.categories" = "Kategoriler";
-"navigation.categoryFilter" = "Kategoriye Göre Filtrele";
-"navigation.transactionPreview" = "İşlem Önizleme";
+"navigation.categoryFilter" = "Kategoriye göre filtrele";
+"navigation.transactionPreview" = "İşlem önizleme";
 
 // MARK: - Transaction Preview (Phase 16)
 "transactionPreview.found" = "Bulunan: %d işlem";
@@ -18,21 +18,21 @@
 "navigation.subcategorySearch" = "Alt Kategori Ara";
 
 // MARK: - Time Filters
-"timeFilter.title" = "Zaman Filtresi";
+"timeFilter.title" = "Zaman filtresi";
 "timeFilter.presets" = "Hazır Seçenekler";
-"timeFilter.customPeriod" = "Özel Dönem";
+"timeFilter.customPeriod" = "Özel dönem";
 "timeFilter.from" = "Başlangıç";
 "timeFilter.to" = "Bitiş";
 "timeFilter.today" = "Bugün";
 "timeFilter.yesterday" = "Dün";
-"timeFilter.thisWeek" = "Bu Hafta";
-"timeFilter.last30Days" = "Son 30 Gün";
-"timeFilter.thisMonth" = "Bu Ay";
-"timeFilter.lastMonth" = "Geçen Ay";
-"timeFilter.thisYear" = "Bu Yıl";
-"timeFilter.lastYear" = "Geçen Yıl";
-"timeFilter.allTime" = "Tüm Zamanlar";
-"timeFilter.custom" = "Özel Dönem";
+"timeFilter.thisWeek" = "Bu hafta";
+"timeFilter.last30Days" = "Son 30 gün";
+"timeFilter.thisMonth" = "Bu ay";
+"timeFilter.lastMonth" = "Geçen ay";
+"timeFilter.thisYear" = "Bu yıl";
+"timeFilter.lastYear" = "Geçen yıl";
+"timeFilter.allTime" = "Tüm zamanlar";
+"timeFilter.custom" = "Özel dönem";
 
 // MARK: - Buttons
 "button.save" = "Kaydet";
@@ -65,15 +65,15 @@
 
 // MARK: - Settings
 "settings.title" = "Ayarlar";
-"settings.general" = "Genel Ayarlar";
-"settings.baseCurrency" = "Baz Para Birimi";
+"settings.general" = "Genel ayarlar";
+"settings.baseCurrency" = "Baz para birimi";
 "currency.title" = "Para Birimi";
 "currency.popular" = "Popüler";
-"currency.all" = "Tüm Para Birimleri";
+"currency.all" = "Tüm para birimleri";
 "currency.searchPrompt" = "Para birimi ara";
 "currency.noResults.title" = "Para birimi bulunamadı";
 "currency.noResults.description" = "Farklı bir ad ya da kod dene.";
-"currency.customize" = "Para Birimlerini Özelleştir";
+"currency.customize" = "Para birimlerini özelleştir";
 "currency.customizeAction" = "Özelleştir...";
 "settings.background" = "Arka Plan";
 "settings.merchantLogos" = "İşyeri logoları";
@@ -99,10 +99,10 @@
 "home.iCloudAsk.action" = "Aç";
 "settings.voiceLanguage" = "Ses Dili";
 "settings.voiceLanguage.app" = "Uygulamadaki gibi";
-"settings.background.none" = "Arka Plan Yok";
-"settings.background.gradient" = "Gider Renkleri";
+"settings.background.none" = "Arka plan yok";
+"settings.background.gradient" = "Gider renkleri";
 "settings.background.photo" = "Fotoğraf";
-"settings.background.blurWallpaper" = "Duvar Kağıdını Bulanıklaştır";
+"settings.background.blurWallpaper" = "Duvar kağıdını bulanıklaştır";
 "settings.background.removePhoto" = "Fotoğrafı Kaldır";
 "settings.background.choosePhoto" = "Fotoğraf seç";
 "settings.background.changePhoto" = "Fotoğrafı değiştir";
@@ -110,7 +110,7 @@
 "settings.background.opacityTitle" = "Gider rengi";
 "settings.subcategories" = "Alt Kategoriler";
 "settings.accounts" = "Hesaplar";
-"settings.exportImport" = "Dışa ve İçe Aktarma";
+"settings.exportImport" = "Dışa ve içe aktarma";
 "settings.importReminder" = "Hesap özeti hatırlatıcısı";
 "settings.importReminder.off" = "Kapalı";
 "settings.importReminder.week" = "Her hafta";
@@ -119,11 +119,11 @@
 "settings.importReminder.footer" = "Bir hesap özetini içe aktardıktan sonra Tenra bir sonrakini hatırlatır: Apple Pay dışındaki havaleler ve ödemeler yalnızca hesap özetiyle gelir.";
 "importReminder.notification.title" = "Hesap özeti zamanı";
 "importReminder.notification.body" = "Apple Pay'in kaydetmediği havale ve ödemeleri eklemek için bankanın PDF hesap özetini Tenra'da aç.";
-"settings.exportData" = "Verileri Dışa Aktar";
-"settings.importData" = "Verileri İçe Aktar";
-"settings.dangerZone" = "Tehlikeli Bölge";
-"settings.resetData" = "Tüm Verileri Sıfırla";
-"settings.resetLearning" = "Öğrenilen Tercihleri Sıfırla";
+"settings.exportData" = "Verileri dışa aktar";
+"settings.importData" = "Verileri içe aktar";
+"settings.dangerZone" = "Tehlikeli bölge";
+"settings.resetData" = "Tüm verileri sıfırla";
+"settings.resetLearning" = "Öğrenilen tercihleri sıfırla";
 
 // MARK: - Alerts
 "alert.deleteAllData.title" = "Tüm veriler silinsin mi?";
@@ -190,13 +190,13 @@
 "common.cancel" = "İptal";
 "common.select" = "Seç";
 "common.frequency" = "Sıklık";
-"common.startDate" = "Başlangıç Tarihi";
+"common.startDate" = "Başlangıç tarihi";
 
 // MARK: - Date Labels
 "date.today" = "Bugün";
 "date.yesterday" = "Dün";
 "date.selectDate" = "Tarih";
-"date.choose" = "Tarih Seç";
+"date.choose" = "Tarih seç";
 
 // MARK: - Transaction Types
 "transactionType.income" = "Gelir";
@@ -232,17 +232,17 @@
 "deposit.capitalization" = "Kapitalizasyon";
 "deposit.capitalizationEnabled" = "Açık";
 "deposit.capitalizationDisabled" = "Kapalı";
-"deposit.postingDay" = "Faiz Ödeme Günü";
+"deposit.postingDay" = "Faiz ödeme günü";
 "deposit.newRate" = "Yeni faiz oranı";
-"deposit.effectiveDate" = "Geçerlilik Tarihi";
+"deposit.effectiveDate" = "Geçerlilik tarihi";
 "deposit.note" = "Not (isteğe bağlı)";
 "deposit.changeRateTitle" = "Faiz oranını değiştir";
 "deposit.namePlaceholder" = "Ad";
 "deposit.bank" = "Banka";
 "deposit.bankNamePlaceholder" = "Banka adı";
-"deposit.interestRate" = "Faiz Oranı";
-"deposit.dayOfMonth" = "Ayın Günü";
-"deposit.enableCapitalization" = "Kapitalizasyonu Aç";
+"deposit.interestRate" = "Faiz oranı";
+"deposit.dayOfMonth" = "Ayın günü";
+"deposit.enableCapitalization" = "Kapitalizasyonu aç";
 "deposit.capitalizationHint" = "Kapitalizasyon açıkken faiz her ay anaparaya eklenir";
 "deposit.countsForToday" = "\"Bugün için\"de say";
 "deposit.countsForToday.hint" = "İstediğin zaman çekebileceğin para. \"Bugün için\" ve Ten onu kartlarınla birlikte sayar.";
@@ -251,7 +251,7 @@
 "deposit.interestAccrual.category" = "Faiz";
 
 // MARK: - Categories Management
-"categories.expenseCategories" = "Gider Kategorileri";
+"categories.expenseCategories" = "Gider kategorileri";
 "category.uncategorized" = "Kategorisiz";
 "category.deleteTitle" = "Kategori silinsin mi?";
 "category.deleteOnlyCategory" = "Yalnızca kategoriyi sil";
@@ -259,7 +259,7 @@
 "category.deleteMessage" = "\"%@\" kategorisindeki işlemlerle ne yapılacağını seç.";
 "category.namePlaceholder" = "Kategori adı";
 "category.addSubcategory" = "Alt kategori ekle";
-"category.manageSubcategories" = "Alt Kategorileri Yönet";
+"category.manageSubcategories" = "Alt kategorileri yönet";
 
 // MARK: - Subcategories Management
 "subcategory.namePlaceholder" = "Alt kategori adı";
@@ -276,7 +276,7 @@
 "subcategorySearch.unlink" = "Bağlantıyı Kaldır";
 
 // MARK: - Icon Picker
-"iconPicker.title" = "Görsel Seç";
+"iconPicker.title" = "Görsel seç";
 "iconPicker.iconsTab" = "Simgeler";
 "iconPicker.logosTab" = "Logolar";
 "iconPicker.photoTab" = "Fotoğraf";
@@ -286,26 +286,26 @@
 "imageCropper.title" = "Taşı ve ölçekle";
 "imageCropper.cancel" = "Vazgeç";
 "imageCropper.choose" = "Seç";
-"iconPicker.frequentlyUsed" = "Sık Kullanılanlar";
-"iconPicker.foodAndDrinks" = "Yiyecek ve İçecek";
+"iconPicker.frequentlyUsed" = "Sık kullanılanlar";
+"iconPicker.foodAndDrinks" = "Yiyecek ve içecek";
 "iconPicker.transport" = "Ulaşım";
 "iconPicker.shopping" = "Alışveriş";
 "iconPicker.entertainment" = "Eğlence";
 "iconPicker.health" = "Sağlık";
-"iconPicker.homeAndUtilities" = "Ev ve Faturalar";
-"iconPicker.moneyAndFinance" = "Para ve Finans";
+"iconPicker.homeAndUtilities" = "Ev ve faturalar";
+"iconPicker.moneyAndFinance" = "Para ve finans";
 "iconPicker.banks" = "Bankalar";
-"iconPicker.streaming" = "Yayın ve Eğlence";
-"iconPicker.productivity" = "Verimlilik ve Bulut";
-"iconPicker.social" = "Sosyal ve İletişim";
-"iconPicker.fitness" = "Fitness ve Sağlık";
+"iconPicker.streaming" = "Yayın ve eğlence";
+"iconPicker.productivity" = "Verimlilik ve bulut";
+"iconPicker.social" = "Sosyal ve iletişim";
+"iconPicker.fitness" = "Fitness ve sağlık";
 "iconPicker.gaming" = "Oyun";
-"iconPicker.devTools" = "Geliştirici Araçları ve Yapay Zeka";
+"iconPicker.devTools" = "Geliştirici araçları ve yapay zeka";
 "iconPicker.services" = "Hizmetler";
 "iconPicker.searchOnline" = "Marka logosu ara...";
 
 // MARK: - Category Filter
-"categoryFilter.allCategories" = "Tüm Kategoriler";
+"categoryFilter.allCategories" = "Tüm kategoriler";
 "categoryFilter.noExpenseCategories" = "Gider kategorisi yok";
 "categoryFilter.noIncomeCategories" = "Gelir kategorisi yok";
 "categoryFilter.deletedCategories" = "Silinenler";
@@ -330,14 +330,14 @@
 "error.validation.accountNotFound" = "Hesap bulunamadı";
 
 // MARK: - Voice Input
-"voice.title" = "Sesli Giriş";
+"voice.title" = "Sesli giriş";
 "voice.speak" = "Konuş...";
 "voice.error" = "Hata";
 "voice.errorMessage" = "Kayıt başlatılamadı";
 "voice.emptyText" = "Metin tanınamadı. Lütfen tekrar dene.";
 
 // MARK: - Voice Input Confirmation
-"voiceConfirmation.title" = "İşlemi Gözden Geçir";
+"voiceConfirmation.title" = "İşlemi gözden geçir";
 "voiceConfirmation.confirm" = "Onayla";
 "voiceConfirmation.noAccounts" = "Kullanılabilir hesap yok";
 "voiceConfirmation.warning.accountNotFound" = "Hesap bulunamadı, varsayılan seçildi";
@@ -365,7 +365,7 @@
 "subscriptions.resume" = "Devam Ettir";
 "subscriptions.category" = "Kategori";
 "subscriptions.frequency" = "Sıklık";
-"subscriptions.nextCharge" = "Sonraki Ödeme";
+"subscriptions.nextCharge" = "Sonraki ödeme";
 "subscriptions.account" = "Hesap";
 "subscriptions.status" = "Durum";
 "subscriptions.status.active" = "Aktif";
@@ -376,9 +376,9 @@
 // Notification Permission
 "notification.permission.title" = "Hatırlatıcılar açılsın mı?";
 "notification.permission.description" = "Yaklaşan abonelik ödemelerinden haberdar ol, önemli hiçbir ödemeyi kaçırma";
-"notification.permission.allow" = "Bildirimlere İzin Ver";
-"notification.permission.skip" = "Şimdi Değil";
-"notification.subscription.reminderTitle" = "Abonelik Hatırlatıcısı";
+"notification.permission.allow" = "Bildirimlere izin ver";
+"notification.permission.skip" = "Şimdi değil";
+"notification.subscription.reminderTitle" = "Abonelik hatırlatıcısı";
 "notification.subscription.reminderBody %@ %@ %lld" = "\"%1$@\" aboneliğinden %3$lld gün içinde %2$@ çekilecek";
 "reminder.daysBefore.custom %lld" = "%lld gün önce";
 
@@ -396,7 +396,7 @@
 "frequency.yearly" = "Yıllık";
 
 // Subscription Form
-"subscription.namePlaceholder" = "Abonelik Adı";
+"subscription.namePlaceholder" = "Abonelik adı";
 "subscription.reminders" = "Hatırlatıcılar";
 "subscription.scheduleSection" = "Zamanlama";
 "subscription.newTitle" = "Yeni abonelik";
@@ -422,7 +422,7 @@
 "error.categoryNameRequired" = "Kategori adını gir";
 
 // MARK: - Budget Management
-"budget.amount" = "Bütçe Tutarı";
+"budget.amount" = "Bütçe tutarı";
 "budget.period" = "Dönem";
 "budget.weekly" = "Haftalık";
 "budget.monthly" = "Aylık";
@@ -438,8 +438,8 @@
 "transactionForm.selectCategory" = "Kategori seç";
 "transactionForm.noCategories" = "Kullanılabilir kategori yok. Önce kategori oluştur.";
 "transactionForm.transfer" = "Transfer";
-"transactionForm.topUp" = "Para Yatır";
-"transactionForm.toAccount" = "Hedef Hesap";
+"transactionForm.topUp" = "Para yatır";
+"transactionForm.toAccount" = "Hedef hesap";
 "transactionForm.fromHeader" = "Nereden";
 "transactionForm.toHeader" = "Nereye";
 "transactionForm.noAccountsForTransfer" = "Transfer için başka hesap yok";
@@ -448,7 +448,7 @@
 "transactionForm.cannotTransferToSame" = "Aynı hesaba transfer yapılamaz";
 "transactionForm.accountNotFound" = "Hesap bulunamadı";
 "transactionForm.selectTargetAccount" = "Lütfen bir hedef hesap seç";
-"transactionForm.accountTopUp" = "Hesaba Para Yatır";
+"transactionForm.accountTopUp" = "Hesaba para yatır";
 "transactionForm.searchSubcategories" = "Alt kategori ara";
 "transactionForm.addSubcategory" = "Alt kategori ekle";
 "transactionForm.createSubcategory" = "\"%@\" oluştur";
@@ -486,58 +486,58 @@
 "csvImport.result.createdSubcategories" = "%d alt kategori oluşturuldu";
 "csvImport.result.duration" = "Süre";
 "csvImport.result.speed" = "Hız";
-"csvImport.result.title" = "İçe Aktarma Tamamlandı";
-"csvImport.button.viewErrors" = "Hataları Gör";
-"csvImport.preview.title" = "CSV Önizleme";
+"csvImport.result.title" = "İçe aktarma tamamlandı";
+"csvImport.button.viewErrors" = "Hataları gör";
+"csvImport.preview.title" = "CSV önizleme";
 "csvImport.preview.rows" = "Satırlar";
 "csvImport.preview.columns" = "Sütunlar";
-"csvImport.mapping.title" = "Sütun Eşleştirme";
+"csvImport.mapping.title" = "Sütun eşleştirme";
 "csvImport.step.preview" = "Önizleme";
 "csvImport.step.columns" = "Sütunlar";
 "csvImport.step.import" = "İçe aktar";
-"csvImport.mapping.required" = "Zorunlu Alanlar";
-"csvImport.mapping.optional" = "İsteğe Bağlı Alanlar";
+"csvImport.mapping.required" = "Zorunlu alanlar";
+"csvImport.mapping.optional" = "İsteğe bağlı alanlar";
 "csvImport.mapping.date" = "Tarih";
 "csvImport.mapping.type" = "Tür";
 "csvImport.mapping.amount" = "Tutar";
 "csvImport.mapping.currency" = "Para Birimi";
 "csvImport.mapping.account" = "Hesap";
 "csvImport.mapping.none" = "Yok";
-"csvImport.preview.fileInfo" = "Dosya Bilgisi";
-"csvImport.preview.headersTitle" = "Dosyadaki Sütunlar";
+"csvImport.preview.fileInfo" = "Dosya bilgisi";
+"csvImport.preview.headersTitle" = "Dosyadaki sütunlar";
 "csvImport.preview.dataPreview" = "Veri Önizlemesi (ilk %d satır)";
 "csvImport.mapping.category" = "Kategori";
-"csvImport.mapping.targetAccount" = "Hedef Hesap";
-"csvImport.mapping.targetCurrency" = "Hedef Para Birimi";
-"csvImport.mapping.targetAmount" = "Hedef Tutar";
-"csvImport.mapping.convertedAmount" = "Hesap Para Biriminde Tutar";
+"csvImport.mapping.targetAccount" = "Hedef hesap";
+"csvImport.mapping.targetCurrency" = "Hedef para birimi";
+"csvImport.mapping.targetAmount" = "Hedef tutar";
+"csvImport.mapping.convertedAmount" = "Hesap para biriminde tutar";
 "csvImport.mapping.subcategories" = "Alt kategoriler";
 "csvImport.mapping.note" = "Not";
-"csvImport.mapping.dateFormat" = "Tarih Biçimi";
-"csvImport.mapping.subcategoriesSeparator" = "Alt Kategori Ayırıcı";
+"csvImport.mapping.dateFormat" = "Tarih biçimi";
+"csvImport.mapping.subcategoriesSeparator" = "Alt kategori ayırıcı";
 "csvImport.mapping.separator.semicolon" = "(noktalı virgül)";
 "csvImport.mapping.separator.comma" = "(virgül)";
 "csvImport.mapping.separator.pipe" = "(dikey çizgi)";
 "csvImport.result.performance" = "Performans";
-"csvImport.result.successRate" = "Başarı Oranı";
+"csvImport.result.successRate" = "Başarı oranı";
 "csvImport.result.errors" = "Hatalar";
 "csvImport.result.moreErrors" = "... ve %d hata daha";
 
 // MARK: - CSV Entity Mapping
-"csvMapping.title" = "Öğe Eşleştirme";
-"csvMapping.accountsSection" = "Hesap Eşleştirme";
-"csvMapping.categoriesSection" = "Kategori Eşleştirme";
-"csvMapping.incomeCategoriesSection" = "Gelir Kategorisi Eşleştirme";
+"csvMapping.title" = "Öğe eşleştirme";
+"csvMapping.accountsSection" = "Hesap eşleştirme";
+"csvMapping.categoriesSection" = "Kategori eşleştirme";
+"csvMapping.incomeCategoriesSection" = "Gelir kategorisi eşleştirme";
 "csvMapping.notSelected" = "Seçilmedi";
 "csvMapping.selectAccount %@" = "\"%@\" için hesap seç";
 "csvMapping.createAccount %@" = "\"%@\" adında yeni hesap oluştur";
-"csvMapping.accountMappingTitle" = "Hesap Eşleştirme";
+"csvMapping.accountMappingTitle" = "Hesap eşleştirme";
 "csvMapping.categoryLabel" = "kategori";
 "csvMapping.incomeCategoryLabel" = "gelir kategorisi";
 "csvMapping.selectCategory %@ %@" = "\"%2$@\" için %1$@ seç";
 "csvMapping.createCategory %@ %@" = "\"%2$@\" adında yeni %1$@ oluştur";
-"csvMapping.categoryMappingTitle" = "Kategori Eşleştirme";
-"csvMapping.incomeCategoryMappingTitle" = "Gelir Kategorisi Eşleştirme";
+"csvMapping.categoryMappingTitle" = "Kategori eşleştirme";
+"csvMapping.incomeCategoryMappingTitle" = "Gelir kategorisi eşleştirme";
 
 // MARK: - Settings Errors (Phase 1 - 2026-02-04)
 "error.settings.loadFailed" = "Ayarlar yüklenemedi: %@";
@@ -605,14 +605,14 @@
 
 // MARK: - Icon Styles
 "iconStyle.shape.circle" = "Daire";
-"iconStyle.shape.roundedSquare" = "Yuvarlatılmış Kare";
+"iconStyle.shape.roundedSquare" = "Yuvarlatılmış kare";
 "iconStyle.shape.square" = "Kare";
 "iconStyle.tint.monochrome" = "Tek Renk";
 "iconStyle.tint.hierarchical" = "Hiyerarşik";
 "iconStyle.tint.palette" = "Palet";
-"iconStyle.tint.original" = "Orijinal Renkler";
-"iconStyle.preset.categoryIcon" = "Kategori Simgesi";
-"iconStyle.preset.serviceLogo" = "Servis Logosu";
+"iconStyle.tint.original" = "Orijinal renkler";
+"iconStyle.preset.categoryIcon" = "Kategori simgesi";
+"iconStyle.preset.serviceLogo" = "Servis logosu";
 "iconStyle.preset.placeholder" = "Yer Tutucu";
 "recurring.never" = "Hiçbir Zaman";
 "reminder.none" = "Hiçbir Zaman";
@@ -620,7 +620,7 @@
 // MARK: - Filter Buttons (Phase 14)
 "filter.allAccounts" = "Tüm hesaplar";
 "filter.allCategories" = "Tüm kategoriler";
-"filter.allSubcategories" = "Tüm Alt Kategoriler";
+"filter.allSubcategories" = "Tüm alt kategoriler";
 
 // MARK: - Insights (Phase 17)
 "insights.title" = "Analiz";
@@ -630,38 +630,38 @@
 "insights.expenses" = "Giderler";
 "insights.budget" = "Bütçe";
 "insights.recurring" = "Tekrarlayan";
-"insights.cashFlow" = "Nakit Akışı";
-"insights.netFlow" = "Net Akış";
-"insights.availableBalance" = "Kullanılabilir Bakiye";
+"insights.cashFlow" = "Nakit akışı";
+"insights.netFlow" = "Net akış";
+"insights.availableBalance" = "Kullanılabilir bakiye";
 "insights.topMonths.best" = "En iyi 10 ay";
 "insights.topMonths.worst" = "En kötü 10 ay";
 "insights.emptyState.title" = "Henüz analiz yok";
 "insights.emptyState.description" = "Finansal analizini görmek için birkaç işlem ekle";
 "insights.noInsightsForFilter" = "Bu kategori için analiz yok";
-"insights.topCategory" = "En Çok Harcanan Kategori";
-"insights.topMerchant" = "En Çok Harcanan İşyeri";
-"insights.spendingSpike" = "Olağan Dışı Harcama Tespit Edildi";
-"insights.monthOverMonth" = "Aylık Harcama Değişimi";
-"insights.monthOverMonth.week" = "Haftalık Harcama";
-"insights.monthOverMonth.month" = "Aylık Harcama Değişimi";
-"insights.monthOverMonth.quarter" = "Çeyreklik Harcama";
-"insights.monthOverMonth.year" = "Yıllık Harcama";
-"insights.avgDailySpending" = "Ortalama Günlük Harcama";
+"insights.topCategory" = "En çok harcanan kategori";
+"insights.topMerchant" = "En çok harcanan işyeri";
+"insights.spendingSpike" = "Olağan dışı harcama tespit edildi";
+"insights.monthOverMonth" = "Aylık harcama değişimi";
+"insights.monthOverMonth.week" = "Haftalık harcama";
+"insights.monthOverMonth.month" = "Aylık harcama değişimi";
+"insights.monthOverMonth.quarter" = "Çeyreklik harcama";
+"insights.monthOverMonth.year" = "Yıllık harcama";
+"insights.avgDailySpending" = "Ortalama günlük harcama";
 "insights.days" = "gün";
-"insights.incomeGrowth" = "Gelir Eğilimi";
+"insights.incomeGrowth" = "Gelir eğilimi";
 "insights.vsPreviousPeriod" = "önceki döneme göre";
 "insights.vsAverage" = "ortalamaya göre";
-"insights.budgetOver" = "Bütçe Aşımı";
-"insights.budgetHeadroom" = "Bütçe Payı";
-"insights.projectedOverspend" = "Öngörülen Aşım";
+"insights.budgetOver" = "Bütçe aşımı";
+"insights.budgetHeadroom" = "Bütçe payı";
+"insights.projectedOverspend" = "Öngörülen aşım";
 "insights.categoriesOverBudget" = "%d kategori bütçeyi aştı";
 "insights.categoriesAtRisk" = "%d kategori risk altında";
 "insights.categoriesUnderBudget" = "%d kategori yolunda";
-"insights.totalRecurring" = "Aylık Tekrarlayan Giderler";
-"insights.totalRecurring.week" = "Haftalık Tekrarlayan";
-"insights.totalRecurring.month" = "Aylık Tekrarlayan Giderler";
-"insights.totalRecurring.quarter" = "Çeyreklik Tekrarlayan";
-"insights.totalRecurring.year" = "Yıllık Tekrarlayan";
+"insights.totalRecurring" = "Aylık tekrarlayan giderler";
+"insights.totalRecurring.week" = "Haftalık tekrarlayan";
+"insights.totalRecurring.month" = "Aylık tekrarlayan giderler";
+"insights.totalRecurring.quarter" = "Çeyreklik tekrarlayan";
+"insights.totalRecurring.year" = "Yıllık tekrarlayan";
 "insights.activeRecurring" = "%d aktif tekrarlayan";
 "insights.perMonth" = "aylık";
 "insights.perWeek" = "haftalık";
@@ -691,20 +691,20 @@
 "insights.byDay.categoriesOn" = "Kategoriler: %@";
 "insights.byDay.patterns" = "Öne çıkanlar";
 "insights.byDay.footnote" = "Günlük harcamalar: abonelikler ve diğer düzenli ödemeler, kredi ödemeleri ve tek seferlik büyük alışverişler hariç.";
-"insights.netCashFlow" = "Net Nakit Akışı";
+"insights.netCashFlow" = "Net nakit akışı";
 "insights.periodRecords" = "Rekorlar";
 "insights.urgentNow" = "Dikkat gerektirenler";
 "insights.filter.urgent" = "Önemli";
-"insights.projectedBalance" = "Öngörülen Bakiye";
+"insights.projectedBalance" = "Öngörülen bakiye";
 "insights.in30Days" = "30 gün içinde";
 "insights.recurringAndExpenses" = "Tekrarlayanlar + ortalama giderler";
 "insights.currentBalance" = "Mevcut bakiye";
-"insights.cashFlowTrend" = "Nakit Akışı Eğilimi";
+"insights.cashFlowTrend" = "Nakit akışı eğilimi";
 "insights.breakdown" = "Dağılım";
-"insights.breakdown.week" = "Haftalık Dağılım";
-"insights.breakdown.month" = "Aylık Dağılım";
-"insights.breakdown.quarter" = "Çeyreklik Dağılım";
-"insights.breakdown.year" = "Yıllık Dağılım";
+"insights.breakdown.week" = "Haftalık dağılım";
+"insights.breakdown.month" = "Aylık dağılım";
+"insights.breakdown.quarter" = "Çeyreklik dağılım";
+"insights.breakdown.year" = "Yıllık dağılım";
 "insights.noExpenses" = "Gider yok";
 "insights.noExpensesForPeriod" = "Bu dönemde gider yok";
 "insights.noIncome" = "Gelir yok";
@@ -712,15 +712,15 @@
 "insights.swipeHint" = "Diğer dönemleri görmek için kaydır";
 "insights.other" = "Diğer";
 "insights.noSubcategory" = "Alt kategori yok";
-"insights.spendingTrend" = "Harcama Eğilimi";
+"insights.spendingTrend" = "Harcama eğilimi";
 "insights.daysLeft" = "%d gün kaldı";
 
 // Granularity picker
-"insights.granularity.week" = "Haftalara Göre";
-"insights.granularity.month" = "Aylara Göre";
-"insights.granularity.quarter" = "Çeyreklere Göre";
-"insights.granularity.year" = "Yıllara Göre";
-"insights.granularity.allTime" = "Tüm Zamanlar";
+"insights.granularity.week" = "Haftalara göre";
+"insights.granularity.month" = "Aylara göre";
+"insights.granularity.quarter" = "Çeyreklere göre";
+"insights.granularity.year" = "Yıllara göre";
+"insights.granularity.allTime" = "Tüm zamanlar";
 "insights.granularity.week.short" = "Hafta";
 "insights.granularity.month.short" = "Ay";
 "insights.granularity.quarter.short" = "Çeyrek";
@@ -730,7 +730,7 @@
 "insights.formula.value.months" = "%.1f ay";
 "insights.formula.howCalculated" = "Nasıl hesaplanır";
 "insights.formula.value.days" = "%d gün";
-"insights.formula.savingsRate.title" = "Birikim Oranı";
+"insights.formula.savingsRate.title" = "Birikim oranı";
 "insights.formula.savingsRate.heroLabel" = "Kazandığın her liradan elinde kalan";
 "insights.formula.savingsRate.formulaHeader" = "Nasıl hesaplanır";
 "insights.formula.savingsRate.row.period" = "Dönem";
@@ -742,7 +742,7 @@
 "insights.formula.savingsRate.rec.good" = "%20'den fazlasını biriktiriyorsun. Bu düzeni koru ve fazlayı uzun vadeli bir hedefe yönlendirmeyi düşün.";
 "insights.formula.savingsRate.rec.fair" = "Fena değil, ama %%20'ye çıkmak her ay fazladan %@ birikim demek. Sinsice artan tekrarlayan veya tek seferlik kategorileri kırp.";
 "insights.formula.savingsRate.rec.low" = "%%10'un altı hiç tampon bırakmaz. Her ay en az %@ daha biriktirmeyi hedefle. En büyük keyfi harcama kategorisinden başla.";
-"insights.formula.emergencyFund.title" = "Güvence Fonu";
+"insights.formula.emergencyFund.title" = "Güvence fonu";
 "insights.formula.emergencyFund.heroLabel" = "Bakiyenin kaç aylık gideri karşıladığı";
 "insights.formula.emergencyFund.formulaHeader" = "Nasıl hesaplanır";
 "insights.formula.emergencyFund.row.balance" = "Toplam bakiye";
@@ -751,7 +751,7 @@
 "insights.formula.emergencyFund.explainer" = "Gelir yarın dursa hesapların olağan harcamaları ne kadar süre karşılar. Çoğu planlamacının önerdiği taban 3+ ay; 6 ay ise rahat bir tampondur.";
 "insights.formula.emergencyFund.rec.good" = "3 ay eşiğini geçtin. Fazlayı daha yüksek getirili bir hesaba park etmeyi ya da uzun vadeli hedeflere yönlendirmeyi düşün.";
 "insights.formula.emergencyFund.rec.gap" = "3 aylık karşılamaya ulaşmak için %@ daha ekle. Küçük aylık katkılar bile birikir. Birikim oranına uyan tutarla başla.";
-"insights.formula.spendingForecast.title" = "Ay Sonu Harcama Tahmini";
+"insights.formula.spendingForecast.title" = "Ay sonu harcama tahmini";
 "insights.formula.spendingForecast.heroLabel" = "Bu ay öngörülen toplam harcama";
 "insights.formula.spendingForecast.formulaHeader" = "Nasıl hesaplanır";
 "insights.formula.spendingForecast.row.spentSoFar" = "Bu ay şu ana dek harcanan";
@@ -766,7 +766,7 @@
 "insights.formula.balanceRunway.row.netFlow" = "Ortalama net akış";
 "insights.formula.balanceRunway.row.runway" = "Bakiye ömrü";
 "insights.formula.balanceRunway.rec.critical" = "Bir aydan az bakiye ömrü kaldı. Açığı acilen kapat. Büyük bir tekrarlayan ödemeyi duraklatmak bile sana günler kazandırır.";
-"insights.formula.yearOverYear.title" = "Yıldan Yıla Harcama";
+"insights.formula.yearOverYear.title" = "Yıldan yıla harcama";
 "insights.formula.yearOverYear.heroLabel" = "Geçen yılın aynı ayına göre değişim";
 "insights.formula.yearOverYear.formulaHeader" = "Nasıl hesaplanır";
 "insights.formula.yearOverYear.row.thisMonth" = "Bu ay";
@@ -777,7 +777,7 @@
 "insights.formula.yearOverYear.rec.down" = "Harcama yıldan yıla belirgin şekilde düştü. Kasıtlı değilse hangi kategorilerin soğuduğuna bak. Bazen burada atlanan bir tekrarlayan işlem saklanıyor olabilir.";
 "insights.formula.yearOverYear.rec.up" = "Harcama %@ arttı. İki ayın en büyük kategorilerini karşılaştır. Sıçramayı çoğu zaman yeni bir abonelik, fazladan bir kira dönemi ya da tek büyük bir alışveriş açıklar.";
 "insights.formula.yearOverYear.rec.flat" = "Geçen yıla göre değişim düşük. Harcama düzenin istikrarlı. Olası kaymayı yakalamak için aynı metriği gelecek ay da izle.";
-"insights.formula.projectedBalance.title" = "Öngörülen Bakiye";
+"insights.formula.projectedBalance.title" = "Öngörülen bakiye";
 "insights.formula.projectedBalance.heroLabel" = "Dönem sonunda tahmini bakiye";
 "insights.formula.projectedBalance.formulaHeader" = "Nasıl hesaplanır";
 "insights.formula.projectedBalance.row.currentBalance" = "Mevcut bakiye";
@@ -791,7 +791,7 @@
 "insights.wealth.growth.compare" = "%@ – %@";
 
 "insights.subscriptionGrowth.compareAgo" = "%d ay öncesine göre";
-"insights.formula.subscriptionGrowth.title" = "Abonelik Artışı";
+"insights.formula.subscriptionGrowth.title" = "Abonelik artışı";
 "insights.formula.subscriptionGrowth.heroLabel" = "Aylık tekrarlayan harcamadaki değişim";
 "insights.formula.subscriptionGrowth.formulaHeader" = "Nasıl hesaplanır";
 "insights.formula.subscriptionGrowth.row.lookback" = "Karşılaştırma penceresi";
@@ -804,7 +804,7 @@
 "insights.formula.subscriptionGrowth.rec.shrinking" = "Tekrarlayan harcamayı kırptın. Yeni servisler cezbettikçe bu disiplini koru. Boşalan nakit akışını birikime ya da borca yönlendir.";
 "insights.formula.subscriptionGrowth.rec.stable" = "Tekrarlayan harcama neredeyse sabit kaldı. Portföy istikrarlı; kullanılmayan servisler sessizce kalmasın diye ara sıra gözden geçir.";
 
-"insights.formula.categoryTrend.title" = "Kategori Eğilimi";
+"insights.formula.categoryTrend.title" = "Kategori eğilimi";
 "insights.formula.categoryTrend.heroLabel" = "En çok yükselen harcama kategorisi";
 "insights.formula.categoryTrend.formulaHeader" = "Son aylık harcama";
 "insights.formula.categoryTrend.row.month" = "Ay";
@@ -818,35 +818,35 @@
 
 // Wealth card
 "insights.wealth" = "Varlık";
-"insights.wealth.title" = "Hesaplardaki Para";
+"insights.wealth.title" = "Hesaplardaki para";
 "insights.wealth.subtitle" = "Tüm hesapların toplam bakiyesi";
 "insights.wealth.accounts" = "Hesaplar";
-"insights.wealthGrowth" = "Varlık Değişimi";
+"insights.wealthGrowth" = "Varlık değişimi";
 
 // Savings
 "insights.savings" = "Birikim";
-"insights.savingsRate" = "Birikim Oranı";
-"insights.emergencyFund" = "Güvence Fonu";
+"insights.savingsRate" = "Birikim oranı";
+"insights.emergencyFund" = "Güvence fonu";
 "insights.monthsCovered" = "%d ay karşılanıyor";
 "insights.months" = "ay";
 
 // Spending
-"insights.categoryTrend" = "Harcama Eğilimi";
+"insights.categoryTrend" = "Harcama eğilimi";
 "insights.categoryTrend.risingMonths" = "%d aydır yükseliyor";
-"insights.subscriptionGrowth" = "Abonelik Artışı";
+"insights.subscriptionGrowth" = "Abonelik artışı";
 
 // Forecasting
 "insights.forecasting" = "Tahmin";
-"insights.spendingForecast" = "Aylık Harcama Tahmini";
+"insights.spendingForecast" = "Aylık harcama tahmini";
 "insights.yearOverYear" = "Yıldan Yıla";
-"insights.incomeSourceBreakdown" = "Gelir Kaynakları";
+"insights.incomeSourceBreakdown" = "Gelir kaynakları";
 
 // Health Score & Behavioral
 "insights.healthScore" = "Finans";
 "insights.healthGrade.excellent" = "Mükemmel";
 "insights.healthGrade.good" = "İyi";
 "insights.healthGrade.fair" = "Orta";
-"insights.healthGrade.needsAttention" = "Dikkat Gerektiriyor";
+"insights.healthGrade.needsAttention" = "Dikkat gerektiriyor";
 "insights.accountDormancy.title" = "Atıl duran para";
 "insights.accountDormancy.subtitle" = "hesap 30+ gündür hareketsiz, mevduatta gelir getirebilirdi";
 
@@ -897,7 +897,7 @@
 "insights.formula.checkGrowth.row.growth" = "Artış";
 "insights.formula.checkGrowth.explainer" = "Son 90 günün ortalama sepeti, önceki 90 günle karşılaştırılır; her iki dönemde en az 3 alışveriş yapılan işyerleri için. Abonelikler sayılmaz: fiyat artışları için ayrı bir içgörü var.";
 "insights.formula.checkGrowth.rec" = "Neyin değiştiğine bak: fiyatlar, orada ne aldığın ya da bir seferde ne kadar aldığın.";
-"insights.dormant.accounts" = "Atıl Hesaplar";
+"insights.dormant.accounts" = "Atıl hesaplar";
 
 // MARK: - Tab Bar
 "tab.home" = "Ana Sayfa";
@@ -933,7 +933,7 @@
 "loan.filter" = "Filtre";
 "loan.emptyTitle" = "Kredi yok";
 "loan.emptyDescription" = "Ödemeleri ve ilerlemeyi takip etmek için kredilerini ve taksitlerini ekle";
-"loan.totalDebt" = "Toplam Borç";
+"loan.totalDebt" = "Toplam borç";
 "loan.monthlyTotal" = "Aylık";
 "loan.unpaidThisMonth" = "Bu ay ödenmemiş";
 "loan.typeAnnuityShort" = "Kredi";
@@ -955,28 +955,28 @@
 "loan.payoffCelebration" = "Kredi kapandı. Tebrikler.";
 "loan.paidOff" = "Ödendi";
 "loan.nextPayment" = "Sonraki ödeme: %@";
-"loan.currentPaymentBreakdown" = "Mevcut Ödeme Dağılımı";
+"loan.currentPaymentBreakdown" = "Mevcut ödeme dağılımı";
 "loan.principalPortion" = "Anapara";
 "loan.interestPortion" = "Faiz";
 "loan.noInterest" = "Taksit: faiz alınmaz";
 "loan.stats" = "İstatistikler";
-"loan.originalAmount" = "Başlangıç Tutarı";
-"loan.interestRate" = "Faiz Oranı";
+"loan.originalAmount" = "Başlangıç tutarı";
+"loan.interestRate" = "Faiz oranı";
 "loan.annual" = "yıllık";
-"loan.totalInterestPaid" = "Ödenen Faiz";
+"loan.totalInterestPaid" = "Ödenen faiz";
 "loan.projectedTotalInterest" = "Toplam Faiz (öngörülen)";
 "loan.term" = "Vade";
 "loan.termValue" = "%d ay";
-"loan.paymentsMade" = "Yapılan Ödemeler";
+"loan.paymentsMade" = "Yapılan ödemeler";
 "loan.paymentsRemaining" = "Kalan";
 "loan.paymentsRemainingValue" = "%d ödeme";
-"loan.endDate" = "Bitiş Tarihi";
-"loan.earlyRepayments" = "Erken Ödemeler";
-"loan.amortizationSchedule" = "Amortisman Planı";
+"loan.endDate" = "Bitiş tarihi";
+"loan.earlyRepayments" = "Erken ödemeler";
+"loan.amortizationSchedule" = "Amortisman planı";
 "loan.noSchedule" = "Plan mevcut değil";
 "loan.showAllPayments" = "Tüm %d ödemeyi göster";
 "loan.interestShort" = "Faiz: %@";
-"loan.convertTitle" = "Krediye Dönüştür";
+"loan.convertTitle" = "Krediye dönüştür";
 "loan.editTitle" = "Krediyi düzenle";
 "loan.newTitle" = "Yeni kredi";
 "loan.namePlaceholder" = "örn. Araç Kredisi";
@@ -991,8 +991,8 @@
 "loan.remainingBalance" = "Kalan: %@";
 "loan.date" = "Tarih";
 "loan.strategy" = "Strateji";
-"loan.reduceTerm" = "Vadeyi Kısalt";
-"loan.reducePayment" = "Ödemeyi Düşür";
+"loan.reduceTerm" = "Vadeyi kısalt";
+"loan.reducePayment" = "Ödemeyi düşür";
 "loan.reduceTermHint" = "Aylık ödeme aynı kalsın, daha erken bitir";
 "loan.reducePaymentHint" = "Vade aynı kalsın, aylık ödeme düşsün";
 "loan.impact" = "Etki";
@@ -1023,28 +1023,28 @@
 "loan.payAllTotal" = "Toplam ödeme";
 
 // MARK: - Icon Picker (new categories)
-"iconPicker.localServices" = "Yerel Hizmetler";
+"iconPicker.localServices" = "Yerel hizmetler";
 "iconPicker.telecom" = "Telekom";
-"iconPicker.cis" = "BDT Servisleri";
+"iconPicker.cis" = "BDT servisleri";
 "iconPicker.suggestions" = "Öneriler";
 "iconPicker.onlineSearch" = "Çevrimiçi";
 "iconPicker.brandDomainHint" = "Marka alan adını gir (örn. netflix.com)";
 
 // MARK: - Settings (extras)
 "settings.experiments" = "Deneyler";
-"settings.debug.relaunchOnboarding" = "Karşılama Akışını Yeniden Başlat";
-"settings.notificationDebug" = "Bildirim Hata Ayıklama";
+"settings.debug.relaunchOnboarding" = "Karşılama akışını yeniden başlat";
+"settings.notificationDebug" = "Bildirim hata ayıklama";
 
 // MARK: - Settings (About)
 "settings.about" = "Hakkında";
-"settings.privacyPolicy" = "Gizlilik Politikası";
-"settings.termsOfUse" = "Kullanım Koşulları";
+"settings.privacyPolicy" = "Gizlilik politikası";
+"settings.termsOfUse" = "Kullanım koşulları";
 "settings.version" = "Sürüm";
 "settings.diagnostics" = "Tanılama";
-"diagnostics.launchCheck.header" = "Açılış Kontrolü";
+"diagnostics.launchCheck.header" = "Açılış kontrolü";
 "diagnostics.launchCheck.footer" = "Son kontrol: %@";
 "diagnostics.checking" = "Kontrol ediliyor…";
-"diagnostics.runAgain" = "Tekrar Kontrol Et";
+"diagnostics.runAgain" = "Tekrar kontrol et";
 "diagnostics.check.database" = "Veritabanı";
 "diagnostics.check.settings" = "Ayarlar";
 "diagnostics.check.purchases" = "Satın Alımlar";
@@ -1057,7 +1057,7 @@
 "diagnostics.detail.nothingToSell" = "App Store satılacak ürün döndürmedi.";
 "diagnostics.detail.offline" = "İnternet bağlantısı yok, bu yüzden kontrol edilmedi.";
 "diagnostics.detail.purchasesFailed" = "Satın alma seçenekleri yüklenemedi.";
-"diagnostics.reports.header" = "Çökme ve Performans Raporları";
+"diagnostics.reports.header" = "Çökme ve performans raporları";
 "diagnostics.reports.empty" = "Henüz rapor yok.";
 "diagnostics.reports.footer" = "iOS bu raporları yaklaşık günde bir kez gönderir. Sen paylaşmadıkça bu cihazda kalırlar.";
 "diagnostics.report.crashes" = "Çökmeler: %lld";
@@ -1065,7 +1065,7 @@
 "diagnostics.report.diskWrites" = "Disk yazmaları: %lld";
 "diagnostics.report.cpuExceptions" = "CPU zirveleri: %lld";
 "diagnostics.report.slowLaunches" = "Yavaş açılışlar: %lld";
-"diagnostics.share" = "Tanılamayı Paylaş";
+"diagnostics.share" = "Tanılamayı paylaş";
 "diagnostics.capture.header" = "Otomatik kayıt";
 "diagnostics.capture.footer" = "Wallet ve banka bildirimi otomasyonlarının son 90 günde bu iPhone’a kaydettiği ödemeler. Hiçbir şey cihazdan çıkmaz.";
 "diagnostics.capture.applePay" = "Apple Pay ödemeleri";
@@ -1076,7 +1076,7 @@
 "diagnostics.capture.never" = "Hiç";
 
 // MARK: - Voice (extras)
-"voice.openSettings" = "Ayarları Aç";
+"voice.openSettings" = "Ayarları aç";
 
 // MARK: - PDF Errors
 "pdf.error.invalidDocument" = "PDF belgesi açılamadı. Dosyanın geçerli bir PDF olduğundan emin ol.";
@@ -1116,7 +1116,7 @@
 "error.backup.notDownloaded" = "Bu yedek henüz iCloud'dan indirilmedi. Bağlantını kontrol et ve tekrar dene.";
 
 // MARK: - Loans (Form)
-"loan.detailsSection" = "Kredi Bilgileri";
+"loan.detailsSection" = "Kredi bilgileri";
 "loan.noteLabel" = "Not";
 "loan.payAllLoans" = "Krediler";
 "loan.paymentSection" = "Ödeme";
@@ -1170,8 +1170,8 @@
 "account.type.regular" = "Hesaplar";
 
 // MARK: - Deposits (Form)
-"deposit.bankDetails" = "Banka ve Faiz Oranı";
-"deposit.convertTitle" = "Mevduata Dönüştür";
+"deposit.bankDetails" = "Banka ve faiz oranı";
+"deposit.convertTitle" = "Mevduata dönüştür";
 "deposit.postingWithDate" = "Faiz ödemesi: %@";
 "deposit.schedule" = "Takvim";
 
@@ -1375,23 +1375,23 @@
 "insights.health.weightLabel" = "%d%%";
 "insights.health.weights.redistributed" = "Bütçe ayarlanmamış, %25'lik ağırlık diğer dört bileşene dağıtılır.";
 
-"insights.health.component.savingsRate.title" = "Birikim Oranı";
+"insights.health.component.savingsRate.title" = "Birikim oranı";
 "insights.health.component.savingsRate.short" = "Birikim";
 "insights.health.component.savingsRate.explainer" = "Gelirinin ne kadarını elinde tuttuğun. Daha yüksek birikim oranı daha fazla dayanıklılık demek.";
 
-"insights.health.component.budgetAdherence.title" = "Bütçe Uyumu";
+"insights.health.component.budgetAdherence.title" = "Bütçe uyumu";
 "insights.health.component.budgetAdherence.short" = "Bütçeler";
 "insights.health.component.budgetAdherence.explainer" = "Bu ay kategori bütçelerinin kaçının içinde kaldığın.";
 
-"insights.health.component.recurringRatio.title" = "Tekrarlayan Ödeme Oranı";
+"insights.health.component.recurringRatio.title" = "Tekrarlayan ödeme oranı";
 "insights.health.component.recurringRatio.short" = "Tekrarlayan";
 "insights.health.component.recurringRatio.explainer" = "Gelirinin aboneliklere ve tekrarlayan ödemelere bağlanan payı. Daha düşük olması daha fazla esneklik demek.";
 
-"insights.health.component.emergencyFund.title" = "Güvence Fonu";
+"insights.health.component.emergencyFund.title" = "Güvence fonu";
 "insights.health.component.emergencyFund.short" = "Güvence";
 "insights.health.component.emergencyFund.explainer" = "Hesap bakiyelerinin kaç aylık gideri karşıladığı.";
 
-"insights.health.component.cashFlow.title" = "Nakit Akışı";
+"insights.health.component.cashFlow.title" = "Nakit akışı";
 "insights.health.component.cashFlow.short" = "Nakit akışı";
 "insights.health.component.cashFlow.explainer" = "Son dönemde gelirinin giderlerini ne kadar aştığı.";
 
@@ -1629,10 +1629,10 @@
 "import.source.statement.subtitle" = "Bankanızdan bir PDF ekstre içe aktarın";
 "import.source.receipt.title" = "Fiş tara";
 "import.source.receipt.subtitle" = "Kamerayı kağıt bir fişe doğrultun";
-"import.receipt.title" = "Fişi Gözden Geçir";
+"import.receipt.title" = "Fişi gözden geçir";
 "import.receipt.debtRepayment" = "Bu bir borç ödemesi";
 "import.receipt.debtRepayment.footer" = "Ödeme, %@ kişisine olan borcunu da azaltır.";
-"import.receipt.detailsHeader" = "Fiş Bilgileri";
+"import.receipt.detailsHeader" = "Fiş bilgileri";
 "import.receipt.merchant" = "Satıcı";
 "import.receipt.total" = "Toplam";
 "import.tab.subtitle" = "İşlemleri elle yazmak yerine bir ekstreden veya fişten ekleyin";

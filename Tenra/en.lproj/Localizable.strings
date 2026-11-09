@@ -6,8 +6,8 @@
 // MARK: - Navigation Titles
 "navigation.history" = "History";
 "navigation.categories" = "Categories";
-"navigation.categoryFilter" = "Filter by Categories";
-"navigation.transactionPreview" = "Transaction Preview";
+"navigation.categoryFilter" = "Filter by categories";
+"navigation.transactionPreview" = "Transaction preview";
 
 // MARK: - Transaction Preview (Phase 16)
 "transactionPreview.found" = "Found: %d transactions";
@@ -18,21 +18,21 @@
 "navigation.subcategorySearch" = "Search subcategories";
 
 // MARK: - Time Filters
-"timeFilter.title" = "Time Filter";
+"timeFilter.title" = "Time filter";
 "timeFilter.presets" = "Presets";
-"timeFilter.customPeriod" = "Custom Period";
+"timeFilter.customPeriod" = "Custom period";
 "timeFilter.from" = "From";
 "timeFilter.to" = "To";
 "timeFilter.today" = "Today";
 "timeFilter.yesterday" = "Yesterday";
-"timeFilter.thisWeek" = "This Week";
-"timeFilter.last30Days" = "Last 30 Days";
-"timeFilter.thisMonth" = "This Month";
-"timeFilter.lastMonth" = "Last Month";
-"timeFilter.thisYear" = "This Year";
-"timeFilter.lastYear" = "Last Year";
-"timeFilter.allTime" = "All Time";
-"timeFilter.custom" = "Custom Period";
+"timeFilter.thisWeek" = "This week";
+"timeFilter.last30Days" = "Last 30 days";
+"timeFilter.thisMonth" = "This month";
+"timeFilter.lastMonth" = "Last month";
+"timeFilter.thisYear" = "This year";
+"timeFilter.lastYear" = "Last year";
+"timeFilter.allTime" = "All time";
+"timeFilter.custom" = "Custom period";
 
 // MARK: - Buttons
 "button.save" = "Save";
@@ -65,15 +65,15 @@
 
 // MARK: - Settings
 "settings.title" = "Settings";
-"settings.general" = "General Settings";
-"settings.baseCurrency" = "Base Currency";
+"settings.general" = "General settings";
+"settings.baseCurrency" = "Base currency";
 "currency.title" = "Currency";
 "currency.popular" = "Popular";
-"currency.all" = "All Currencies";
+"currency.all" = "All currencies";
 "currency.searchPrompt" = "Search currency";
 "currency.noResults.title" = "No currencies found";
 "currency.noResults.description" = "Try a different name or code.";
-"currency.customize" = "Customize Currencies";
+"currency.customize" = "Customize currencies";
 "currency.customizeAction" = "Customize...";
 "settings.background" = "Background";
 "settings.merchantLogos" = "Merchant logos";
@@ -99,10 +99,10 @@
 "home.iCloudAsk.action" = "Turn on";
 "settings.voiceLanguage" = "Voice language";
 "settings.voiceLanguage.app" = "As in the app";
-"settings.background.none" = "No Background";
-"settings.background.gradient" = "Expense Colors";
+"settings.background.none" = "No background";
+"settings.background.gradient" = "Expense colors";
 "settings.background.photo" = "Photo";
-"settings.background.blurWallpaper" = "Blur Wallpaper";
+"settings.background.blurWallpaper" = "Blur wallpaper";
 "settings.background.removePhoto" = "Remove photo";
 "settings.background.choosePhoto" = "Choose a photo";
 "settings.background.changePhoto" = "Change photo";
@@ -110,7 +110,7 @@
 "settings.background.opacityTitle" = "Expense colour";
 "settings.subcategories" = "Subcategories";
 "settings.accounts" = "Accounts";
-"settings.exportImport" = "Export & Import";
+"settings.exportImport" = "Export & import";
 "settings.importReminder" = "Statement reminder";
 "settings.importReminder.off" = "Off";
 "settings.importReminder.week" = "Every week";
@@ -119,11 +119,11 @@
 "settings.importReminder.footer" = "After you import a bank statement, Tenra reminds you to import the next one: transfers and payments outside Apple Pay only come in with a statement.";
 "importReminder.notification.title" = "Time for a bank statement";
 "importReminder.notification.body" = "Open your bank's PDF statement in Tenra to add the transfers and payments Apple Pay did not record.";
-"settings.exportData" = "Export Data";
-"settings.importData" = "Import Data";
-"settings.dangerZone" = "Danger Zone";
-"settings.resetData" = "Full Data Reset";
-"settings.resetLearning" = "Reset Learned Preferences";
+"settings.exportData" = "Export data";
+"settings.importData" = "Import data";
+"settings.dangerZone" = "Danger zone";
+"settings.resetData" = "Full data reset";
+"settings.resetLearning" = "Reset learned preferences";
 
 // MARK: - Alerts
 "alert.deleteAllData.title" = "Delete all data?";
@@ -190,13 +190,13 @@
 "common.cancel" = "Cancel";
 "common.select" = "Select";
 "common.frequency" = "Frequency";
-"common.startDate" = "Start Date";
+"common.startDate" = "Start date";
 
 // MARK: - Date Labels
 "date.today" = "Today";
 "date.yesterday" = "Yesterday";
 "date.selectDate" = "Date";
-"date.choose" = "Choose Date";
+"date.choose" = "Choose date";
 
 // MARK: - Transaction Types
 "transactionType.income" = "Income";
@@ -232,17 +232,17 @@
 "deposit.capitalization" = "Capitalization";
 "deposit.capitalizationEnabled" = "Enabled";
 "deposit.capitalizationDisabled" = "Disabled";
-"deposit.postingDay" = "Posting Day";
+"deposit.postingDay" = "Posting day";
 "deposit.newRate" = "New interest rate";
-"deposit.effectiveDate" = "Effective Date";
+"deposit.effectiveDate" = "Effective date";
 "deposit.note" = "Note (optional)";
 "deposit.changeRateTitle" = "Change rate";
 "deposit.namePlaceholder" = "Name";
 "deposit.bank" = "Bank";
 "deposit.bankNamePlaceholder" = "Bank name";
-"deposit.interestRate" = "Interest Rate";
-"deposit.dayOfMonth" = "Day of Month";
-"deposit.enableCapitalization" = "Enable Capitalization";
+"deposit.interestRate" = "Interest rate";
+"deposit.dayOfMonth" = "Day of month";
+"deposit.enableCapitalization" = "Enable capitalization";
 "deposit.capitalizationHint" = "When capitalization is enabled, interest is added to the principal amount each month";
 "deposit.countsForToday" = "Count in For today";
 "deposit.countsForToday.hint" = "Money you can withdraw any time. For today and Ten count it with your cards.";
@@ -251,7 +251,7 @@
 "deposit.interestAccrual.category" = "Interest";
 
 // MARK: - Categories Management
-"categories.expenseCategories" = "Expense Categories";
+"categories.expenseCategories" = "Expense categories";
 "category.uncategorized" = "Uncategorized";
 "category.deleteTitle" = "Delete category?";
 "category.deleteOnlyCategory" = "Delete category only";
@@ -259,7 +259,7 @@
 "category.deleteMessage" = "Choose what to do with transactions in category \"%@\".";
 "category.namePlaceholder" = "Category name";
 "category.addSubcategory" = "Add subcategory";
-"category.manageSubcategories" = "Manage Subcategories";
+"category.manageSubcategories" = "Manage subcategories";
 
 // MARK: - Subcategories Management
 "subcategory.namePlaceholder" = "Subcategory name";
@@ -276,7 +276,7 @@
 "subcategorySearch.unlink" = "Unlink";
 
 // MARK: - Icon Picker
-"iconPicker.title" = "Select Image";
+"iconPicker.title" = "Select image";
 "iconPicker.iconsTab" = "Icons";
 "iconPicker.logosTab" = "Logos";
 "iconPicker.photoTab" = "Photo";
@@ -286,26 +286,26 @@
 "imageCropper.title" = "Move and scale";
 "imageCropper.cancel" = "Cancel";
 "imageCropper.choose" = "Choose";
-"iconPicker.frequentlyUsed" = "Frequently Used";
-"iconPicker.foodAndDrinks" = "Food & Drinks";
+"iconPicker.frequentlyUsed" = "Frequently used";
+"iconPicker.foodAndDrinks" = "Food & drinks";
 "iconPicker.transport" = "Transport";
 "iconPicker.shopping" = "Shopping";
 "iconPicker.entertainment" = "Entertainment";
 "iconPicker.health" = "Health";
-"iconPicker.homeAndUtilities" = "Home & Utilities";
-"iconPicker.moneyAndFinance" = "Money & Finance";
+"iconPicker.homeAndUtilities" = "Home & utilities";
+"iconPicker.moneyAndFinance" = "Money & finance";
 "iconPicker.banks" = "Banks";
-"iconPicker.streaming" = "Streaming & Entertainment";
-"iconPicker.productivity" = "Productivity & Cloud";
-"iconPicker.social" = "Social & Communication";
-"iconPicker.fitness" = "Fitness & Health";
+"iconPicker.streaming" = "Streaming & entertainment";
+"iconPicker.productivity" = "Productivity & cloud";
+"iconPicker.social" = "Social & communication";
+"iconPicker.fitness" = "Fitness & health";
 "iconPicker.gaming" = "Gaming";
-"iconPicker.devTools" = "Developer Tools & AI";
+"iconPicker.devTools" = "Developer tools & AI";
 "iconPicker.services" = "Services";
 "iconPicker.searchOnline" = "Search brand logo...";
 
 // MARK: - Category Filter
-"categoryFilter.allCategories" = "All Categories";
+"categoryFilter.allCategories" = "All categories";
 "categoryFilter.noExpenseCategories" = "No expense categories";
 "categoryFilter.noIncomeCategories" = "No income categories";
 "categoryFilter.deletedCategories" = "Deleted";
@@ -330,14 +330,14 @@
 "error.validation.accountNotFound" = "Account not found";
 
 // MARK: - Voice Input
-"voice.title" = "Voice Input";
+"voice.title" = "Voice input";
 "voice.speak" = "Speak...";
 "voice.error" = "Error";
 "voice.errorMessage" = "Failed to start recording";
 "voice.emptyText" = "No text was recognized. Please try again.";
 
 // MARK: - Voice Input Confirmation
-"voiceConfirmation.title" = "Review Operation";
+"voiceConfirmation.title" = "Review operation";
 "voiceConfirmation.confirm" = "Confirm";
 "voiceConfirmation.noAccounts" = "No available accounts";
 "voiceConfirmation.warning.accountNotFound" = "Account not found, selected by default";
@@ -365,7 +365,7 @@
 "subscriptions.resume" = "Resume";
 "subscriptions.category" = "Category";
 "subscriptions.frequency" = "Frequency";
-"subscriptions.nextCharge" = "Next Charge";
+"subscriptions.nextCharge" = "Next charge";
 "subscriptions.account" = "Account";
 "subscriptions.status" = "Status";
 "subscriptions.status.active" = "Active";
@@ -374,11 +374,11 @@
 "subscriptions.status.unknown" = "Unknown";
 
 // Notification Permission
-"notification.permission.title" = "Enable Reminders?";
+"notification.permission.title" = "Enable reminders?";
 "notification.permission.description" = "Get notified about upcoming subscription charges so you never miss an important payment";
-"notification.permission.allow" = "Allow Notifications";
-"notification.permission.skip" = "Not Now";
-"notification.subscription.reminderTitle" = "Subscription Reminder";
+"notification.permission.allow" = "Allow notifications";
+"notification.permission.skip" = "Not now";
+"notification.subscription.reminderTitle" = "Subscription reminder";
 "notification.subscription.reminderBody %@ %@ %lld" = "Subscription \"%@\" will be charged %@ in %lld days";
 "reminder.daysBefore.custom %lld" = "%lld days before";
 
@@ -396,7 +396,7 @@
 "frequency.yearly" = "Yearly";
 
 // Subscription Form
-"subscription.namePlaceholder" = "Subscription Name";
+"subscription.namePlaceholder" = "Subscription name";
 "subscription.reminders" = "Reminders";
 "subscription.scheduleSection" = "Schedule";
 "subscription.newTitle" = "New subscription";
@@ -422,7 +422,7 @@
 "error.categoryNameRequired" = "Enter category name";
 
 // MARK: - Budget Management
-"budget.amount" = "Budget Amount";
+"budget.amount" = "Budget amount";
 "budget.period" = "Period";
 "budget.weekly" = "Weekly";
 "budget.monthly" = "Monthly";
@@ -438,8 +438,8 @@
 "transactionForm.selectCategory" = "Select category";
 "transactionForm.noCategories" = "No available categories. Create categories first.";
 "transactionForm.transfer" = "Transfer";
-"transactionForm.topUp" = "Top Up";
-"transactionForm.toAccount" = "To Account";
+"transactionForm.topUp" = "Top up";
+"transactionForm.toAccount" = "To account";
 "transactionForm.fromHeader" = "From";
 "transactionForm.toHeader" = "To";
 "transactionForm.noAccountsForTransfer" = "No other accounts for transfer";
@@ -448,7 +448,7 @@
 "transactionForm.cannotTransferToSame" = "Cannot transfer to the same account";
 "transactionForm.accountNotFound" = "Account not found";
 "transactionForm.selectTargetAccount" = "Please select a destination account";
-"transactionForm.accountTopUp" = "Top Up Account";
+"transactionForm.accountTopUp" = "Top up account";
 "transactionForm.searchSubcategories" = "Search subcategories";
 "transactionForm.addSubcategory" = "Add subcategory";
 "transactionForm.createSubcategory" = "Create \"%@\"";
@@ -486,58 +486,58 @@
 "csvImport.result.createdSubcategories" = "%d subcategories created";
 "csvImport.result.duration" = "Duration";
 "csvImport.result.speed" = "Speed";
-"csvImport.result.title" = "Import Complete";
-"csvImport.button.viewErrors" = "View Errors";
-"csvImport.preview.title" = "CSV Preview";
+"csvImport.result.title" = "Import complete";
+"csvImport.button.viewErrors" = "View errors";
+"csvImport.preview.title" = "CSV preview";
 "csvImport.preview.rows" = "Rows";
 "csvImport.preview.columns" = "Columns";
-"csvImport.mapping.title" = "Column Mapping";
+"csvImport.mapping.title" = "Column mapping";
 "csvImport.step.preview" = "Preview";
 "csvImport.step.columns" = "Columns";
 "csvImport.step.import" = "Import";
-"csvImport.mapping.required" = "Required Fields";
-"csvImport.mapping.optional" = "Optional Fields";
+"csvImport.mapping.required" = "Required fields";
+"csvImport.mapping.optional" = "Optional fields";
 "csvImport.mapping.date" = "Date";
 "csvImport.mapping.type" = "Type";
 "csvImport.mapping.amount" = "Amount";
 "csvImport.mapping.currency" = "Currency";
 "csvImport.mapping.account" = "Account";
 "csvImport.mapping.none" = "None";
-"csvImport.preview.fileInfo" = "File Information";
-"csvImport.preview.headersTitle" = "Columns in File";
+"csvImport.preview.fileInfo" = "File information";
+"csvImport.preview.headersTitle" = "Columns in file";
 "csvImport.preview.dataPreview" = "Data Preview (first %d rows)";
 "csvImport.mapping.category" = "Category";
-"csvImport.mapping.targetAccount" = "Target Account";
-"csvImport.mapping.targetCurrency" = "Target Currency";
-"csvImport.mapping.targetAmount" = "Target Amount";
-"csvImport.mapping.convertedAmount" = "Amount in Account Currency";
+"csvImport.mapping.targetAccount" = "Target account";
+"csvImport.mapping.targetCurrency" = "Target currency";
+"csvImport.mapping.targetAmount" = "Target amount";
+"csvImport.mapping.convertedAmount" = "Amount in account currency";
 "csvImport.mapping.subcategories" = "Subcategories";
 "csvImport.mapping.note" = "Note";
-"csvImport.mapping.dateFormat" = "Date Format";
-"csvImport.mapping.subcategoriesSeparator" = "Subcategory Separator";
+"csvImport.mapping.dateFormat" = "Date format";
+"csvImport.mapping.subcategoriesSeparator" = "Subcategory separator";
 "csvImport.mapping.separator.semicolon" = "(semicolon)";
 "csvImport.mapping.separator.comma" = "(comma)";
 "csvImport.mapping.separator.pipe" = "(pipe)";
 "csvImport.result.performance" = "Performance";
-"csvImport.result.successRate" = "Success Rate";
+"csvImport.result.successRate" = "Success rate";
 "csvImport.result.errors" = "Errors";
 "csvImport.result.moreErrors" = "... and %d more errors";
 
 // MARK: - CSV Entity Mapping
-"csvMapping.title" = "Entity Mapping";
-"csvMapping.accountsSection" = "Account Mapping";
-"csvMapping.categoriesSection" = "Category Mapping";
-"csvMapping.incomeCategoriesSection" = "Income Category Mapping";
-"csvMapping.notSelected" = "Not Selected";
+"csvMapping.title" = "Entity mapping";
+"csvMapping.accountsSection" = "Account mapping";
+"csvMapping.categoriesSection" = "Category mapping";
+"csvMapping.incomeCategoriesSection" = "Income category mapping";
+"csvMapping.notSelected" = "Not selected";
 "csvMapping.selectAccount %@" = "Select account for \"%@\"";
 "csvMapping.createAccount %@" = "Create new account \"%@\"";
-"csvMapping.accountMappingTitle" = "Account Mapping";
+"csvMapping.accountMappingTitle" = "Account mapping";
 "csvMapping.categoryLabel" = "category";
 "csvMapping.incomeCategoryLabel" = "income category";
 "csvMapping.selectCategory %@ %@" = "Select %1$@ for \"%2$@\"";
 "csvMapping.createCategory %@ %@" = "Create new %1$@ \"%2$@\"";
-"csvMapping.categoryMappingTitle" = "Category Mapping";
-"csvMapping.incomeCategoryMappingTitle" = "Income Category Mapping";
+"csvMapping.categoryMappingTitle" = "Category mapping";
+"csvMapping.incomeCategoryMappingTitle" = "Income category mapping";
 
 // MARK: - Settings Errors (Phase 1 - 2026-02-04)
 "error.settings.loadFailed" = "Failed to load settings: %@";
@@ -605,14 +605,14 @@
 
 // MARK: - Icon Styles
 "iconStyle.shape.circle" = "Circle";
-"iconStyle.shape.roundedSquare" = "Rounded Square";
+"iconStyle.shape.roundedSquare" = "Rounded square";
 "iconStyle.shape.square" = "Square";
 "iconStyle.tint.monochrome" = "Monochrome";
 "iconStyle.tint.hierarchical" = "Hierarchical";
 "iconStyle.tint.palette" = "Palette";
-"iconStyle.tint.original" = "Original Colors";
-"iconStyle.preset.categoryIcon" = "Category Icon";
-"iconStyle.preset.serviceLogo" = "Service Logo";
+"iconStyle.tint.original" = "Original colors";
+"iconStyle.preset.categoryIcon" = "Category icon";
+"iconStyle.preset.serviceLogo" = "Service logo";
 "iconStyle.preset.placeholder" = "Placeholder";
 "recurring.never" = "Never";
 "reminder.none" = "Never";
@@ -620,7 +620,7 @@
 // MARK: - Filter Buttons (Phase 14)
 "filter.allAccounts" = "All accounts";
 "filter.allCategories" = "All categories";
-"filter.allSubcategories" = "All Subcategories";
+"filter.allSubcategories" = "All subcategories";
 
 // MARK: - Insights (Phase 17)
 "insights.title" = "Insights";
@@ -630,38 +630,38 @@
 "insights.expenses" = "Expenses";
 "insights.budget" = "Budget";
 "insights.recurring" = "Recurring";
-"insights.cashFlow" = "Cash Flow";
-"insights.netFlow" = "Net Flow";
-"insights.availableBalance" = "Available Balance";
+"insights.cashFlow" = "Cash flow";
+"insights.netFlow" = "Net flow";
+"insights.availableBalance" = "Available balance";
 "insights.topMonths.best" = "Top 10 best months";
 "insights.topMonths.worst" = "Top 10 worst months";
 "insights.emptyState.title" = "No insights yet";
 "insights.emptyState.description" = "Add some transactions to see your financial insights";
 "insights.noInsightsForFilter" = "No insights for this category";
-"insights.topCategory" = "Top Spending Category";
-"insights.topMerchant" = "Top Merchant";
-"insights.spendingSpike" = "Unusual Spending Detected";
-"insights.monthOverMonth" = "Monthly Spending Change";
-"insights.monthOverMonth.week" = "Weekly Spending";
-"insights.monthOverMonth.month" = "Monthly Spending Change";
-"insights.monthOverMonth.quarter" = "Quarterly Spending";
-"insights.monthOverMonth.year" = "Yearly Spending";
-"insights.avgDailySpending" = "Average Daily Spending";
+"insights.topCategory" = "Top spending category";
+"insights.topMerchant" = "Top merchant";
+"insights.spendingSpike" = "Unusual spending detected";
+"insights.monthOverMonth" = "Monthly spending change";
+"insights.monthOverMonth.week" = "Weekly spending";
+"insights.monthOverMonth.month" = "Monthly spending change";
+"insights.monthOverMonth.quarter" = "Quarterly spending";
+"insights.monthOverMonth.year" = "Yearly spending";
+"insights.avgDailySpending" = "Average daily spending";
 "insights.days" = "days";
-"insights.incomeGrowth" = "Income Trend";
+"insights.incomeGrowth" = "Income trend";
 "insights.vsPreviousPeriod" = "vs previous period";
 "insights.vsAverage" = "vs average";
-"insights.budgetOver" = "Over Budget";
-"insights.budgetHeadroom" = "Budget Headroom";
-"insights.projectedOverspend" = "Projected Overspend";
+"insights.budgetOver" = "Over budget";
+"insights.budgetHeadroom" = "Budget headroom";
+"insights.projectedOverspend" = "Projected overspend";
 "insights.categoriesOverBudget" = "%d categories over budget";
 "insights.categoriesAtRisk" = "%d categories at risk";
 "insights.categoriesUnderBudget" = "%d categories on track";
-"insights.totalRecurring" = "Monthly Recurring Costs";
-"insights.totalRecurring.week" = "Weekly Recurring";
-"insights.totalRecurring.month" = "Monthly Recurring Costs";
-"insights.totalRecurring.quarter" = "Quarterly Recurring";
-"insights.totalRecurring.year" = "Yearly Recurring";
+"insights.totalRecurring" = "Monthly recurring costs";
+"insights.totalRecurring.week" = "Weekly recurring";
+"insights.totalRecurring.month" = "Monthly recurring costs";
+"insights.totalRecurring.quarter" = "Quarterly recurring";
+"insights.totalRecurring.year" = "Yearly recurring";
 "insights.activeRecurring" = "%d active recurring";
 "insights.perMonth" = "per month";
 "insights.perWeek" = "per week";
@@ -691,20 +691,20 @@
 "insights.byDay.categoriesOn" = "Categories %@";
 "insights.byDay.patterns" = "What stands out";
 "insights.byDay.footnote" = "Everyday spending: without subscriptions and other regular payments, loan payments and one-off large purchases.";
-"insights.netCashFlow" = "Net Cash Flow";
+"insights.netCashFlow" = "Net cash flow";
 "insights.periodRecords" = "Records";
 "insights.urgentNow" = "Needs attention";
 "insights.filter.urgent" = "Important";
-"insights.projectedBalance" = "Projected Balance";
+"insights.projectedBalance" = "Projected balance";
 "insights.in30Days" = "in 30 days";
 "insights.recurringAndExpenses" = "Recurring + average expenses";
 "insights.currentBalance" = "Current balance";
-"insights.cashFlowTrend" = "Cash Flow Trend";
+"insights.cashFlowTrend" = "Cash flow trend";
 "insights.breakdown" = "Breakdown";
-"insights.breakdown.week" = "Weekly Breakdown";
-"insights.breakdown.month" = "Monthly Breakdown";
-"insights.breakdown.quarter" = "Quarterly Breakdown";
-"insights.breakdown.year" = "Yearly Breakdown";
+"insights.breakdown.week" = "Weekly breakdown";
+"insights.breakdown.month" = "Monthly breakdown";
+"insights.breakdown.quarter" = "Quarterly breakdown";
+"insights.breakdown.year" = "Yearly breakdown";
 "insights.noExpenses" = "No expenses";
 "insights.noExpensesForPeriod" = "No expenses this period";
 "insights.noIncome" = "No income";
@@ -712,15 +712,15 @@
 "insights.swipeHint" = "Swipe to view other periods";
 "insights.other" = "Other";
 "insights.noSubcategory" = "No subcategory";
-"insights.spendingTrend" = "Spending Trend";
+"insights.spendingTrend" = "Spending trend";
 "insights.daysLeft" = "%d days left";
 
 // Granularity picker
-"insights.granularity.week" = "By Weeks";
-"insights.granularity.month" = "By Months";
-"insights.granularity.quarter" = "By Quarters";
-"insights.granularity.year" = "By Years";
-"insights.granularity.allTime" = "All Time";
+"insights.granularity.week" = "By weeks";
+"insights.granularity.month" = "By months";
+"insights.granularity.quarter" = "By quarters";
+"insights.granularity.year" = "By years";
+"insights.granularity.allTime" = "All time";
 "insights.granularity.week.short" = "Week";
 "insights.granularity.month.short" = "Month";
 "insights.granularity.quarter.short" = "Quarter";
@@ -730,7 +730,7 @@
 "insights.formula.value.months" = "%.1f mo";
 "insights.formula.howCalculated" = "How it's calculated";
 "insights.formula.value.days" = "%d days";
-"insights.formula.savingsRate.title" = "Savings Rate";
+"insights.formula.savingsRate.title" = "Savings rate";
 "insights.formula.savingsRate.heroLabel" = "Of every dollar you earn, you keep";
 "insights.formula.savingsRate.formulaHeader" = "How it's computed";
 "insights.formula.savingsRate.row.period" = "Period";
@@ -742,7 +742,7 @@
 "insights.formula.savingsRate.rec.good" = "You're saving more than 20%. Keep the routine and consider directing the surplus toward a long-term goal.";
 "insights.formula.savingsRate.rec.fair" = "Decent, but pushing to 20%% means an extra %@ saved each month. Trim recurring or one-off categories that crept up.";
 "insights.formula.savingsRate.rec.low" = "Below 10%% leaves no buffer. Aim for at least %@ more each month. Start with the largest discretionary category.";
-"insights.formula.emergencyFund.title" = "Emergency Fund";
+"insights.formula.emergencyFund.title" = "Emergency fund";
 "insights.formula.emergencyFund.heroLabel" = "Months of expenses your balance covers";
 "insights.formula.emergencyFund.formulaHeader" = "How it's computed";
 "insights.formula.emergencyFund.row.balance" = "Total balance";
@@ -751,7 +751,7 @@
 "insights.formula.emergencyFund.explainer" = "How long your accounts cover regular spending if income paused tomorrow. 3+ months is the floor most planners recommend; 6 months is a comfortable cushion.";
 "insights.formula.emergencyFund.rec.good" = "You're past the 3-month threshold. Consider parking the surplus in a higher-yield account or directing it toward longer-term goals.";
 "insights.formula.emergencyFund.rec.gap" = "To reach 3 months of cover, top up by %@. Even small monthly contributions compound. Start with whatever fits your savings rate.";
-"insights.formula.spendingForecast.title" = "Month-end Spending Forecast";
+"insights.formula.spendingForecast.title" = "Month-end spending forecast";
 "insights.formula.spendingForecast.heroLabel" = "Projected total spend this month";
 "insights.formula.spendingForecast.formulaHeader" = "How it's computed";
 "insights.formula.spendingForecast.row.spentSoFar" = "Spent so far this month";
@@ -766,7 +766,7 @@
 "insights.formula.balanceRunway.row.netFlow" = "Average net flow";
 "insights.formula.balanceRunway.row.runway" = "Runway";
 "insights.formula.balanceRunway.rec.critical" = "Less than a month of runway: close the gap urgently. Even pausing one major recurring payment buys days.";
-"insights.formula.yearOverYear.title" = "Year-Over-Year Spending";
+"insights.formula.yearOverYear.title" = "Year-over-year spending";
 "insights.formula.yearOverYear.heroLabel" = "Change vs same month last year";
 "insights.formula.yearOverYear.formulaHeader" = "How it's computed";
 "insights.formula.yearOverYear.row.thisMonth" = "This month";
@@ -777,7 +777,7 @@
 "insights.formula.yearOverYear.rec.down" = "Spending is meaningfully down year-over-year. If unintentional, audit which categories cooled. Sometimes a missed recurring is hiding here.";
 "insights.formula.yearOverYear.rec.up" = "Spending is up %@. Compare top categories for both months: single new subscriptions, an extra rent cycle, or one big purchase often explain the jump.";
 "insights.formula.yearOverYear.rec.flat" = "Modest change vs. last year: your spending pattern is stable. Track the same metric next month to spot any drift.";
-"insights.formula.projectedBalance.title" = "Projected Balance";
+"insights.formula.projectedBalance.title" = "Projected balance";
 "insights.formula.projectedBalance.heroLabel" = "Estimated balance at the end of period";
 "insights.formula.projectedBalance.formulaHeader" = "How it's computed";
 "insights.formula.projectedBalance.row.currentBalance" = "Current balance";
@@ -791,7 +791,7 @@
 "insights.wealth.growth.compare" = "%@ vs %@";
 
 "insights.subscriptionGrowth.compareAgo" = "vs %d months ago";
-"insights.formula.subscriptionGrowth.title" = "Subscription Growth";
+"insights.formula.subscriptionGrowth.title" = "Subscription growth";
 "insights.formula.subscriptionGrowth.heroLabel" = "Change in monthly recurring spend";
 "insights.formula.subscriptionGrowth.formulaHeader" = "How it's computed";
 "insights.formula.subscriptionGrowth.row.lookback" = "Comparison window";
@@ -804,7 +804,7 @@
 "insights.formula.subscriptionGrowth.rec.shrinking" = "You've trimmed recurring spend. Keep the discipline as new services tempt you. Direct the freed cash flow to savings or debt.";
 "insights.formula.subscriptionGrowth.rec.stable" = "Recurring spend held roughly flat. The portfolio is stable; review periodically so unused services don't quietly stay.";
 
-"insights.formula.categoryTrend.title" = "Category Trend";
+"insights.formula.categoryTrend.title" = "Category trend";
 "insights.formula.categoryTrend.heroLabel" = "Top rising spending category";
 "insights.formula.categoryTrend.formulaHeader" = "Recent monthly spend";
 "insights.formula.categoryTrend.row.month" = "Month";
@@ -818,35 +818,35 @@
 
 // Wealth card
 "insights.wealth" = "Capital";
-"insights.wealth.title" = "Money on Accounts";
+"insights.wealth.title" = "Money on accounts";
 "insights.wealth.subtitle" = "Total balance across all accounts";
 "insights.wealth.accounts" = "Accounts";
-"insights.wealthGrowth" = "Wealth Change";
+"insights.wealthGrowth" = "Wealth change";
 
 // Savings
 "insights.savings" = "Savings";
-"insights.savingsRate" = "Savings Rate";
-"insights.emergencyFund" = "Emergency Fund";
+"insights.savingsRate" = "Savings rate";
+"insights.emergencyFund" = "Emergency fund";
 "insights.monthsCovered" = "%d months covered";
 "insights.months" = "months";
 
 // Spending
-"insights.categoryTrend" = "Spending Trend";
+"insights.categoryTrend" = "Spending trend";
 "insights.categoryTrend.risingMonths" = "Rising for %d months";
-"insights.subscriptionGrowth" = "Subscription Growth";
+"insights.subscriptionGrowth" = "Subscription growth";
 
 // Forecasting
 "insights.forecasting" = "Forecast";
-"insights.spendingForecast" = "Monthly Spending Forecast";
+"insights.spendingForecast" = "Monthly spending forecast";
 "insights.yearOverYear" = "Year-over-Year";
-"insights.incomeSourceBreakdown" = "Income Sources";
+"insights.incomeSourceBreakdown" = "Income sources";
 
 // Health Score & Behavioral
 "insights.healthScore" = "Finance";
 "insights.healthGrade.excellent" = "Excellent";
 "insights.healthGrade.good" = "Good";
 "insights.healthGrade.fair" = "Fair";
-"insights.healthGrade.needsAttention" = "Needs Attention";
+"insights.healthGrade.needsAttention" = "Needs attention";
 "insights.accountDormancy.title" = "Money sitting idle";
 "insights.accountDormancy.subtitle" = "accounts idle 30+ days, could be earning on a deposit";
 
@@ -864,7 +864,7 @@
 "insights.priceIncrease" = "Subscription price increased";
 "insights.priceIncrease.was" = "was %@";
 "insights.largeTransaction" = "Large expense";
-"insights.formula.priceIncrease.title" = "Price Increase";
+"insights.formula.priceIncrease.title" = "Price increase";
 "insights.formula.priceIncrease.heroLabel" = "Change vs the previous charge";
 "insights.formula.priceIncrease.formulaHeader" = "How it's computed";
 "insights.formula.priceIncrease.row.name" = "Subscription";
@@ -874,7 +874,7 @@
 "insights.formula.priceIncrease.row.yearlyImpact" = "Extra cost per year";
 "insights.formula.priceIncrease.explainer" = "Compares the latest charge of an active recurring payment with the previous one (or with the planned amount). Small provider price bumps compound: a 15% raise across several subscriptions equals a whole new subscription.";
 "insights.formula.priceIncrease.rec" = "Check whether the new price is justified. If not, pause or cancel it in the Subscriptions tab.";
-"insights.formula.largeTransaction.title" = "Large Expense";
+"insights.formula.largeTransaction.title" = "Large expense";
 "insights.formula.largeTransaction.heroLabel" = "Biggest one-off expense in 30 days";
 "insights.formula.largeTransaction.formulaHeader" = "How it's computed";
 "insights.formula.largeTransaction.row.name" = "Description";
@@ -897,7 +897,7 @@
 "insights.formula.checkGrowth.row.growth" = "Growth";
 "insights.formula.checkGrowth.explainer" = "The average check of the last 90 days against the 90 days before, at merchants with at least 3 purchases in each. Subscriptions are left out: their price changes have an insight of their own.";
 "insights.formula.checkGrowth.rec" = "See what changed: prices, what you buy there, or how much at a time.";
-"insights.dormant.accounts" = "Idle Accounts";
+"insights.dormant.accounts" = "Idle accounts";
 
 // MARK: - Tab Bar
 "tab.home" = "Home";
@@ -933,7 +933,7 @@
 "loan.filter" = "Filter";
 "loan.emptyTitle" = "No loans";
 "loan.emptyDescription" = "Add your credits and installments to track payments and progress";
-"loan.totalDebt" = "Total Debt";
+"loan.totalDebt" = "Total debt";
 "loan.monthlyTotal" = "Monthly";
 "loan.unpaidThisMonth" = "Unpaid this month";
 "loan.typeAnnuityShort" = "Credit";
@@ -955,28 +955,28 @@
 "loan.payoffCelebration" = "Loan paid off. Nice work.";
 "loan.paidOff" = "Paid off";
 "loan.nextPayment" = "Next payment: %@";
-"loan.currentPaymentBreakdown" = "Current Payment Breakdown";
+"loan.currentPaymentBreakdown" = "Current payment breakdown";
 "loan.principalPortion" = "Principal";
 "loan.interestPortion" = "Interest";
 "loan.noInterest" = "Installment: no interest charged";
 "loan.stats" = "Statistics";
-"loan.originalAmount" = "Original Amount";
-"loan.interestRate" = "Interest Rate";
+"loan.originalAmount" = "Original amount";
+"loan.interestRate" = "Interest rate";
 "loan.annual" = "annual";
-"loan.totalInterestPaid" = "Interest Paid";
+"loan.totalInterestPaid" = "Interest paid";
 "loan.projectedTotalInterest" = "Total Interest (projected)";
 "loan.term" = "Term";
 "loan.termValue" = "%d months";
-"loan.paymentsMade" = "Payments Made";
+"loan.paymentsMade" = "Payments made";
 "loan.paymentsRemaining" = "Remaining";
 "loan.paymentsRemainingValue" = "%d payments";
-"loan.endDate" = "End Date";
-"loan.earlyRepayments" = "Early Repayments";
-"loan.amortizationSchedule" = "Amortization Schedule";
+"loan.endDate" = "End date";
+"loan.earlyRepayments" = "Early repayments";
+"loan.amortizationSchedule" = "Amortization schedule";
 "loan.noSchedule" = "No schedule available";
 "loan.showAllPayments" = "Show all %d payments";
 "loan.interestShort" = "Interest: %@";
-"loan.convertTitle" = "Convert to Loan";
+"loan.convertTitle" = "Convert to loan";
 "loan.editTitle" = "Edit loan";
 "loan.newTitle" = "New loan";
 "loan.namePlaceholder" = "e.g. Car Loan";
@@ -991,8 +991,8 @@
 "loan.remainingBalance" = "Remaining: %@";
 "loan.date" = "Date";
 "loan.strategy" = "Strategy";
-"loan.reduceTerm" = "Reduce Term";
-"loan.reducePayment" = "Reduce Payment";
+"loan.reduceTerm" = "Reduce term";
+"loan.reducePayment" = "Reduce payment";
 "loan.reduceTermHint" = "Keep monthly payment, finish sooner";
 "loan.reducePaymentHint" = "Keep term, lower monthly payment";
 "loan.impact" = "Impact";
@@ -1023,28 +1023,28 @@
 "loan.payAllTotal" = "Total payment";
 
 // MARK: - Icon Picker (new categories)
-"iconPicker.localServices" = "Local Services";
+"iconPicker.localServices" = "Local services";
 "iconPicker.telecom" = "Telecom";
-"iconPicker.cis" = "CIS Services";
+"iconPicker.cis" = "CIS services";
 "iconPicker.suggestions" = "Suggestions";
 "iconPicker.onlineSearch" = "Online";
 "iconPicker.brandDomainHint" = "Enter brand domain (e.g. netflix.com)";
 
 // MARK: - Settings (extras)
 "settings.experiments" = "Experiments";
-"settings.debug.relaunchOnboarding" = "Relaunch Onboarding";
-"settings.notificationDebug" = "Notification Debug";
+"settings.debug.relaunchOnboarding" = "Relaunch onboarding";
+"settings.notificationDebug" = "Notification debug";
 
 // MARK: - Settings (About)
 "settings.about" = "About";
-"settings.privacyPolicy" = "Privacy Policy";
-"settings.termsOfUse" = "Terms of Use";
+"settings.privacyPolicy" = "Privacy policy";
+"settings.termsOfUse" = "Terms of use";
 "settings.version" = "Version";
 "settings.diagnostics" = "Diagnostics";
-"diagnostics.launchCheck.header" = "Launch Check";
+"diagnostics.launchCheck.header" = "Launch check";
 "diagnostics.launchCheck.footer" = "Last checked %@";
 "diagnostics.checking" = "Checking…";
-"diagnostics.runAgain" = "Check Again";
+"diagnostics.runAgain" = "Check again";
 "diagnostics.check.database" = "Database";
 "diagnostics.check.settings" = "Settings";
 "diagnostics.check.purchases" = "Purchases";
@@ -1057,7 +1057,7 @@
 "diagnostics.detail.nothingToSell" = "The App Store returned nothing to sell.";
 "diagnostics.detail.offline" = "No internet connection, so this wasn't checked.";
 "diagnostics.detail.purchasesFailed" = "Purchase options couldn't be loaded.";
-"diagnostics.reports.header" = "Crash and Performance Reports";
+"diagnostics.reports.header" = "Crash and performance reports";
 "diagnostics.reports.empty" = "No reports yet.";
 "diagnostics.reports.footer" = "iOS delivers these reports about once a day. They stay on this device unless you share them.";
 "diagnostics.report.crashes" = "Crashes: %lld";
@@ -1065,7 +1065,7 @@
 "diagnostics.report.diskWrites" = "Disk writes: %lld";
 "diagnostics.report.cpuExceptions" = "CPU spikes: %lld";
 "diagnostics.report.slowLaunches" = "Slow launches: %lld";
-"diagnostics.share" = "Share Diagnostics";
+"diagnostics.share" = "Share diagnostics";
 "diagnostics.capture.header" = "Automatic capture";
 "diagnostics.capture.footer" = "Payments the Wallet and bank notification automations recorded on this iPhone in the last 90 days. Nothing leaves the device.";
 "diagnostics.capture.applePay" = "Apple Pay payments";
@@ -1116,7 +1116,7 @@
 "error.backup.notDownloaded" = "This backup hasn't finished downloading from iCloud. Check your connection and try again.";
 
 // MARK: - Loans (Form)
-"loan.detailsSection" = "Loan Details";
+"loan.detailsSection" = "Loan details";
 "loan.noteLabel" = "Note";
 "loan.payAllLoans" = "Loans";
 "loan.paymentSection" = "Payment";
@@ -1170,8 +1170,8 @@
 "account.type.regular" = "Accounts";
 
 // MARK: - Deposits (Form)
-"deposit.bankDetails" = "Bank & Rate";
-"deposit.convertTitle" = "Convert to Deposit";
+"deposit.bankDetails" = "Bank & rate";
+"deposit.convertTitle" = "Convert to deposit";
 "deposit.postingWithDate" = "Posting: %@";
 "deposit.schedule" = "Schedule";
 
@@ -1375,23 +1375,23 @@
 "insights.health.weightLabel" = "%d%%";
 "insights.health.weights.redistributed" = "No budgets configured, so the 25% weight is redistributed across the other four components.";
 
-"insights.health.component.savingsRate.title" = "Savings Rate";
+"insights.health.component.savingsRate.title" = "Savings rate";
 "insights.health.component.savingsRate.short" = "Savings";
 "insights.health.component.savingsRate.explainer" = "How much of your income you keep. A higher savings rate means more resilience.";
 
-"insights.health.component.budgetAdherence.title" = "Budget Adherence";
+"insights.health.component.budgetAdherence.title" = "Budget adherence";
 "insights.health.component.budgetAdherence.short" = "Budgets";
 "insights.health.component.budgetAdherence.explainer" = "How many of your category budgets you stay within this month.";
 
-"insights.health.component.recurringRatio.title" = "Recurring Ratio";
+"insights.health.component.recurringRatio.title" = "Recurring ratio";
 "insights.health.component.recurringRatio.short" = "Recurring";
 "insights.health.component.recurringRatio.explainer" = "Share of income locked into subscriptions and recurring payments. Lower means more flexibility.";
 
-"insights.health.component.emergencyFund.title" = "Emergency Fund";
+"insights.health.component.emergencyFund.title" = "Emergency fund";
 "insights.health.component.emergencyFund.short" = "Emergency";
 "insights.health.component.emergencyFund.explainer" = "How many months of expenses your account balances cover.";
 
-"insights.health.component.cashFlow.title" = "Cash Flow";
+"insights.health.component.cashFlow.title" = "Cash flow";
 "insights.health.component.cashFlow.short" = "Cash flow";
 "insights.health.component.cashFlow.explainer" = "How much your income exceeds your expenses in the latest period.";
 
@@ -1454,7 +1454,7 @@
 "settings.pro.founder" = "Free forever";
 "settings.pro.founder.subtitle" = "You are a Founding User. Every Pro feature is free for you, forever. Thank you!";
 "settings.pro.manage" = "Manage subscription";
-"settings.pro.restore" = "Restore Purchases";
+"settings.pro.restore" = "Restore purchases";
 "settings.pro.redeemCode" = "Redeem code";
 "settings.pro.restore.none" = "No purchases found";
 "settings.pro.restore.failed" = "Couldn't restore";
@@ -1629,10 +1629,10 @@
 "import.source.statement.subtitle" = "Import a PDF statement from your bank";
 "import.source.receipt.title" = "Scan a receipt";
 "import.source.receipt.subtitle" = "Point the camera at a paper receipt";
-"import.receipt.title" = "Review Receipt";
+"import.receipt.title" = "Review receipt";
 "import.receipt.debtRepayment" = "It's a debt repayment";
 "import.receipt.debtRepayment.footer" = "The payment also goes towards what you owe %@.";
-"import.receipt.detailsHeader" = "Receipt Details";
+"import.receipt.detailsHeader" = "Receipt details";
 "import.receipt.merchant" = "Merchant";
 "import.receipt.total" = "Total";
 "import.tab.subtitle" = "Add transactions from a statement or a receipt instead of typing them in";
@@ -1735,16 +1735,16 @@
 "transactionPreview.intelligence.suggested" = "Picked by Apple Intelligence";
 
 /* Icon picker: new icon groups and the icon search prompt */
-"iconPicker.group.beauty" = "Beauty & Care";
-"iconPicker.group.family" = "Family & People";
+"iconPicker.group.beauty" = "Beauty & care";
+"iconPicker.group.family" = "Family & people";
 "iconPicker.group.pets" = "Pets";
-"iconPicker.group.educationWork" = "Education & Work";
+"iconPicker.group.educationWork" = "Education & work";
 "iconPicker.group.travel" = "Travel";
 "iconPicker.group.sports" = "Sports";
-"iconPicker.group.tech" = "Tech & Communication";
-"iconPicker.group.services" = "Services & Tools";
-"iconPicker.group.celebrations" = "Gifts & Holidays";
-"iconPicker.group.nature" = "Nature & Weather";
+"iconPicker.group.tech" = "Tech & communication";
+"iconPicker.group.services" = "Services & tools";
+"iconPicker.group.celebrations" = "Gifts & holidays";
+"iconPicker.group.nature" = "Nature & weather";
 "iconPicker.group.symbols" = "Symbols";
 "iconPicker.searchIcons" = "Search icons";
 
@@ -2301,9 +2301,9 @@
 "loan.asset.add" = "Add asset";
 "loan.asset" = "Asset";
 "asset.note" = "Note";
-"insights.netWorth.title" = "Net Worth";
+"insights.netWorth.title" = "Net worth";
 "insights.netWorth.subtitle" = "Money, assets and debts";
-"insights.formula.netWorth.title" = "Net Worth";
+"insights.formula.netWorth.title" = "Net worth";
 "insights.formula.netWorth.heroLabel" = "Net worth";
 "insights.formula.netWorth.formulaHeader" = "What it is made of";
 "insights.formula.netWorth.row.money" = "Money on accounts";

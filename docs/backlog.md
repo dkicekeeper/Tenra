@@ -101,9 +101,6 @@ Found by the docs audit of 2026-10-12, not verified on device yet:
 
 Left by the action audit of 2026-11-08 (the rules: [design-system.md](design-system.md) §4 Actions,
 [localization.md](localization.md) §Action words):
-- **Title case left in en (and tr, pt-BR) outside actions:** CSV mapping fields ("Target Account",
-  "Amount in Account Currency"), some navigation titles ("Filter by Categories", "Transaction
-  Preview"), Insights labels ("Net Flow", "Available Balance"), "Rounded Square".
 - **`steps.position`** (VoiceOver "Step 2 of 4" of DesignKit's `StepTracker` in the CSV import) is
   not in Tenra's tables: the key takes its numbers from `defaultValue`'s interpolation, so check
   on a device that a table value with `%lld` gets them before adding it.

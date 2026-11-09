@@ -69,9 +69,11 @@ words go on screen: [design-system.md](design-system.md) §4 Actions.
   "Supprimer", tr "sil". A confirmation asks the same way in a language: tr "X silinsin mi?", kk
   "X жойылсын ба?", ja "Xを削除しますか？", ko "X을/를 삭제할까요?", fr with a space before "?".
 - **New**: the creating sheet's title and the add button are one key, "New X" ("Новый счёт").
-- **Case**: en, tr and pt-BR write buttons, menus, titles and dialogs in sentence case ("Edit
-  account", "Hesabı düzenle", "Nova assinatura"); a capital inside only for a name (Tenra, Apple
-  Pay, the Settings and Shortcuts apps, the Shortcuts action "Set Variable").
+- **Case**: en, tr and pt-BR write every label in sentence case: buttons, menus, titles, dialogs,
+  section headers, filters, Insights cards ("Edit account", "Cash flow", "Hesabı düzenle", "Nova
+  assinatura"); a capital inside only for a name or an acronym (Tenra, Ten, Apple Pay, CSV, the
+  Settings and Shortcuts apps, "Siri & Shortcuts", the Shortcuts actions "Set Variable" and "Show
+  When Run" as the Wallet guide's mock-up shows them). tr lowercases I as ı and İ as i.
 - **Terms**: ru "счёт" with ё in every form ("счёта", "счёту"; the plural "счета" has none); a
   deposit is "депозит" in ru and uk (not "вклад"), "Sparkonto" in de, "compte épargne" in fr; a
   loan is "crédit" in fr. ja writes サブスク, ko writes a personal debt as 기록.

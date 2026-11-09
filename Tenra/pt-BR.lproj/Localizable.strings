@@ -330,14 +330,14 @@
 "error.validation.accountNotFound" = "Conta não encontrada";
 
 // MARK: - Voice Input
-"voice.title" = "Entrada por Voz";
+"voice.title" = "Entrada por voz";
 "voice.speak" = "Fale...";
 "voice.error" = "Erro";
 "voice.errorMessage" = "Falha ao iniciar a gravação";
 "voice.emptyText" = "Nenhum texto foi reconhecido. Tente novamente.";
 
 // MARK: - Voice Input Confirmation
-"voiceConfirmation.title" = "Revisar Operação";
+"voiceConfirmation.title" = "Revisar operação";
 "voiceConfirmation.confirm" = "Confirmar";
 "voiceConfirmation.noAccounts" = "Nenhuma conta disponível";
 "voiceConfirmation.warning.accountNotFound" = "Conta não encontrada: selecionada por padrão";
@@ -374,11 +374,11 @@
 "subscriptions.status.unknown" = "Desconhecido";
 
 // Notification Permission
-"notification.permission.title" = "Ativar Lembretes?";
+"notification.permission.title" = "Ativar lembretes?";
 "notification.permission.description" = "Receba avisos sobre as próximas cobranças de assinaturas para nunca perder um pagamento importante";
-"notification.permission.allow" = "Permitir Notificações";
-"notification.permission.skip" = "Agora Não";
-"notification.subscription.reminderTitle" = "Lembrete de Assinatura";
+"notification.permission.allow" = "Permitir notificações";
+"notification.permission.skip" = "Agora não";
+"notification.subscription.reminderTitle" = "Lembrete de assinatura";
 "notification.subscription.reminderBody %@ %@ %lld" = "A assinatura \"%@\" terá cobrança de %@ em %lld dias";
 "reminder.daysBefore.custom %lld" = "%lld dias antes";
 
@@ -396,7 +396,7 @@
 "frequency.yearly" = "Anual";
 
 // Subscription Form
-"subscription.namePlaceholder" = "Nome da Assinatura";
+"subscription.namePlaceholder" = "Nome da assinatura";
 "subscription.reminders" = "Lembretes";
 "subscription.scheduleSection" = "Agendamento";
 "subscription.newTitle" = "Nova assinatura";
@@ -422,7 +422,7 @@
 "error.categoryNameRequired" = "Insira o nome da categoria";
 
 // MARK: - Budget Management
-"budget.amount" = "Valor do Orçamento";
+"budget.amount" = "Valor do orçamento";
 "budget.period" = "Período";
 "budget.weekly" = "Semanal";
 "budget.monthly" = "Mensal";
@@ -438,8 +438,8 @@
 "transactionForm.selectCategory" = "Selecione a categoria";
 "transactionForm.noCategories" = "Nenhuma categoria disponível. Crie categorias primeiro.";
 "transactionForm.transfer" = "Transferência";
-"transactionForm.topUp" = "Adicionar Saldo";
-"transactionForm.toAccount" = "Para a Conta";
+"transactionForm.topUp" = "Adicionar saldo";
+"transactionForm.toAccount" = "Para a conta";
 "transactionForm.fromHeader" = "De";
 "transactionForm.toHeader" = "Para";
 "transactionForm.noAccountsForTransfer" = "Nenhuma outra conta para transferência";
@@ -448,7 +448,7 @@
 "transactionForm.cannotTransferToSame" = "Não é possível transferir para a mesma conta";
 "transactionForm.accountNotFound" = "Conta não encontrada";
 "transactionForm.selectTargetAccount" = "Selecione a conta de destino";
-"transactionForm.accountTopUp" = "Adicionar Saldo à Conta";
+"transactionForm.accountTopUp" = "Adicionar saldo à conta";
 "transactionForm.searchSubcategories" = "Buscar subcategorias";
 "transactionForm.addSubcategory" = "Adicionar subcategoria";
 "transactionForm.createSubcategory" = "Criar \"%@\"";
@@ -486,58 +486,58 @@
 "csvImport.result.createdSubcategories" = "%d subcategorias criadas";
 "csvImport.result.duration" = "Duração";
 "csvImport.result.speed" = "Velocidade";
-"csvImport.result.title" = "Importação Concluída";
-"csvImport.button.viewErrors" = "Ver Erros";
+"csvImport.result.title" = "Importação concluída";
+"csvImport.button.viewErrors" = "Ver erros";
 "csvImport.preview.title" = "Pré-visualização do CSV";
 "csvImport.preview.rows" = "Linhas";
 "csvImport.preview.columns" = "Colunas";
-"csvImport.mapping.title" = "Mapeamento de Colunas";
+"csvImport.mapping.title" = "Mapeamento de colunas";
 "csvImport.step.preview" = "Prévia";
 "csvImport.step.columns" = "Colunas";
 "csvImport.step.import" = "Importar";
-"csvImport.mapping.required" = "Campos Obrigatórios";
-"csvImport.mapping.optional" = "Campos Opcionais";
+"csvImport.mapping.required" = "Campos obrigatórios";
+"csvImport.mapping.optional" = "Campos opcionais";
 "csvImport.mapping.date" = "Data";
 "csvImport.mapping.type" = "Tipo";
 "csvImport.mapping.amount" = "Valor";
 "csvImport.mapping.currency" = "Moeda";
 "csvImport.mapping.account" = "Conta";
 "csvImport.mapping.none" = "Nenhum";
-"csvImport.preview.fileInfo" = "Informações do Arquivo";
-"csvImport.preview.headersTitle" = "Colunas no Arquivo";
+"csvImport.preview.fileInfo" = "Informações do arquivo";
+"csvImport.preview.headersTitle" = "Colunas no arquivo";
 "csvImport.preview.dataPreview" = "Pré-visualização dos Dados (primeiras %d linhas)";
 "csvImport.mapping.category" = "Categoria";
-"csvImport.mapping.targetAccount" = "Conta de Destino";
-"csvImport.mapping.targetCurrency" = "Moeda de Destino";
-"csvImport.mapping.targetAmount" = "Valor de Destino";
-"csvImport.mapping.convertedAmount" = "Valor na Moeda da Conta";
+"csvImport.mapping.targetAccount" = "Conta de destino";
+"csvImport.mapping.targetCurrency" = "Moeda de destino";
+"csvImport.mapping.targetAmount" = "Valor de destino";
+"csvImport.mapping.convertedAmount" = "Valor na moeda da conta";
 "csvImport.mapping.subcategories" = "Subcategorias";
 "csvImport.mapping.note" = "Observação";
-"csvImport.mapping.dateFormat" = "Formato de Data";
-"csvImport.mapping.subcategoriesSeparator" = "Separador de Subcategorias";
+"csvImport.mapping.dateFormat" = "Formato de data";
+"csvImport.mapping.subcategoriesSeparator" = "Separador de subcategorias";
 "csvImport.mapping.separator.semicolon" = "(ponto e vírgula)";
 "csvImport.mapping.separator.comma" = "(vírgula)";
 "csvImport.mapping.separator.pipe" = "(barra vertical)";
 "csvImport.result.performance" = "Desempenho";
-"csvImport.result.successRate" = "Taxa de Sucesso";
+"csvImport.result.successRate" = "Taxa de sucesso";
 "csvImport.result.errors" = "Erros";
 "csvImport.result.moreErrors" = "... e mais %d erros";
 
 // MARK: - CSV Entity Mapping
-"csvMapping.title" = "Mapeamento de Entidades";
-"csvMapping.accountsSection" = "Mapeamento de Contas";
-"csvMapping.categoriesSection" = "Mapeamento de Categorias";
-"csvMapping.incomeCategoriesSection" = "Mapeamento de Categorias de Receita";
-"csvMapping.notSelected" = "Não Selecionado";
+"csvMapping.title" = "Mapeamento de entidades";
+"csvMapping.accountsSection" = "Mapeamento de contas";
+"csvMapping.categoriesSection" = "Mapeamento de categorias";
+"csvMapping.incomeCategoriesSection" = "Mapeamento de categorias de receita";
+"csvMapping.notSelected" = "Não selecionado";
 "csvMapping.selectAccount %@" = "Selecione a conta para \"%@\"";
 "csvMapping.createAccount %@" = "Criar nova conta \"%@\"";
-"csvMapping.accountMappingTitle" = "Mapeamento de Contas";
+"csvMapping.accountMappingTitle" = "Mapeamento de contas";
 "csvMapping.categoryLabel" = "categoria";
 "csvMapping.incomeCategoryLabel" = "categoria de receita";
 "csvMapping.selectCategory %@ %@" = "Selecione a %1$@ para \"%2$@\"";
 "csvMapping.createCategory %@ %@" = "Criar nova %1$@ \"%2$@\"";
-"csvMapping.categoryMappingTitle" = "Mapeamento de Categorias";
-"csvMapping.incomeCategoryMappingTitle" = "Mapeamento de Categorias de Receita";
+"csvMapping.categoryMappingTitle" = "Mapeamento de categorias";
+"csvMapping.incomeCategoryMappingTitle" = "Mapeamento de categorias de receita";
 
 // MARK: - Settings Errors (Phase 1 - 2026-02-04)
 "error.settings.loadFailed" = "Falha ao carregar os ajustes: %@";
@@ -605,14 +605,14 @@
 
 // MARK: - Icon Styles
 "iconStyle.shape.circle" = "Círculo";
-"iconStyle.shape.roundedSquare" = "Quadrado Arredondado";
+"iconStyle.shape.roundedSquare" = "Quadrado arredondado";
 "iconStyle.shape.square" = "Quadrado";
 "iconStyle.tint.monochrome" = "Monocromático";
 "iconStyle.tint.hierarchical" = "Hierárquico";
 "iconStyle.tint.palette" = "Paleta";
-"iconStyle.tint.original" = "Cores Originais";
-"iconStyle.preset.categoryIcon" = "Ícone de Categoria";
-"iconStyle.preset.serviceLogo" = "Logo do Serviço";
+"iconStyle.tint.original" = "Cores originais";
+"iconStyle.preset.categoryIcon" = "Ícone de categoria";
+"iconStyle.preset.serviceLogo" = "Logo do serviço";
 "iconStyle.preset.placeholder" = "Espaço Reservado";
 "recurring.never" = "Nunca";
 "reminder.none" = "Nunca";
@@ -620,7 +620,7 @@
 // MARK: - Filter Buttons (Phase 14)
 "filter.allAccounts" = "Todas as contas";
 "filter.allCategories" = "Todas as categorias";
-"filter.allSubcategories" = "Todas as Subcategorias";
+"filter.allSubcategories" = "Todas as subcategorias";
 
 // MARK: - Insights (Phase 17)
 "insights.title" = "Análises";
@@ -630,22 +630,22 @@
 "insights.expenses" = "Despesas";
 "insights.budget" = "Orçamento";
 "insights.recurring" = "Recorrentes";
-"insights.cashFlow" = "Fluxo de Caixa";
-"insights.netFlow" = "Fluxo Líquido";
-"insights.availableBalance" = "Saldo Disponível";
+"insights.cashFlow" = "Fluxo de caixa";
+"insights.netFlow" = "Fluxo líquido";
+"insights.availableBalance" = "Saldo disponível";
 "insights.topMonths.best" = "Top 10 melhores meses";
 "insights.topMonths.worst" = "Top 10 piores meses";
 "insights.emptyState.title" = "Nenhuma análise ainda";
 "insights.emptyState.description" = "Adicione transações para ver suas análises financeiras";
 "insights.noInsightsForFilter" = "Nenhuma análise para esta categoria";
-"insights.topCategory" = "Maior Categoria de Gastos";
+"insights.topCategory" = "Maior categoria de gastos";
 "insights.topMerchant" = "Estabelecimento com mais gastos";
-"insights.spendingSpike" = "Gasto Incomum Detectado";
-"insights.monthOverMonth" = "Variação Mensal de Gastos";
-"insights.monthOverMonth.week" = "Gastos Semanais";
-"insights.monthOverMonth.month" = "Variação Mensal de Gastos";
-"insights.monthOverMonth.quarter" = "Gastos Trimestrais";
-"insights.monthOverMonth.year" = "Gastos Anuais";
+"insights.spendingSpike" = "Gasto incomum detectado";
+"insights.monthOverMonth" = "Variação mensal de gastos";
+"insights.monthOverMonth.week" = "Gastos semanais";
+"insights.monthOverMonth.month" = "Variação mensal de gastos";
+"insights.monthOverMonth.quarter" = "Gastos trimestrais";
+"insights.monthOverMonth.year" = "Gastos anuais";
 "insights.avgDailySpending" = "Gasto médio diário";
 "insights.days" = "dias";
 "insights.incomeGrowth" = "Tendência de receita";
@@ -1037,8 +1037,8 @@
 
 // MARK: - Settings (About)
 "settings.about" = "Sobre";
-"settings.privacyPolicy" = "Política de Privacidade";
-"settings.termsOfUse" = "Termos de Uso";
+"settings.privacyPolicy" = "Política de privacidade";
+"settings.termsOfUse" = "Termos de uso";
 "settings.version" = "Versão";
 "settings.diagnostics" = "Diagnóstico";
 "diagnostics.launchCheck.header" = "Verificação ao abrir";

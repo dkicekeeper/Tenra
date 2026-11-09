@@ -1,7 +1,8 @@
 # Tenra 1.8.2: What's New (ASC, 13 storefront locales and en-GB)
 
-Version 1.8.2 in the project since 2026-11-06, TestFlight build 74 (from the cloud, 2026-11-07) for
-the device check. 1.8.1 is in the store since 2026-11-06/07 (its notes and checklist:
+Version 1.8.2 in the project since 2026-11-06, TestFlight build 75 (from the cloud, 2026-11-09,
+branch `claude/cool-wozniak-3jwa99`: `main` plus the action audit and "Ask Ten" opening a new chat,
+not merged yet; build 74 of 2026-11-07 is `main` without them) for the device check. 1.8.1 is in the store since 2026-11-06/07 (its notes and checklist:
 [archive/release-notes-1.8.1.md](archive/release-notes-1.8.1.md)), so 1.8.2 can go to review once the
 device check below passes. `prepare-version` (Actions → App Store Connect, [asc.md](asc.md)) pastes
 each block into App Store Connect; en-GB (search in Kazakhstan) carries ru's text. No em dashes
@@ -32,7 +33,7 @@ person asks for by name; App Store Connect still needs a text in every locale. A
   app, "Пополнение" in the other) becomes one transfer instead of an expense and an income; when
   only the amount and the time say so, To review asks ("Not a transfer" puts them back). From
   build 74.
-- Actions read the same everywhere (not in build 74; the next build): "Изменить" on every screen
+- Actions read the same everywhere (from build 75): "Изменить" on every screen
   (deposits, loans and subscriptions said "Редактировать"), menus say only "Edit" and "Delete"
   with Edit first and Delete last, sheets are "New X" / "Edit X" and the list's add button names
   the same "New X". Deleting is one alert everywhere: an account deleted from its own screen
@@ -44,7 +45,7 @@ person asks for by name; App Store Connect still needs a text in every locale. A
 - "Ask Ten" opens a new chat (not Ten's home) with questions about the screen over the field, and
   is now in the menus of a deposit ("How much interest has it earned?"), a loan ("When will I pay
   it off?", "How much would paying it off early save?") and a subscription ("What does it cost a
-  year?", "Has it gone up?"). Not in build 74.
+  year?", "Has it gone up?"). From build 75.
 
 ## Submission checklist
 
@@ -61,12 +62,13 @@ person asks for by name; App Store Connect still needs a text in every locale. A
    set time on a day with nothing recorded and none after an entry (manual, Ten's draft, Apple Pay
    capture); a tap opens Ten; VoiceOver reads amounts in "1’234.56" and "1.234,56"; the widget
    shows a chosen format.
-4. **Actions** (after the build with the action audit): long press a deposit, a loan and a
+4. **Actions** (build 75): long press a deposit, a loan and a
    subscription on their lists and open their menus: "Изменить" first, "Удалить" last; delete an
    account from its own screen (both choices), a loan (both choices) and a transaction (alert, not
    a sheet); the transaction menu of a recurring payment shows "Прекратить повторение".
    "Спросить Ten" on an account, a deposit, a loan and a subscription opens a new empty chat with
    two questions over the field; the previous chat is in the home's list; a question tapped goes
    (the consent sheet first on a fresh install).
-5. **What's New** in this file (14 localizations), then `prepare-version --version 1.8.2 --build 74`.
+5. **What's New** in this file (14 localizations), then `prepare-version --version 1.8.2 --build N`:
+   75 once its branch is merged into `main` and checked, or a new build from `main` after the merge.
 6. **One submission**: `asc.py prepare-review --version 1.8.2`; the founder sends it.

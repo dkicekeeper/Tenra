@@ -1,6 +1,7 @@
 # App Store Connect и TestFlight из облака
 
-Как Claude в облачной сессии (без Mac) отправляет сборки в TestFlight и смотрит App Store Connect.
+Как Claude в облачной сессии (без Mac) отправляет сборки в TestFlight, смотрит App Store Connect и
+ведёт кампании Apple Ads.
 Устроено как в Dalada: ключ App Store Connect API живёт в секретах, а не в чате и не в репозитории.
 
 | Что | Где работает | Как запускается |
@@ -14,9 +15,11 @@
 | Пробные, подписки, MRR, выручка из графиков RevenueCat (для §6 [promotion-plan.md](promotion-plan.md)) | локальная сессия Claude Code с плагином RevenueCat (MCP), проект `proj3c40e272` | Claude вызывает `get-chart-data` сам; установки берутся из ASC, New Customers и Active Users до 23.10 раздуты прогонами симулятора в CI |
 | Исходные скриншоты стора на симуляторе без Mac | GitHub Actions, `.github/workflows/screenshots.yml` (macOS) | Actions → Screenshots: языки, `frames` = `all`, `cpp`, `ten`, `autocapture` или `home`; `art` рисует Тэна для шапки |
 | Продажи и выручка по дням, плюс всё из строки выше | облачная сессия Claude, `appstore/asc.py` | Claude запускает сам, если ключ есть в переменных окружения |
+| Apple Ads: кампании и группы, отчёт по ним, поисковые запросы, ключи, минус-слова; добавить минус-слова и ключи | GitHub Actions, `.github/workflows/ads.yml` (`appstore/ads.py`); с деньгами из облачной сессии Claude | Actions → Apple Ads (выбрать команду); пишет только с `--apply` в `args`. Ждёт API-пользователя и секретов ([Apple Ads API](#apple-ads-api)) |
 
 Репозиторий Tenra публичный, поэтому логи Actions видны всем. Продажи и выручку `asc.py` в Actions
-не показывает, их Claude смотрит только из облачной сессии.
+не показывает, траты, ставки и бюджеты Apple Ads `ads.py` тоже: их Claude смотрит только из
+облачной сессии.
 
 ## Один раз: настройка
 
@@ -254,6 +257,99 @@ Vendor number для отчётов о продажах — 94171379 (`ASC_VENDO
 одно слово принадлежит одной странице. Тест страницы идёт на версии, которая сейчас в магазине,
 один за раз, до 90 дней; иконку в нём не проверить, пока альтернативных иконок нет в сборке.
 
+## Apple Ads API
+
+`appstore/ads.py` читает кампании Apple Ads и добавляет ключи и минус-слова через
+[Apple Ads Platform API](https://developer.apple.com/documentation/apple-ads-platform-api)
+(`api.ads.apple.com/v1`). Старый Campaign Management API v5 Apple отключает 26.01.2027, поэтому
+скрипт сразу на новом; вход (OAuth) и ключи у них общие.
+
+### Один раз: API-пользователь и ключ (основатель)
+
+Шаги по документации Apple: [OAuth для Platform API](https://developer.apple.com/documentation/apple-ads-platform-api/implementing-oauth-for-the-apple-ads-platform-api)
+и [справка Apple Ads](https://ads.apple.com/app-store/help/campaigns/0022-use-the-apple-ads-platform-api).
+
+1. **Пригласить API-пользователя.** [ads.apple.com](https://ads.apple.com) → войти администратором
+   (Account Admin) → имя справа вверху → **Account Settings** → **User Management** →
+   **Invite Users**: имя, фамилия, Apple Account (почта) и роль:
+   - **API Account Read Only**: только чтение (`campaigns`, `report`, `search-terms`, `keywords`,
+     `negatives` без `--apply`);
+   - **API Account Manager**: ещё и запись (`negatives --apply`, `add-keywords --apply`).
+     Для еженедельной гигиены нужна она.
+
+   Удобнее отдельный Apple Account (вторая почта), чтобы у основного осталась роль Account Admin.
+   Приглашение приходит письмом с кодом: открыть ссылку из письма, войти этим Apple Account (из
+   основного перед этим выйти) и ввести код.
+2. **Пара ключей** (Терминал на Mac, в любой папке):
+   ```bash
+   openssl ecparam -genkey -name prime256v1 -noout -out private-key.pem
+   openssl ec -in private-key.pem -pubout -out public-key.pem
+   ```
+   `private-key.pem` никому не показывать и в репозиторий не класть. Если он утёк: новая пара,
+   новый публичный ключ в Apple Ads и новые секреты.
+3. **Публичный ключ в Apple Ads.** Войти API-пользователем → **Account Settings** → **API** →
+   вставить весь текст `public-key.pem` (со строками BEGIN и END) в поле **Public Key** → **Save**.
+   Над полем появятся `clientId`, `teamId` и `keyId`. Поменять ключ потом: там же, **Edit**.
+4. **Секреты в GitHub:** github.com/dkicekeeper/Tenra → **Settings** → **Secrets and variables** →
+   **Actions** → **New repository secret**:
+
+   | Имя | Значение |
+   |---|---|
+   | `ADS_CLIENT_ID` | `clientId` (`SEARCHADS.…`) |
+   | `ADS_TEAM_ID` | `teamId` (`SEARCHADS.…`) |
+   | `ADS_KEY_ID` | `keyId` |
+   | `ADS_PRIVATE_KEY` | весь текст `private-key.pem` со строками `-----BEGIN EC PRIVATE KEY-----` и `-----END EC PRIVATE KEY-----` |
+   | `ADS_ACCOUNT_ID` | необязательно: id рекламного аккаунта, если API-пользователю доступно несколько (без него берётся первый, список аккаунтов печатается) |
+
+   Для облачной сессии Claude те же переменные в окружении, как `ASC_*` в шаге 3 выше; ключ из
+   однострочного поля скрипт соберёт сам (можно и base64 всего файла). `appleid.apple.com` и
+   `api.ads.apple.com` из облака доступны (09.11).
+
+Проверка: Actions → Apple Ads → `campaigns`. Первая строка итога: рекламный аккаунт и роль
+API-пользователя.
+
+### Команды `appstore/ads.py`
+
+```bash
+python3 appstore/ads.py campaigns               # кампании: статус, страны, место, стратегия, дневной бюджет; группы
+python3 appstore/ads.py report [--days 7] [--campaign KZ-Category]
+                                                # по кампаниям и группам: показы, тапы, TTR, установки
+                                                # (по тапу и по просмотру), конверсия тап → установка;
+                                                # траты, средняя цена тапа, CPI
+python3 appstore/ads.py search-terms --campaign KZ-Discovery [--adgroup "Search Match"] [--days 7]
+                                                # поисковые запросы, больше тапов выше; помечает тапы без
+                                                # установок; в конце кандидаты в минус-слова и в точные ключи
+python3 appstore/ads.py keywords --campaign KZ-Category [--adgroup Общие] [--days 7]
+                                                # ключи: соответствие, статус, ставка, показы, тапы,
+                                                # установки; помечает 100+ тапов без установок
+python3 appstore/ads.py negatives --campaign KZ-Discovery [--add "слово, ещё слово"] [--match EXACT] [--apply]
+                                                # минус-слова кампании и её групп; --add показывает, что
+                                                # добавит (в кампанию, с --adgroup в группу), --apply добавляет
+python3 appstore/ads.py add-keywords --campaign KZ-Category --adgroup Общие --add "учет денег" [--bid 0.40] [--apply]
+                                                # ключи в группу, так же: без --apply только показывает
+python3 -I appstore/test_ads.py                 # тесты без сети: подпись, запросы, разбор ответов
+```
+
+Кампания и группа: id, имя или часть имени (`discovery`). Дни заканчиваются вчера, по часовому
+поясу рекламного аккаунта. `--match` по умолчанию `EXACT` (в плане все минус-слова точные); слово,
+которое уже есть с тем же соответствием, второй раз не добавляется. Ставка `--bid` в валюте
+аккаунта, без неё ключ берёт ставку группы. После `add-keywords` с точным ключом скрипт печатает
+команду, которая добавит то же слово минус-словом в KZ-Discovery (правило §5 B
+[promotion-plan.md](promotion-plan.md)). Паузу ключа скрипт не ставит: она в веб-интерфейсе.
+
+В Actions поля `command`, `campaign`, `adgroup` и `days`, остальное в `args`, например
+`--add "учет расходов, бюджет" --apply` (кавычки как в терминале).
+
+**Деньги в публичном логе.** В Actions скрипт не печатает траты, цену тапа, CPI, ставки и бюджеты
+(в таблице `hidden`). Токен, client secret и ключ не печатаются нигде. Деньги Claude смотрит из
+облачной сессии.
+
+**Каждую субботу** (§7 [promotion-plan.md](promotion-plan.md)): `search-terms --campaign
+KZ-Discovery`; удачные запросы `add-keywords --campaign KZ-Category --adgroup Общие --add "…"
+--apply` (и минус-словом в Discovery), мусор `negatives --campaign KZ-Discovery --add "…"
+--apply`; `keywords` по кампаниям (100+ тапов без установок: на паузу); `report` для CPI и
+тапов, установка → пробный по RevenueCat.
+
 ## Макеты экранов
 
 Как выглядит экран до того, как он попадёт в сборку, без Mac: Actions → **Mockups**
@@ -268,6 +364,12 @@ Vendor number для отчётов о продажах — 94171379 (`ASC_VENDO
 
 - **«Add the ASC_KEY_ID, ASC_ISSUER_ID and ASC_KEY_P8 repository secrets»** — нет секретов
   (шаг 2), имена с учётом регистра.
+- **«Add the ADS_CLIENT_ID, ADS_TEAM_ID, ADS_KEY_ID and ADS_PRIVATE_KEY repository secrets»** или
+  «No Apple Ads API credentials»: нет секретов Apple Ads ([Apple Ads API](#apple-ads-api), шаг 4).
+- **«Apple refused the API credentials (HTTP 400: invalid_client)»**: `clientId`, `teamId` или
+  `keyId` не те, или публичный ключ в Apple Ads не от этого `private-key.pem`.
+- **«Apple Ads API: HTTP 403»**: роль API-пользователя не позволяет; для `--apply` нужна
+  API Account Manager.
 - **«The data couldn’t be read because it isn’t in the correct format»**: сбой подписи Apple, код
   ни при чём. Бывает на шаге загрузки (`exportArchive …` при `ARCHIVE SUCCEEDED` выше) и на
   архиве, где за ним идёт «No profiles for 'dakacom.Tenra' were found»: профили не пришли из

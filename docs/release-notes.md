@@ -201,3 +201,12 @@ Tenra의 새로운 기능:
 6. **One submission**: `asc.py prepare-review --version 1.8.2` (draft made 2026-11-09, 1 item);
    the founder sends it: App Store Connect → Tenra → Distribution → the draft submission →
    "Submit for Review".
+
+## The next version (in `main` after build 75, not in 1.8.2)
+
+- Ten's field reads "Log an expense or ask…" and the greeting gives an example in each language
+  ("кофе 1500", "coffee 5"): a newcomer on a phone met "Ask about your money…" with nothing saying a
+  typed expense is recorded.
+- en, tr and pt-BR labels in sentence case everywhere (time filters, Settings, CSV import, Insights
+  cards, loan and deposit fields), not only actions.
+- 273 localization keys nothing reads removed (no change on screen).

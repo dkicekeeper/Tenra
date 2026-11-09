@@ -2149,12 +2149,12 @@
 /* AI assistant: the chat screen */
 "tab.assistant" = "アシスタント";
 "assistant.greeting.title" = "こんにちは、テンです";
-"assistant.greeting.message" = "お金のことをお手伝いします。支出、節約、ローン、投資まで。この iPhone のデータを見て、カードでお答えします。";
+"assistant.greeting.message" = "支出を記録し（「コーヒー 500」）、お金のこともお手伝いします。節約、ローン、投資まで。この iPhone のデータを見て、カードでお答えします。";
 "assistant.attach" = "レシートや明細を添付";
 "assistant.greeting.tools" = "クリップ：レシートや明細。マイク：声で伝える。";
 "composer.send" = "送信";
 "composer.voice" = "音声入力";
-"assistant.composer.placeholder" = "お金について質問…";
+"assistant.composer.placeholder" = "支出を記録、または質問…";
 "assistant.preset.month" = "今月の支出";
 "assistant.preset.compare" = "先月と比べて";
 "assistant.preset.budgets" = "予算の状況は？";

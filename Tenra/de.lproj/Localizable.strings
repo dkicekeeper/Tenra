@@ -2149,12 +2149,12 @@
 /* AI assistant: the chat screen */
 "tab.assistant" = "Assistent";
 "assistant.greeting.title" = "Hallo, ich bin Ten";
-"assistant.greeting.message" = "Ich helfe Ihnen mit Ihrem Geld: Ausgaben, Sparen, Kredite und Investieren. Ich sehe mir Ihre Daten auf diesem iPhone an und antworte mit Karten.";
+"assistant.greeting.message" = "Ich notiere Ausgaben („Kaffee 5“) und helfe Ihnen mit Ihrem Geld: Sparen, Kredite und Investieren. Ich sehe mir Ihre Daten auf diesem iPhone an und antworte mit Karten.";
 "assistant.attach" = "Beleg oder Kontoauszug anhängen";
 "assistant.greeting.tools" = "Büroklammer: ein Beleg oder Kontoauszug. Mikrofon: sagen Sie es einfach.";
 "composer.send" = "Senden";
 "composer.voice" = "Diktieren";
-"assistant.composer.placeholder" = "Fragen Sie zu Ihrem Geld…";
+"assistant.composer.placeholder" = "Ausgabe notieren oder fragen…";
 "assistant.preset.month" = "Meine Ausgaben diesen Monat";
 "assistant.preset.compare" = "Vergleiche mit dem Vormonat";
 "assistant.preset.budgets" = "Wie stehen meine Budgets?";

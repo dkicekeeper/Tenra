@@ -18,12 +18,6 @@ with the commit of every fix, are in
   banner while the person is in the app at its time; `hookDay` is an absolute start-of-day `Date`
   (a time-zone change can shift yesterday's match); the cards inline `shouldOffer`.
 
-- **First run, as a newcomer sees it** (walkthrough 2026-11-04, iPhone 17 Pro Simulator, iOS 26.5,
-  Russian, fresh install; 80% of new users open Tenra once, promotion-plan §6). From launch to the
-  first saved expense: 6 screens, about 12 taps. By likely weight:
-  1. *Not checked (Simulator has no App Attest):* on a phone the action tab is Ten, whose field
-     says "Спросите о деньгах…", not "запишите трату"; a typed expense is drafted on the phone.
-
 - **Assistant attachments after a relaunch.** A receipt or statement attached in the chat lives
   in memory: after a relaunch its card is gone from the kept thread (drafts too, by design).
   Plan §3.8 keeps the file in the app's container with the thread; only worth it if people come

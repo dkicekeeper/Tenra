@@ -2149,12 +2149,12 @@
 /* AI assistant: the chat screen */
 "tab.assistant" = "Asistente";
 "assistant.greeting.title" = "Hola, soy Ten";
-"assistant.greeting.message" = "Te ayudo con tu dinero: gastos, ahorro, préstamos e inversión. Miro tus datos en este teléfono y respondo con tarjetas.";
+"assistant.greeting.message" = "Anoto tus gastos («café 3») y te ayudo con tu dinero: ahorro, préstamos e inversión. Miro tus datos en este teléfono y respondo con tarjetas.";
 "assistant.attach" = "Adjuntar un recibo o un extracto";
 "assistant.greeting.tools" = "Clip: un recibo o un extracto. Micrófono: dilo en voz alta.";
 "composer.send" = "Enviar";
 "composer.voice" = "Dictar";
-"assistant.composer.placeholder" = "Pregunta sobre tu dinero…";
+"assistant.composer.placeholder" = "Anota un gasto o pregunta…";
 "assistant.preset.month" = "Mis gastos de este mes";
 "assistant.preset.compare" = "Compara con el mes pasado";
 "assistant.preset.budgets" = "¿Cómo van mis presupuestos?";

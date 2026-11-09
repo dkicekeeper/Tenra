@@ -61,7 +61,11 @@ struct AgentFastPathTests {
         #expect(!AgentFastPath.isRecord(text, operations: [Self.expense(1500)], clauses: 1))
     }
 
-    @Test(arguments: ["кофе 1500", "такси 2300 с каспи", "продукты 12000 вчера", "coffee 5", "Kaffee 5 Euro", "taxi 12 euros"])
+    /// The plain records, and the example each language's greeting on Ten's home gives
+    /// (`assistant.greeting.message`: "кофе 1500", "café 3", …): typed as shown, they are drafted
+    /// on the phone.
+    @Test(arguments: ["кофе 1500", "такси 2300 с каспи", "продукты 12000 вчера", "coffee 5", "Kaffee 5 Euro", "taxi 12 euros",
+                      "Kaffee 5", "café 3", "café 8", "caffè 2", "kahve 80", "кава 80", "コーヒー 500", "커피 5000"])
     func recordsDoNotReadAsQuestions(_ text: String) {
         #expect(!AgentFastPath.readsAsQuestion(text))
     }

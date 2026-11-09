@@ -2149,12 +2149,12 @@
 /* AI assistant: the chat screen */
 "tab.assistant" = "Ассистент";
 "assistant.greeting.title" = "Привет, я Тэн";
-"assistant.greeting.message" = "Помогаю с деньгами: траты, экономия, кредиты и инвестиции. Смотрю ваши данные на этом телефоне и отвечаю карточками.";
+"assistant.greeting.message" = "Записываю траты («кофе 1500») и помогаю с деньгами: экономия, кредиты и инвестиции. Смотрю ваши данные на этом телефоне и отвечаю карточками.";
 "assistant.attach" = "Прикрепить чек или выписку";
 "assistant.greeting.tools" = "Скрепка: чек или выписка. Микрофон: скажите вслух.";
 "composer.send" = "Отправить";
 "composer.voice" = "Надиктовать";
-"assistant.composer.placeholder" = "Спросите о деньгах…";
+"assistant.composer.placeholder" = "Запишите трату или спросите…";
 "assistant.preset.month" = "Мои траты в этом месяце";
 "assistant.preset.compare" = "Сравни с прошлым месяцем";
 "assistant.preset.budgets" = "Как дела с бюджетами?";

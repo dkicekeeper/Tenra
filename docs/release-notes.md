@@ -1,6 +1,7 @@
 # Tenra 1.8.2: What's New (ASC, 13 storefront locales and en-GB)
 
-Version 1.8.2 in the project since 2026-11-06. **Status 2026-11-10:** sent for review with
+Version 1.8.2 in the project since 2026-11-06. **Status 2026-11-10:** waiting for review since
+07:20 UTC, sent with
 TestFlight build 76 (from the cloud, `main` at 78a16c2: build 75 plus Ten's field, sentence case
 and the unused keys, all strings; CI green on bf137c8, the same app code), released after
 approval. What's New in all 14 localizations as written on 2026-11-09. The founder asked for the
@@ -209,7 +210,8 @@ store build once it is out.
    two questions over the field; the previous chat is in the home's list; a question tapped goes
    (the consent sheet first on a fresh install).
 5. **What's New** in this file and `prepare-version --version 1.8.2 --build 75` (done 2026-11-09),
-   then `--build 76` (done 2026-11-10: the build swapped, the texts kept).
+   then `--build 76` (done 2026-11-10: build 76 selected, What's New sent again unchanged).
 6. **One submission**: `asc.py prepare-review --version 1.8.2` (draft made 2026-11-09, 1 item);
-   sent on 2026-11-10 at the founder's request with `prepare-review --version 1.8.2 --build 76
-   --submit` (Actions → App Store Connect).
+   sent on 2026-11-10 at 07:20 UTC at the founder's request with `prepare-review --version 1.8.2
+   --build 76 --submit` (Actions → App Store Connect); `review-submissions` shows it
+   WAITING_FOR_REVIEW.

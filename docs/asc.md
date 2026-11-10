@@ -143,6 +143,10 @@ python3 appstore/asc.py push-price --product tenra.pro.annual --price 7990 [--te
                                                 # новая цена (точка цены страны) с даты, не раньше завтра
                                                 # (сегодня API не принимает; по умолчанию завтра); текущие
                                                 # подписчики платят прежнюю (preserveCurrentPrice)
+                                                # разовая покупка (lifetime): сразу, без --start
+python3 appstore/asc.py iap-prices [--product tenra.pro.lifetime] [--territory KAZ,USA]
+                                                # разовая покупка: базовая страна, цены, заданные
+                                                # вручную, и цена витрин, которые идут за базовой
 python3 appstore/asc.py review-notes --version 1.7 [--apply]   # заметки для App Review из release-notes.md
 python3 appstore/asc.py prepare-review --version 1.7 [--build N] [--submit]
                                                 # черновик отправки на проверку: версия и спецстраницы;

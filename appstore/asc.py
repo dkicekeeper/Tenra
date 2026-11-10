@@ -1139,7 +1139,7 @@ def equalized(points_path: str, kind: str, price: str, territories: list[str]) -
 
 def push_tier(app: str, monthly: str, annual: str, lifetime: str, territories: list[str], apply: bool) -> None:
     """Tenra Pro in the high-price storefronts at Apple's local equivalents of three US prices.
-    Subscriptions change tomorrow and current subscribers keep what they pay; the one-time
+    Subscriptions change in two days and current subscribers keep what they pay; the one-time
     purchase changes at once, and its other manual prices are sent again as they stand.
     Without `apply` only shows the table."""
     found = {s["attributes"].get("productId"): s for s in subscriptions(app)}
@@ -1175,7 +1175,9 @@ def push_tier(app: str, monthly: str, annual: str, lifetime: str, territories: l
     if not apply:
         return
 
-    start = (date.today() + timedelta(days=1)).isoformat()
+    # Two days out: late in the UTC day App Store Connect already refuses tomorrow
+    # ("must be on or after" the day after).
+    start = (date.today() + timedelta(days=2)).isoformat()
     for product, _ in plans:
         for territory, point in new[product].items():
             if now[product].get(territory) == float(point["price"]):

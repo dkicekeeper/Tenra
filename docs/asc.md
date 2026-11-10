@@ -150,7 +150,7 @@ python3 appstore/asc.py push-iap-multiple [--product tenra.pro.lifetime] [--of t
                                                 # все витрины с ценой вручную, за базовой не идут
 python3 appstore/asc.py push-tier [--monthly 4.99] [--annual 24.99] [--lifetime 69.99] [--territory USA,DEU] [--apply]
                                                 # три продукта в дорогих витринах (HIGH_TIER в asc.py)
-                                                # по местным эквивалентам цен США; подписки с завтра,
+                                                # по местным эквивалентам цен США; подписки через 2 дня,
                                                 # lifetime сразу
 python3 appstore/asc.py iap-prices [--product tenra.pro.lifetime] [--territory KAZ,USA]
                                                 # разовая покупка: базовая страна, цены, заданные

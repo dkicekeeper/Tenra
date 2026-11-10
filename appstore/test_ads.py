@@ -344,7 +344,8 @@ class AdsTest(unittest.TestCase):
         self.assertIn("| калькулятор | Search Match | Search Match | 300 | 12 | 0 | 0 | 2.40 USD | taps, no installs |", text)
         self.assertIn("(low volume, withheld by Apple)", text)
         self.assertIn("candidates for negative keywords: калькулятор", text)
-        self.assertIn("candidates for exact keywords: учет денег", text)
+        self.assertIn("candidates for exact keywords if they look for an app like Tenra", text)
+        self.assertIn("is a negative): учет денег", text)
 
     def test_keywords(self):
         text, _ = self.run_ads(["keywords", "--campaign", "KZ-Category"])

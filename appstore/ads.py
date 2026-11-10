@@ -621,7 +621,10 @@ def search_terms(args) -> None:
     junk = [text for text, _, _, m in found if text and m["taps"] and not m["totalInstalls"]]
     good = [text for text, _, _, m in found if text and m["totalInstalls"]]
     say("Taps and no installs, candidates for negative keywords: " + (", ".join(junk) or "none"))
-    say("With installs, candidates for exact keywords: " + (", ".join(good) or "none"))
+    # A search for another app (a bank, госуслуги) installs Tenra by mistake: such a term is a
+    # negative too, whatever its installs (the first KZ-Discovery report, 2026-11-10).
+    say("With installs, candidates for exact keywords if they look for an app like Tenra "
+        "(a search for another app, a bank or a government service, is a negative): " + (", ".join(good) or "none"))
 
 
 def keywords(args) -> None:

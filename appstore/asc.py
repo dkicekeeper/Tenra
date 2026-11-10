@@ -55,6 +55,11 @@
                                                     from a date, tomorrow at the earliest and by
                                                     default; current subscribers keep theirs
                                                     (a one-time purchase: at once, no --start)
+    python3 appstore/asc.py push-iap-multiple [--product tenra.pro.lifetime] [--of tenra.pro.annual]
+                                   [--times 3] [--apply]
+                                                    the one-time purchase in every storefront at
+                                                    N times the subscription's price there (the
+                                                    nearest price point), at once
     python3 appstore/asc.py iap-prices [--product tenra.pro.lifetime] [--territory KAZ,USA]
                                                     a one-time purchase's base territory, manual
                                                     prices and what the storefronts charge
@@ -1028,6 +1033,75 @@ def push_iap_price(app: str, product: str, territory: str, price: str, apply: bo
     print(f"{product} in {territory}: {price} from now ({follows}).")
 
 
+def current_subscription_prices(subscription_id: str) -> dict[str, float]:
+    """What new subscribers pay today in every territory: the latest price already in force."""
+    prices, included = get_all(f"/v1/subscriptions/{subscription_id}/prices", {
+        "include": "subscriptionPricePoint,territory", "limit": 200}, pages=20)
+    points = {item["id"]: item["attributes"].get("customerPrice") for item in included
+              if item["type"] == "subscriptionPricePoints"}
+    today, latest = date.today().isoformat(), {}
+    for price in prices:
+        relationships = price.get("relationships") or {}
+        territory = ((relationships.get("territory") or {}).get("data") or {}).get("id")
+        point = ((relationships.get("subscriptionPricePoint") or {}).get("data") or {}).get("id")
+        start = price["attributes"].get("startDate") or ""
+        if not territory or points.get(point) is None or start > today:
+            continue
+        if territory not in latest or start >= latest[territory][0]:
+            latest[territory] = (start, float(points[point]))
+    return {territory: value for territory, (_, value) in latest.items()}
+
+
+def push_iap_multiple(app: str, product: str, of: str, times: float, apply: bool) -> None:
+    """A one-time purchase priced in every storefront at `times` the subscription `of` there:
+    the storefront's price point nearest to that. Every storefront gets a manual price, so none
+    follows the base territory any more. Takes effect at once. Without `apply` only shows it."""
+    item = in_app_purchase(app, product)
+    subscription = next((s for s in subscriptions(app) if s["attributes"].get("productId") == of), None)
+    if not subscription:
+        sys.exit(f"No subscription {of}.")
+    base, manual = iap_schedule(item["id"])
+    if any(row["start"] and row["start"] > date.today().isoformat() for row in manual):
+        sys.exit("A price change is already scheduled: set these prices in App Store Connect.")
+    annual = current_subscription_prices(subscription["id"])
+    rows, entries = [], []
+    for territory in sorted(annual):
+        points, _ = get_all(f"/v2/inAppPurchases/{item['id']}/pricePoints",
+                            {"filter[territory]": territory, "limit": 200}, pages=20)
+        priced = [p for p in points if p["attributes"].get("customerPrice") is not None]
+        if not priced:
+            rows.append([territory, annual[territory], "", "no price points: skipped"])
+            continue
+        target = annual[territory] * times
+        point = min(priced, key=lambda p: abs(float(p["attributes"]["customerPrice"]) - target))
+        chosen = float(point["attributes"]["customerPrice"])
+        rows.append([territory, annual[territory], point["attributes"]["customerPrice"], f"{chosen / annual[territory]:.2f}"])
+        entries.append(point["id"])
+    table(f"{product} at {times:g} x {of}" + ("" if apply else " (dry run: --apply sets it)"),
+          ["Territory", of, product, "Ratio"], rows)
+    if base not in annual:
+        sys.exit(f"The base territory {base} has no {of} price.")
+    if not apply:
+        return
+    included = [{
+        "type": "inAppPurchasePrices", "id": f"${{price{index}}}",
+        "attributes": {"startDate": None},
+        "relationships": {
+            "inAppPurchaseV2": {"data": {"type": "inAppPurchases", "id": item["id"]}},
+            "inAppPurchasePricePoint": {"data": {"type": "inAppPurchasePricePoints", "id": point_id}},
+        },
+    } for index, point_id in enumerate(entries)]
+    send("POST", "/v1/inAppPurchasePriceSchedules", {
+        "data": {"type": "inAppPurchasePriceSchedules", "relationships": {
+            "inAppPurchase": {"data": {"type": "inAppPurchases", "id": item["id"]}},
+            "baseTerritory": {"data": {"type": "territories", "id": base}},
+            "manualPrices": {"data": [{"type": "inAppPurchasePrices", "id": entry["id"]} for entry in included]},
+        }},
+        "included": included,
+    })
+    print(f"{product}: {len(entries)} storefronts set to {times:g} x {of}, from now.")
+
+
 # Review notes and the draft submission ------------------------------------------------------------
 
 def review_notes_text(path: Path = NOTES) -> str:
@@ -1754,6 +1828,9 @@ def main(argv: list[str]) -> None:
             sys.exit("A one-time purchase's price changes at once: no --start.")
         else:
             push_iap_price(app, product, territory, price, "--apply" in args)
+    elif command == "push-iap-multiple":
+        push_iap_multiple(app, option("--product", "tenra.pro.lifetime"), option("--of", "tenra.pro.annual"),
+                          float(option("--times", 3)), "--apply" in args)
     elif command == "iap-prices":
         iap_prices(app, option("--product", "tenra.pro.lifetime"), option("--territory", "KAZ,USA").split(","))
     elif command == "review-notes":

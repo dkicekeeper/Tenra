@@ -144,6 +144,10 @@ python3 appstore/asc.py push-price --product tenra.pro.annual --price 7990 [--te
                                                 # (сегодня API не принимает; по умолчанию завтра); текущие
                                                 # подписчики платят прежнюю (preserveCurrentPrice)
                                                 # разовая покупка (lifetime): сразу, без --start
+python3 appstore/asc.py push-iap-multiple [--product tenra.pro.lifetime] [--of tenra.pro.annual] [--times 3] [--apply]
+                                                # разовая покупка в каждой витрине = N цен подписки
+                                                # там же (ближайшая точка цены), сразу; после этого
+                                                # все витрины с ценой вручную, за базовой не идут
 python3 appstore/asc.py iap-prices [--product tenra.pro.lifetime] [--territory KAZ,USA]
                                                 # разовая покупка: базовая страна, цены, заданные
                                                 # вручную, и цена витрин, которые идут за базовой

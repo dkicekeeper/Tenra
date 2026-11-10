@@ -1,0 +1,84 @@
+name: Apple Ads
+
+# Reads Tenra's Apple Ads campaigns with appstore/ads.py (Apple Ads Platform API): campaigns and
+# ad groups, a report per campaign and ad group, a campaign's search terms, its keywords and its
+# negative keywords. Writes: negatives adds negative keywords to a campaign (or to the ad group
+# in `adgroup`), add-keywords adds keywords to an ad group; both only show what they would add
+# unless args has --apply. Run: Actions → Apple Ads → Run workflow, or Claude through the GitHub
+# API. The result is in the run's summary. Credentials: the Apple Ads API user's ADS_CLIENT_ID,
+# ADS_TEAM_ID, ADS_KEY_ID and ADS_PRIVATE_KEY repository secrets, optional ADS_ACCOUNT_ID
+# (docs/asc.md, «Apple Ads API»). Reports need the role API Account Read Only, writes API
+# Account Manager.
+#
+# The repository is public, so its Actions logs are too: ads.py never prints spend, CPT, CPI,
+# bids or budgets in Actions; Claude reads them from a cloud session instead.
+
+on:
+  workflow_dispatch:
+    inputs:
+      command:
+        description: "What to do"
+        type: choice
+        options: [report, campaigns, search-terms, keywords, negatives, add-keywords]
+        default: report
+      campaign:
+        description: "Campaign: name, a unique part of it or its id (needed by all but report and campaigns)"
+        required: false
+        default: ""
+      adgroup:
+        description: "Ad group of that campaign (add-keywords; optional for search-terms, keywords, negatives)"
+        required: false
+        default: ""
+      days:
+        description: "Days of data up to yesterday (report, search-terms, keywords)"
+        required: false
+        default: "7"
+      args:
+        description: 'Extra arguments, e.g. --add "учет расходов, бюджет" --match EXACT --apply (negatives, add-keywords; --bid 0.40)'
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ads-${{ inputs.command }}
+  cancel-in-progress: false
+
+jobs:
+  ads:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Apple Ads
+        env:
+          ADS_CLIENT_ID: ${{ secrets.ADS_CLIENT_ID }}
+          ADS_TEAM_ID: ${{ secrets.ADS_TEAM_ID }}
+          ADS_KEY_ID: ${{ secrets.ADS_KEY_ID }}
+          ADS_PRIVATE_KEY: ${{ secrets.ADS_PRIVATE_KEY }}
+          ADS_ACCOUNT_ID: ${{ secrets.ADS_ACCOUNT_ID }}
+          COMMAND: ${{ inputs.command }}
+          CAMPAIGN: ${{ inputs.campaign }}
+          ADGROUP: ${{ inputs.adgroup }}
+          DAYS: ${{ inputs.days }}
+          ARGS: ${{ inputs.args }}
+        run: |
+          if [ -z "$ADS_CLIENT_ID" ] || [ -z "$ADS_TEAM_ID" ] || [ -z "$ADS_KEY_ID" ] || [ -z "$ADS_PRIVATE_KEY" ]; then
+            echo "::error::Add the ADS_CLIENT_ID, ADS_TEAM_ID, ADS_KEY_ID and ADS_PRIVATE_KEY repository secrets (docs/asc.md, Apple Ads API)."
+            exit 1
+          fi
+          python3 -m venv "$RUNNER_TEMP/adsenv"
+          "$RUNNER_TEMP/adsenv/bin/pip" install --quiet pyjwt cryptography
+          args=("$COMMAND")
+          if [ -n "$CAMPAIGN" ]; then args+=(--campaign "$CAMPAIGN"); fi
+          if [ -n "$ADGROUP" ]; then args+=(--adgroup "$ADGROUP"); fi
+          if [ -n "$DAYS" ]; then args+=(--days "$DAYS"); fi
+          if [ -n "$ARGS" ]; then
+            # Split like a shell, so quotes keep "учет расходов, бюджет" in one argument, without running anything.
+            split=$(python3 -c 'import os, shlex; print("\n".join(shlex.split(os.environ["ARGS"])))')
+            mapfile -t extra <<< "$split"
+            args+=("${extra[@]}")
+          fi
+          "$RUNNER_TEMP/adsenv/bin/python" appstore/ads.py "${args[@]}"

@@ -4,31 +4,18 @@
 */
 
 // MARK: - Navigation Titles
-"navigation.home" = "Басты бет";
 "navigation.history" = "Тарих";
 "navigation.categories" = "Санаттар";
-"navigation.settings" = "Баптаулар";
-"navigation.accounts" = "Шоттар";
-"navigation.subscriptions" = "Жазылымдар";
 "navigation.categoryFilter" = "Санаттар бойынша сүзгі";
-"navigation.logoSearch" = "Логотип іздеу";
-"navigation.entityMapping" = "Нысандарды сәйкестендіру";
-"navigation.csvPreview" = "CSV алдын ала қарау";
 "navigation.transactionPreview" = "Операцияларды алдын ала қарау";
 
 // MARK: - Transaction Preview (Phase 16)
 "transactionPreview.found" = "Табылды: %d операция";
 "transactionPreview.selectHint" = "Қосу үшін операцияларды таңдаңыз";
 "transactionPreview.addSelected" = "Таңдалғандарды қосу (%d)";
-"transactionPreview.noAccount" = "Шотсыз";
 "transactionPreview.noMatchingAccount" = "Бұл валютада шот жоқ";
 "transactionPreview.account" = "Шот";
-"navigation.voiceInput" = "Дауыспен енгізу";
 "navigation.subcategorySearch" = "Ішкі санаттарды іздеу";
-"navigation.selectDate" = "Күнді таңдаңыз";
-"navigation.selectIcon" = "Белгішені таңдаңыз";
-"navigation.selectLogo" = "Логотипті таңдау";
-"navigation.importResult" = "Импорт нәтижесі";
 
 // MARK: - Time Filters
 "timeFilter.title" = "Уақыт сүзгісі";
@@ -52,8 +39,6 @@
 "button.cancel" = "Бас тарту";
 "button.delete" = "Жою";
 "button.close" = "Жабу";
-"button.import" = "Импорт";
-"button.export" = "Экспорт";
 "button.copy" = "Көшіру";
 "button.paste" = "Қою";
 "button.add" = "Қосу";
@@ -62,9 +47,7 @@
 "button.continue" = "Жалғастыру";
 "button.ok" = "ОК";
 "button.retry" = "Қайталау";
-"button.change" = "Өзгерту";
 "button.select" = "Таңдау";
-"button.remove" = "Алып тастау";
 "button.apply" = "Қолдану";
 
 // MARK: - Empty States
@@ -75,7 +58,6 @@
 "category.emptyDescription" = "Ақшаңыз неге жұмсалатынын көру үшін санат қосыңыз";
 "emptyState.noSubcategories" = "Ішкі санаттар жоқ";
 "subcategory.emptyDescription" = "Шығыстарды толығырақ бөлу үшін ішкі санаттар қосыңыз";
-"emptyState.noData" = "Деректер жоқ";
 "emptyState.searchNoResults" = "Ештеңе табылмады";
 "emptyState.startTracking" = "Қаржыңызды бақылау үшін операцияларды қоса бастаңыз";
 "emptyState.tryDifferentSearch" = "Іздеу сұрауын өзгертіп көріңіз";
@@ -92,9 +74,7 @@
 "currency.noResults.title" = "Валюта табылмады";
 "currency.noResults.description" = "Басқа атауды немесе кодты енгізіп көріңіз.";
 "currency.customize" = "Валюталарды баптау";
-"currency.accountCurrencies" = "Шот валюталары";
 "currency.customizeAction" = "Баптау...";
-"settings.wallpaper" = "Басты бет тұсқағазы";
 "settings.background" = "Фон";
 "settings.merchantLogos" = "Сатушы логотиптері";
 "home.hint.categories" = "Шығыс қосу үшін санатты басыңыз";
@@ -126,11 +106,8 @@
 "settings.background.removePhoto" = "Фотоны жою";
 "settings.background.choosePhoto" = "Фото таңдау";
 "settings.background.changePhoto" = "Фотоны ауыстыру";
-"settings.background.preview" = "Фонды алдын ала қарау";
 "settings.background.opacity" = "Түс қанықтығы";
 "settings.background.opacityTitle" = "Шығыс түсі";
-"settings.dataManagement" = "Деректерді басқару";
-"settings.categories" = "Санаттар";
 "settings.subcategories" = "Ішкі санаттар";
 "settings.accounts" = "Шоттар";
 "settings.exportImport" = "Экспорт және импорт";
@@ -156,17 +133,14 @@
 "alert.resetLearning.message" = "Талдаушы әр санат үшін әдетте қай шотты таңдайтыныңызды ұмытады. Операцияларыңыз жойылмайды.";
 "alert.resetLearning.confirm" = "Тазалау";
 "alert.importError.title" = "Импорт қатесі";
-"alert.errorTitle" = "Қате";
 
 // MARK: - Progress
-"progress.loadingData" = "Деректер жүктелуде...";
 "progress.processingPDF" = "PDF өңделуде...";
 "progress.recognizingText" = "Мәтін танылуда: %d/%d бет";
 "progress.page" = "%d/%d бет";
 
 // MARK: - Errors
 "error.generic.title" = "Қате";
-"error.importFailed" = "Импорт сәтсіз аяқталды";
 "storeUnavailable.title" = "Деректеріңізді ашу мүмкін емес";
 "storeUnavailable.message.migration" = "Tenra деректеріңізді қолданбаның осы нұсқасына көшіре алмады.";
 "storeUnavailable.message.diskFull" = "Құрылғыда бос орын қалмады. Орын босатып, қайталап көріңіз.";
@@ -179,35 +153,19 @@
 "accessibility.accountCard.label" = "%@, баланс %@";
 "accessibility.accountCard.hint" = "Шот мәліметтерін көру үшін басыңыз";
 
-// MARK: - Account Actions
-"account.transfer" = "Аударым";
-"account.topUp" = "Толықтыру";
-"account.withdrawal" = "Шешіп алу";
-
 // MARK: - Analytics
 "analytics.history" = "Тарих";
 "analytics.planned" = "Жоспарда";
 "history.section.title" = "Тарих";
 
 // MARK: - Transaction Form
-"transaction.account" = "Шот";
 "transaction.amount" = "Сома";
-"transaction.description" = "Сипаттама";
 "transaction.date" = "Күні";
 "transaction.recurring" = "Қайталанатын";
-"transaction.frequency" = "Жиілігі";
 "transaction.category" = "Санат";
-"transaction.subcategories" = "Ішкі санаттар";
-"transaction.currency" = "Валюта";
-
-// MARK: - Transaction Actions
-"transaction.importTransactions" = "Операцияларды импорттау";
-"transaction.addNew" = "Операция қосу";
-"transaction.new" = "Жаңа операция";
 
 // MARK: - Search
 "search.placeholder" = "Сома, санат немесе сипаттама бойынша іздеу";
-"search.subcategories" = "Ішкі санаттарды іздеу";
 "search.recent" = "Соңғылар";
 "search.recent.clear" = "Тазалау";
 "search.recent.remove" = "Жою";
@@ -227,31 +185,16 @@
 
 // MARK: - Common
 "common.name" = "Атауы";
-"common.balance" = "Баланс";
 "common.type" = "Түрі";
-"common.icon" = "Белгіше";
 "common.color" = "Түс";
-"common.logo" = "Логотип";
-"common.all" = "Барлығы";
-"common.selected" = "Таңдалды";
-"common.none" = "Жоқ";
-"common.uncategorized" = "Санатсыз";
-"common.unknown" = "Белгісіз";
 "common.cancel" = "Бас тарту";
-"common.back" = "Артқа";
 "common.select" = "Таңдау";
-"common.selectAccount" = "Шотты таңдау";
-"common.selectCategory" = "Санатты таңдау";
-"common.selectSubcategory" = "Ішкі санатты таңдау";
-"common.selectColor" = "Түсті таңдау";
-"common.filterBy" = "Сүзгі";
 "common.frequency" = "Жиілігі";
 "common.startDate" = "Басталу күні";
 
 // MARK: - Date Labels
 "date.today" = "Бүгін";
 "date.yesterday" = "Кеше";
-"date.tomorrow" = "Ертең";
 "date.selectDate" = "Күні";
 "date.choose" = "Күнді таңдаңыз";
 
@@ -265,25 +208,16 @@
 "transaction.stopRecurring.title" = "Қайталау тоқтатылсын ба?";
 "transaction.stopRecurring.message" = "Операцияның қайталануы тоқтатылады. Барлық болашақ операциялар жойылады.";
 "transaction.stopRecurring.confirm" = "Қайталауды тоқтату";
-"accessibility.deleteTransaction" = "Операцияны жою";
-"accessibility.stopRecurring" = "Операцияның қайталануын тоқтату";
-"accessibility.swipeForOptions" = "Әрекеттер үшін солға сырғытыңыз";
 
 // MARK: - Accounts Management
 "accounts.title" = "Шоттар";
-"account.interestToday" = "Бүгінгі пайыз: %@";
 "account.interestTodayPrefix" = "Бүгінгі пайыз: ";
 "account.nextPosting" = "Келесі есептеу: %@";
-"account.selectLogo" = "Логотипті таңдау";
-"account.popularBanks" = "Танымал банктер";
-"account.otherBanks" = "Басқа банктер";
 "account.namePlaceholder" = "Шот атауы";
 "account.deleteTitle" = "Шот жойылсын ба?";
 "account.deleteMessage" = "«%@» шотындағы операциялармен не істеу керек?";
 "account.deleteOnlyAccount" = "Тек шотты жою";
 "account.deleteAccountAndTransactions" = "Шот пен операцияларды жою";
-"common.currency" = "Валюта";
-"common.balancePlaceholder" = "0.00";
 "common.error" = "Қате";
 
 // MARK: - Deposits
@@ -292,7 +226,6 @@
 "deposit.changeRate" = "Мөлшерлемені өзгерту";
 "deposit.deleteTitle" = "Депозит жойылсын ба?";
 "deposit.deleteMessage" = "Депозиттің барлық деректері мен байланысты операциялар жойылады.";
-"deposit.balance" = "Баланс";
 "deposit.interestToday" = "Бүгінгі пайыз";
 "deposit.rate" = "Мөлшерлеме";
 "deposit.rateAnnual" = "% жылдық";
@@ -300,56 +233,31 @@
 "deposit.capitalizationEnabled" = "Қосулы";
 "deposit.capitalizationDisabled" = "Өшірулі";
 "deposit.postingDay" = "Есептеу күні";
-"deposit.nextPosting" = "Келесі есептеу";
-"deposit.topUp" = "Толықтыру";
-"deposit.transferToAccount" = "Шотқа аудару";
-"deposit.topUpTitle" = "Депозитті толықтыру";
-"deposit.transferFromTitle" = "Депозиттен аудару";
-"deposit.sourceAccount" = "Жіберуші шот";
-"deposit.targetAccount" = "Алушы шот";
-"deposit.noOtherAccounts" = "Аударым үшін басқа шоттар жоқ";
-"deposit.amount" = "Сома";
-"deposit.description" = "Сипаттама";
-"deposit.descriptionOptional" = "Сипаттама (міндетті емес)";
-"deposit.date" = "Күні";
-"deposit.topUpDescription" = "Депозитті толықтыру";
-"deposit.transferFromDescription" = "Депозиттен аударым";
 "deposit.newRate" = "Жаңа пайыздық мөлшерлеме";
 "deposit.effectiveDate" = "Күшіне ену күні";
 "deposit.note" = "Ескертпе (міндетті емес)";
 "deposit.changeRateTitle" = "Мөлшерлемені өзгерту";
-"deposit.name" = "Депозит атауы";
 "deposit.namePlaceholder" = "Атауы";
 "deposit.bank" = "Банк";
-"deposit.bankName" = "Банк атауы";
 "deposit.bankNamePlaceholder" = "Банк атауы";
-"deposit.selectLogo" = "Логотипті таңдау";
-"deposit.initialAmount" = "Бастапқы сома";
 "deposit.interestRate" = "Пайыздық мөлшерлеме";
-"deposit.postingDayTitle" = "Пайыз есептелетін күн";
 "deposit.dayOfMonth" = "Айдың күні";
-"deposit.postingDayHint" = "Айда күн аз болса, пайыз айдың соңғы күні есептеледі";
-"deposit.capitalizationTitle" = "Капиталдандыру";
 "deposit.enableCapitalization" = "Капиталдандыруды қосу";
 "deposit.capitalizationHint" = "Капиталдандыру қосулы болса, пайыз ай сайын негізгі сомаға қосылады";
 "deposit.countsForToday" = "«Бүгінге» есебіне қосу";
 "deposit.countsForToday.hint" = "Кез келген уақытта шешуге болатын ақша. «Бүгінге» мен Тэн оны карталармен бірге есептейді.";
 "deposit.new" = "Жаңа депозит";
 "deposit.editTitle" = "Депозитті өзгерту";
-"deposit.interestAccrual.description" = "Пайыздар";
 "deposit.interestAccrual.category" = "Пайыздар";
 
 // MARK: - Categories Management
 "categories.expenseCategories" = "Шығыс санаттары";
-"categories.incomeCategories" = "Кіріс санаттары";
 "category.uncategorized" = "Санатсыз";
 "category.deleteTitle" = "Санат жойылсын ба?";
 "category.deleteOnlyCategory" = "Тек санатты жою";
 "category.deleteCategoryAndTransactions" = "Санат пен операцияларды жою";
 "category.deleteMessage" = "«%@» санатындағы операциялармен не істеу керектігін таңдаңыз.";
 "category.namePlaceholder" = "Санат атауы";
-"category.tapToSelect" = "Таңдау үшін басыңыз";
-"category.subcategories" = "Ішкі санаттар";
 "category.addSubcategory" = "Ішкі санат қосу";
 "category.manageSubcategories" = "Ішкі санаттарды басқару";
 
@@ -394,12 +302,7 @@
 "iconPicker.gaming" = "Ойындар";
 "iconPicker.devTools" = "Әзірлеуші құралдары және ЖИ";
 "iconPicker.services" = "Қызметтер";
-"iconPicker.popularBanks" = "Танымал банктер";
-"iconPicker.otherBanks" = "Басқа банктер";
 "iconPicker.searchOnline" = "Бренд логотипін іздеу...";
-"iconPicker.noLogo" = "Логотипсіз";
-"iconPicker.searching" = "Ізделуде...";
-"iconPicker.searchResults" = "Іздеу нәтижелері";
 
 // MARK: - Category Filter
 "categoryFilter.allCategories" = "Барлық санаттар";
@@ -415,23 +318,10 @@
 "accessibility.voiceInputHint" = "Операцияны дауыспен жазу";
 "accessibility.calendar" = "Күнтізбе";
 "accessibility.calendarHint" = "Операцияларды сүзу үшін күн аралығын таңдау";
-"accessibility.settings" = "Баптаулар";
-"accessibility.settingsHint" = "Қолданба баптауларын ашу";
 
 // MARK: - Quick Add Transaction / Add Transaction Modal
-"quickAdd.account" = "Шот";
-"quickAdd.amount" = "Сома";
-"quickAdd.description" = "Сипаттама";
 "quickAdd.descriptionPlaceholder" = "Сипаттама (міндетті емес)";
 "quickAdd.balanceAfter" = "Шотта қалады";
-"quickAdd.recurring" = "Қайталанатын операция";
-"quickAdd.makeRecurring" = "Қайталау";
-"quickAdd.frequency" = "Жиілігі";
-"quickAdd.subcategories" = "Ішкі санаттар";
-"quickAdd.searchSubcategories" = "Ішкі санаттарды іздеу";
-"quickAdd.searchAndAddSubcategories" = "Ішкі санаттарды іздеу және қосу";
-"quickAdd.selectDate" = "Күнді таңдаңыз";
-"quickAdd.done" = "Дайын";
 
 // MARK: - Validation Errors
 "error.validation.enterAmount" = "Дұрыс соманы енгізіңіз";
@@ -442,19 +332,14 @@
 // MARK: - Voice Input
 "voice.title" = "Дауыспен енгізу";
 "voice.speak" = "Сөйлеңіз...";
-"voice.recording" = "Жазылуда...";
 "voice.error" = "Қате";
 "voice.errorMessage" = "Жазуды бастау мүмкін болмады";
 "voice.emptyText" = "Мәтін танылмады. Қайталап көріңіз.";
-"voice.vadToggle" = "Үнсіздікте автоматты тоқтату";
-"voice.vadDescription" = "2,5 секунд үнсіздіктен кейін жазу автоматты түрде тоқтайды";
 
 // MARK: - Voice Input Confirmation
 "voiceConfirmation.title" = "Операцияны тексеріңіз";
 "voiceConfirmation.confirm" = "Растау";
-"voiceConfirmation.type" = "Операция түрі";
 "voiceConfirmation.noAccounts" = "Қолжетімді шоттар жоқ";
-"voiceConfirmation.selectCategory" = "Санатты таңдаңыз";
 "voiceConfirmation.warning.accountNotFound" = "Шот табылмады, әдепкі шот таңдалды";
 "voiceConfirmation.warning.accountNotRecognized" = "Шот танылмады, әдепкі шот таңдалды";
 "voiceConfirmation.warning.enterAmount" = "Соманы енгізіңіз";
@@ -462,7 +347,6 @@
 "voiceConfirmation.warning.selectAccount" = "Шотты таңдаңыз";
 "voiceConfirmation.warning.accountNotSelected" = "Шот таңдалмады, әдепкі шот қолданылды";
 "voiceConfirmation.warning.categoryNotRecognized" = "Санат танылмады, әдепкі санат таңдалды";
-"voiceConfirmation.warning.selectCategory" = "Санатты таңдаңыз";
 "voiceConfirmation.warning.categoryNotSelected" = "Санат таңдалмады, әдепкі санат қолданылды";
 "voiceConfirmation.warning.categoryNotFound" = "Санатты табу мүмкін болмады";
 
@@ -479,7 +363,6 @@
 "subscriptions.deleteSubscriptionAndTransactions" = "Жазылым мен операцияларды жою";
 "subscriptions.pause" = "Тоқтата тұру";
 "subscriptions.resume" = "Жалғастыру";
-"subscriptions.transactionHistory" = "Операциялар тарихы";
 "subscriptions.category" = "Санат";
 "subscriptions.frequency" = "Жиілігі";
 "subscriptions.nextCharge" = "Келесі шегеру";
@@ -513,7 +396,6 @@
 "frequency.yearly" = "Жыл сайын";
 
 // Subscription Form
-"subscription.basicInfo" = "Негізгі ақпарат";
 "subscription.namePlaceholder" = "Жазылым атауы";
 "subscription.reminders" = "Еске салғыштар";
 "subscription.scheduleSection" = "Кесте";
@@ -531,12 +413,10 @@
 "account.selectAccount" = "Шотты таңдаңыз";
 
 // Category messages
-"category.selectCategory" = "Санатты таңдаңыз";
 
 // Error messages
 "error.subscriptionNameRequired" = "Жазылым атауын енгізіңіз";
 "error.invalidAmount" = "Дұрыс соманы енгізіңіз";
-"error.categoryRequired" = "Санатты таңдаңыз";
 "error.accountRequired" = "Төлем шотын таңдаңыз";
 "error.accountNameRequired" = "Шот атауын енгізіңіз";
 "error.categoryNameRequired" = "Санат атауын енгізіңіз";
@@ -549,26 +429,10 @@
 "yearly" = "Жыл сайын";
 "budget_reset_day" = "Жаңарту күні";
 "budget_reset_day_description" = "Бюджет жаңаратын ай күні (1-31)";
-"budget_settings" = "Бюджет баптаулары";
-"current_budget" = "Ағымдағы бюджет";
-"current_settings" = "Ағымдағы баптаулар";
-"remove_budget" = "Бюджетті жою";
-"set_budget_for" = "Бюджет белгілеу";
 "save" = "Сақтау";
-"cancel" = "Бас тарту";
 "category.noBudgetSet" = "Бюджет белгіленбеген";
 
-// MARK: - Calendar
-"calendar.upcomingPayments" = "Алдағы төлемдер";
-"calendar.month" = "Ай";
-"calendar.halfYear" = "6 ай";
-"calendar.year" = "Жыл";
-"calendar.noUpcomingPayments" = "Алдағы төлемдер жоқ";
-"calendar.currentMonth" = "Ағымдағы ай";
-
 // MARK: - Transaction Forms
-"transactionForm.amount" = "Сома";
-"transactionForm.description" = "Сипаттама";
 "transactionForm.descriptionPlaceholder" = "Сипаттама (міндетті емес)";
 "transactionForm.category" = "Санат";
 "transactionForm.selectCategory" = "Санатты таңдаңыз";
@@ -576,7 +440,6 @@
 "transactionForm.transfer" = "Аударым";
 "transactionForm.topUp" = "Толықтыру";
 "transactionForm.toAccount" = "Алушы шот";
-"transactionForm.fromAccount" = "Жіберуші шот";
 "transactionForm.fromHeader" = "Қайдан";
 "transactionForm.toHeader" = "Қайда";
 "transactionForm.noAccountsForTransfer" = "Аударым үшін басқа шоттар жоқ";
@@ -585,16 +448,10 @@
 "transactionForm.cannotTransferToSame" = "Сол шоттың өзіне аудару мүмкін емес";
 "transactionForm.accountNotFound" = "Шот табылмады";
 "transactionForm.selectTargetAccount" = "Алушы шотты таңдаңыз";
-"transactionForm.depositTopUp" = "Депозитті толықтыру";
-"transactionForm.depositWithdrawal" = "Депозиттен алу";
 "transactionForm.accountTopUp" = "Шотты толықтыру";
-"transactionForm.recurring" = "Қайталанатын";
-"transactionForm.makeRecurring" = "Қайталанатын ету";
 "transactionForm.searchSubcategories" = "Ішкі санаттарды іздеу";
 "transactionForm.addSubcategory" = "Ішкі санат қосу";
 "transactionForm.createSubcategory" = "«%@» құру";
-"transactionForm.searchAndAddSubcategories" = "Ішкі санаттарды іздеу және қосу";
-"transactionForm.searchOrCreateSubcategory" = "Ішкі санатты табу немесе құру";
 // MARK: - Recurring Transactions Errors
 "recurring.error.seriesNotFound" = "Тұрақты төлем табылмады";
 "recurring.error.invalidFrequency" = "Жиілік дұрыс таңдалмады";
@@ -605,9 +462,6 @@
 "recurring.error.emptyCurrency" = "Валютаны көрсету қажет";
 "recurring.error.missingSubscriptionStatus" = "Жазылым күйін көрсету қажет";
 "recurring.error.invalidReminderOffsets" = "Еске салу күндері оң сан болуы керек";
-"recurring.validation.amountRequired" = "Соманы көрсету қажет";
-"recurring.validation.descriptionRequired" = "Сипаттаманы көрсету қажет";
-
 
 // MARK: - CSV Import
 "category.other" = "Басқа";
@@ -624,10 +478,6 @@
 "csvImport.error.noHeaders" = "Файлда тақырыптар жоқ";
 "csvImport.error.invalidFormat" = "CSV пішімі қате";
 "csvImport.error.persistenceFailed" = "Импорт деректерін дерекқорға сақтау мүмкін болмады.";
-"csvImport.progress.parsing" = "CSV файлы талдануда...";
-"csvImport.progress.validating" = "Жолдар тексерілуде...";
-"csvImport.progress.importing" = "Операциялар импортталуда...";
-"csvImport.progress.finalizing" = "Импорт аяқталуда...";
 "csvImport.result.imported" = "%d импортталды";
 "csvImport.result.skipped" = "%d өткізілді";
 "csvImport.result.duplicates" = "%d қайталанған";
@@ -637,8 +487,6 @@
 "csvImport.result.duration" = "Ұзақтығы";
 "csvImport.result.speed" = "Жылдамдық";
 "csvImport.result.title" = "Импорт аяқталды";
-"csvImport.button.cancel" = "Импорттан бас тарту";
-"csvImport.button.retry" = "Қайталау";
 "csvImport.button.viewErrors" = "Қателерді көру";
 "csvImport.preview.title" = "CSV алдын ала қарау";
 "csvImport.preview.rows" = "Жолдар";
@@ -655,14 +503,9 @@
 "csvImport.mapping.currency" = "Валюта";
 "csvImport.mapping.account" = "Шот";
 "csvImport.mapping.none" = "Жоқ";
-"csvImport.entityMapping.title" = "Нысандарды сәйкестендіру";
-"csvImport.entityMapping.accounts" = "Шоттар";
-"csvImport.entityMapping.categories" = "Санаттар";
-"csvImport.entityMapping.autoCreate" = "Автоматты түрде құрылады";
 "csvImport.preview.fileInfo" = "Файл туралы ақпарат";
 "csvImport.preview.headersTitle" = "Файлдағы бағандар";
 "csvImport.preview.dataPreview" = "Деректерді алдын ала қарау (алғашқы %d жол)";
-"csvImport.preview.empty" = "(бос)";
 "csvImport.mapping.category" = "Санат";
 "csvImport.mapping.targetAccount" = "Алушы шот";
 "csvImport.mapping.targetCurrency" = "Алушы валютасы";
@@ -727,25 +570,6 @@
 "error.export.fileWriteFailed" = "Экспорт файлын жазу мүмкін болмады: %@";
 "error.export.insufficientSpace" = "Экспорт үшін дискіде орын жеткіліксіз";
 
-// MARK: - Alert Titles (Settings)
-"alert.recalculateBalances.title" = "Баланстарды қайта есептеу керек пе?";
-"alert.recalculateBalances.message" = "Барлық шоттардың баланстары операциялар негізінде басынан бастап қайта есептеледі. Баланстар дұрыс көрсетілмесе, осыны пайдаланыңыз.";
-"alert.recalculateBalances.confirm" = "Қайта есептеу";
-"alert.selectWallpaper.title" = "Тұсқағаз таңдау";
-"alert.removeWallpaper.title" = "Тұсқағазды жою керек пе?";
-"alert.removeWallpaper.message" = "Ағымдағы тұсқағаз басты экраннан жойылады";
-"alert.exportSuccess.title" = "Экспорт аяқталды";
-"alert.exportSuccess.message" = "Деректер экспортталды: %@";
-"alert.importSuccess.title" = "Импорт аяқталды";
-"alert.importSuccess.message" = "Импортталған операциялар: %d";
-
-// MARK: - Settings Labels (Additional)
-"settings.recalculateBalances" = "Шот баланстарын қайта есептеу";
-"settings.wallpaperHistory" = "Тұсқағаз тарихы";
-"settings.recentCurrencies" = "Соңғы валюталар";
-"settings.exportProgress" = "Экспорт... %d%%";
-"settings.importProgress" = "Импорт... %d%%";
-
 // MARK: - Success Messages
 "success.settings.currencyUpdated" = "Валюта сәтті жаңартылды";
 "success.settings.wallpaperUpdated" = "Тұсқағаз сәтті жаңартылды";
@@ -755,7 +579,6 @@
 "success.recalculation.completed" = "Баланстар сәтті қайта есептелді";
 
 // MARK: - Import Errors (Phase 2)
-"error.import.coordinatorNotAvailable" = "Импорт координаторы қолжетімсіз";
 "error.import.viewModelsNotAvailable" = "Қажетті ViewModel-дер қолжетімсіз";
 
 // MARK: - Import Progress (Phase 2)
@@ -789,7 +612,6 @@
 "iconStyle.tint.palette" = "Палитра";
 "iconStyle.tint.original" = "Түпнұсқа түстер";
 "iconStyle.preset.categoryIcon" = "Санат белгішесі";
-"iconStyle.preset.bankLogo" = "Банк логотипі";
 "iconStyle.preset.serviceLogo" = "Сервис логотипі";
 "iconStyle.preset.placeholder" = "Толтырғыш";
 "recurring.never" = "Ешқашан";
@@ -799,11 +621,6 @@
 "filter.allAccounts" = "Барлық шоттар";
 "filter.allCategories" = "Барлық санаттар";
 "filter.allSubcategories" = "Барлық ішкі санаттар";
-
-// MARK: - Animated Input (Phase 16)
-"input.amountPlaceholder" = "0";
-"input.titleHint" = "Атауын өзгерту үшін түртіңіз";
-"input.balanceHint" = "Балансты өзгерту үшін түртіңіз";
 
 // MARK: - Insights (Phase 17)
 "insights.title" = "Аналитика";
@@ -818,7 +635,6 @@
 "insights.availableBalance" = "Қолжетімді баланс";
 "insights.topMonths.best" = "Ең жақсы 10 ай";
 "insights.topMonths.worst" = "Ең нашар 10 ай";
-"insights.loading" = "Қаржыңыз талдануда...";
 "insights.emptyState.title" = "Әзірге инсайттар жоқ";
 "insights.emptyState.description" = "Қаржылық инсайттарды көру үшін операциялар қосыңыз";
 "insights.noInsightsForFilter" = "Бұл санат бойынша инсайттар жоқ";
@@ -836,13 +652,11 @@
 "insights.vsPreviousPeriod" = "алдыңғы кезеңмен салыстырғанда";
 "insights.vsAverage" = "орташамен салыстырғанда";
 "insights.budgetOver" = "Бюджеттен асты";
-"insights.budgetUnder" = "Бюджет шегінде";
 "insights.budgetHeadroom" = "Бюджет қоры";
 "insights.projectedOverspend" = "Болжамды артық шығын";
 "insights.categoriesOverBudget" = "%d санат бюджеттен асты";
 "insights.categoriesAtRisk" = "%d санат қауіп аймағында";
 "insights.categoriesUnderBudget" = "%d санат қалыпты";
-"insights.categoriesUnit" = "санат";
 "insights.totalRecurring" = "Айлық тұрақты шығыстар";
 "insights.totalRecurring.week" = "Апталық тұрақты төлемдер";
 "insights.totalRecurring.month" = "Айлық тұрақты шығыстар";
@@ -884,11 +698,9 @@
 "insights.projectedBalance" = "Болжамды баланс";
 "insights.in30Days" = "30 күннен кейін";
 "insights.recurringAndExpenses" = "Тұрақты төлемдер + орташа шығыстар";
-"insights.projected" = "болжамды өзгеріс";
 "insights.currentBalance" = "Ағымдағы баланс";
 "insights.cashFlowTrend" = "Ақша ағыны үрдісі";
 "insights.breakdown" = "Бөлініс";
-"insights.monthlyBreakdown" = "Айлар бойынша";
 "insights.breakdown.week" = "Апталар бойынша";
 "insights.breakdown.month" = "Айлар бойынша";
 "insights.breakdown.quarter" = "Тоқсандар бойынша";
@@ -901,8 +713,6 @@
 "insights.other" = "Басқа";
 "insights.noSubcategory" = "Ішкі санатсыз";
 "insights.spendingTrend" = "Шығыс үрдісі";
-"insights.subcategories" = "Ішкі санаттар";
-"insights.periodComparison" = "Кезеңдерді салыстыру";
 "insights.daysLeft" = "%d күн қалды";
 
 // Granularity picker
@@ -917,7 +727,6 @@
 "insights.granularity.year.short" = "Жыл";
 "insights.granularity.allTime.short" = "Барлығы";
 "insights.bucket.week.label" = "Соңғы 7 күн";
-"insights.summary.windowTotalsLabel" = "Графиктің бүкіл кезеңі бойынша";
 "insights.formula.value.months" = "%.1f ай";
 "insights.formula.howCalculated" = "Қалай есептеледі";
 "insights.formula.value.days" = "%d күн";
@@ -954,21 +763,8 @@
 "insights.formula.spendingForecast.rec.overrun" = "Шығыс кірістен %@ асып кетуі мүмкін. Ерікті шығыстарды қайта қарап шығыңыз немесе міндетті емес сатып алуларды келесі айға қалдырыңыз.";
 "insights.formula.spendingForecast.rec.onTrack" = "Болжам бойынша %@ қор қалады. Оны сақтау үшін жоспардан тыс сатып алулардан аулақ болыңыз немесе соманы қазір жинаққа аударыңыз.";
 "insights.formula.spendingForecast.rec.noIncome" = "Осы айда әлі кіріс тіркелмеген, сондықтан болжам тек ақпарат үшін.";
-"insights.formula.balanceRunway.title" = "Баланс қоры";
-"insights.formula.balanceRunway.heroLabel" = "Қазіргі шығын қарқынымен баланс таусылғанға дейінгі айлар";
-"insights.formula.balanceRunway.heroLabel.growing" = "Орташа айлық артық қаражат";
-"insights.formula.balanceRunway.formulaHeader" = "Қалай есептеледі";
-"insights.formula.balanceRunway.row.balance" = "Ағымдағы баланс";
-"insights.formula.balanceRunway.row.avgIncome" = "Орташа айлық кіріс (3 ай)";
-"insights.formula.balanceRunway.row.avgExpenses" = "Орташа айлық шығыс (3 ай)";
-"insights.formula.balanceRunway.row.burn" = "Айлық шығын (шығыс − кіріс)";
 "insights.formula.balanceRunway.row.netFlow" = "Орташа таза ағын";
 "insights.formula.balanceRunway.row.runway" = "Баланс қоры";
-"insights.formula.balanceRunway.explainer" = "Баланс ÷ айлық шығын. 3 айлық шек сау резервтік қорға сәйкес келеді; 1 айдан төмен болса, бір сәтсіз жалақы кезеңі бүкіл қорды таусады.";
-"insights.formula.balanceRunway.explainer.growing" = "Кіріс шығыстан асады, сондықтан баланс өсіп жатыр. Негізгі мән: орташа айлық артық қаражат. Осы қарқынмен балансыңыз шексіз жетеді.";
-"insights.formula.balanceRunway.rec.growing" = "Сіз оң нәтижедесіз. Артық қаражатты бос жатқызбай, мақсаттарға, қарыздарға немесе табысы жоғары жинаққа бағыттаңыз.";
-"insights.formula.balanceRunway.rec.long" = "3 айдан астам қор: сіз жақсы қорғалғансыз. Артық ақшаны ұзақ мерзімді құралдарға салуды қарастырыңыз.";
-"insights.formula.balanceRunway.rec.short" = "3 айдан төмен. 3 айлық қорға жету үшін шығынды айына ~%@ азайтыңыз; ең үлкен ерікті шығыс санатынан бастаңыз.";
 "insights.formula.balanceRunway.rec.critical" = "Бір айдан аз қор: алшақтықты тез арада жабыңыз. Бір ірі тұрақты төлемді тоқтата тұрудың өзі бірнеше күн ұтады.";
 "insights.formula.yearOverYear.title" = "Жылдан жылға шығыс";
 "insights.formula.yearOverYear.heroLabel" = "Өткен жылдың сол айымен салыстырғандағы өзгеріс";
@@ -1038,7 +834,6 @@
 "insights.categoryTrend" = "Шығыс үрдісі";
 "insights.categoryTrend.risingMonths" = "%d ай бойы өсуде";
 "insights.subscriptionGrowth" = "Жазылымдар өсімі";
-"insights.vsThreeMonthsAgo" = "3 ай бұрынмен салыстырғанда";
 
 // Forecasting
 "insights.forecasting" = "Болжам";
@@ -1108,7 +903,6 @@
 "tab.home" = "Басты";
 "tab.analytics" = "Аналитика";
 "tab.finances" = "Қаржы";
-"tab.settings" = "Баптаулар";
 "tab.voice" = "Дауыс";
 "tab.ocr" = "Импорт";
 "tab.add" = "Қосу";
@@ -1117,7 +911,6 @@
 // MARK: - Finances
 "finances.title" = "Қаржы";
 "finances.accounts.title" = "Шоттар";
-"finances.accounts.totalLabel" = "Жалпы баланс";
 "finances.accounts.empty" = "Шоттар жоқ";
 "finances.deposits.title" = "Депозиттер";
 "finances.deposits.empty" = "Депозиттер жоқ";
@@ -1145,14 +938,11 @@
 "loan.unpaidThisMonth" = "Осы айда төленбеген";
 "loan.typeAnnuityShort" = "Несие";
 "loan.typeInstallmentShort" = "Бөліп төлеу";
-"loan.of" = "/";
 "loan.remainingShort" = "%d төлем қалды";
 "loan.notFound" = "Несие табылмады";
 "loan.title" = "Несие";
 "loan.changeRate" = "Мөлшерлемені өзгерту";
 "loan.earlyRepayment" = "Мерзімінен бұрын өтеу";
-"loan.history" = "Төлемдер тарихы";
-"loan.actions" = "Несие әрекеттері";
 "loan.deleteTitle" = "Несие жойылсын ба?";
 "loan.deleteMessage" = "Бұл несие бойынша төлемдер шоттарыңызда нақты шығыс ретінде тіркелген. Оларды тарихта қалдыруға немесе несиемен бірге жоюға болады.";
 "loan.closedSection" = "Жабылған";
@@ -1164,7 +954,6 @@
 "loan.deleteWithPayments" = "Несие мен төлемдерді жою";
 "loan.payoffCelebration" = "Несие өтелді. Керемет нәтиже.";
 "loan.paidOff" = "Өтелді";
-"loan.remainingPrincipal" = "Қалдық";
 "loan.nextPayment" = "Келесі төлем: %@";
 "loan.currentPaymentBreakdown" = "Ағымдағы төлемнің құрылымы";
 "loan.principalPortion" = "Негізгі борыш";
@@ -1187,46 +976,26 @@
 "loan.noSchedule" = "Кесте қолжетімсіз";
 "loan.showAllPayments" = "Барлық %d төлемді көрсету";
 "loan.interestShort" = "Пайыз: %@";
-"loan.makeEarlyRepayment" = "Мерзімінен бұрын өтеу";
 "loan.convertTitle" = "Несиеге айналдыру";
 "loan.editTitle" = "Несиені өзгерту";
 "loan.newTitle" = "Жаңа несие";
-"loan.nameHeader" = "Атауы";
 "loan.namePlaceholder" = "мысалы, Автонесие";
-"loan.bankHeader" = "Банк";
 "loan.bankLabel" = "Банк";
 "loan.bankPlaceholder" = "Банк атауы";
-"loan.typeHeader" = "Несие түрі";
 "loan.typePicker" = "Түрі";
-"loan.typeAnnuity" = "Аннуитетті (несие)";
-"loan.typeInstallment" = "Бөліп төлеу";
 "loan.installmentHint" = "Бөліп төлеу = 0% пайыз, тең төлемдер";
-"loan.principalHeader" = "Несие сомасы";
-"loan.principalPlaceholder" = "Несиенің жалпы сомасы";
-"loan.interestRateHeader" = "Пайыздық мөлшерлеме";
 "loan.interestRateLabel" = "Мөлшерлеме (жыл)";
-"loan.rateAnnualSuffix" = "% жылдық";
-"loan.termHeader" = "Мерзім";
-"loan.termPlaceholder" = "Айлар саны";
-"loan.months" = "ай";
-"loan.paymentDayHeader" = "Төлем күні";
 "loan.paymentDay" = "Айдың күні";
-"loan.paymentDayHint" = "Төлем жасалатын айдың күні";
-"loan.startDateHeader" = "Басталу күні";
 "loan.startDate" = "Несиенің басталу күні";
-"loan.repaymentAmount" = "Өтеу сомасы";
 "loan.amountPlaceholder" = "Сома";
 "loan.remainingBalance" = "Қалдық: %@";
-"loan.repaymentDate" = "Күні";
 "loan.date" = "Күні";
-"loan.repaymentType" = "Өтеу стратегиясы";
 "loan.strategy" = "Стратегия";
 "loan.reduceTerm" = "Мерзімді қысқарту";
 "loan.reducePayment" = "Төлемді азайту";
 "loan.reduceTermHint" = "Ай сайынғы төлем сақталады, ертерек аяқталады";
 "loan.reducePaymentHint" = "Мерзім сақталады, ай сайынғы төлем азаяды";
 "loan.impact" = "Нәтиже";
-"loan.note" = "Жазба";
 "loan.notePlaceholder" = "Міндетті емес жазба";
 "loan.defaultTagging" = "Әдепкі санат";
 "loan.defaultTaggingHint" = "Төлем формасына алдын ала қойылады. Алдыңғы төлемдерде соңғы қолданылған санаттың басымдығы бар.";
@@ -1234,33 +1003,24 @@
 "loan.subcategoryEmpty" = "Ішкі санаттарды қосу үшін жоғарыда санатты таңдаңыз";
 "loan.noDefaultCategory" = "Санатсыз";
 "loan.noDefaultSubcategory" = "Ішкі санатсыз";
-"loan.earlyRepaymentTitle" = "Мерзімінен бұрын өтеу";
 "loan.termReduction" = "Мерзімнің қысқаруы";
 "loan.monthsValue" = "%d ай";
 "loan.newEndDate" = "Жаңа аяқталу күні";
 "loan.paymentReduction" = "Төлемнің азаюы";
 "loan.newMonthlyPayment" = "Жаңа ай сайынғы төлем";
-"loan.newRate" = "Жаңа пайыздық мөлшерлеме";
 "loan.effectiveDate" = "Күшіне ену күні";
 "loan.rateChangeImpact" = "Нәтиже";
 "loan.paymentChange" = "Өзгеріс";
-"loan.enterRateForPreview" = "Нәтижені көру үшін мөлшерлемені енгізіңіз";
 "loan.changeRateTitle" = "Мөлшерлемені өзгерту";
-"loan.payment.description" = "Несие төлемі";
 
 // Loans Phase 5
 "loan.typeLockedHint" = "Несие түрін жасағаннан кейін өзгерту мүмкін емес";
 "loan.makePayment" = "Төлем жасау";
-"loan.paymentTitle" = "Несие төлемі";
-"loan.paymentAmount" = "Төлем сомасы";
 "loan.sourceAccount" = "Қай шоттан";
-"loan.selectSourceAccount" = "Төлейтін шотты таңдаңыз";
 "loan.scheduledPayment" = "Кесте бойынша: %@";
 "loan.noSourceAccounts" = "Қолжетімді шоттар жоқ";
-"loan.payAll" = "Барлығын төлеу";
 "loan.payAllTitle" = "Барлық несиені төлеу";
 "loan.payAllTotal" = "Жалпы сома";
-"loan.payAllConfirm" = "Барлығын төлеу";
 
 // MARK: - Icon Picker (new categories)
 "iconPicker.localServices" = "Жергілікті сервистер";
@@ -1326,16 +1086,6 @@
 
 // MARK: - iCloud Sync
 "settings.cloud" = "Сақтық көшірмелер";
-"settings.cloud.sync" = "iCloud синхрондау";
-"settings.cloud.status.synced" = "Синхрондалды";
-"settings.cloud.status.syncing" = "Синхрондалуда...";
-"settings.cloud.status.initialSync" = "Алғашқы синхрондау";
-"settings.cloud.status.initialSyncMessage" = "Бұл бірнеше минутқа созылуы мүмкін";
-"settings.cloud.status.error" = "Синхрондау қатесі";
-"settings.cloud.status.disabled" = "Өшірулі";
-"settings.cloud.status.noAccount" = "Баптауларда iCloud-қа кіріңіз";
-"settings.cloud.lastSync" = "Соңғы синхрондау: %@";
-"settings.cloud.changes" = "%d жіберілді · %d алынды";
 "settings.cloud.backups" = "Сақтық көшірмелер";
 "settings.cloud.createBackup" = "Сақтық көшірме жасау";
 "settings.cloud.backupCreated" = "Сақтық көшірме жасалды";
@@ -1344,8 +1094,6 @@
 "settings.cloud.restoring" = "Қалпына келтірілуде…";
 "settings.cloud.restoringSubtitle" = "Қолданбаны жаппаңыз";
 "settings.cloud.deleteTitle" = "Сақтық көшірме жойылсын ба?";
-"settings.cloud.storage" = "Қойма";
-"settings.cloud.storageUsed" = "%@ / %@";
 "settings.cloud.iCloud.toggle" = "Көшірмелерді iCloud-та сақтау";
 "settings.cloud.iCloud.moving" = "Деректер тасымалдануда…";
 "settings.cloud.iCloud.footer" = "Көшірмелер сіздің iCloud-та сақталады, «Файлдар» қолданбасынан жасырылады және басқа құрылғыларыңыздағы Tenra-да қолжетімді болады.";
@@ -1357,9 +1105,6 @@
 "alert.restore.title" = "Көшірмені қалпына келтіру керек пе?";
 "alert.restore.message" = "Барлық ағымдағы деректер %@ күнгі сақтық көшірмемен ауыстырылады.";
 "alert.restore.confirm" = "Қалпына келтіру";
-"alert.disableSync.title" = "iCloud синхрондауын өшіру керек пе?";
-"alert.disableSync.message" = "Деректер тек осы құрылғыда сақталады.";
-"alert.disableSync.confirm" = "Өшіру";
 
 // Backup errors
 "error.backup.noActiveStore" = "Белсенді дерекқор табылмады";
@@ -1371,7 +1116,6 @@
 "error.backup.notDownloaded" = "Бұл сақтық көшірме iCloud-тан әлі толық жүктелмеген. Байланысты тексеріп, қайталап көріңіз.";
 
 // MARK: - Loans (Form)
-"loan.amountLabel" = "Сома";
 "loan.detailsSection" = "Несие мәліметтері";
 "loan.noteLabel" = "Жазба";
 "loan.payAllLoans" = "Несиелер";
@@ -1386,11 +1130,6 @@
 "loan.error.noSourceAccount" = "Төлейтін шотты таңдаңыз";
 "loan.linkPayments" = "Төлемдерді байланыстыру";
 "loan.linkPayments.title" = "Төлемдерді байланыстыру";
-"loan.linkPayments.selected" = "%d таңдалды";
-"loan.linkPayments.selectedWithAmount" = "%d таңдалды · %@";
-"loan.linkPayments.search" = "Сипаттама немесе сома бойынша іздеу";
-"loan.linkPayments.link" = "%d төлемді байланыстыру";
-"loan.linkPayments.empty" = "Сәйкес операциялар жоқ";
 "loan.linkPayments.error.notFound" = "Несие табылмады";
 "loan.markPaid" = "Төленді деп белгілеу";
 "loan.markUnpaid" = "Төленбеді деп белгілеу";
@@ -1400,7 +1139,6 @@
 
 // Subscription Link Payments
 "subscription.linkPayments.title" = "Төлемдерді байланыстыру";
-"subscription.linkPayments.search" = "Сипаттама немесе сома бойынша іздеу";
 "subscription.linkPayments.searchPlaceholder" = "Іздеу";
 "subscription.linkPayments.selectedWithAmount" = "%d таңдалды · %@";
 "subscription.linkPayments.link" = "Байланыстыру (%d)";
@@ -1409,7 +1147,6 @@
 "subscription.linkPayments.amountTolerance" = "±30%";
 "subscription.linkPayments.amountAll" = "Барлығы";
 "subscription.linkPayments.unknownAccount" = "Белгісіз шот";
-"common.done" = "Дайын";
 "deposit.linkInterest.title" = "Пайыз төлемдерін байланыстыру";
 "deposit.recalculateInterest" = "Пайызды қайта есептеу";
 "subscriptions.spentAllTime" = "Барлық уақытта жұмсалды";
@@ -1455,12 +1192,6 @@
 
 // MARK: - Insights
 "insights.remaining" = "қалды";
-"insights.range.totalExpenses" = "Кезеңдегі шығыстар";
-"insights.range.netFlow" = "Кезеңдегі таза ағын";
-"insights.range.wealthChange" = "Капиталдың өзгерісі";
-"insights.range.totalIncome" = "Кезеңдегі кірістер";
-"insights.range.reset" = "Тазалау";
-"insights.zoom.reset" = "Сыйдыру";
 "insights.chart.line" = "Сызық";
 "insights.chart.bar" = "Бағандар";
 "insights.today" = "Бүгін";
@@ -1470,9 +1201,7 @@
 "insights.empty.subtitle" = "Операциялар тарихы жиналғанда график осында пайда болады";
 
 // MARK: - Voice Input
-"voice.noTextRecognizedYet" = "Мәтін әлі танылмады";
 "voice.stopRecording" = "Жазуды тоқтату";
-"voice.tapToFinish" = "Аяқтау үшін түртіңіз";
 "voice.tour.orb" = "Аяқтаған соң шарды түртіңіз. Сіз сөйлеп тұрғанда ол тыңдайды.";
 
 // MARK: - Voice Input Errors
@@ -1487,7 +1216,6 @@
 "voiceError.speechBecameUnavailable" = "Сөйлеуді тану қолжетімсіз болып қалды";
 "voiceError.audioSessionSetup %@" = "Аудио сеансын баптау мүмкін болмады: %@";
 "voiceError.recognitionRequestFailed" = "Тану сұрауын жасау мүмкін болмады";
-"voiceError.audioEngineCreateFailed" = "Аудио қозғалтқышын жасау мүмкін болмады";
 "voiceError.audioEngineStartFailed %@" = "Аудио қозғалтқышын іске қосу мүмкін болмады: %@";
 "voiceConfirmation.saveError" = "Сақтау қатесі";
 
@@ -1504,7 +1232,6 @@
 "csvImport.error.missingDependency %@" = "Тәуелділік жоқ: %@";
 
 // MARK: - Progress
-"progress.loadingAccounts" = "Шоттар жүктелуде";
 "progress.loadingTransactions" = "Операциялар жүктелуде";
 "progress.saving" = "Сақталуда";
 
@@ -1515,14 +1242,10 @@
 "timeFilter.customRange" = "Таңдамалы кезең";
 
 // MARK: - Accessibility
-"accessibility.accounts.addMenu" = "Қосу мәзірі";
-"accessibility.accounts.doneReordering" = "Ретін өзгертуді аяқтау";
 "accessibility.category.budgetHint" = "Бюджеттің пайдаланылуы";
 "accessibility.category.budgetProgress" = "Бюджет барысы";
 "accessibility.category.label" = "Санат";
 "accessibility.category.overBudget" = "Бюджеттен асты";
-"accessibility.deposit.history" = "Операциялар тарихы";
-"accessibility.deposit.moreActions" = "Басқа әрекеттер";
 "accessibility.insights.granularityPicker" = "Кезеңді таңдау";
 "accessibility.insights.granularityPickerHint" = "Нақтылықты таңдаңыз: ай, тоқсан немесе жыл";
 "accessibility.transaction.history" = "Операциялар тарихы";
@@ -1580,9 +1303,6 @@
 "category.detail.totalEarned" = "Барлық табысы";
 "category.detail.avgMonthly" = "Айына орта есеппен";
 "category.detail.budget" = "Бюджет";
-"category.detail.subcategories" = "Ішкі санаттар";
-"category.detail.transactionCount" = "Операциялар";
-"category.detail.manageSubcategories" = "Ішкі санаттарды басқару";
 "category.detail.type.expense" = "Шығыс";
 "category.detail.type.income" = "Кіріс";
 
@@ -1601,7 +1321,6 @@
 "pager.previous" = "Артқа";
 "pager.next" = "Келесі";
 "onboarding.cta.start" = "Бастау";
-"onboarding.cta.done" = "Дайын";
 "onboarding.cta.skip" = "Өткізіп жіберу";
 "onboarding.stepIndicator.label" = "Қадам %d / %d";
 
@@ -1611,11 +1330,7 @@
 "onboarding.account.title" = "Алғашқы шотыңызды қосыңыз";
 "onboarding.account.subtitle" = "Бұл карта, қолма-қол ақша немесе банк шоты болуы мүмкін. Қалғанын кейін қоса аласыз.";
 "onboarding.account.namePlaceholder" = "Мысалы, Kaspi";
-"onboarding.account.nameLabel" = "Атауы";
-"onboarding.account.iconLabel" = "Белгіше";
-"onboarding.account.balanceLabel" = "Бастапқы баланс";
 "onboarding.account.balanceCaption" = "Бастапқы баланс (%@)";
-"onboarding.account.currencyChangedBanner" = "Қолданба валютасы өзгертілді. Шот валютасы өзгермейді. Оны шот редакторында өзгертуге болады.";
 
 "onboarding.categories.title" = "Шығыс санаттарын таңдаңыз";
 "onboarding.categories.subtitle" = "Өзіңіз қолданатындарын белгілеңіз. Қалғанын кейін қоса аласыз.";
@@ -1909,7 +1624,6 @@
 "settings.wallet.cards" = "Карталар";
 "settings.wallet.footer" = "Wallet автоматтандыруы сақтаған Apple Pay төлемдері: болжанғандарын тексеріңіз, әр сатушыға санат, әр картаға шот белгілеңіз.";
 
-
 /* MARK: - Document import */
 "import.source.statement.title" = "Банк үзінді көшірмесі";
 "import.source.statement.subtitle" = "Банкіңізден PDF үзінді көшірмені импорттаңыз";
@@ -1966,7 +1680,6 @@
 "onboarding.autoCapture.notifications.hint" = "Кез келген банк хабарландыруларынан аударымдар, QR және онлайн төлемдер";
 "onboarding.autoCapture.statement.title" = "Банк үзінді көшірмесі";
 "onboarding.autoCapture.statement.hint" = "Өткен айдың PDF файлын жүктеңіз, Тэн оны операцияларға бөледі";
-"onboarding.autoCapture.afterStart" = "Бастағаннан кейін";
 "onboarding.restore" = "Сақтық көшірмеден қалпына келтіру";
 "onboarding.cta.nextWithCount" = "Келесі • %d таңдалды";
 "onboarding.restore.hint" = "Деректеріңізді осы iPhone-ға қайтару үшін сақтық көшірмені басыңыз.";
@@ -2149,12 +1862,12 @@
 /* AI assistant: the chat screen */
 "tab.assistant" = "Ассистент";
 "assistant.greeting.title" = "Сәлем, мен Тэнмін";
-"assistant.greeting.message" = "Ақшаңызға қатысты көмектесемін: шығыстар, үнемдеу, несиелер және инвестициялар. Осы телефондағы деректеріңізді қарап, карточкалармен жауап беремін.";
+"assistant.greeting.message" = "Шығыстарды жазып аламын («кофе 1500») және ақшаңызға қатысты көмектесемін: үнемдеу, несиелер және инвестициялар. Осы телефондағы деректеріңізді қарап, карточкалармен жауап беремін.";
 "assistant.attach" = "Чек немесе үзінді көшірме тіркеу";
 "assistant.greeting.tools" = "Қыстырғыш: чек немесе үзінді көшірме. Микрофон: дауыстап айтыңыз.";
 "composer.send" = "Жіберу";
 "composer.voice" = "Дауыспен жазу";
-"assistant.composer.placeholder" = "Ақшаңыз туралы сұраңыз…";
+"assistant.composer.placeholder" = "Шығысты жазыңыз немесе сұраңыз…";
 "assistant.preset.month" = "Осы айдағы шығыстарым";
 "assistant.preset.compare" = "Өткен аймен салыстыр";
 "assistant.preset.budgets" = "Бюджеттерім қалай?";

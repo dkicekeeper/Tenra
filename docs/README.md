@@ -67,7 +67,7 @@ this file is the full index.
 | File | Purpose |
 |------|---------|
 | [promotion-plan.md](promotion-plan.md) | The product, Tenra Pro and the growth plan: facts, releases, decisions, channels, weekly metrics. Living doc |
-| [asc.md](asc.md) | App Store Connect and TestFlight from a cloud session (`appstore/asc.py`, workflows) |
+| [asc.md](asc.md) | App Store Connect, TestFlight and Apple Ads from a cloud session (`appstore/asc.py`, `appstore/ads.py`, workflows) |
 | [backlog.md](backlog.md) | Open items, ideas not planned yet, decisions that stand |
 | [plan-assistant-ios27.md](plan-assistant-ios27.md) | Plan, not started: Ten on Apple's models (Private Cloud Compute, on device) behind a router, and Siri on iOS 27 |
 | [plan-notification-capture.md](plan-notification-capture.md) | Plan in flight: expenses and incomes from any bank's push notifications through iOS 27's notification trigger (`LogBankNotificationIntent`, the bank-agnostic `BankNotificationParser`, recorded through the Wallet path), own-account transfers and the setup guide: in 1.7, checked on the owner's phone, announced in 1.8 (in the store since 2026-11-04); learned templates, "Unparsed" and the Apple model layer still ahead |

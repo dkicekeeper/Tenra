@@ -4,31 +4,18 @@
 */
 
 // MARK: - Navigation Titles
-"navigation.home" = "홈";
 "navigation.history" = "내역";
 "navigation.categories" = "카테고리";
-"navigation.settings" = "설정";
-"navigation.accounts" = "계좌";
-"navigation.subscriptions" = "구독";
 "navigation.categoryFilter" = "카테고리로 필터";
-"navigation.logoSearch" = "로고 검색";
-"navigation.entityMapping" = "항목 매핑";
-"navigation.csvPreview" = "CSV 미리보기";
 "navigation.transactionPreview" = "거래 미리보기";
 
 // MARK: - Transaction Preview (Phase 16)
 "transactionPreview.found" = "거래 %d건을 찾았어요";
 "transactionPreview.selectHint" = "가져올 거래를 선택하세요";
 "transactionPreview.addSelected" = "선택 항목 추가 (%d)";
-"transactionPreview.noAccount" = "계좌 없음";
 "transactionPreview.noMatchingAccount" = "이 통화의 계좌가 없습니다";
 "transactionPreview.account" = "계좌";
-"navigation.voiceInput" = "음성 입력";
 "navigation.subcategorySearch" = "하위 카테고리 검색";
-"navigation.selectDate" = "날짜 선택";
-"navigation.selectIcon" = "아이콘 선택";
-"navigation.selectLogo" = "로고 선택";
-"navigation.importResult" = "가져오기 결과";
 
 // MARK: - Time Filters
 "timeFilter.title" = "기간 필터";
@@ -52,8 +39,6 @@
 "button.cancel" = "취소";
 "button.delete" = "삭제";
 "button.close" = "닫기";
-"button.import" = "가져오기";
-"button.export" = "내보내기";
 "button.copy" = "복사";
 "button.paste" = "붙여넣기";
 "button.add" = "추가";
@@ -62,9 +47,7 @@
 "button.continue" = "계속";
 "button.ok" = "확인";
 "button.retry" = "다시 시도";
-"button.change" = "변경";
 "button.select" = "선택";
-"button.remove" = "제거";
 "button.apply" = "적용";
 
 // MARK: - Empty States
@@ -75,7 +58,6 @@
 "category.emptyDescription" = "카테고리를 추가하면 돈이 어디에 쓰이는지 알 수 있어요";
 "emptyState.noSubcategories" = "하위 카테고리가 없어요";
 "subcategory.emptyDescription" = "하위 카테고리를 추가하면 지출을 더 자세히 나눠 볼 수 있어요";
-"emptyState.noData" = "표시할 데이터가 없어요";
 "emptyState.searchNoResults" = "결과가 없어요";
 "emptyState.startTracking" = "거래를 추가해 재정을 관리해 보세요";
 "emptyState.tryDifferentSearch" = "검색어를 바꿔 보세요";
@@ -92,9 +74,7 @@
 "currency.noResults.title" = "통화를 찾을 수 없어요";
 "currency.noResults.description" = "다른 이름이나 코드로 시도해 보세요.";
 "currency.customize" = "통화 사용자 지정";
-"currency.accountCurrencies" = "계좌 통화";
 "currency.customizeAction" = "사용자 지정...";
-"settings.wallpaper" = "홈 배경화면";
 "settings.background" = "배경";
 "settings.merchantLogos" = "가맹점 로고";
 "home.hint.categories" = "카테고리를 탭해 지출을 추가하세요";
@@ -126,11 +106,8 @@
 "settings.background.removePhoto" = "사진 제거";
 "settings.background.choosePhoto" = "사진 선택";
 "settings.background.changePhoto" = "사진 변경";
-"settings.background.preview" = "배경 미리보기";
 "settings.background.opacity" = "색상 강도";
 "settings.background.opacityTitle" = "지출 색상";
-"settings.dataManagement" = "데이터 관리";
-"settings.categories" = "카테고리";
 "settings.subcategories" = "하위 카테고리";
 "settings.accounts" = "계좌";
 "settings.exportImport" = "내보내기 및 가져오기";
@@ -156,17 +133,14 @@
 "alert.resetLearning.message" = "파서가 각 카테고리에 자주 선택하던 계좌를 잊게 돼요. 거래는 삭제되지 않아요.";
 "alert.resetLearning.confirm" = "초기화";
 "alert.importError.title" = "가져오기 오류";
-"alert.errorTitle" = "오류";
 
 // MARK: - Progress
-"progress.loadingData" = "데이터를 불러오는 중...";
 "progress.processingPDF" = "PDF를 처리하는 중...";
 "progress.recognizingText" = "텍스트 인식 중: %d / %d 페이지";
 "progress.page" = "%d / %d 페이지";
 
 // MARK: - Errors
 "error.generic.title" = "오류";
-"error.importFailed" = "가져오기에 실패했어요";
 "storeUnavailable.title" = "데이터를 열 수 없어요";
 "storeUnavailable.message.migration" = "이 버전의 앱에 맞게 데이터를 변환하지 못했어요.";
 "storeUnavailable.message.diskFull" = "이 기기의 저장 공간이 부족해요. 공간을 확보한 후 다시 시도해 주세요.";
@@ -179,35 +153,19 @@
 "accessibility.accountCard.label" = "%@ 잔액 %@";
 "accessibility.accountCard.hint" = "탭하여 계좌 상세 보기";
 
-// MARK: - Account Actions
-"account.transfer" = "이체";
-"account.topUp" = "충전";
-"account.withdrawal" = "출금";
-
 // MARK: - Analytics
 "analytics.history" = "내역";
 "analytics.planned" = "예정";
 "history.section.title" = "내역";
 
 // MARK: - Transaction Form
-"transaction.account" = "계좌";
 "transaction.amount" = "금액";
-"transaction.description" = "설명";
 "transaction.date" = "날짜";
 "transaction.recurring" = "반복";
-"transaction.frequency" = "주기";
 "transaction.category" = "카테고리";
-"transaction.subcategories" = "하위 카테고리";
-"transaction.currency" = "통화";
-
-// MARK: - Transaction Actions
-"transaction.importTransactions" = "거래 가져오기";
-"transaction.addNew" = "거래 추가";
-"transaction.new" = "새 거래";
 
 // MARK: - Search
 "search.placeholder" = "금액, 카테고리, 설명으로 검색";
-"search.subcategories" = "하위 카테고리 검색";
 "search.recent" = "최근 검색";
 "search.recent.clear" = "지우기";
 "search.recent.remove" = "제거";
@@ -227,31 +185,16 @@
 
 // MARK: - Common
 "common.name" = "이름";
-"common.balance" = "잔액";
 "common.type" = "유형";
-"common.icon" = "아이콘";
 "common.color" = "색상";
-"common.logo" = "로고";
-"common.all" = "전체";
-"common.selected" = "선택됨";
-"common.none" = "없음";
-"common.uncategorized" = "미분류";
-"common.unknown" = "알 수 없음";
 "common.cancel" = "취소";
-"common.back" = "뒤로";
 "common.select" = "선택";
-"common.selectAccount" = "계좌 선택";
-"common.selectCategory" = "카테고리 선택";
-"common.selectSubcategory" = "하위 카테고리 선택";
-"common.selectColor" = "색상 선택";
-"common.filterBy" = "필터 기준";
 "common.frequency" = "주기";
 "common.startDate" = "시작일";
 
 // MARK: - Date Labels
 "date.today" = "오늘";
 "date.yesterday" = "어제";
-"date.tomorrow" = "내일";
 "date.selectDate" = "날짜";
 "date.choose" = "날짜 선택";
 
@@ -265,25 +208,16 @@
 "transaction.stopRecurring.title" = "반복을 중지할까요?";
 "transaction.stopRecurring.message" = "반복 거래가 중지돼요. 앞으로 생성될 모든 거래가 삭제돼요.";
 "transaction.stopRecurring.confirm" = "반복 중지";
-"accessibility.deleteTransaction" = "거래 삭제";
-"accessibility.stopRecurring" = "반복 거래 중지";
-"accessibility.swipeForOptions" = "왼쪽으로 밀어 옵션 보기";
 
 // MARK: - Accounts Management
 "accounts.title" = "계좌";
-"account.interestToday" = "오늘 이자: %@";
 "account.interestTodayPrefix" = "오늘 이자: ";
 "account.nextPosting" = "다음 지급일: %@";
-"account.selectLogo" = "로고 선택";
-"account.popularBanks" = "인기 은행";
-"account.otherBanks" = "기타 은행";
 "account.namePlaceholder" = "계좌 이름";
 "account.deleteTitle" = "계좌를 삭제할까요?";
 "account.deleteMessage" = "'%@'의 거래를 어떻게 할까요?";
 "account.deleteOnlyAccount" = "계좌만 삭제";
 "account.deleteAccountAndTransactions" = "계좌와 거래 삭제";
-"common.currency" = "통화";
-"common.balancePlaceholder" = "0.00";
 "common.error" = "오류";
 
 // MARK: - Deposits
@@ -292,7 +226,6 @@
 "deposit.changeRate" = "금리 변경";
 "deposit.deleteTitle" = "예금을 삭제할까요?";
 "deposit.deleteMessage" = "모든 예금 데이터와 관련 거래가 삭제돼요.";
-"deposit.balance" = "잔액";
 "deposit.interestToday" = "오늘 이자";
 "deposit.rate" = "금리";
 "deposit.rateAnnual" = "% 연이율";
@@ -300,56 +233,31 @@
 "deposit.capitalizationEnabled" = "사용";
 "deposit.capitalizationDisabled" = "사용 안 함";
 "deposit.postingDay" = "지급일";
-"deposit.nextPosting" = "다음 지급일";
-"deposit.topUp" = "충전";
-"deposit.transferToAccount" = "계좌로 이체";
-"deposit.topUpTitle" = "예금 충전";
-"deposit.transferFromTitle" = "예금에서 이체";
-"deposit.sourceAccount" = "출금 계좌";
-"deposit.targetAccount" = "입금 계좌";
-"deposit.noOtherAccounts" = "이체할 다른 계좌가 없어요";
-"deposit.amount" = "금액";
-"deposit.description" = "설명";
-"deposit.descriptionOptional" = "설명 (선택)";
-"deposit.date" = "날짜";
-"deposit.topUpDescription" = "예금 충전";
-"deposit.transferFromDescription" = "예금에서 이체";
 "deposit.newRate" = "새 금리";
 "deposit.effectiveDate" = "적용일";
 "deposit.note" = "메모 (선택)";
 "deposit.changeRateTitle" = "금리 변경";
-"deposit.name" = "예금 이름";
 "deposit.namePlaceholder" = "이름";
 "deposit.bank" = "은행";
-"deposit.bankName" = "은행 이름";
 "deposit.bankNamePlaceholder" = "은행 이름";
-"deposit.selectLogo" = "로고 선택";
-"deposit.initialAmount" = "초기 금액";
 "deposit.interestRate" = "금리";
-"deposit.postingDayTitle" = "이자 지급일";
 "deposit.dayOfMonth" = "날짜";
-"deposit.postingDayHint" = "해당 월의 일수가 적으면 그 달의 마지막 날에 지급돼요";
-"deposit.capitalizationTitle" = "이자 복리";
 "deposit.enableCapitalization" = "복리 사용";
 "deposit.capitalizationHint" = "복리를 사용하면 매달 이자가 원금에 더해져요";
 "deposit.countsForToday" = "'오늘의 예산'에 포함";
 "deposit.countsForToday.hint" = "언제든 인출할 수 있는 돈이에요. '오늘의 예산'과 텐이 카드와 함께 계산해요.";
 "deposit.new" = "새 예금";
 "deposit.editTitle" = "예금 편집";
-"deposit.interestAccrual.description" = "이자";
 "deposit.interestAccrual.category" = "이자";
 
 // MARK: - Categories Management
 "categories.expenseCategories" = "지출 카테고리";
-"categories.incomeCategories" = "수입 카테고리";
 "category.uncategorized" = "미분류";
 "category.deleteTitle" = "카테고리를 삭제할까요?";
 "category.deleteOnlyCategory" = "카테고리만 삭제";
 "category.deleteCategoryAndTransactions" = "카테고리와 거래 삭제";
 "category.deleteMessage" = "카테고리 \"%@\"의 거래를 어떻게 할지 선택하세요.";
 "category.namePlaceholder" = "카테고리 이름";
-"category.tapToSelect" = "탭하여 선택";
-"category.subcategories" = "하위 카테고리";
 "category.addSubcategory" = "하위 카테고리 추가";
 "category.manageSubcategories" = "하위 카테고리 관리";
 
@@ -394,12 +302,7 @@
 "iconPicker.gaming" = "게임";
 "iconPicker.devTools" = "개발자 도구 & AI";
 "iconPicker.services" = "서비스";
-"iconPicker.popularBanks" = "인기 은행";
-"iconPicker.otherBanks" = "기타 은행";
 "iconPicker.searchOnline" = "브랜드 로고 검색...";
-"iconPicker.noLogo" = "로고 없음";
-"iconPicker.searching" = "검색 중...";
-"iconPicker.searchResults" = "검색 결과";
 
 // MARK: - Category Filter
 "categoryFilter.allCategories" = "모든 카테고리";
@@ -415,23 +318,10 @@
 "accessibility.voiceInputHint" = "음성으로 거래 기록";
 "accessibility.calendar" = "캘린더";
 "accessibility.calendarHint" = "거래 필터링을 위한 기간 선택";
-"accessibility.settings" = "설정";
-"accessibility.settingsHint" = "앱 설정 열기";
 
 // MARK: - Quick Add Transaction / Add Transaction Modal
-"quickAdd.account" = "계좌";
-"quickAdd.amount" = "금액";
-"quickAdd.description" = "설명";
 "quickAdd.descriptionPlaceholder" = "설명 (선택)";
 "quickAdd.balanceAfter" = "거래 후 잔액";
-"quickAdd.recurring" = "반복 거래";
-"quickAdd.makeRecurring" = "반복";
-"quickAdd.frequency" = "주기";
-"quickAdd.subcategories" = "하위 카테고리";
-"quickAdd.searchSubcategories" = "하위 카테고리 검색";
-"quickAdd.searchAndAddSubcategories" = "하위 카테고리 검색 및 추가";
-"quickAdd.selectDate" = "날짜 선택";
-"quickAdd.done" = "완료";
 
 // MARK: - Validation Errors
 "error.validation.enterAmount" = "올바른 금액을 입력해요";
@@ -442,19 +332,14 @@
 // MARK: - Voice Input
 "voice.title" = "음성 입력";
 "voice.speak" = "말해 보세요...";
-"voice.recording" = "녹음 중...";
 "voice.error" = "오류";
 "voice.errorMessage" = "녹음을 시작하지 못했어요";
 "voice.emptyText" = "인식된 내용이 없어요. 다시 시도해 주세요.";
-"voice.vadToggle" = "무음 시 자동 정지";
-"voice.vadDescription" = "2.5초 동안 소리가 없으면 녹음이 자동으로 멈춰요";
 
 // MARK: - Voice Input Confirmation
 "voiceConfirmation.title" = "거래 확인";
 "voiceConfirmation.confirm" = "확인";
-"voiceConfirmation.type" = "거래 유형";
 "voiceConfirmation.noAccounts" = "사용할 수 있는 계좌가 없어요";
-"voiceConfirmation.selectCategory" = "카테고리 선택";
 "voiceConfirmation.warning.accountNotFound" = "계좌를 찾을 수 없어 기본값으로 선택했어요";
 "voiceConfirmation.warning.accountNotRecognized" = "계좌를 인식하지 못해 기본값으로 선택했어요";
 "voiceConfirmation.warning.enterAmount" = "금액을 입력해요";
@@ -462,7 +347,6 @@
 "voiceConfirmation.warning.selectAccount" = "계좌를 선택해요";
 "voiceConfirmation.warning.accountNotSelected" = "계좌를 선택하지 않아 기본값을 사용해요";
 "voiceConfirmation.warning.categoryNotRecognized" = "카테고리를 인식하지 못해 기본값으로 선택했어요";
-"voiceConfirmation.warning.selectCategory" = "카테고리 선택";
 "voiceConfirmation.warning.categoryNotSelected" = "카테고리를 선택하지 않아 기본값을 사용해요";
 "voiceConfirmation.warning.categoryNotFound" = "카테고리를 찾지 못했어요";
 
@@ -479,7 +363,6 @@
 "subscriptions.deleteSubscriptionAndTransactions" = "구독과 거래 모두 삭제";
 "subscriptions.pause" = "일시정지";
 "subscriptions.resume" = "재개";
-"subscriptions.transactionHistory" = "거래 내역";
 "subscriptions.category" = "카테고리";
 "subscriptions.frequency" = "주기";
 "subscriptions.nextCharge" = "다음 결제";
@@ -513,7 +396,6 @@
 "frequency.yearly" = "매년";
 
 // Subscription Form
-"subscription.basicInfo" = "기본 정보";
 "subscription.namePlaceholder" = "구독 이름";
 "subscription.reminders" = "알림";
 "subscription.scheduleSection" = "일정";
@@ -531,12 +413,10 @@
 "account.selectAccount" = "계좌 선택";
 
 // Category messages
-"category.selectCategory" = "카테고리 선택";
 
 // Error messages
 "error.subscriptionNameRequired" = "구독 이름을 입력해요";
 "error.invalidAmount" = "올바른 금액을 입력해요";
-"error.categoryRequired" = "카테고리를 선택해요";
 "error.accountRequired" = "결제 계좌를 선택해요";
 "error.accountNameRequired" = "계좌 이름을 입력해요";
 "error.categoryNameRequired" = "카테고리 이름을 입력해요";
@@ -549,26 +429,10 @@
 "yearly" = "매년";
 "budget_reset_day" = "초기화 일자";
 "budget_reset_day_description" = "예산이 초기화되는 날짜예요 (1~31)";
-"budget_settings" = "예산 설정";
-"current_budget" = "현재 예산";
-"current_settings" = "현재 설정";
-"remove_budget" = "예산 삭제";
-"set_budget_for" = "예산 설정 대상";
 "save" = "저장";
-"cancel" = "취소";
 "category.noBudgetSet" = "설정된 예산이 없어요";
 
-// MARK: - Calendar
-"calendar.upcomingPayments" = "다가오는 결제";
-"calendar.month" = "월";
-"calendar.halfYear" = "6개월";
-"calendar.year" = "연";
-"calendar.noUpcomingPayments" = "다가오는 결제가 없어요";
-"calendar.currentMonth" = "이번 달";
-
 // MARK: - Transaction Forms
-"transactionForm.amount" = "금액";
-"transactionForm.description" = "설명";
 "transactionForm.descriptionPlaceholder" = "설명 (선택)";
 "transactionForm.category" = "카테고리";
 "transactionForm.selectCategory" = "카테고리 선택";
@@ -576,7 +440,6 @@
 "transactionForm.transfer" = "이체";
 "transactionForm.topUp" = "충전";
 "transactionForm.toAccount" = "받는 계좌";
-"transactionForm.fromAccount" = "보내는 계좌";
 "transactionForm.fromHeader" = "보내는 쪽";
 "transactionForm.toHeader" = "받는 쪽";
 "transactionForm.noAccountsForTransfer" = "이체할 다른 계좌가 없어요";
@@ -585,16 +448,10 @@
 "transactionForm.cannotTransferToSame" = "같은 계좌로는 이체할 수 없어요";
 "transactionForm.accountNotFound" = "계좌를 찾을 수 없어요";
 "transactionForm.selectTargetAccount" = "받는 계좌를 선택해 주세요";
-"transactionForm.depositTopUp" = "예금 입금";
-"transactionForm.depositWithdrawal" = "예금 출금";
 "transactionForm.accountTopUp" = "계좌 충전";
-"transactionForm.recurring" = "반복";
-"transactionForm.makeRecurring" = "반복 거래로 만들기";
 "transactionForm.searchSubcategories" = "하위 카테고리 검색";
 "transactionForm.addSubcategory" = "하위 카테고리 추가";
 "transactionForm.createSubcategory" = "\"%@\" 만들기";
-"transactionForm.searchAndAddSubcategories" = "하위 카테고리 검색 및 추가";
-"transactionForm.searchOrCreateSubcategory" = "하위 카테고리 찾기 또는 만들기";
 // MARK: - Recurring Transactions Errors
 "recurring.error.seriesNotFound" = "반복 시리즈를 찾을 수 없어요";
 "recurring.error.invalidFrequency" = "선택한 주기가 올바르지 않아요";
@@ -605,9 +462,6 @@
 "recurring.error.emptyCurrency" = "통화가 필요해요";
 "recurring.error.missingSubscriptionStatus" = "구독 상태가 필요해요";
 "recurring.error.invalidReminderOffsets" = "알림 일수는 양수여야 해요";
-"recurring.validation.amountRequired" = "금액이 필요해요";
-"recurring.validation.descriptionRequired" = "설명이 필요해요";
-
 
 // MARK: - CSV Import
 "category.other" = "기타";
@@ -624,10 +478,6 @@
 "csvImport.error.noHeaders" = "파일에 헤더가 없어요";
 "csvImport.error.invalidFormat" = "CSV 형식이 올바르지 않아요";
 "csvImport.error.persistenceFailed" = "가져온 데이터를 데이터베이스에 저장하지 못했어요.";
-"csvImport.progress.parsing" = "CSV 파일을 분석하는 중...";
-"csvImport.progress.validating" = "행을 검증하는 중...";
-"csvImport.progress.importing" = "거래를 가져오는 중...";
-"csvImport.progress.finalizing" = "가져오기를 마무리하는 중...";
 "csvImport.result.imported" = "%d건 가져옴";
 "csvImport.result.skipped" = "%d건 건너뜀";
 "csvImport.result.duplicates" = "%d건 중복";
@@ -637,8 +487,6 @@
 "csvImport.result.duration" = "소요 시간";
 "csvImport.result.speed" = "속도";
 "csvImport.result.title" = "가져오기 완료";
-"csvImport.button.cancel" = "가져오기 취소";
-"csvImport.button.retry" = "다시 시도";
 "csvImport.button.viewErrors" = "오류 보기";
 "csvImport.preview.title" = "CSV 미리보기";
 "csvImport.preview.rows" = "행";
@@ -655,14 +503,9 @@
 "csvImport.mapping.currency" = "통화";
 "csvImport.mapping.account" = "계좌";
 "csvImport.mapping.none" = "없음";
-"csvImport.entityMapping.title" = "항목 매핑";
-"csvImport.entityMapping.accounts" = "계좌";
-"csvImport.entityMapping.categories" = "카테고리";
-"csvImport.entityMapping.autoCreate" = "자동으로 생성돼요";
 "csvImport.preview.fileInfo" = "파일 정보";
 "csvImport.preview.headersTitle" = "파일의 열";
 "csvImport.preview.dataPreview" = "데이터 미리보기 (처음 %d행)";
-"csvImport.preview.empty" = "(비어 있음)";
 "csvImport.mapping.category" = "카테고리";
 "csvImport.mapping.targetAccount" = "대상 계좌";
 "csvImport.mapping.targetCurrency" = "대상 통화";
@@ -727,25 +570,6 @@
 "error.export.fileWriteFailed" = "내보내기 파일을 쓰지 못했어요: %@";
 "error.export.insufficientSpace" = "내보내기에 필요한 저장 공간이 부족해요";
 
-// MARK: - Alert Titles (Settings)
-"alert.recalculateBalances.title" = "잔액을 다시 계산할까요?";
-"alert.recalculateBalances.message" = "거래를 기준으로 모든 계좌 잔액을 처음부터 다시 계산해요. 잔액이 잘못 표시될 때 사용해요.";
-"alert.recalculateBalances.confirm" = "다시 계산";
-"alert.selectWallpaper.title" = "배경화면 선택";
-"alert.removeWallpaper.title" = "배경화면을 삭제할까요?";
-"alert.removeWallpaper.message" = "홈 화면에서 현재 배경화면이 삭제돼요";
-"alert.exportSuccess.title" = "내보내기 완료";
-"alert.exportSuccess.message" = "%@(으)로 데이터를 내보냈어요";
-"alert.importSuccess.title" = "가져오기 완료";
-"alert.importSuccess.message" = "%d건의 거래를 가져왔어요";
-
-// MARK: - Settings Labels (Additional)
-"settings.recalculateBalances" = "계좌 잔액 다시 계산";
-"settings.wallpaperHistory" = "배경화면 기록";
-"settings.recentCurrencies" = "최근 통화";
-"settings.exportProgress" = "내보내는 중... %d%%";
-"settings.importProgress" = "가져오는 중... %d%%";
-
 // MARK: - Success Messages
 "success.settings.currencyUpdated" = "통화가 변경됐어요";
 "success.settings.wallpaperUpdated" = "배경화면이 변경됐어요";
@@ -755,7 +579,6 @@
 "success.recalculation.completed" = "잔액을 다시 계산했어요";
 
 // MARK: - Import Errors (Phase 2)
-"error.import.coordinatorNotAvailable" = "가져오기 코디네이터를 사용할 수 없어요";
 "error.import.viewModelsNotAvailable" = "필요한 뷰 모델을 사용할 수 없어요";
 
 // MARK: - Import Progress (Phase 2)
@@ -789,7 +612,6 @@
 "iconStyle.tint.palette" = "팔레트";
 "iconStyle.tint.original" = "원본 색상";
 "iconStyle.preset.categoryIcon" = "카테고리 아이콘";
-"iconStyle.preset.bankLogo" = "은행 로고";
 "iconStyle.preset.serviceLogo" = "서비스 로고";
 "iconStyle.preset.placeholder" = "플레이스홀더";
 "recurring.never" = "안 함";
@@ -799,11 +621,6 @@
 "filter.allAccounts" = "모든 계좌";
 "filter.allCategories" = "모든 카테고리";
 "filter.allSubcategories" = "모든 하위 카테고리";
-
-// MARK: - Animated Input (Phase 16)
-"input.amountPlaceholder" = "0";
-"input.titleHint" = "탭하여 이름 편집";
-"input.balanceHint" = "탭하여 잔액 편집";
 
 // MARK: - Insights (Phase 17)
 "insights.title" = "분석";
@@ -818,7 +635,6 @@
 "insights.availableBalance" = "사용 가능 잔액";
 "insights.topMonths.best" = "최고의 달 상위 10개";
 "insights.topMonths.worst" = "최악의 달 상위 10개";
-"insights.loading" = "재무 상황을 분석하는 중...";
 "insights.emptyState.title" = "아직 분석 결과가 없어요";
 "insights.emptyState.description" = "거래를 추가하면 재무 분석을 볼 수 있어요";
 "insights.noInsightsForFilter" = "이 카테고리에 대한 분석이 없어요";
@@ -836,13 +652,11 @@
 "insights.vsPreviousPeriod" = "이전 기간 대비";
 "insights.vsAverage" = "평균 대비";
 "insights.budgetOver" = "예산 초과";
-"insights.budgetUnder" = "예산 이내";
 "insights.budgetHeadroom" = "남은 예산";
 "insights.projectedOverspend" = "예상 초과 지출";
 "insights.categoriesOverBudget" = "예산을 초과한 카테고리 %d개";
 "insights.categoriesAtRisk" = "위험한 카테고리 %d개";
 "insights.categoriesUnderBudget" = "정상 카테고리 %d개";
-"insights.categoriesUnit" = "카테고리";
 "insights.totalRecurring" = "월 반복 비용";
 "insights.totalRecurring.week" = "주간 반복";
 "insights.totalRecurring.month" = "월 반복 비용";
@@ -884,11 +698,9 @@
 "insights.projectedBalance" = "예상 잔액";
 "insights.in30Days" = "30일 후";
 "insights.recurringAndExpenses" = "반복 + 평균 지출";
-"insights.projected" = "예상 변화";
 "insights.currentBalance" = "현재 잔액";
 "insights.cashFlowTrend" = "현금 흐름 추이";
 "insights.breakdown" = "상세 분석";
-"insights.monthlyBreakdown" = "월별 상세 분석";
 "insights.breakdown.week" = "주간 상세 분석";
 "insights.breakdown.month" = "월별 상세 분석";
 "insights.breakdown.quarter" = "분기별 상세 분석";
@@ -901,8 +713,6 @@
 "insights.other" = "기타";
 "insights.noSubcategory" = "하위 카테고리 없음";
 "insights.spendingTrend" = "지출 추이";
-"insights.subcategories" = "하위 카테고리";
-"insights.periodComparison" = "기간 비교";
 "insights.daysLeft" = "%d일 남음";
 
 // Granularity picker
@@ -917,7 +727,6 @@
 "insights.granularity.year.short" = "연";
 "insights.granularity.allTime.short" = "전체";
 "insights.bucket.week.label" = "최근 7일";
-"insights.summary.windowTotalsLabel" = "전체 차트 구간 기준";
 "insights.formula.value.months" = "%.1f개월";
 "insights.formula.howCalculated" = "계산 방법";
 "insights.formula.value.days" = "%d일";
@@ -954,21 +763,8 @@
 "insights.formula.spendingForecast.rec.overrun" = "수입을 %@만큼 초과할 것으로 보여요. 재량 지출을 미리 점검하거나, 필수가 아닌 구매는 다음 달로 미뤄 보세요.";
 "insights.formula.spendingForecast.rec.onTrack" = "예측상 %@의 여유가 남아요. 계획에 없던 구매를 피해 이 여유를 지키거나, 지금 저축으로 옮겨 보세요.";
 "insights.formula.spendingForecast.rec.noIncome" = "이번 달에 아직 기록된 수입이 없어요. 예측은 참고용일 뿐이에요.";
-"insights.formula.balanceRunway.title" = "잔액 지속 개월수";
-"insights.formula.balanceRunway.heroLabel" = "현재 소진 속도로 잔액이 바닥날 때까지의 개월수";
-"insights.formula.balanceRunway.heroLabel.growing" = "월 평균 흑자";
-"insights.formula.balanceRunway.formulaHeader" = "계산 방법";
-"insights.formula.balanceRunway.row.balance" = "현재 잔액";
-"insights.formula.balanceRunway.row.avgIncome" = "월 평균 수입 (3개월)";
-"insights.formula.balanceRunway.row.avgExpenses" = "월 평균 지출 (3개월)";
-"insights.formula.balanceRunway.row.burn" = "월 소진액 (지출 − 수입)";
 "insights.formula.balanceRunway.row.netFlow" = "평균 순 흐름";
 "insights.formula.balanceRunway.row.runway" = "지속 개월수";
-"insights.formula.balanceRunway.explainer" = "잔액 ÷ 월 소진액이에요. 3개월 기준은 건강한 비상금 완충과 같고, 1개월 미만이면 월급 한 번만 나빠도 완충이 바닥나요.";
-"insights.formula.balanceRunway.explainer.growing" = "수입이 지출을 넘어서 잔액이 늘고 있어요. 대표 값은 월 평균 흑자이며, 이 속도라면 잔액은 무한히 유지돼요.";
-"insights.formula.balanceRunway.rec.growing" = "순흑자 상태예요. 남는 돈을 놀리지 말고 목표, 부채 상환, 또는 금리가 더 높은 저축으로 돌려 보세요.";
-"insights.formula.balanceRunway.rec.long" = "지속 개월수가 3개월을 넘어요. 완충이 충분해요. 여유 자금을 장기 상품에 투입하는 것을 고려해 보세요.";
-"insights.formula.balanceRunway.rec.short" = "3개월 미만이에요. 3개월 완충에 도달하려면 월 소진액을 약 %@/월 줄여 보세요. 가장 큰 재량 지출 카테고리부터 시작하세요.";
 "insights.formula.balanceRunway.rec.critical" = "지속 개월수가 한 달도 안 돼요. 서둘러 격차를 메우세요. 큰 반복 결제 하나만 멈춰도 며칠을 벌 수 있어요.";
 "insights.formula.yearOverYear.title" = "전년 대비 지출";
 "insights.formula.yearOverYear.heroLabel" = "작년 같은 달 대비 변화";
@@ -1038,7 +834,6 @@
 "insights.categoryTrend" = "지출 추이";
 "insights.categoryTrend.risingMonths" = "%d개월째 증가 중";
 "insights.subscriptionGrowth" = "구독 증가";
-"insights.vsThreeMonthsAgo" = "3개월 전 대비";
 
 // Forecasting
 "insights.forecasting" = "예측";
@@ -1108,7 +903,6 @@
 "tab.home" = "홈";
 "tab.analytics" = "분석";
 "tab.finances" = "자산";
-"tab.settings" = "설정";
 "tab.voice" = "음성";
 "tab.ocr" = "가져오기";
 "tab.add" = "추가";
@@ -1117,7 +911,6 @@
 // MARK: - Finances
 "finances.title" = "자산";
 "finances.accounts.title" = "계좌";
-"finances.accounts.totalLabel" = "총 잔액";
 "finances.accounts.empty" = "계좌 없음";
 "finances.deposits.title" = "예금";
 "finances.deposits.empty" = "예금 없음";
@@ -1145,14 +938,11 @@
 "loan.unpaidThisMonth" = "이번 달 미상환";
 "loan.typeAnnuityShort" = "신용대출";
 "loan.typeInstallmentShort" = "할부";
-"loan.of" = "/";
 "loan.remainingShort" = "%d회 남음";
 "loan.notFound" = "대출을 찾을 수 없어요";
 "loan.title" = "대출";
 "loan.changeRate" = "금리 변경";
 "loan.earlyRepayment" = "중도 상환";
-"loan.history" = "상환 내역";
-"loan.actions" = "대출 작업";
 "loan.deleteTitle" = "대출을 삭제할까요?";
 "loan.deleteMessage" = "이 대출의 상환 내역은 계좌의 실제 지출이에요. 내역을 남겨 두거나 대출과 함께 삭제할 수 있어요.";
 "loan.closedSection" = "상환 완료";
@@ -1164,7 +954,6 @@
 "loan.deleteWithPayments" = "대출과 상환 내역 삭제";
 "loan.payoffCelebration" = "대출을 모두 갚았어요. 수고하셨어요.";
 "loan.paidOff" = "상환 완료";
-"loan.remainingPrincipal" = "남은 금액";
 "loan.nextPayment" = "다음 상환: %@";
 "loan.currentPaymentBreakdown" = "현재 상환 구성";
 "loan.principalPortion" = "원금";
@@ -1187,46 +976,26 @@
 "loan.noSchedule" = "일정 없음";
 "loan.showAllPayments" = "전체 %d회 상환 보기";
 "loan.interestShort" = "이자: %@";
-"loan.makeEarlyRepayment" = "중도 상환";
 "loan.convertTitle" = "대출로 전환";
 "loan.editTitle" = "대출 편집";
 "loan.newTitle" = "새 대출";
-"loan.nameHeader" = "이름";
 "loan.namePlaceholder" = "예: 자동차 대출";
-"loan.bankHeader" = "은행";
 "loan.bankLabel" = "은행";
 "loan.bankPlaceholder" = "은행 이름";
-"loan.typeHeader" = "대출 유형";
 "loan.typePicker" = "유형";
-"loan.typeAnnuity" = "원리금균등 (신용대출)";
-"loan.typeInstallment" = "할부";
 "loan.installmentHint" = "할부 = 이자 0%, 균등 상환";
-"loan.principalHeader" = "대출 금액";
-"loan.principalPlaceholder" = "총 대출 금액";
-"loan.interestRateHeader" = "금리";
 "loan.interestRateLabel" = "금리 (연)";
-"loan.rateAnnualSuffix" = "% 연";
-"loan.termHeader" = "기간";
-"loan.termPlaceholder" = "개월 수";
-"loan.months" = "개월";
-"loan.paymentDayHeader" = "상환일";
 "loan.paymentDay" = "매월 며칠";
-"loan.paymentDayHint" = "매월 상환일이 되는 날";
-"loan.startDateHeader" = "시작일";
 "loan.startDate" = "대출 시작일";
-"loan.repaymentAmount" = "상환 금액";
 "loan.amountPlaceholder" = "금액";
 "loan.remainingBalance" = "남은 금액: %@";
-"loan.repaymentDate" = "날짜";
 "loan.date" = "날짜";
-"loan.repaymentType" = "상환 전략";
 "loan.strategy" = "전략";
 "loan.reduceTerm" = "기간 단축";
 "loan.reducePayment" = "상환액 축소";
 "loan.reduceTermHint" = "월 상환액은 유지하고 더 빨리 완료해요";
 "loan.reducePaymentHint" = "기간은 유지하고 월 상환액을 낮춰요";
 "loan.impact" = "영향";
-"loan.note" = "메모";
 "loan.notePlaceholder" = "선택 메모";
 "loan.defaultTagging" = "기본 카테고리";
 "loan.defaultTaggingHint" = "상환 양식을 미리 채워요. 이전 상환에서 마지막으로 쓴 카테고리가 우선해요.";
@@ -1234,33 +1003,24 @@
 "loan.subcategoryEmpty" = "위에서 카테고리를 골라 하위 카테고리 태그를 추가하세요";
 "loan.noDefaultCategory" = "카테고리 없음";
 "loan.noDefaultSubcategory" = "하위 카테고리 없음";
-"loan.earlyRepaymentTitle" = "중도 상환";
 "loan.termReduction" = "단축된 기간";
 "loan.monthsValue" = "%d개월";
 "loan.newEndDate" = "새 종료일";
 "loan.paymentReduction" = "축소된 상환액";
 "loan.newMonthlyPayment" = "새 월 상환액";
-"loan.newRate" = "새 금리";
 "loan.effectiveDate" = "적용 시작";
 "loan.rateChangeImpact" = "영향";
 "loan.paymentChange" = "변화";
-"loan.enterRateForPreview" = "금리를 입력하면 영향을 볼 수 있어요";
 "loan.changeRateTitle" = "금리 변경";
-"loan.payment.description" = "대출 상환";
 
 // Loans Phase 5
 "loan.typeLockedHint" = "대출 유형은 생성 후 변경할 수 없어요";
 "loan.makePayment" = "상환하기";
-"loan.paymentTitle" = "대출 상환";
-"loan.paymentAmount" = "상환 금액";
 "loan.sourceAccount" = "출금 계좌";
-"loan.selectSourceAccount" = "상환할 계좌를 선택하세요";
 "loan.scheduledPayment" = "예정: %@";
 "loan.noSourceAccounts" = "사용 가능한 계좌 없음";
-"loan.payAll" = "전체 상환";
 "loan.payAllTitle" = "모든 대출 상환";
 "loan.payAllTotal" = "총 상환액";
-"loan.payAllConfirm" = "전체 상환";
 
 // MARK: - Icon Picker (new categories)
 "iconPicker.localServices" = "지역 서비스";
@@ -1326,16 +1086,6 @@
 
 // MARK: - iCloud Sync
 "settings.cloud" = "백업";
-"settings.cloud.sync" = "iCloud 동기화";
-"settings.cloud.status.synced" = "동기화됨";
-"settings.cloud.status.syncing" = "동기화 중...";
-"settings.cloud.status.initialSync" = "최초 동기화";
-"settings.cloud.status.initialSyncMessage" = "몇 분 정도 걸릴 수 있어요";
-"settings.cloud.status.error" = "동기화 오류";
-"settings.cloud.status.disabled" = "사용 안 함";
-"settings.cloud.status.noAccount" = "설정에서 iCloud에 로그인하세요";
-"settings.cloud.lastSync" = "마지막 동기화: %@";
-"settings.cloud.changes" = "%d개 보냄 · %d개 받음";
 "settings.cloud.backups" = "백업";
 "settings.cloud.createBackup" = "백업 만들기";
 "settings.cloud.backupCreated" = "백업이 완료됐어요";
@@ -1344,8 +1094,6 @@
 "settings.cloud.restoring" = "복원 중…";
 "settings.cloud.restoringSubtitle" = "앱을 닫지 말아 주세요";
 "settings.cloud.deleteTitle" = "백업을 삭제할까요?";
-"settings.cloud.storage" = "저장 공간";
-"settings.cloud.storageUsed" = "%@ / %@";
 "settings.cloud.iCloud.toggle" = "iCloud에 백업 저장";
 "settings.cloud.iCloud.moving" = "데이터를 옮기는 중…";
 "settings.cloud.iCloud.footer" = "백업은 iCloud에 저장되며 파일 앱에는 표시되지 않고 다른 기기의 Tenra에서 사용할 수 있습니다.";
@@ -1357,9 +1105,6 @@
 "alert.restore.title" = "백업을 복원할까요?";
 "alert.restore.message" = "현재 데이터가 모두 %@의 백업으로 대체돼요.";
 "alert.restore.confirm" = "복원";
-"alert.disableSync.title" = "iCloud 동기화를 끌까요?";
-"alert.disableSync.message" = "데이터는 이 기기에만 저장돼요.";
-"alert.disableSync.confirm" = "끄기";
 
 // Backup errors
 "error.backup.noActiveStore" = "활성 데이터베이스를 찾을 수 없어요";
@@ -1371,7 +1116,6 @@
 "error.backup.notDownloaded" = "이 백업이 아직 iCloud에서 다운로드되지 않았어요. 연결을 확인한 뒤 다시 시도하세요.";
 
 // MARK: - Loans (Form)
-"loan.amountLabel" = "금액";
 "loan.detailsSection" = "대출 정보";
 "loan.noteLabel" = "메모";
 "loan.payAllLoans" = "대출";
@@ -1386,11 +1130,6 @@
 "loan.error.noSourceAccount" = "출금 계좌를 선택하세요";
 "loan.linkPayments" = "상환 연결";
 "loan.linkPayments.title" = "상환 연결";
-"loan.linkPayments.selected" = "%d개 선택됨";
-"loan.linkPayments.selectedWithAmount" = "%d개 선택됨 · %@";
-"loan.linkPayments.search" = "설명 또는 금액으로 검색";
-"loan.linkPayments.link" = "상환 %d건 연결";
-"loan.linkPayments.empty" = "일치하는 거래가 없어요";
 "loan.linkPayments.error.notFound" = "대출을 찾을 수 없어요";
 "loan.markPaid" = "상환 완료로 표시";
 "loan.markUnpaid" = "미상환으로 표시";
@@ -1400,7 +1139,6 @@
 
 // Subscription Link Payments
 "subscription.linkPayments.title" = "결제 연결";
-"subscription.linkPayments.search" = "설명 또는 금액으로 검색";
 "subscription.linkPayments.searchPlaceholder" = "검색";
 "subscription.linkPayments.selectedWithAmount" = "%d개 선택됨 · %@";
 "subscription.linkPayments.link" = "%d건 연결";
@@ -1409,7 +1147,6 @@
 "subscription.linkPayments.amountTolerance" = "±30%";
 "subscription.linkPayments.amountAll" = "전체";
 "subscription.linkPayments.unknownAccount" = "알 수 없는 계좌";
-"common.done" = "완료";
 "deposit.linkInterest.title" = "이자 지급 연결";
 "deposit.recalculateInterest" = "이자 다시 계산";
 "subscriptions.spentAllTime" = "전체 기간 지출";
@@ -1455,12 +1192,6 @@
 
 // MARK: - Insights
 "insights.remaining" = "남음";
-"insights.range.totalExpenses" = "기간 지출";
-"insights.range.netFlow" = "기간 순흐름";
-"insights.range.wealthChange" = "자산 변화";
-"insights.range.totalIncome" = "기간 수입";
-"insights.range.reset" = "초기화";
-"insights.zoom.reset" = "맞춤";
 "insights.chart.line" = "선";
 "insights.chart.bar" = "막대";
 "insights.today" = "오늘";
@@ -1470,9 +1201,7 @@
 "insights.empty.subtitle" = "거래 내역이 쌓이면 그래프가 나타나요";
 
 // MARK: - Voice Input
-"voice.noTextRecognizedYet" = "아직 인식된 내용이 없어요";
 "voice.stopRecording" = "녹음 중지";
-"voice.tapToFinish" = "탭하여 완료";
 "voice.tour.orb" = "말을 마치면 구슬을 탭하세요. 말하는 동안 듣고 있어요.";
 
 // MARK: - Voice Input Errors
@@ -1487,7 +1216,6 @@
 "voiceError.speechBecameUnavailable" = "음성 인식을 사용할 수 없게 됐어요";
 "voiceError.audioSessionSetup %@" = "오디오 세션 설정에 실패했어요: %@";
 "voiceError.recognitionRequestFailed" = "인식 요청을 만들지 못했어요";
-"voiceError.audioEngineCreateFailed" = "오디오 엔진을 만들지 못했어요";
 "voiceError.audioEngineStartFailed %@" = "오디오 엔진을 시작하지 못했어요: %@";
 "voiceConfirmation.saveError" = "저장 오류";
 
@@ -1504,7 +1232,6 @@
 "csvImport.error.missingDependency %@" = "누락된 의존성: %@";
 
 // MARK: - Progress
-"progress.loadingAccounts" = "계좌 불러오는 중";
 "progress.loadingTransactions" = "거래 불러오는 중";
 "progress.saving" = "저장 중";
 
@@ -1515,14 +1242,10 @@
 "timeFilter.customRange" = "사용자 지정 기간";
 
 // MARK: - Accessibility
-"accessibility.accounts.addMenu" = "추가 메뉴";
-"accessibility.accounts.doneReordering" = "순서 변경 완료";
 "accessibility.category.budgetHint" = "예산 사용량";
 "accessibility.category.budgetProgress" = "예산 진행률";
 "accessibility.category.label" = "카테고리";
 "accessibility.category.overBudget" = "예산 초과";
-"accessibility.deposit.history" = "거래 내역";
-"accessibility.deposit.moreActions" = "더 보기";
 "accessibility.insights.granularityPicker" = "기간 선택기";
 "accessibility.insights.granularityPickerHint" = "단위 선택: 월, 분기, 연도";
 "accessibility.transaction.history" = "거래 내역";
@@ -1580,9 +1303,6 @@
 "category.detail.totalEarned" = "총 수입";
 "category.detail.avgMonthly" = "월 평균";
 "category.detail.budget" = "예산";
-"category.detail.subcategories" = "하위 카테고리";
-"category.detail.transactionCount" = "거래";
-"category.detail.manageSubcategories" = "하위 카테고리 관리";
 "category.detail.type.expense" = "지출";
 "category.detail.type.income" = "수입";
 
@@ -1601,7 +1321,6 @@
 "pager.previous" = "이전";
 "pager.next" = "다음";
 "onboarding.cta.start" = "시작하기";
-"onboarding.cta.done" = "완료";
 "onboarding.cta.skip" = "건너뛰기";
 "onboarding.stepIndicator.label" = "%d / %d단계";
 
@@ -1611,11 +1330,7 @@
 "onboarding.account.title" = "첫 계좌를 추가하세요";
 "onboarding.account.subtitle" = "카드, 현금, 은행 계좌 어느 것이든 좋아요. 나중에 더 추가할 수 있어요.";
 "onboarding.account.namePlaceholder" = "예: 카카오뱅크";
-"onboarding.account.nameLabel" = "이름";
-"onboarding.account.iconLabel" = "아이콘";
-"onboarding.account.balanceLabel" = "시작 잔액";
 "onboarding.account.balanceCaption" = "시작 잔액 (%@)";
-"onboarding.account.currencyChangedBanner" = "앱 통화가 변경됐어요. 계좌 통화는 그대로 유지돼요. 계좌 편집에서 바꿀 수 있어요.";
 
 "onboarding.categories.title" = "지출 카테고리를 선택하세요";
 "onboarding.categories.subtitle" = "사용할 카테고리를 골라 보세요. 나중에 더 추가할 수 있어요.";
@@ -1909,7 +1624,6 @@
 "settings.wallet.cards" = "카드";
 "settings.wallet.footer" = "Wallet 자동화가 기록한 Apple Pay 결제예요. 추측된 결제를 확인하고, 가맹점마다 카테고리를, 카드마다 계좌를 지정하세요.";
 
-
 /* MARK: - Document import */
 "import.source.statement.title" = "은행 명세서";
 "import.source.statement.subtitle" = "은행의 PDF 명세서를 가져오기";
@@ -1966,7 +1680,6 @@
 "onboarding.autoCapture.notifications.hint" = "모든 은행 알림에서 이체, QR 결제, 온라인 결제를 기록합니다";
 "onboarding.autoCapture.statement.title" = "은행 명세서";
 "onboarding.autoCapture.statement.hint" = "지난달 PDF를 불러오면 텐이 거래로 정리합니다";
-"onboarding.autoCapture.afterStart" = "시작 후";
 "onboarding.restore" = "백업에서 복원";
 "onboarding.cta.nextWithCount" = "다음 • %d개 선택됨";
 "onboarding.restore.hint" = "백업을 탭하면 이 iPhone으로 데이터를 되돌릴 수 있습니다.";
@@ -2149,12 +1862,12 @@
 /* AI assistant: the chat screen */
 "tab.assistant" = "어시스턴트";
 "assistant.greeting.title" = "안녕하세요, 텐이에요";
-"assistant.greeting.message" = "돈 관리를 도와드려요. 지출, 절약, 대출, 투자까지요. 이 휴대폰의 데이터를 보고 카드로 답해 드립니다.";
+"assistant.greeting.message" = "지출을 기록하고(“커피 5000”) 돈 관리를 도와드려요. 절약, 대출, 투자까지요. 이 휴대폰의 데이터를 보고 카드로 답해 드립니다.";
 "assistant.attach" = "영수증이나 명세서 첨부";
 "assistant.greeting.tools" = "클립: 영수증이나 명세서. 마이크: 말로 하기.";
 "composer.send" = "보내기";
 "composer.voice" = "받아쓰기";
-"assistant.composer.placeholder" = "돈에 대해 물어보세요…";
+"assistant.composer.placeholder" = "지출을 기록하거나 물어보세요…";
 "assistant.preset.month" = "이번 달 지출";
 "assistant.preset.compare" = "지난달과 비교해 줘";
 "assistant.preset.budgets" = "예산은 어때?";

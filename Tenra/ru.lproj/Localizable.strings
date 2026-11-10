@@ -4,31 +4,18 @@
 */
 
 // MARK: - Navigation Titles
-"navigation.home" = "Главная";
 "navigation.history" = "История";
 "navigation.categories" = "Категории";
-"navigation.settings" = "Настройки";
-"navigation.accounts" = "Счета";
-"navigation.subscriptions" = "Подписки";
 "navigation.categoryFilter" = "Фильтр по категориям";
-"navigation.logoSearch" = "Поиск логотипа";
-"navigation.entityMapping" = "Сопоставление сущностей";
-"navigation.csvPreview" = "Превью CSV";
 "navigation.transactionPreview" = "Предпросмотр операций";
 
 // MARK: - Transaction Preview (Phase 16)
 "transactionPreview.found" = "Найдено: %d операций";
 "transactionPreview.selectHint" = "Выберите операции для добавления";
 "transactionPreview.addSelected" = "Добавить выбранные (%d)";
-"transactionPreview.noAccount" = "Без счёта";
 "transactionPreview.noMatchingAccount" = "Нет счёта в этой валюте";
 "transactionPreview.account" = "Счёт";
-"navigation.voiceInput" = "Голосовой ввод";
 "navigation.subcategorySearch" = "Поиск подкатегорий";
-"navigation.selectDate" = "Выберите дату";
-"navigation.selectIcon" = "Выберите иконку";
-"navigation.selectLogo" = "Выбрать логотип";
-"navigation.importResult" = "Результат импорта";
 
 // MARK: - Time Filters
 "timeFilter.title" = "Фильтр по времени";
@@ -52,8 +39,6 @@
 "button.cancel" = "Отмена";
 "button.delete" = "Удалить";
 "button.close" = "Закрыть";
-"button.import" = "Импорт";
-"button.export" = "Экспорт";
 "button.copy" = "Копировать";
 "button.paste" = "Вставить";
 "button.add" = "Добавить";
@@ -62,9 +47,7 @@
 "button.continue" = "Продолжить";
 "button.ok" = "ОК";
 "button.retry" = "Повторить";
-"button.change" = "Изменить";
 "button.select" = "Выбрать";
-"button.remove" = "Удалить";
 "button.apply" = "Применить";
 
 // MARK: - Empty States
@@ -75,7 +58,6 @@
 "category.emptyDescription" = "Добавьте категорию, чтобы видеть, на что уходят деньги";
 "emptyState.noSubcategories" = "Нет подкатегорий";
 "subcategory.emptyDescription" = "Добавьте подкатегории, чтобы разбирать траты подробнее";
-"emptyState.noData" = "Нет данных";
 "emptyState.searchNoResults" = "Ничего не найдено";
 "emptyState.startTracking" = "Начните добавлять операции, чтобы отслеживать ваши финансы";
 "emptyState.tryDifferentSearch" = "Попробуйте изменить поисковый запрос";
@@ -92,9 +74,7 @@
 "currency.noResults.title" = "Валюта не найдена";
 "currency.noResults.description" = "Попробуйте другое название или код.";
 "currency.customize" = "Настроить валюты";
-"currency.accountCurrencies" = "Валюты счетов";
 "currency.customizeAction" = "Настроить...";
-"settings.wallpaper" = "Обои на главной";
 "settings.background" = "Фон";
 "settings.merchantLogos" = "Логотипы магазинов";
 "home.hint.categories" = "Нажмите на категорию, чтобы добавить расход";
@@ -126,11 +106,8 @@
 "settings.background.removePhoto" = "Удалить фото";
 "settings.background.choosePhoto" = "Выбрать фото";
 "settings.background.changePhoto" = "Сменить фото";
-"settings.background.preview" = "Превью фона";
 "settings.background.opacity" = "Интенсивность цвета";
 "settings.background.opacityTitle" = "Цвет расходов";
-"settings.dataManagement" = "Управление данными";
-"settings.categories" = "Категории";
 "settings.subcategories" = "Подкатегории";
 "settings.accounts" = "Счета";
 "settings.exportImport" = "Экспорт и импорт";
@@ -156,17 +133,14 @@
 "alert.resetLearning.message" = "Парсер забудет, какой счёт вы обычно выбираете для каждой категории. Это не удалит сами операции.";
 "alert.resetLearning.confirm" = "Сбросить";
 "alert.importError.title" = "Ошибка импорта";
-"alert.errorTitle" = "Ошибка";
 
 // MARK: - Progress
-"progress.loadingData" = "Загрузка данных...";
 "progress.processingPDF" = "Обработка PDF...";
 "progress.recognizingText" = "Распознавание текста: страница %d из %d";
 "progress.page" = "Страница %d из %d";
 
 // MARK: - Errors
 "error.generic.title" = "Ошибка";
-"error.importFailed" = "Ошибка импорта";
 "storeUnavailable.title" = "Не удаётся открыть ваши данные";
 "storeUnavailable.message.migration" = "Не удалось перенести ваши данные в формат этой версии приложения.";
 "storeUnavailable.message.diskFull" = "На устройстве закончилось место. Освободите место и попробуйте снова.";
@@ -179,35 +153,19 @@
 "accessibility.accountCard.label" = "%@ баланс %@";
 "accessibility.accountCard.hint" = "Нажмите для просмотра деталей счёта";
 
-// MARK: - Account Actions
-"account.transfer" = "Перевод";
-"account.topUp" = "Пополнение";
-"account.withdrawal" = "Снятие";
-
 // MARK: - Analytics
 "analytics.history" = "История";
 "analytics.planned" = "В планах";
 "history.section.title" = "История";
 
 // MARK: - Transaction Form
-"transaction.account" = "Счёт";
 "transaction.amount" = "Сумма";
-"transaction.description" = "Описание";
 "transaction.date" = "Дата";
 "transaction.recurring" = "Повторяющаяся";
-"transaction.frequency" = "Частота";
 "transaction.category" = "Категория";
-"transaction.subcategories" = "Подкатегории";
-"transaction.currency" = "Валюта";
-
-// MARK: - Transaction Actions
-"transaction.importTransactions" = "Импортировать операции";
-"transaction.addNew" = "Добавить операцию";
-"transaction.new" = "Новая операция";
 
 // MARK: - Search
 "search.placeholder" = "Поиск по сумме, категории или описанию";
-"search.subcategories" = "Поиск подкатегорий";
 "search.recent" = "Недавние";
 "search.recent.clear" = "Очистить";
 "search.recent.remove" = "Удалить";
@@ -227,31 +185,16 @@
 
 // MARK: - Common
 "common.name" = "Название";
-"common.balance" = "Баланс";
 "common.type" = "Тип";
-"common.icon" = "Иконка";
 "common.color" = "Цвет";
-"common.logo" = "Логотип";
-"common.all" = "Все";
-"common.selected" = "Выбрано";
-"common.none" = "Нет";
-"common.uncategorized" = "Без категории";
-"common.unknown" = "Неизвестно";
 "common.cancel" = "Отмена";
-"common.back" = "Назад";
 "common.select" = "Выбрать";
-"common.selectAccount" = "Выбрать счёт";
-"common.selectCategory" = "Выбрать категорию";
-"common.selectSubcategory" = "Выбрать подкатегорию";
-"common.selectColor" = "Выбрать цвет";
-"common.filterBy" = "Фильтр";
 "common.frequency" = "Частота";
 "common.startDate" = "Дата начала";
 
 // MARK: - Date Labels
 "date.today" = "Сегодня";
 "date.yesterday" = "Вчера";
-"date.tomorrow" = "Завтра";
 "date.selectDate" = "Дата";
 "date.choose" = "Выберите дату";
 
@@ -265,25 +208,16 @@
 "transaction.stopRecurring.title" = "Прекратить повторение?";
 "transaction.stopRecurring.message" = "Это прекратит повторение операции. Все будущие операции будут удалены.";
 "transaction.stopRecurring.confirm" = "Прекратить повторение";
-"accessibility.deleteTransaction" = "Удалить операцию";
-"accessibility.stopRecurring" = "Прекратить повторение операции";
-"accessibility.swipeForOptions" = "Смахните влево для опций";
 
 // MARK: - Accounts Management
 "accounts.title" = "Счета";
-"account.interestToday" = "Проценты на сегодня: %@";
 "account.interestTodayPrefix" = "Проценты сегодня: ";
 "account.nextPosting" = "Начисление: %@";
-"account.selectLogo" = "Выбрать логотип";
-"account.popularBanks" = "Популярные банки";
-"account.otherBanks" = "Другие банки";
 "account.namePlaceholder" = "Название счёта";
 "account.deleteTitle" = "Удалить счёт?";
 "account.deleteMessage" = "Что сделать с операциями счёта «%@»?";
 "account.deleteOnlyAccount" = "Удалить только счёт";
 "account.deleteAccountAndTransactions" = "Удалить счёт и операции";
-"common.currency" = "Валюта";
-"common.balancePlaceholder" = "0.00";
 "common.error" = "Ошибка";
 
 // MARK: - Deposits
@@ -292,7 +226,6 @@
 "deposit.changeRate" = "Изменить ставку";
 "deposit.deleteTitle" = "Удалить депозит?";
 "deposit.deleteMessage" = "Все данные депозита и связанные операции будут удалены.";
-"deposit.balance" = "Баланс";
 "deposit.interestToday" = "Проценты на сегодня";
 "deposit.rate" = "Ставка";
 "deposit.rateAnnual" = "% годовых";
@@ -300,56 +233,31 @@
 "deposit.capitalizationEnabled" = "Включена";
 "deposit.capitalizationDisabled" = "Выключена";
 "deposit.postingDay" = "День начисления";
-"deposit.nextPosting" = "Следующее начисление";
-"deposit.topUp" = "Пополнить";
-"deposit.transferToAccount" = "Перевести на счёт";
-"deposit.topUpTitle" = "Пополнить депозит";
-"deposit.transferFromTitle" = "Перевести с депозита";
-"deposit.sourceAccount" = "Счёт источника";
-"deposit.targetAccount" = "Счёт получателя";
-"deposit.noOtherAccounts" = "Нет других счетов для перевода";
-"deposit.amount" = "Сумма";
-"deposit.description" = "Описание";
-"deposit.descriptionOptional" = "Описание (необязательно)";
-"deposit.date" = "Дата";
-"deposit.topUpDescription" = "Пополнение депозита";
-"deposit.transferFromDescription" = "Перевод с депозита";
 "deposit.newRate" = "Новая процентная ставка";
 "deposit.effectiveDate" = "Дата вступления в силу";
 "deposit.note" = "Примечание (необязательно)";
 "deposit.changeRateTitle" = "Изменить ставку";
-"deposit.name" = "Название депозита";
 "deposit.namePlaceholder" = "Название";
 "deposit.bank" = "Банк";
-"deposit.bankName" = "Название банка";
 "deposit.bankNamePlaceholder" = "Название банка";
-"deposit.selectLogo" = "Выбрать логотип";
-"deposit.initialAmount" = "Начальная сумма";
 "deposit.interestRate" = "Процентная ставка";
-"deposit.postingDayTitle" = "День начисления процентов";
 "deposit.dayOfMonth" = "День месяца";
-"deposit.postingDayHint" = "Если в месяце меньше дней, начисление произойдет в последний день месяца";
-"deposit.capitalizationTitle" = "Капитализация";
 "deposit.enableCapitalization" = "Включить капитализацию";
 "deposit.capitalizationHint" = "При включенной капитализации проценты добавляются к основной сумме каждый месяц";
 "deposit.countsForToday" = "Учитывать в «На сегодня»";
 "deposit.countsForToday.hint" = "Деньги, которые можно снять в любой момент. «На сегодня» и Тэн посчитают их вместе с картами.";
 "deposit.new" = "Новый депозит";
 "deposit.editTitle" = "Изменить депозит";
-"deposit.interestAccrual.description" = "Проценты";
 "deposit.interestAccrual.category" = "Проценты";
 
 // MARK: - Categories Management
 "categories.expenseCategories" = "Категории расходов";
-"categories.incomeCategories" = "Категории доходов";
 "category.uncategorized" = "Без категории";
 "category.deleteTitle" = "Удалить категорию?";
 "category.deleteOnlyCategory" = "Удалить только категорию";
 "category.deleteCategoryAndTransactions" = "Удалить категорию и операции";
 "category.deleteMessage" = "Выберите, что делать с операциями категории \"%@\".";
 "category.namePlaceholder" = "Название категории";
-"category.tapToSelect" = "Нажмите для выбора";
-"category.subcategories" = "Подкатегории";
 "category.addSubcategory" = "Добавить подкатегорию";
 "category.manageSubcategories" = "Управление подкатегориями";
 
@@ -394,12 +302,7 @@
 "iconPicker.gaming" = "Игры";
 "iconPicker.devTools" = "Dev Tools и AI";
 "iconPicker.services" = "Сервисы";
-"iconPicker.popularBanks" = "Популярные банки";
-"iconPicker.otherBanks" = "Другие банки";
 "iconPicker.searchOnline" = "Поиск логотипа бренда...";
-"iconPicker.noLogo" = "Без логотипа";
-"iconPicker.searching" = "Поиск...";
-"iconPicker.searchResults" = "Результаты поиска";
 
 // MARK: - Category Filter
 "categoryFilter.allCategories" = "Все категории";
@@ -415,23 +318,10 @@
 "accessibility.voiceInputHint" = "Записать операцию голосом";
 "accessibility.calendar" = "Календарь";
 "accessibility.calendarHint" = "Выбрать диапазон дат для фильтрации операций";
-"accessibility.settings" = "Настройки";
-"accessibility.settingsHint" = "Открыть настройки приложения";
 
 // MARK: - Quick Add Transaction / Add Transaction Modal
-"quickAdd.account" = "Счёт";
-"quickAdd.amount" = "Сумма";
-"quickAdd.description" = "Описание";
 "quickAdd.descriptionPlaceholder" = "Описание (необязательно)";
 "quickAdd.balanceAfter" = "Останется на счёте";
-"quickAdd.recurring" = "Повторяющаяся операция";
-"quickAdd.makeRecurring" = "Повторение";
-"quickAdd.frequency" = "Частота";
-"quickAdd.subcategories" = "Подкатегории";
-"quickAdd.searchSubcategories" = "Поиск подкатегорий";
-"quickAdd.searchAndAddSubcategories" = "Поиск и добавление подкатегорий";
-"quickAdd.selectDate" = "Выберите дату";
-"quickAdd.done" = "Готово";
 
 // MARK: - Validation Errors
 "error.validation.enterAmount" = "Введите корректную сумму";
@@ -442,19 +332,14 @@
 // MARK: - Voice Input
 "voice.title" = "Голосовой ввод";
 "voice.speak" = "Говорите...";
-"voice.recording" = "Идет запись...";
 "voice.error" = "Ошибка";
 "voice.errorMessage" = "Не удалось начать запись";
 "voice.emptyText" = "Текст не распознан. Попробуйте еще раз.";
-"voice.vadToggle" = "Авто-остановка при тишине";
-"voice.vadDescription" = "Запись остановится автоматически после 2.5 секунд тишины";
 
 // MARK: - Voice Input Confirmation
 "voiceConfirmation.title" = "Проверьте операцию";
 "voiceConfirmation.confirm" = "Подтвердить";
-"voiceConfirmation.type" = "Тип операции";
 "voiceConfirmation.noAccounts" = "Нет доступных счетов";
-"voiceConfirmation.selectCategory" = "Выберите категорию";
 "voiceConfirmation.warning.accountNotFound" = "Счёт не найден, выбран по умолчанию";
 "voiceConfirmation.warning.accountNotRecognized" = "Счёт не распознан, выбран по умолчанию";
 "voiceConfirmation.warning.enterAmount" = "Введите сумму";
@@ -462,7 +347,6 @@
 "voiceConfirmation.warning.selectAccount" = "Выберите счёт";
 "voiceConfirmation.warning.accountNotSelected" = "Счёт не выбран, использован по умолчанию";
 "voiceConfirmation.warning.categoryNotRecognized" = "Категория не распознана, выбрана по умолчанию";
-"voiceConfirmation.warning.selectCategory" = "Выберите категорию";
 "voiceConfirmation.warning.categoryNotSelected" = "Категория не выбрана, использована по умолчанию";
 "voiceConfirmation.warning.categoryNotFound" = "Не удалось найти категорию";
 
@@ -479,7 +363,6 @@
 "subscriptions.deleteSubscriptionAndTransactions" = "Удалить подписку и операции";
 "subscriptions.pause" = "Приостановить";
 "subscriptions.resume" = "Возобновить";
-"subscriptions.transactionHistory" = "История операций";
 "subscriptions.category" = "Категория";
 "subscriptions.frequency" = "Частота";
 "subscriptions.nextCharge" = "Следующее списание";
@@ -513,7 +396,6 @@
 "frequency.yearly" = "Ежегодно";
 
 // Subscription Form
-"subscription.basicInfo" = "Основная информация";
 "subscription.namePlaceholder" = "Название подписки";
 "subscription.reminders" = "Напоминания";
 "subscription.scheduleSection" = "Расписание";
@@ -531,12 +413,10 @@
 "account.selectAccount" = "Выберите счёт";
 
 // Category messages
-"category.selectCategory" = "Выберите категорию";
 
 // Error messages
 "error.subscriptionNameRequired" = "Введите название подписки";
 "error.invalidAmount" = "Введите корректную сумму";
-"error.categoryRequired" = "Выберите категорию";
 "error.accountRequired" = "Выберите счёт оплаты";
 "error.accountNameRequired" = "Введите название счёта";
 "error.categoryNameRequired" = "Введите название категории";
@@ -549,26 +429,10 @@
 "yearly" = "Ежегодно";
 "budget_reset_day" = "Сброс в день";
 "budget_reset_day_description" = "День месяца, когда бюджет обнуляется (1-31)";
-"budget_settings" = "Настройки бюджета";
-"current_budget" = "Текущий бюджет";
-"current_settings" = "Текущие настройки";
-"remove_budget" = "Удалить бюджет";
-"set_budget_for" = "Установить бюджет для";
 "save" = "Сохранить";
-"cancel" = "Отмена";
 "category.noBudgetSet" = "Бюджет не установлен";
 
-// MARK: - Calendar
-"calendar.upcomingPayments" = "Ближайшие платежи";
-"calendar.month" = "Месяц";
-"calendar.halfYear" = "Полгода";
-"calendar.year" = "Год";
-"calendar.noUpcomingPayments" = "Нет ближайших платежей";
-"calendar.currentMonth" = "Текущий месяц";
-
 // MARK: - Transaction Forms
-"transactionForm.amount" = "Сумма";
-"transactionForm.description" = "Описание";
 "transactionForm.descriptionPlaceholder" = "Описание (необязательно)";
 "transactionForm.category" = "Категория";
 "transactionForm.selectCategory" = "Выберите категорию";
@@ -576,7 +440,6 @@
 "transactionForm.transfer" = "Перевод";
 "transactionForm.topUp" = "Пополнение";
 "transactionForm.toAccount" = "Счёт получателя";
-"transactionForm.fromAccount" = "Счёт источника";
 "transactionForm.fromHeader" = "Откуда";
 "transactionForm.toHeader" = "Куда";
 "transactionForm.noAccountsForTransfer" = "Нет других счетов для перевода";
@@ -585,16 +448,10 @@
 "transactionForm.cannotTransferToSame" = "Нельзя перевести средства на тот же счёт";
 "transactionForm.accountNotFound" = "Счёт не найден";
 "transactionForm.selectTargetAccount" = "Пожалуйста, выберите счёт назначения";
-"transactionForm.depositTopUp" = "Пополнение депозита";
-"transactionForm.depositWithdrawal" = "Перевод с депозита";
 "transactionForm.accountTopUp" = "Пополнение счёта";
-"transactionForm.recurring" = "Повторяющаяся";
-"transactionForm.makeRecurring" = "Сделать повторяющейся";
 "transactionForm.searchSubcategories" = "Поиск подкатегорий";
 "transactionForm.addSubcategory" = "Добавить подкатегорию";
 "transactionForm.createSubcategory" = "Создать \"%@\"";
-"transactionForm.searchAndAddSubcategories" = "Поиск и добавление подкатегорий";
-"transactionForm.searchOrCreateSubcategory" = "Найти или создать подкатегорию";
 // MARK: - Recurring Transactions Errors
 "recurring.error.seriesNotFound" = "Повторяющаяся операция не найдена";
 "recurring.error.invalidFrequency" = "Выбрана неверная частота";
@@ -605,9 +462,6 @@
 "recurring.error.emptyCurrency" = "Необходимо указать валюту";
 "recurring.error.missingSubscriptionStatus" = "Необходимо указать статус подписки";
 "recurring.error.invalidReminderOffsets" = "Дни напоминания должны быть положительными";
-"recurring.validation.amountRequired" = "Требуется указать сумму";
-"recurring.validation.descriptionRequired" = "Требуется указать описание";
-
 
 // MARK: - CSV Import
 "category.other" = "Другое";
@@ -624,10 +478,6 @@
 "csvImport.error.noHeaders" = "В файле отсутствуют заголовки";
 "csvImport.error.invalidFormat" = "Неверный формат CSV";
 "csvImport.error.persistenceFailed" = "Данные импорта не удалось сохранить в базу данных.";
-"csvImport.progress.parsing" = "Парсинг CSV файла...";
-"csvImport.progress.validating" = "Валидация строк...";
-"csvImport.progress.importing" = "Импорт операций...";
-"csvImport.progress.finalizing" = "Завершение импорта...";
 "csvImport.result.imported" = "%d импортировано";
 "csvImport.result.skipped" = "%d пропущено";
 "csvImport.result.duplicates" = "%d дубликатов";
@@ -637,8 +487,6 @@
 "csvImport.result.duration" = "Время";
 "csvImport.result.speed" = "Скорость";
 "csvImport.result.title" = "Импорт завершён";
-"csvImport.button.cancel" = "Отменить импорт";
-"csvImport.button.retry" = "Повторить";
 "csvImport.button.viewErrors" = "Посмотреть ошибки";
 "csvImport.preview.title" = "Предпросмотр CSV";
 "csvImport.preview.rows" = "Строк";
@@ -655,14 +503,9 @@
 "csvImport.mapping.currency" = "Валюта";
 "csvImport.mapping.account" = "Счёт";
 "csvImport.mapping.none" = "Нет";
-"csvImport.entityMapping.title" = "Маппинг сущностей";
-"csvImport.entityMapping.accounts" = "Счета";
-"csvImport.entityMapping.categories" = "Категории";
-"csvImport.entityMapping.autoCreate" = "Будет создано автоматически";
 "csvImport.preview.fileInfo" = "Информация о файле";
 "csvImport.preview.headersTitle" = "Колонки в файле";
 "csvImport.preview.dataPreview" = "Предпросмотр данных (первые %d строк)";
-"csvImport.preview.empty" = "(пусто)";
 "csvImport.mapping.category" = "Категория";
 "csvImport.mapping.targetAccount" = "Счёт получателя";
 "csvImport.mapping.targetCurrency" = "Валюта получателя";
@@ -727,25 +570,6 @@
 "error.export.fileWriteFailed" = "Не удалось записать файл экспорта: %@";
 "error.export.insufficientSpace" = "Недостаточно места на диске для экспорта";
 
-// MARK: - Alert Titles (Settings)
-"alert.recalculateBalances.title" = "Пересчитать балансы?";
-"alert.recalculateBalances.message" = "Это пересчитает балансы всех счетов с нуля на основе операций. Используйте это, если балансы отображаются неправильно.";
-"alert.recalculateBalances.confirm" = "Пересчитать";
-"alert.selectWallpaper.title" = "Выбрать обои";
-"alert.removeWallpaper.title" = "Удалить обои?";
-"alert.removeWallpaper.message" = "Это удалит текущие обои с главного экрана";
-"alert.exportSuccess.title" = "Экспорт завершен";
-"alert.exportSuccess.message" = "Данные экспортированы в %@";
-"alert.importSuccess.title" = "Импорт завершен";
-"alert.importSuccess.message" = "Импортировано операций: %d";
-
-// MARK: - Settings Labels (Additional)
-"settings.recalculateBalances" = "Пересчитать балансы счетов";
-"settings.wallpaperHistory" = "История обоев";
-"settings.recentCurrencies" = "Недавние валюты";
-"settings.exportProgress" = "Экспорт... %d%%";
-"settings.importProgress" = "Импорт... %d%%";
-
 // MARK: - Success Messages
 "success.settings.currencyUpdated" = "Валюта успешно обновлена";
 "success.settings.wallpaperUpdated" = "Обои успешно обновлены";
@@ -755,7 +579,6 @@
 "success.recalculation.completed" = "Балансы успешно пересчитаны";
 
 // MARK: - Import Errors (Phase 2)
-"error.import.coordinatorNotAvailable" = "Координатор импорта недоступен";
 "error.import.viewModelsNotAvailable" = "Требуемые ViewModels недоступны";
 
 // MARK: - Import Progress (Phase 2)
@@ -789,7 +612,6 @@
 "iconStyle.tint.palette" = "Палитра";
 "iconStyle.tint.original" = "Оригинальные цвета";
 "iconStyle.preset.categoryIcon" = "Иконка категории";
-"iconStyle.preset.bankLogo" = "Логотип банка";
 "iconStyle.preset.serviceLogo" = "Логотип сервиса";
 "iconStyle.preset.placeholder" = "Заглушка";
 "recurring.never" = "Никогда";
@@ -799,11 +621,6 @@
 "filter.allAccounts" = "Все счета";
 "filter.allCategories" = "Все категории";
 "filter.allSubcategories" = "Все подкатегории";
-
-// MARK: - Animated Input (Phase 16)
-"input.amountPlaceholder" = "0";
-"input.titleHint" = "Нажмите для редактирования";
-"input.balanceHint" = "Нажмите для редактирования суммы";
 
 // MARK: - Insights (Phase 17)
 "insights.title" = "Аналитика";
@@ -818,7 +635,6 @@
 "insights.availableBalance" = "Доступный баланс";
 "insights.topMonths.best" = "Топ-10 лучших месяцев";
 "insights.topMonths.worst" = "Топ-10 худших месяцев";
-"insights.loading" = "Анализируем ваши финансы...";
 "insights.emptyState.title" = "Пока нет аналитики";
 "insights.emptyState.description" = "Добавьте операции, чтобы увидеть финансовую аналитику";
 "insights.noInsightsForFilter" = "Нет данных для этой категории";
@@ -836,13 +652,11 @@
 "insights.vsPreviousPeriod" = "к прошлому периоду";
 "insights.vsAverage" = "к среднему";
 "insights.budgetOver" = "Превышение бюджета";
-"insights.budgetUnder" = "В рамках бюджета";
 "insights.budgetHeadroom" = "Запас бюджета";
 "insights.projectedOverspend" = "Прогноз перерасхода";
 "insights.categoriesOverBudget" = "%d категорий с перерасходом";
 "insights.categoriesAtRisk" = "%d категорий под угрозой";
 "insights.categoriesUnderBudget" = "%d категорий в норме";
-"insights.categoriesUnit" = "категорий";
 "insights.totalRecurring" = "Ежемесячные регулярные расходы";
 "insights.totalRecurring.week" = "Регулярные за неделю";
 "insights.totalRecurring.month" = "Ежемесячные регулярные";
@@ -884,11 +698,9 @@
 "insights.projectedBalance" = "Прогноз баланса";
 "insights.in30Days" = "через 30 дней";
 "insights.recurringAndExpenses" = "Подписки + средние расходы";
-"insights.projected" = "прогнозируемое изменение";
 "insights.currentBalance" = "Текущий баланс";
 "insights.cashFlowTrend" = "Тренд денежных потоков";
 "insights.breakdown" = "Детализация";
-"insights.monthlyBreakdown" = "По месяцам";
 "insights.breakdown.week" = "По неделям";
 "insights.breakdown.month" = "По месяцам";
 "insights.breakdown.quarter" = "По кварталам";
@@ -901,8 +713,6 @@
 "insights.other" = "Другое";
 "insights.noSubcategory" = "Без подкатегории";
 "insights.spendingTrend" = "Тренд расходов";
-"insights.subcategories" = "Подкатегории";
-"insights.periodComparison" = "Сравнение периодов";
 "insights.daysLeft" = "%d дней осталось";
 
 // Granularity picker
@@ -917,7 +727,6 @@
 "insights.granularity.year.short" = "Год";
 "insights.granularity.allTime.short" = "Всё";
 "insights.bucket.week.label" = "Последние 7 дней";
-"insights.summary.windowTotalsLabel" = "За весь период графика";
 "insights.formula.value.months" = "%.1f мес";
 "insights.formula.howCalculated" = "Как считается";
 "insights.formula.value.days" = "%d дн";
@@ -954,21 +763,8 @@
 "insights.formula.spendingForecast.rec.overrun" = "Превышение дохода на %@. Перепроверьте дискреционные траты или перенесите необязательные покупки на следующий месяц.";
 "insights.formula.spendingForecast.rec.onTrack" = "Запас по доходу: %@. Чтобы зафиксировать, избегайте незапланированных покупок или сразу перенесите сумму в сбережения.";
 "insights.formula.spendingForecast.rec.noIncome" = "В этом месяце ещё не зафиксирован доход, поэтому прогноз только информационный.";
-"insights.formula.balanceRunway.title" = "Запас прочности";
-"insights.formula.balanceRunway.heroLabel" = "Месяцев до исчерпания баланса";
-"insights.formula.balanceRunway.heroLabel.growing" = "Среднее ежемесячное превышение";
-"insights.formula.balanceRunway.formulaHeader" = "Как считается";
-"insights.formula.balanceRunway.row.balance" = "Текущий баланс";
-"insights.formula.balanceRunway.row.avgIncome" = "Средний доход (3 мес)";
-"insights.formula.balanceRunway.row.avgExpenses" = "Средние расходы (3 мес)";
-"insights.formula.balanceRunway.row.burn" = "Ежемесячный расход (расход − доход)";
 "insights.formula.balanceRunway.row.netFlow" = "Средний чистый поток";
 "insights.formula.balanceRunway.row.runway" = "Запас прочности";
-"insights.formula.balanceRunway.explainer" = "Баланс ÷ ежемесячный расход. Порог 3 месяца: здоровая подушка; ниже 1 месяца значит, что одна неудачная зарплата «съедает» весь буфер.";
-"insights.formula.balanceRunway.explainer.growing" = "Доход превышает расход, поэтому баланс растёт. Вверху: среднее ежемесячное превышение. При таком темпе запас прочности неограничен.";
-"insights.formula.balanceRunway.rec.growing" = "Вы в плюсе. Направьте излишек на цели, долги или доходные сбережения, а не оставляйте просто на счёте.";
-"insights.formula.balanceRunway.rec.long" = "Запас более 3 месяцев: вы хорошо забуферены. Часть денег можно перевести в более долгосрочные инструменты.";
-"insights.formula.balanceRunway.rec.short" = "Ниже 3 месяцев. Сократите расходы на ~%@/мес для подушки на 3 месяца. Начните с самой крупной дискреционной категории.";
 "insights.formula.balanceRunway.rec.critical" = "Меньше месяца: закрывайте разрыв срочно. Даже пауза одной крупной подписки даст несколько дней.";
 "insights.formula.yearOverYear.title" = "Год к году";
 "insights.formula.yearOverYear.heroLabel" = "Изменение к тому же месяцу год назад";
@@ -1038,7 +834,6 @@
 "insights.categoryTrend" = "Тренд расходов";
 "insights.categoryTrend.risingMonths" = "Растёт %d месяцев";
 "insights.subscriptionGrowth" = "Рост подписок";
-"insights.vsThreeMonthsAgo" = "к 3 месяцам назад";
 
 // Forecasting
 "insights.forecasting" = "Прогноз";
@@ -1108,7 +903,6 @@
 "tab.home" = "Главная";
 "tab.analytics" = "Аналитика";
 "tab.finances" = "Финансы";
-"tab.settings" = "Настройки";
 "tab.voice" = "Голос";
 "tab.ocr" = "Импорт";
 "tab.add" = "Добавить";
@@ -1117,7 +911,6 @@
 // MARK: - Finances
 "finances.title" = "Финансы";
 "finances.accounts.title" = "Счета";
-"finances.accounts.totalLabel" = "Общий баланс";
 "finances.accounts.empty" = "Нет счетов";
 "finances.deposits.title" = "Депозиты";
 "finances.deposits.empty" = "Нет депозитов";
@@ -1145,14 +938,11 @@
 "loan.unpaidThisMonth" = "Не оплачено в этом месяце";
 "loan.typeAnnuityShort" = "Кредит";
 "loan.typeInstallmentShort" = "Рассрочка";
-"loan.of" = "из";
 "loan.remainingShort" = "осталось %d платежей";
 "loan.notFound" = "Кредит не найден";
 "loan.title" = "Кредит";
 "loan.changeRate" = "Изменить ставку";
 "loan.earlyRepayment" = "Досрочное погашение";
-"loan.history" = "История платежей";
-"loan.actions" = "Действия с кредитом";
 "loan.deleteTitle" = "Удалить кредит?";
 "loan.deleteMessage" = "Платежи по кредиту записаны как реальные расходы по вашим счетам. Их можно оставить в истории или удалить вместе с кредитом.";
 "loan.closedSection" = "Закрытые";
@@ -1164,7 +954,6 @@
 "loan.deleteWithPayments" = "Удалить кредит и платежи";
 "loan.payoffCelebration" = "Кредит погашен. Отличная работа.";
 "loan.paidOff" = "Выплачено";
-"loan.remainingPrincipal" = "Остаток";
 "loan.nextPayment" = "Следующий платёж: %@";
 "loan.currentPaymentBreakdown" = "Разбивка текущего платежа";
 "loan.principalPortion" = "Основной долг";
@@ -1187,46 +976,26 @@
 "loan.noSchedule" = "График недоступен";
 "loan.showAllPayments" = "Показать все %d платежей";
 "loan.interestShort" = "Процент: %@";
-"loan.makeEarlyRepayment" = "Досрочное погашение";
 "loan.convertTitle" = "Конвертировать в кредит";
 "loan.editTitle" = "Изменить кредит";
 "loan.newTitle" = "Новый кредит";
-"loan.nameHeader" = "Название";
 "loan.namePlaceholder" = "напр. Автокредит";
-"loan.bankHeader" = "Банк";
 "loan.bankLabel" = "Банк";
 "loan.bankPlaceholder" = "Название банка";
-"loan.typeHeader" = "Тип кредита";
 "loan.typePicker" = "Тип";
-"loan.typeAnnuity" = "Аннуитетный (кредит)";
-"loan.typeInstallment" = "Рассрочка";
 "loan.installmentHint" = "Рассрочка = 0% годовых, равные платежи";
-"loan.principalHeader" = "Сумма кредита";
-"loan.principalPlaceholder" = "Общая сумма кредита";
-"loan.interestRateHeader" = "Процентная ставка";
 "loan.interestRateLabel" = "Ставка (год)";
-"loan.rateAnnualSuffix" = "% годовых";
-"loan.termHeader" = "Срок";
-"loan.termPlaceholder" = "Количество месяцев";
-"loan.months" = "мес.";
-"loan.paymentDayHeader" = "День платежа";
 "loan.paymentDay" = "День месяца";
-"loan.paymentDayHint" = "День месяца для внесения платежа";
-"loan.startDateHeader" = "Дата начала";
 "loan.startDate" = "Дата начала кредита";
-"loan.repaymentAmount" = "Сумма погашения";
 "loan.amountPlaceholder" = "Сумма";
 "loan.remainingBalance" = "Остаток: %@";
-"loan.repaymentDate" = "Дата";
 "loan.date" = "Дата";
-"loan.repaymentType" = "Стратегия погашения";
 "loan.strategy" = "Стратегия";
 "loan.reduceTerm" = "Сократить срок";
 "loan.reducePayment" = "Уменьшить платёж";
 "loan.reduceTermHint" = "Сохранить платёж, закончить раньше";
 "loan.reducePaymentHint" = "Сохранить срок, уменьшить платёж";
 "loan.impact" = "Результат";
-"loan.note" = "Заметка";
 "loan.notePlaceholder" = "Необязательная заметка";
 "loan.defaultTagging" = "Категория по умолчанию";
 "loan.defaultTaggingHint" = "Подставится в форму платежа. Категория последнего платежа имеет приоритет.";
@@ -1234,33 +1003,24 @@
 "loan.subcategoryEmpty" = "Выберите категорию выше, чтобы добавить теги";
 "loan.noDefaultCategory" = "Без категории";
 "loan.noDefaultSubcategory" = "Без подкатегории";
-"loan.earlyRepaymentTitle" = "Досрочное погашение";
 "loan.termReduction" = "Срок сокращён на";
 "loan.monthsValue" = "%d мес.";
 "loan.newEndDate" = "Новая дата окончания";
 "loan.paymentReduction" = "Платёж уменьшен на";
 "loan.newMonthlyPayment" = "Новый ежемесячный платёж";
-"loan.newRate" = "Новая процентная ставка";
 "loan.effectiveDate" = "Действует с";
 "loan.rateChangeImpact" = "Результат";
 "loan.paymentChange" = "Изменение";
-"loan.enterRateForPreview" = "Введите ставку для предпросмотра";
 "loan.changeRateTitle" = "Изменить ставку";
-"loan.payment.description" = "Платёж по кредиту";
 
 // Loans Phase 5
 "loan.typeLockedHint" = "Тип кредита нельзя изменить после создания";
 "loan.makePayment" = "Внести платёж";
-"loan.paymentTitle" = "Платёж по кредиту";
-"loan.paymentAmount" = "Сумма платежа";
 "loan.sourceAccount" = "Счёт списания";
-"loan.selectSourceAccount" = "Выберите счёт для оплаты";
 "loan.scheduledPayment" = "По графику: %@";
 "loan.noSourceAccounts" = "Нет доступных счетов";
-"loan.payAll" = "Оплатить все";
 "loan.payAllTitle" = "Оплатить все кредиты";
 "loan.payAllTotal" = "Общая сумма";
-"loan.payAllConfirm" = "Оплатить все";
 
 // MARK: - Icon Picker (new categories)
 "iconPicker.localServices" = "Местные сервисы";
@@ -1326,16 +1086,6 @@
 
 // MARK: - iCloud Sync
 "settings.cloud" = "Резервные копии";
-"settings.cloud.sync" = "Синхронизация iCloud";
-"settings.cloud.status.synced" = "Синхронизировано";
-"settings.cloud.status.syncing" = "Синхронизация...";
-"settings.cloud.status.initialSync" = "Первая синхронизация";
-"settings.cloud.status.initialSyncMessage" = "Это может занять несколько минут";
-"settings.cloud.status.error" = "Ошибка синхронизации";
-"settings.cloud.status.disabled" = "Отключено";
-"settings.cloud.status.noAccount" = "Войдите в iCloud в Настройках";
-"settings.cloud.lastSync" = "Последняя: %@";
-"settings.cloud.changes" = "%d отправлено · %d получено";
 "settings.cloud.backups" = "Резервные копии";
 "settings.cloud.createBackup" = "Создать резервную копию";
 "settings.cloud.backupCreated" = "Резервная копия создана";
@@ -1344,8 +1094,6 @@
 "settings.cloud.restoring" = "Восстановление…";
 "settings.cloud.restoringSubtitle" = "Не закрывайте приложение";
 "settings.cloud.deleteTitle" = "Удалить резервную копию?";
-"settings.cloud.storage" = "Хранилище";
-"settings.cloud.storageUsed" = "%@ из %@";
 "settings.cloud.iCloud.toggle" = "Сохранять копии в iCloud";
 "settings.cloud.iCloud.moving" = "Переносим данные…";
 "settings.cloud.iCloud.footer" = "Копии хранятся в вашем iCloud, скрыты из приложения «Файлы» и доступны в Tenra на других ваших устройствах.";
@@ -1357,9 +1105,6 @@
 "alert.restore.title" = "Восстановить данные?";
 "alert.restore.message" = "Все текущие данные будут заменены копией от %@.";
 "alert.restore.confirm" = "Восстановить";
-"alert.disableSync.title" = "Отключить синхронизацию?";
-"alert.disableSync.message" = "Данные будут храниться только на этом устройстве.";
-"alert.disableSync.confirm" = "Отключить";
 
 // Backup errors
 "error.backup.noActiveStore" = "Активная база данных не найдена";
@@ -1371,7 +1116,6 @@
 "error.backup.notDownloaded" = "Резервная копия ещё не загрузилась из iCloud. Проверьте подключение и попробуйте снова.";
 
 // MARK: - Loans (Form)
-"loan.amountLabel" = "Сумма";
 "loan.detailsSection" = "Детали кредита";
 "loan.noteLabel" = "Заметка";
 "loan.payAllLoans" = "Кредиты";
@@ -1386,11 +1130,6 @@
 "loan.error.noSourceAccount" = "Выберите счёт списания";
 "loan.linkPayments" = "Привязать платежи";
 "loan.linkPayments.title" = "Привязать платежи";
-"loan.linkPayments.selected" = "%d выбрано";
-"loan.linkPayments.selectedWithAmount" = "%d выбрано · %@";
-"loan.linkPayments.search" = "Поиск по описанию или сумме";
-"loan.linkPayments.link" = "Привязать %d платежей";
-"loan.linkPayments.empty" = "Подходящие операции не найдены";
 "loan.linkPayments.error.notFound" = "Кредит не найден";
 "loan.markPaid" = "Отметить оплаченным";
 "loan.markUnpaid" = "Отметить неоплаченным";
@@ -1400,7 +1139,6 @@
 
 // Привязка платежей к подписке
 "subscription.linkPayments.title" = "Привязать платежи";
-"subscription.linkPayments.search" = "Поиск по описанию или сумме";
 "subscription.linkPayments.searchPlaceholder" = "Поиск";
 "subscription.linkPayments.selectedWithAmount" = "%d выбрано · %@";
 "subscription.linkPayments.link" = "Привязать %d";
@@ -1409,7 +1147,6 @@
 "subscription.linkPayments.amountTolerance" = "±30%";
 "subscription.linkPayments.amountAll" = "Все";
 "subscription.linkPayments.unknownAccount" = "Неизвестный счёт";
-"common.done" = "Готово";
 "deposit.linkInterest.title" = "Привязать выплаты процентов";
 "deposit.recalculateInterest" = "Пересчитать проценты";
 "subscriptions.spentAllTime" = "Потрачено за всё время";
@@ -1455,12 +1192,6 @@
 
 // MARK: - Insights
 "insights.remaining" = "осталось";
-"insights.range.totalExpenses" = "Расходы за период";
-"insights.range.netFlow" = "Чистый поток за период";
-"insights.range.wealthChange" = "Изменение капитала";
-"insights.range.totalIncome" = "Доходы за период";
-"insights.range.reset" = "Сбросить";
-"insights.zoom.reset" = "По размеру";
 "insights.chart.line" = "Линия";
 "insights.chart.bar" = "Бары";
 "insights.today" = "Сегодня";
@@ -1470,9 +1201,7 @@
 "insights.empty.subtitle" = "Здесь появится график, как только наберётся история операций";
 
 // MARK: - Voice Input
-"voice.noTextRecognizedYet" = "Текст пока не распознан";
 "voice.stopRecording" = "Остановить запись";
-"voice.tapToFinish" = "Нажмите для завершения";
 "voice.tour.orb" = "Нажмите на шар, когда закончите. Он слушает, пока вы говорите.";
 
 // MARK: - Voice Input Errors
@@ -1487,7 +1216,6 @@
 "voiceError.speechBecameUnavailable" = "Распознавание речи стало недоступно";
 "voiceError.audioSessionSetup %@" = "Не удалось настроить аудиосессию: %@";
 "voiceError.recognitionRequestFailed" = "Не удалось создать запрос на распознавание";
-"voiceError.audioEngineCreateFailed" = "Не удалось создать аудиодвижок";
 "voiceError.audioEngineStartFailed %@" = "Не удалось запустить аудиодвижок: %@";
 
 // MARK: - Calculator Keypad (Accessibility)
@@ -1504,7 +1232,6 @@
 "voiceConfirmation.saveError" = "Ошибка сохранения";
 
 // MARK: - Progress
-"progress.loadingAccounts" = "Загрузка счетов";
 "progress.loadingTransactions" = "Загрузка операций";
 "progress.saving" = "Сохранение";
 
@@ -1515,14 +1242,10 @@
 "timeFilter.customRange" = "Свой период";
 
 // MARK: - Accessibility
-"accessibility.accounts.addMenu" = "Меню добавления";
-"accessibility.accounts.doneReordering" = "Завершить сортировку";
 "accessibility.category.budgetHint" = "Использование бюджета";
 "accessibility.category.budgetProgress" = "Прогресс бюджета";
 "accessibility.category.label" = "Категория";
 "accessibility.category.overBudget" = "Бюджет превышен";
-"accessibility.deposit.history" = "История операций";
-"accessibility.deposit.moreActions" = "Дополнительные действия";
 "accessibility.insights.granularityPicker" = "Выбор периода";
 "accessibility.insights.granularityPickerHint" = "Выберите детализацию: месяц, квартал или год";
 "accessibility.transaction.history" = "История операций";
@@ -1580,9 +1303,6 @@
 "category.detail.totalEarned" = "Всего заработано";
 "category.detail.avgMonthly" = "В среднем за месяц";
 "category.detail.budget" = "Бюджет";
-"category.detail.subcategories" = "Подкатегории";
-"category.detail.transactionCount" = "Операций";
-"category.detail.manageSubcategories" = "Управлять подкатегориями";
 "category.detail.type.expense" = "Расход";
 "category.detail.type.income" = "Доход";
 
@@ -1601,7 +1321,6 @@
 "pager.previous" = "Назад";
 "pager.next" = "Вперёд";
 "onboarding.cta.start" = "Начать";
-"onboarding.cta.done" = "Готово";
 "onboarding.cta.skip" = "Пропустить";
 "onboarding.stepIndicator.label" = "Шаг %d из %d";
 
@@ -1611,11 +1330,7 @@
 "onboarding.account.title" = "Добавьте первый счёт";
 "onboarding.account.subtitle" = "Это может быть карта, наличные или счёт в банке. Позже добавите остальные.";
 "onboarding.account.namePlaceholder" = "Например, Kaspi";
-"onboarding.account.nameLabel" = "Название";
-"onboarding.account.iconLabel" = "Иконка";
-"onboarding.account.balanceLabel" = "Стартовый баланс";
 "onboarding.account.balanceCaption" = "Стартовый баланс (%@)";
-"onboarding.account.currencyChangedBanner" = "Валюта приложения изменена. Валюта счёта останется прежней. Изменить можно в редакторе счёта.";
 
 "onboarding.categories.title" = "Выберите категории трат";
 "onboarding.categories.subtitle" = "Отметьте те, которыми будете пользоваться. Остальные сможете добавить позже.";
@@ -1909,7 +1624,6 @@
 "settings.wallet.cards" = "Карты";
 "settings.wallet.footer" = "Оплаты Apple Pay, записанные автоматизацией Wallet: проверьте угаданные, задайте категорию каждому продавцу и счёт каждой карте.";
 
-
 /* MARK: - Document import */
 "import.source.statement.title" = "Банковская выписка";
 "import.source.statement.subtitle" = "Импортируйте PDF-выписку из банка";
@@ -1966,7 +1680,6 @@
 "onboarding.autoCapture.notifications.hint" = "Переводы, оплаты по QR и онлайн из уведомлений любого банка";
 "onboarding.autoCapture.statement.title" = "Выписка из банка";
 "onboarding.autoCapture.statement.hint" = "Загрузите PDF за прошлый месяц, и Тэн разнесёт операции";
-"onboarding.autoCapture.afterStart" = "После старта";
 "onboarding.restore" = "Восстановить из копии";
 "onboarding.cta.nextWithCount" = "Далее • выбрано %d";
 "onboarding.restore.hint" = "Нажмите на копию, чтобы вернуть данные на этот iPhone.";
@@ -2149,12 +1862,12 @@
 /* AI assistant: the chat screen */
 "tab.assistant" = "Ассистент";
 "assistant.greeting.title" = "Привет, я Тэн";
-"assistant.greeting.message" = "Помогаю с деньгами: траты, экономия, кредиты и инвестиции. Смотрю ваши данные на этом телефоне и отвечаю карточками.";
+"assistant.greeting.message" = "Записываю траты («кофе 1500») и помогаю с деньгами: экономия, кредиты и инвестиции. Смотрю ваши данные на этом телефоне и отвечаю карточками.";
 "assistant.attach" = "Прикрепить чек или выписку";
 "assistant.greeting.tools" = "Скрепка: чек или выписка. Микрофон: скажите вслух.";
 "composer.send" = "Отправить";
 "composer.voice" = "Надиктовать";
-"assistant.composer.placeholder" = "Спросите о деньгах…";
+"assistant.composer.placeholder" = "Запишите трату или спросите…";
 "assistant.preset.month" = "Мои траты в этом месяце";
 "assistant.preset.compare" = "Сравни с прошлым месяцем";
 "assistant.preset.budgets" = "Как дела с бюджетами?";

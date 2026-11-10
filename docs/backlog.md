@@ -18,12 +18,6 @@ with the commit of every fix, are in
   banner while the person is in the app at its time; `hookDay` is an absolute start-of-day `Date`
   (a time-zone change can shift yesterday's match); the cards inline `shouldOffer`.
 
-- **First run, as a newcomer sees it** (walkthrough 2026-11-04, iPhone 17 Pro Simulator, iOS 26.5,
-  Russian, fresh install; 80% of new users open Tenra once, promotion-plan §6). From launch to the
-  first saved expense: 6 screens, about 12 taps. By likely weight:
-  1. *Not checked (Simulator has no App Attest):* on a phone the action tab is Ten, whose field
-     says "Спросите о деньгах…", not "запишите трату"; a typed expense is drafted on the phone.
-
 - **Assistant attachments after a relaunch.** A receipt or statement attached in the chat lives
   in memory: after a relaunch its card is gone from the kept thread (drafts too, by design).
   Plan §3.8 keeps the file in the app's container with the thread; only worth it if people come
@@ -107,15 +101,9 @@ Found by the docs audit of 2026-10-12, not verified on device yet:
 
 Left by the action audit of 2026-11-08 (the rules: [design-system.md](design-system.md) §4 Actions,
 [localization.md](localization.md) §Action words):
-- **Title case left in en (and tr, pt-BR) outside actions:** CSV mapping fields ("Target Account",
-  "Amount in Account Currency"), some navigation titles ("Filter by Categories", "Transaction
-  Preview"), Insights labels ("Net Flow", "Available Balance"), "Rounded Square".
 - **`steps.position`** (VoiceOver "Step 2 of 4" of DesignKit's `StepTracker` in the CSV import) is
   not in Tenra's tables: the key takes its numbers from `defaultValue`'s interpolation, so check
   on a device that a table value with `%lld` gets them before adding it.
-- **About 290 keys in `Localizable.strings` have no use** in Tenra's code, in a run-time built key
-  or in DesignKit's list (`emptyState.*`, `quickAdd.*`, `csvImport.*`, `button.change`, …).
-  Remove them in one pass, keeping DesignKit's keys.
 
 ## Ideas, not planned yet
 

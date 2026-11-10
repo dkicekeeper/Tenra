@@ -46,6 +46,8 @@ enum SpendingReminder {
     static var center: SpendingReminderCenter = SystemSpendingReminderCenter()
     static var drawArt: (ParticleCreature.Mood) -> Data? = { TenNotificationArt.pngData(mood: $0) }
     static var writeAttribute: (String) -> Void = { PremiumManager.shared.noteSpendingReminder($0) }
+    static var requestPermission: () async -> Void = { _ = await NotificationPermissionManager.shared.requestAuthorization() }
+    static var openNotificationSettings: () -> Void = { NotificationPermissionManager.shared.openAppSettings() }
 
     /// Ten's picture per mood and appearance, drawn once a process.
     private static var artCache: [String: Data] = [:]
@@ -83,7 +85,13 @@ enum SpendingReminder {
 
     /// Ten offers the reminder once there is a record, until the person answers.
     static func shouldOffer(hasRecords: Bool, defaults: UserDefaults = .standard) -> Bool {
-        hasRecords && offerState(defaults: defaults) == .notAsked && !isEnabled(defaults: defaults)
+        shouldOffer(hasRecords: hasRecords, offer: defaults.string(forKey: offerKey), enabled: isEnabled(defaults: defaults))
+    }
+
+    /// The same rule over the stored values, for the cards that read them through `@AppStorage`
+    /// (Home's setup cards, Ten's chat): `offer` is `offerKey`'s raw value.
+    static func shouldOffer(hasRecords: Bool, offer: String?, enabled: Bool) -> Bool {
+        hasRecords && (OfferState(rawValue: offer ?? "") ?? .notAsked) == .notAsked && !enabled
     }
 
     /// The day's notification id: `spendingReminder_2026-11-05` in the phone's calendar.
@@ -111,6 +119,17 @@ enum SpendingReminder {
         requestReschedule(now: now, defaults: defaults)
     }
 
+    /// The hook kept by `noteRecorded`. Builds before 2026-11-10 kept its day as a start-of-day
+    /// `Date`: read in today's calendar, the way it was meant.
+    static func storedHook(defaults: UserDefaults) -> SpendingReminderPlan.Hook? {
+        guard let category = defaults.string(forKey: hookCategoryKey) else { return nil }
+        let stored = defaults.object(forKey: hookDayKey)
+        guard let day = (stored as? String) ?? (stored as? Date).map({ SpendingReminderPlan.dayKey(for: $0) }) else {
+            return nil
+        }
+        return SpendingReminderPlan.Hook(category: category, day: day)
+    }
+
     /// Transactions were added (TransactionStore.onRecorded), in the app or in the background:
     /// a record by the person takes tonight's reminder away at once and gives tomorrow's its
     /// hook. Not a reaction: auto-capture alone never keeps the series going.
@@ -135,10 +154,15 @@ enum SpendingReminder {
         requestReschedule(now: now, defaults: defaults)
     }
 
-    /// "Remind me" on Ten's offer: on, and the system's permission prompt.
+    /// "Remind me" on Ten's offer: on, and the system's permission prompt. With notifications
+    /// already turned off for Tenra iOS shows no prompt and the tap did nothing visible, so the
+    /// person is taken to Tenra's page in iOS Settings to allow them, as Settings › Spending
+    /// reminder's row does. Someone who refuses the prompt just now is not sent there.
     static func acceptOffer(defaults: UserDefaults = .standard) async {
         defaults.set(OfferState.accepted.rawValue, forKey: offerKey)
+        let wasDenied = await center.authorizationStatus() == .denied
         await setEnabled(true, defaults: defaults)
+        if wasDenied { openNotificationSettings() }
     }
 
     /// ✕ on Ten's offer: never offered again; Settings can still turn it on.
@@ -155,7 +179,7 @@ enum SpendingReminder {
             if offerState(defaults: defaults) == .notAsked {
                 defaults.set(OfferState.accepted.rawValue, forKey: offerKey)
             }
-            await NotificationPermissionManager.shared.requestAuthorization()
+            await requestPermission()
         }
         requestReschedule(defaults: defaults)
         await waitUntilIdle()
@@ -185,11 +209,10 @@ enum SpendingReminder {
         guard isEnabled(defaults: defaults), status == .authorized || status == .provisional else { return }
 
         let time = minutes(defaults: defaults)
-        let hook = (defaults.string(forKey: hookCategoryKey), defaults.object(forKey: hookDayKey) as? Date)
         let reminders = SpendingReminderPlan.reminders(
             lastReaction: lastReaction(defaults: defaults) ?? now,
             lastRecorded: lastRecorded(defaults: defaults),
-            hook: hook.0.flatMap { category in hook.1.map { SpendingReminderPlan.Hook(category: category, day: $0) } },
+            hook: storedHook(defaults: defaults),
             now: now,
             hour: time / 60,
             minute: time % 60

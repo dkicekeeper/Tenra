@@ -92,25 +92,6 @@ nonisolated class TransactionGroupingService {
         return (grouped, sortedKeys)
     }
 
-    /// Group transactions by month
-    /// ✅ OPTIMIZED: Uses cached parsed dates
-    /// - Parameters:
-    ///   - transactions: Array of transactions to group
-    /// - Returns: Dictionary with month keys (yyyy-MM) and transaction arrays
-    func groupByMonth(_ transactions: [Transaction]) -> [String: [Transaction]] {
-        var grouped: [String: [Transaction]] = [:]
-        let monthFormatter = DateFormatter()
-        monthFormatter.dateFormat = "yyyy-MM"
-
-        for transaction in transactions {
-            guard let date = parseDate(transaction.date) else { continue }  // ✅ Cache lookup!
-            let monthKey = monthFormatter.string(from: date)
-            grouped[monthKey, default: []].append(transaction)
-        }
-
-        return grouped
-    }
-
     /// Group transactions by category
     /// - Parameters:
     ///   - transactions: Array of transactions to group

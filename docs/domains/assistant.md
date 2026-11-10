@@ -444,7 +444,8 @@ spending, no em dashes, in all 11 languages.
 
 - **Consent before the cloud** (App Review 5.1.2(i)): a screen at the first cloud question (what
   is sent, where, that nothing is stored; `assistant.consent.*` in all 11 languages), the toggle in
-  Settings → Assistant. The App Privacy label lists what Ten sends (published 2026-10-18).
+  Settings → Assistant: switched on there, the same consent screen asks first
+  (`SettingsAssistantSection.cloudToggle`), switched off it turns the cloud off at once. The App Privacy label lists what Ten sends (published 2026-10-18).
 - **Minimisation**: the cloud gets tool results, never the database; files and photos never leave
   the phone (§7).
 - **No write without a confirmation**, and Undo after saving.
@@ -455,8 +456,18 @@ spending, no em dashes, in all 11 languages.
   sentence pointing to a licensed adviser, then it keeps helping. A refusal without help on a money
   question is forbidden by the prompt and caught by the eval (`no_refusal`), a product pick too
   (`noPick`). The consent screen says Ten runs on AI.
-- Russia and Belarus: the server answers 451 by the request's country. Hiding the cloud mode by
-  storefront is open (backlog).
+- Russia and Belarus (the owner's decision, 2026-11-10: say it once, keep the records): the
+  server answers 451 by the request's country, before App Attest and any count. The app keeps
+  that answer (`AssistantRegion`, UserDefaults `assistant.region.outOfRegionAt`) for a week. The
+  first 451 ever becomes Ten's own message (`assistant.region.explained`: questions are not
+  answered here, records are, with the language's example), not an error. While the mark holds:
+  no question goes to the server (a typed one gets the short `assistant.error.region`), Ten
+  offers no questions (no ready-made ones on its home, no suggestions), the field asks for a
+  record (`assistant.composer.placeholder.entries`), "Ask Ten" is gone from the screens, and a
+  guessed category stays on the phone. Records drafted on the phone (FastPath), voice included,
+  work as everywhere. A week on, one question goes to the server again; an answer clears the
+  mark. Home's notices stay (their "go through it" gets the short answer). Pinned by
+  `AssistantRegionTests`.
 
 ## 11. Limits, Pro and cost
 
@@ -499,6 +510,9 @@ spending, no em dashes, in all 11 languages.
   keep their count either way (their searches may have run).
 - **RevenueCat** is asked with a 5-second timeout (`REVENUECAT_TIMEOUT_MS`); a timeout or a
   network failure is 502 `entitlement_unavailable` (logged as `entitlement 504` or `0`).
+- **The app left mid-answer** (the chat closed, the connection lost): the response's reader goes,
+  the writer errors (`writer.closed`), and the model's stream is aborted instead of running to
+  its end. The call keeps its count; the log says `turn stopped: the app left`.
 
 ## 12. Setup, deploy and eval
 

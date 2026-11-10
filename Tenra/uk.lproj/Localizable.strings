@@ -1801,6 +1801,7 @@
 "assistant.error.limit" = "Запитання на цей місяць закінчилися. Ліміт оновиться наступного місяця.";
 "assistant.error.pro" = "Асистент входить у Tenra Pro.";
 "assistant.error.region" = "Асистент поки недоступний у вашому регіоні.";
+"assistant.region.explained" = "У вашому регіоні я поки не відповідаю на запитання: хмарна модель, на якій вони працюють, тут недоступна. Витрати записую як завжди: напишіть «кава 80» або скажіть уголос.";
 "assistant.error.unavailable" = "Асистент зараз недоступний. Спробуйте пізніше.";
 "assistant.error.device" = "Асистент недоступний на цьому пристрої.";
 "assistant.error.refused" = "З цим я не допоможу. Запитайте про ваші гроші.";
@@ -1868,6 +1869,7 @@
 "composer.send" = "Надіслати";
 "composer.voice" = "Надиктувати";
 "assistant.composer.placeholder" = "Запишіть витрату або запитайте…";
+"assistant.composer.placeholder.entries" = "Запишіть витрату, наприклад «кава 80»";
 "assistant.preset.month" = "Мої витрати цього місяця";
 "assistant.preset.compare" = "Порівняй з минулим місяцем";
 "assistant.preset.budgets" = "Як справи з бюджетами?";

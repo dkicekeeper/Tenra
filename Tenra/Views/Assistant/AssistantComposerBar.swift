@@ -28,6 +28,8 @@ struct AssistantComposerBar: View {
     var onSuggestion: (String) -> Void = { _ in }
 
     @Environment(PremiumManager.self) private var premium
+    /// Where the cloud does not answer (AssistantRegion) the field asks only for a record.
+    @AppStorage(AssistantRegion.outOfRegionKey) private var outOfRegionAt: Double = 0
 
     var body: some View {
         VStack(spacing: AppSpacing.sm) {
@@ -46,7 +48,9 @@ struct AssistantComposerBar: View {
                 // (over the field, shared with the character count).
                 MessageComposer(
                     text: $draft,
-                    placeholder: String(localized: "assistant.composer.placeholder"),
+                    placeholder: AssistantRegion.isOutOfRegion(markedAt: outOfRegionAt, now: Date())
+                        ? String(localized: "assistant.composer.placeholder.entries")
+                        : String(localized: "assistant.composer.placeholder"),
                     isSending: model.isWorking,
                     errorMessage: attachmentError,
                     limit: AssistantMetrics.questionLimit,

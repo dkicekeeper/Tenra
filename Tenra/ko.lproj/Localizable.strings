@@ -1801,6 +1801,7 @@
 "assistant.error.limit" = "이번 달 질문을 모두 사용했습니다. 한도는 다음 달에 초기화됩니다.";
 "assistant.error.pro" = "어시스턴트는 Tenra Pro에 포함되어 있습니다.";
 "assistant.error.region" = "아직 해당 지역에서는 어시스턴트를 사용할 수 없습니다.";
+"assistant.region.explained" = "아직 해당 지역에서는 질문에 답할 수 없어요. 답변에 쓰는 AI 서비스를 이 지역에서 사용할 수 없거든요. 지출 기록은 그대로 할 수 있어요. “커피 5000”이라고 입력하거나 말해 주세요.";
 "assistant.error.unavailable" = "지금은 어시스턴트를 사용할 수 없습니다. 나중에 다시 시도하세요.";
 "assistant.error.device" = "이 기기에서는 어시스턴트를 사용할 수 없습니다.";
 "assistant.error.refused" = "그 부분은 도와드릴 수 없습니다. 돈에 관해 물어보세요.";
@@ -1868,6 +1869,7 @@
 "composer.send" = "보내기";
 "composer.voice" = "받아쓰기";
 "assistant.composer.placeholder" = "지출을 기록하거나 물어보세요…";
+"assistant.composer.placeholder.entries" = "지출을 기록하세요 (예: “커피 5000”)";
 "assistant.preset.month" = "이번 달 지출";
 "assistant.preset.compare" = "지난달과 비교해 줘";
 "assistant.preset.budgets" = "예산은 어때?";

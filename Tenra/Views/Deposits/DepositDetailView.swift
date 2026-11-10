@@ -216,8 +216,8 @@ struct DepositDetailView: View {
         }
         .task(id: refreshTrigger) {
             // Reconcile re-runs whenever a deposit-relevant transaction is added/edited/deleted
-            // (refreshTrigger counts them). Reconcile is idempotent and recomputes
-            // principalBalance unconditionally — see DepositInterestService.reconcileDepositInterest.
+            // (refreshTrigger counts them). Reconcile is idempotent: it recomputes the interest
+            // state from the transactions (DepositInterestService.reconcileDepositInterest).
             var interestTransactions: [Transaction] = []
             depositsViewModel.reconcileDepositInterest(
                 for: accountId,

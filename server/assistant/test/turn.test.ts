@@ -35,7 +35,34 @@ const failingStream = (events: unknown[], error: Error) => ({
 
 const down = () => new Anthropic.APIConnectionError({ message: "down" });
 
-async function freeTurn(kv: MemoryKV) {
+/** A stream that starts, then waits until it is aborted, as a long answer would. */
+function abortableStream() {
+  let aborted = false;
+  let wake: (() => void) | undefined;
+  const waiting = new Promise<void>((resolve) => {
+    wake = resolve;
+  });
+  return {
+    get aborted() {
+      return aborted;
+    },
+    abort() {
+      aborted = true;
+      wake?.();
+    },
+    async *[Symbol.asyncIterator]() {
+      yield { type: "message_start", message: {} };
+      await waiting;
+      throw new Anthropic.APIUserAbortError();
+    },
+    finalMessage: async () => {
+      throw new Anthropic.APIUserAbortError();
+    },
+  };
+}
+
+/** Sends a free user's turn; the caller reads (or drops) the response, then awaits `pending`. */
+async function startFreeTurn(kv: MemoryKV) {
   await kv.put("tier:u", "free");
   await kv.put(`attest-key:${fixture.keyId}`, await storedKey());
   const payload = JSON.stringify({ protocol: 1, messages: [userTurn("hi")], user: "u" });
@@ -52,6 +79,11 @@ async function freeTurn(kv: MemoryKV) {
   const ctx = { waitUntil: (p: Promise<unknown>) => pending.push(p), passThroughOnException() {} } as never;
   const env = { QUOTA: kv, ANTHROPIC_API_KEY: "test", REVENUECAT_SECRET_KEY: "test", APP_ID: fixture.appId, FREE_MONTHLY_CALLS: "5" } as never;
   const response = await worker.fetch(request, env, ctx);
+  return { response, pending };
+}
+
+async function freeTurn(kv: MemoryKV) {
+  const { response, pending } = await startFreeTurn(kv);
   const text = await response.text();
   await Promise.all(pending);
   return text;
@@ -82,6 +114,19 @@ describe("a turn whose model call fails", () => {
     scripted.stream = () => failingStream([started], down());
     const events = await freeTurn(kv);
     expect(events).toContain("event: error");
+    expect(kv.store.get(`calls:key:${fixture.keyId}:${month}`)).toBe("1");
+    expect(kv.store.get(`calls:all:${day}`)).toBe("1");
+  });
+
+  it("stops the model when the app leaves, and keeps the count", async () => {
+    const kv = new MemoryKV();
+    const stream = abortableStream();
+    scripted.stream = () => stream;
+    const { response, pending } = await startFreeTurn(kv);
+    // The app closes the chat: the response's reader goes away.
+    await response.body!.cancel();
+    await Promise.all(pending);
+    expect(stream.aborted).toBe(true);
     expect(kv.store.get(`calls:key:${fixture.keyId}:${month}`)).toBe("1");
     expect(kv.store.get(`calls:all:${day}`)).toBe("1");
   });

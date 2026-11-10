@@ -11,13 +11,6 @@ with the commit of every fix, are in
 
 ## Open
 
-- **Spending reminder: small things left after the final review** (2026-11-05,
-  [archive/plans/plan-spending-reminder.md](archive/plans/plan-spending-reminder.md), in the store with 1.8.1): a CSV import keeps each row's date as
-  `createdAt`, so it does not count as recorded today; own-transfer pairing counts as the person's
-  record; "Remind me" with notifications already denied gives no feedback; the reminder shows as a
-  banner while the person is in the app at its time; `hookDay` is an absolute start-of-day `Date`
-  (a time-zone change can shift yesterday's match); the cards inline `shouldOffer`.
-
 - **Assistant attachments after a relaunch.** A receipt or statement attached in the chat lives
   in memory: after a relaunch its card is gone from the kept thread (drafts too, by design).
   Plan §3.8 keeps the file in the app's container with the thread; only worth it if people come
@@ -72,8 +65,7 @@ Found by the release audit of 2026-10-15 (details and file references:
   `ParticleCreature`; its `AmbientMotionGate` stops it only under Reduce Motion or iOS 27's
   low-resource mode): measure on device, else the still `CreatureGlyph` there.
 - **Ten's privacy edges:** a forgotten fact stays in kept threads; FastPath messages typed before
-  consent go out with the next cloud question; the Settings toggle skips the consent sheet; the
-  cloud mode shows in the RU/BY storefronts (451 on every question).
+  consent go out with the next cloud question.
 - **Assistant performance:** full-resolution photo decode on the main thread; each streamed piece
   re-parses the reply and re-renders the chat; allowance Keychain calls on the main thread;
   FastPath runs the voice parser on questions; `forecast_balance` series O(days × occurrences).
@@ -81,8 +73,8 @@ Found by the release audit of 2026-10-15 (details and file references:
   load overwriting an `add`; FastPath vs `reset()`; a chat deleted during its save comes back.
 - **Server before traffic** (sizing in [domains/assistant.md](domains/assistant.md) §11; the
   daily cap of 1 200 calls is live since 2026-10-29, Pro's part of the day, the refund of a
-  failed call and the RevenueCat timeout since 2026-11-10): Durable Objects counters, a Rate
-  Limiting binding, abort on disconnect (the model keeps generating for a closed chat), a
+  failed call and the RevenueCat timeout since 2026-11-10, a stop when the app leaves in main
+  since the same day, not deployed): Durable Objects counters, a Rate Limiting binding, a
   `protocol` range and an app build header.
 
 Found by the docs audit of 2026-10-12, not verified on device yet:
@@ -92,13 +84,7 @@ Found by the docs audit of 2026-10-12, not verified on device yet:
 - **Health score budget adherence** uses the calendar month, not each budget's own period;
   **`largeTransaction`** counts `.expense` only, so loan payments never qualify. Design calls.
 - **`SilenceDetector`** is created in `VoiceInputService` but never fed audio.
-- **Dead code and stale comments:** `TransactionStore.getPlannedTransactions(for:horizon:)`,
-  `RecurringTransactionCoordinatorProtocol` and `TransactionGroupingService.groupByMonth` (its
-  month formatter is not POSIX either) have no callers or conformers;
-  `AccountEntity.isDeposit` is written but never read (drop at the next schema bump); comments
-  still name removed things (`principalBalance` in `DepositsViewModel` and `DepositDetailView`,
-  aggregate services in `TransactionCacheManager`, the "no Other category" case in
-  `LogTransactionIntent`).
+- **`AccountEntity.isDeposit`** is written but never read: drop it at the next schema bump.
 
 Left by the action audit of 2026-11-08 (the rules: [design-system.md](design-system.md) §4 Actions,
 [localization.md](localization.md) §Action words):

@@ -92,10 +92,21 @@ export default {
     // overloaded, or refusing the request) produced nothing and costs nothing: its count is given
     // back. One that fails mid-answer keeps it, since part of it was generated.
     let started = false;
+    // The app closed the chat or lost the connection: the response's reader is gone, which
+    // errors the writer. The model's stream is stopped then instead of being paid for to its
+    // end. The call keeps its count: the model may already have read the request.
+    let disconnected = false;
+    let current: ReturnType<typeof client.beta.messages.stream> | undefined;
+    writer.closed.catch(() => {
+      disconnected = true;
+      current?.abort();
+    });
     ctx.waitUntil(
       (async () => {
         try {
           const stream = client.beta.messages.stream(buildParams(config, turn.messages, tier));
+          current = stream;
+          if (disconnected) stream.abort();
           // The content block that is render_reply's call, while it streams.
           let replyIndex: number | undefined;
           for await (const event of stream) {
@@ -112,10 +123,15 @@ export default {
           const message = await stream.finalMessage();
           await send("done", { ...donePayload(message), tier, quota: { used: quota.used, limit: quota.limit } });
         } catch (error) {
+          if (disconnected) {
+            console.log(`turn stopped: the app left${started ? "" : " before the answer"}`);
+            return;
+          }
           const payload = errorPayload(error);
-          console.log(`turn error ${payload.code}${error instanceof Anthropic.APIError ? ` ${error.status}` : ""}${started ? "" : " refunded"}`);
+          const refunded = !started && quota.charge !== undefined;
+          console.log(`turn error ${payload.code}${error instanceof Anthropic.APIError ? ` ${error.status}` : ""}${refunded ? " refunded" : ""}`);
           await send("error", payload);
-          if (!started && quota.charge) await refund(env.QUOTA, quota.charge);
+          if (refunded && quota.charge) await refund(env.QUOTA, quota.charge);
         } finally {
           await writer.close().catch(() => undefined);
         }

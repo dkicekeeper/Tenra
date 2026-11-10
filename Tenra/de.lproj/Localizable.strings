@@ -1801,6 +1801,7 @@
 "assistant.error.limit" = "Ihre Fragen für diesen Monat sind aufgebraucht. Das Limit erneuert sich im nächsten Monat.";
 "assistant.error.pro" = "Der Assistent gehört zu Tenra Pro.";
 "assistant.error.region" = "Der Assistent ist in Ihrer Region noch nicht verfügbar.";
+"assistant.region.explained" = "In Ihrer Region kann ich noch keine Fragen beantworten: Der KI-Dienst dafür ist hier nicht verfügbar. Ausgaben notiere ich wie gewohnt: Schreiben Sie „Kaffee 5“ oder sagen Sie es.";
 "assistant.error.unavailable" = "Der Assistent ist gerade nicht verfügbar. Versuchen Sie es später erneut.";
 "assistant.error.device" = "Der Assistent ist auf diesem Gerät nicht verfügbar.";
 "assistant.error.refused" = "Dabei kann ich nicht helfen. Fragen Sie mich etwas zu Ihrem Geld.";
@@ -1868,6 +1869,7 @@
 "composer.send" = "Senden";
 "composer.voice" = "Diktieren";
 "assistant.composer.placeholder" = "Ausgabe notieren oder fragen…";
+"assistant.composer.placeholder.entries" = "Ausgabe notieren, z. B. „Kaffee 5“";
 "assistant.preset.month" = "Meine Ausgaben diesen Monat";
 "assistant.preset.compare" = "Vergleiche mit dem Vormonat";
 "assistant.preset.budgets" = "Wie stehen meine Budgets?";

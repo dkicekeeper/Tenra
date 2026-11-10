@@ -1801,6 +1801,7 @@
 "assistant.error.limit" = "Bu ayın sorularını kullandın. Sınır gelecek ay yenilenir.";
 "assistant.error.pro" = "Asistan Tenra Pro’ya dahildir.";
 "assistant.error.region" = "Asistan henüz bölgende kullanılamıyor.";
+"assistant.region.explained" = "Bölgende henüz soruları yanıtlayamıyorum: arkalarındaki yapay zekâ hizmeti burada kullanılamıyor. Harcamalarını her zamanki gibi kaydederim: “kahve 80” yaz ya da söyle.";
 "assistant.error.unavailable" = "Asistan şu an kullanılamıyor. Daha sonra tekrar dene.";
 "assistant.error.device" = "Asistan bu cihazda kullanılamıyor.";
 "assistant.error.refused" = "Bu konuda yardımcı olamam. Bana paranla ilgili sor.";
@@ -1868,6 +1869,7 @@
 "composer.send" = "Gönder";
 "composer.voice" = "Dikte et";
 "assistant.composer.placeholder" = "Harcama yaz ya da sor…";
+"assistant.composer.placeholder.entries" = "Harcama yaz, örneğin “kahve 80”";
 "assistant.preset.month" = "Bu ayki harcamalarım";
 "assistant.preset.compare" = "Geçen ayla karşılaştır";
 "assistant.preset.budgets" = "Bütçelerim ne durumda?";

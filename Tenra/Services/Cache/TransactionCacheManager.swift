@@ -16,8 +16,9 @@
 //  NOT for:
 //      • Account balances — use BalanceCoordinator instead
 //      • Transaction persistence — use TransactionStore.apply(event:)
-//      • Aggregate data — use CategoryAggregateService / MonthlyAggregateService (CoreData)
-//      • Budget spending — use BudgetSpendingCacheService (CoreData)
+//      • Aggregate data — TransactionStore's indexes (categoryAggregatesByKey,
+//        accountAggregatesByAccountId)
+//      • Budget spending — CategoryBudgetService
 //  ─────────────────────────────────────────────────────────────────────────────
 //
 //  ACTIVE CALLERS:
@@ -31,7 +32,7 @@ import Foundation
 // MARK: - Read-Only Display Cache
 
 /// In-memory cache for read-only UI display operations.
-/// Write/mutation caching is handled by TransactionStore + CoreData aggregate services.
+/// Write/mutation caching is handled by TransactionStore and its aggregate indexes.
 /// This class is @MainActor-compatible (not marked @MainActor; callers ensure main-thread use).
 nonisolated class TransactionCacheManager {
 

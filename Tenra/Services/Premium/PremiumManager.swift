@@ -22,6 +22,12 @@ import os
 import RevenueCat
 import StoreKit
 
+/// The offering a gate's paywall shows, from `PremiumManager.paywallOffer(for:)`. Wraps
+/// RevenueCat's type, so PaywallSheet hands it to RevenueCatUI without importing RevenueCat.
+struct PaywallOffer {
+    let offering: Offering
+}
+
 /// Snapshot of the active `pro` entitlement for status display (Settings → Tenra Pro).
 /// Plain Foundation types only — consumers never touch RevenueCat.
 struct ProStatus: Equatable, Sendable {
@@ -81,6 +87,10 @@ final class PremiumManager {
     /// Whether the paywall has something to sell, from the last `checkOfferings()`; nil until
     /// the first check (the launch health check runs one after the first frame).
     private(set) var offeringsAvailability: OfferingsAvailability?
+
+    /// The offerings the last successful `checkOfferings()` loaded: a gate's paywall picks its
+    /// placement from them (`paywallOffer(for:)`). RevenueCat's own cache refreshes them.
+    @ObservationIgnored private var offerings: Offerings?
 
     /// RevenueCat anonymous app user ID. Shown in Settings → About as "Support ID"
     /// so users can share it for purchase-issue support and promotional entitlement
@@ -318,6 +328,7 @@ final class PremiumManager {
         let availability: OfferingsAvailability
         do {
             let offerings = try await Purchases.shared.offerings()
+            self.offerings = offerings
             availability = .loaded(currentPackageCount: offerings.current?.availablePackages.count)
         } catch {
             availability = .failure(revenueCatCode: (error as? RevenueCat.ErrorCode)?.rawValue)
@@ -328,6 +339,20 @@ final class PremiumManager {
         }
         offeringsAvailability = availability
         return availability
+    }
+
+    /// The offering the paywall opened from `source` shows: RevenueCat Placements let the
+    /// dashboard give a gate its own paywall (a headline about loans on `loan_add`) without a
+    /// release. The placement identifier is the gate's `paywall_source`. A placement belongs to a
+    /// Targeting rule, so the Kazakh rule ("App in Kazakh", offering `default_kk`) needs its own
+    /// placements too. Nil, and the paywall shows the current offering as before, when no
+    /// placement is set up in the dashboard, when the placement shows no offering, or when its
+    /// offering has nothing to sell. An unknown placement gets the rule's fallback offering,
+    /// marked with the placement, so RevenueCat's charts split purchases by gate either way.
+    func paywallOffer(for source: PaywallSource) -> PaywallOffer? {
+        guard let offering = offerings?.currentOffering(forPlacement: source.placementID),
+              !offering.availablePackages.isEmpty else { return nil }
+        return PaywallOffer(offering: offering)
     }
 
     // MARK: - Purchases / restore (used by custom flows; RevenueCatUI handles its own)

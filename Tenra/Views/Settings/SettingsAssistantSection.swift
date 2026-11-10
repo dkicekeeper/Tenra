@@ -3,7 +3,8 @@
 //  Tenra
 //
 //  Settings → Assistant, where the assistant works (AssistantAvailability): cloud answers (the
-//  consent the chat asks for before the first question; turned off, it asks again), "Ten chats"
+//  consent the chat asks for before the first question; turned on here, the same consent screen
+//  asks first, App Review 5.1.2(i); turned off, the chat asks again), "Ten chats"
 //  (the lines it says, AssistantChatter; turned off, it still gestures) and "What Ten knows
 //  about me", the facts it remembers (AssistantMemoryView). Ten's wardrobe opens from the
 //  assistant's home (a hanger at the top right).
@@ -15,6 +16,17 @@ struct SettingsAssistantSection: View {
     @AppStorage(AssistantMetrics.consentKey) private var hasConsent = false
     @AppStorage(AssistantChatter.enabledKey) private var chatterOn = true
     @State private var memory = AgentMemory.shared
+    @State private var showingConsent = false
+
+    /// Off at once; on only through the consent screen, whose "Turn on" stores the consent.
+    private var cloudToggle: Binding<Bool> {
+        Binding(
+            get: { hasConsent },
+            set: { on in
+                if on { showingConsent = true } else { hasConsent = false }
+            }
+        )
+    }
 
     var body: some View {
         if AssistantAvailability.isAvailable {
@@ -22,7 +34,7 @@ struct SettingsAssistantSection: View {
                 UniversalRow(
                     String(localized: "settings.assistant.cloud"),
                     icon: "cloud",
-                    accessory: .toggle($hasConsent)
+                    accessory: .toggle(cloudToggle)
                 )
                 UniversalRow(
                     String(localized: "settings.assistant.chatter"),
@@ -37,6 +49,7 @@ struct SettingsAssistantSection: View {
                     }
                 )
             }
+            .assistantConsent(isPresented: $showingConsent, onAllow: {}, onDecline: {})
         }
     }
 }

@@ -108,7 +108,9 @@ enum OwnTransferMerger {
     private static var isMerging = false
 
     /// The waiting pairs as transfers: from the expense's account to the income's, the amounts
-    /// as each bank reported them (a fee stays in the difference), on the expense's date. The
+    /// as each bank reported them (a fee stays in the difference), on the expense's date and with
+    /// its creation time, so a pair merged when Tenra opens the next day is not a record of that
+    /// day (the evening reminder, SpendingReminderPlan.isUserRecord) and sorts where it was. The
     /// expense and the income are kept in the transfer's capture for "Not a transfer". A guessed
     /// account of either side stays a guess on the transfer, so To review asks and the card's
     /// account is learned on the answer.
@@ -145,7 +147,8 @@ enum OwnTransferMerger {
             accountId: from,
             targetAccountId: to,
             targetCurrency: incoming.convertedAmount == nil ? incoming.currency : target.currency,
-            targetAmount: incoming.convertedAmount ?? incoming.amount
+            targetAmount: incoming.convertedAmount ?? incoming.amount,
+            createdAt: outgoing.createdAt
         )
         let saved: Transaction
         do {

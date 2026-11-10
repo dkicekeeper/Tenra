@@ -5,8 +5,9 @@
 //  Pins what SpendingReminder hands the notification center (docs/plan-spending-reminder.md
 //  §3.1, §3.7) through a fake center: nothing while off or without permission, nothing added
 //  once switched off mid-reschedule, the series under day-keyed ids, tonight's reminder removed
-//  the moment something is recorded (before anything async), Ten drawn once per mood, and the
-//  RevenueCat attribute written only when it changes.
+//  the moment something is recorded (before anything async), Ten drawn once per mood, the
+//  RevenueCat attribute written only when it changes, and "Remind me" with notifications off
+//  for Tenra opening iOS Settings.
 //
 
 import Testing
@@ -45,6 +46,9 @@ final class SpendingReminderSchedulingTests {
     private let defaults: UserDefaults
     private var drawn: [String] = []
     private var attributes: [String] = []
+    /// What the system's permission prompt answers, when the test asks for one.
+    private var promptAnswer: UNAuthorizationStatus?
+    private var settingsOpened = 0
 
     init() {
         let suite = "SpendingReminderSchedulingTests.\(UUID().uuidString)"
@@ -56,6 +60,11 @@ final class SpendingReminderSchedulingTests {
             return Data([1])
         }
         SpendingReminder.writeAttribute = { [weak self] in self?.attributes.append($0) }
+        SpendingReminder.requestPermission = { [weak self] in
+            guard let self, let answer = self.promptAnswer else { return }
+            self.center.status = answer
+        }
+        SpendingReminder.openNotificationSettings = { [weak self] in self?.settingsOpened += 1 }
         SpendingReminder.resetArtCache()
     }
 
@@ -140,5 +149,31 @@ final class SpendingReminderSchedulingTests {
         #expect(SpendingReminder.attributeValue(enabled: false, offer: .accepted, status: .authorized) == "off")
         #expect(SpendingReminder.attributeValue(enabled: false, offer: .declined, status: .authorized) == "declined")
         #expect(SpendingReminder.attributeValue(enabled: false, offer: .notAsked, status: .authorized) == nil)
+    }
+
+    @Test("Remind me with notifications off for Tenra opens iOS Settings")
+    func acceptWhileDeniedOpensSettings() async {
+        center.status = .denied
+        await SpendingReminder.acceptOffer(defaults: defaults)
+        #expect(settingsOpened == 1)
+        #expect(defaults.bool(forKey: SpendingReminder.enabledKey))
+        #expect(center.added.isEmpty)
+    }
+
+    @Test("Remind me refused at the system prompt stays in the app")
+    func acceptRefusedAtPromptStaysInApp() async {
+        center.status = .notDetermined
+        promptAnswer = .denied
+        await SpendingReminder.acceptOffer(defaults: defaults)
+        #expect(settingsOpened == 0)
+    }
+
+    @Test("Remind me allowed at the system prompt stays in the app, switched on")
+    func acceptAllowedStaysInApp() async {
+        center.status = .notDetermined
+        promptAnswer = .authorized
+        await SpendingReminder.acceptOffer(defaults: defaults)
+        #expect(settingsOpened == 0)
+        #expect(defaults.bool(forKey: SpendingReminder.enabledKey))
     }
 }

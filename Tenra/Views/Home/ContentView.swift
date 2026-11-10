@@ -327,9 +327,9 @@ struct ContentView: View {
     /// records its first payment. "For today" is on Analytics (DailyAllowanceLink).
     @ViewBuilder
     private var setupCards: some View {
-        let showsReminderOffer = !reminderOn
-            && reminderOffer == SpendingReminder.OfferState.notAsked.rawValue
-            && coordinator.transactionStore.transactionsCount > 0
+        let showsReminderOffer = SpendingReminder.shouldOffer(
+            hasRecords: coordinator.transactionStore.transactionsCount > 0, offer: reminderOffer, enabled: reminderOn
+        )
         let showsICloudAsk = !iCloudAskAnswered && coordinator.cloudSyncViewModel.shouldAskForICloud
         let showsAutoCapture = !autoCaptureCardHidden && !WalletCaptureStore.shared.hasEverCaptured
         if coordinator.isFullyInitialized, showsReminderOffer || showsICloudAsk || showsAutoCapture {

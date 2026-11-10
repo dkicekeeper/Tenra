@@ -82,4 +82,14 @@ struct SpendingReminderTests {
         SpendingReminder.noteRecorded([transaction(createdAt: now, series: "s1")], now: now, defaults: defaults)
         #expect(SpendingReminder.lastRecorded(defaults: defaults) == nil)
     }
+
+    @Test("The cards' rule over the stored values is the service's")
+    func offerRuleOverStoredValues() {
+        #expect(SpendingReminder.shouldOffer(hasRecords: true, offer: nil, enabled: false))
+        #expect(SpendingReminder.shouldOffer(hasRecords: true, offer: "notAsked", enabled: false))
+        #expect(!SpendingReminder.shouldOffer(hasRecords: false, offer: nil, enabled: false))
+        #expect(!SpendingReminder.shouldOffer(hasRecords: true, offer: "declined", enabled: false))
+        #expect(!SpendingReminder.shouldOffer(hasRecords: true, offer: "accepted", enabled: false))
+        #expect(!SpendingReminder.shouldOffer(hasRecords: true, offer: nil, enabled: true))
+    }
 }

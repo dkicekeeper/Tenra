@@ -48,6 +48,8 @@ final class AssistantViewModel {
         var loadUsage: () -> AssistantUsage
         var saveUsage: (AssistantUsage) -> Void
         var now: () -> Date = Date.init
+        /// Whether the cloud answers in this country (RU and BY: no), learned from the server.
+        var region = AssistantRegion()
 
         static let unlimited = Access(isPro: { true }, loadUsage: { AssistantUsage() }, saveUsage: { _ in })
     }
@@ -153,9 +155,6 @@ final class AssistantViewModel {
     @ObservationIgnored private var local: [AgentThreadSnapshot.LocalExchange] = []
     /// A message is being drafted on the phone: another waits.
     @ObservationIgnored private var draftingLocally = false
-    /// The server answered that the cloud does not serve this country (RU, BY): a guessed
-    /// category stays on the phone instead of asking a model that cannot answer.
-    @ObservationIgnored private var cloudOutOfRegion = false
     /// What each attachment's review screen needs, by its entry.
     @ObservationIgnored private var attachments: [UUID: AgentAttachment] = [:]
     /// The attachments whose review has been paid for.
@@ -329,6 +328,11 @@ final class AssistantViewModel {
         AgentReply(blocks: [.confirm(draftId: draftId)], mood: .happy, suggestions: [])
     }
 
+    /// What Ten says the first time the cloud turns out not to answer in this country.
+    static var regionReply: AgentReply {
+        AgentReply(blocks: [.text(String(localized: "assistant.region.explained"))], mood: .concerned, suggestions: [])
+    }
+
     /// The highest `draft_N` of the thread, among the results and the drafts made on the phone.
     static func lastDraftNumber(in body: AgentThreadSnapshot.Body) -> Int {
         (body.results.values.compactMap { $0["draft_id"]?.stringValue } + body.local.map(\.draftId))
@@ -351,7 +355,7 @@ final class AssistantViewModel {
     /// Whether the model can take a message now: the country is served, and Pro or a free
     /// answer is left.
     private var modelCanAnswer: Bool {
-        guard !cloudOutOfRegion else { return false }
+        guard !access.region.isOutOfRegion(now: access.now()) else { return false }
         guard !access.isPro() else { return true }
         refreshAllowance()
         return allowance?.isExhausted != true
@@ -376,7 +380,8 @@ final class AssistantViewModel {
     /// The suggestions of the latest reply, while nothing else is going on; after a statement,
     /// to go through it; in a new chat from "Ask Ten", the questions about its screen.
     var suggestions: [String] {
-        guard phase == .idle else { return [] }
+        // Where the cloud does not answer (RU, BY) every suggestion would be a question.
+        guard phase == .idle, !access.region.isOutOfRegion(now: access.now()) else { return [] }
         if entries.isEmpty { return openingQuestions }
         switch entries.last?.content {
         case .reply(let reply, _)?: return reply.suggestions
@@ -565,6 +570,11 @@ final class AssistantViewModel {
 
     private func ask(_ text: String, entry: UUID) async {
         failedEntryId = entry
+        // The server refuses this country (learned, AssistantRegion): no call, the short answer.
+        if access.region.isOutOfRegion(now: access.now()) {
+            phase = .failed(.regionUnavailable)
+            return
+        }
         refreshAllowance()
         if let allowance, allowance.isExhausted {
             phase = .failed(.freeLimit)
@@ -610,6 +620,7 @@ final class AssistantViewModel {
                 access.saveUsage(AssistantAllowance.recording(access.loadUsage(), now: access.now()))
                 refreshAllowance()
             }
+            access.region.markServed()
             entries.append(Entry(id: UUID(), content: .reply(outcome.reply, results: outcome.results)))
             replyMood = outcome.reply.mood
             failedEntryId = nil
@@ -618,7 +629,15 @@ final class AssistantViewModel {
         } catch {
             streamingReply = []
             let failure = AssistantFailure(error)
-            if failure == .regionUnavailable { cloudOutOfRegion = true }
+            if failure == .regionUnavailable, access.region.markOutOfRegion(now: access.now()) {
+                // Said once, as Ten's own message rather than an error: questions are not
+                // answered here, records still are. Not kept with the thread.
+                entries.append(Entry(id: UUID(), content: .reply(Self.regionReply, results: [:])))
+                replyMood = .concerned
+                failedEntryId = nil
+                phase = .idle
+                return
+            }
             phase = .failed(failure)
         }
     }

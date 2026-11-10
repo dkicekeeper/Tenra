@@ -526,7 +526,8 @@ transfer-like, the other direction, two different accounts, the same currency, t
 amount equal or up to 1 % less, within 15 minutes, the closest in time. The pair is queued
 (`WalletCaptureStore.ownTransferPairs`) and `OwnTransferMerger.mergePending` turns it into one
 transfer once the full load lands (in the intent when the app is loaded, else `MainTabView`): from
-the expense's account to the income's, on the expense's date, the two deleted, kept in the
+the expense's account to the income's, on the expense's date and with its creation time (a pair
+merged when Tenra opens the next day is no record of that day for the evening reminder), the two deleted, kept in the
 transfer's capture (`OwnTransferRecord`). Confident, with no question, when the same name is on
 both sides, a side names the other bank ("…, Freedom Bank" with Freedom's app), or a name the
 person confirmed is on either side (`WalletCaptureStore.ownNames`); otherwise a guess

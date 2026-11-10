@@ -182,6 +182,24 @@ Tenra의 새로운 기능:
 - 273 localization keys nothing reads removed (no change on screen; none is read by a literal or
   a key built at run time). From build 76.
 
+## After 1.8.2 (main since 2026-11-10, for the next version)
+
+- A gate's paywall can come from its own RevenueCat placement (the identifier is the gate's
+  `paywall_source`, [promotion-plan.md](promotion-plan.md) §2): no visible change until
+  placements are set up in the dashboard.
+- Settings › Assistant: turning cloud answers on shows the same consent screen as the chat's
+  first question (App Review 5.1.2(i)); before, the switch turned the cloud on without it.
+- Ten in Russia and Belarus (no cloud there): the first question gets Ten's message once,
+  questions not answered here, expenses recorded as usual with an example; after that Ten offers
+  no questions, the field asks for an expense, "Ask Ten" is gone from the screens, and a question
+  typed anyway does not go to the server. Checked again a week later.
+- The evening reminder: a transfer between your own banks merged when Tenra opens no longer
+  counts as recording that day (it keeps the expense's creation time); the next day's line about
+  yesterday's category survives a time-zone change.
+- The evening reminder: no banner while Tenra is open at its time; "Remind me" with
+  notifications already off for Tenra opens Tenra's page in iOS Settings (before, the tap did
+  nothing visible).
+
 ## Submission checklist
 
 1. **CI green**, then a TestFlight build (done: build 76 from 78a16c2, 2026-11-10; CI green on

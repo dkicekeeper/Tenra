@@ -355,45 +355,6 @@ extension TransactionStore {
 
     // MARK: - Query Operations (with LRU Cache)
 
-    /// Get planned transactions for a recurring series
-    /// Uses LRU cache for O(1) performance on cache hit
-    /// - Parameters:
-    ///   - seriesId: The ID of the recurring series
-    ///   - horizon: Number of months to generate (default: 3)
-    /// - Returns: Array of planned transactions
-    func getPlannedTransactions(for seriesId: String, horizon: Int = 3) -> [Transaction] {
-        // Create cache key
-        let cacheKey = "\(seriesId)_\(horizon)"
-
-        // 1. Try cache first (O(1))
-        if let cached = recurringCache.get(cacheKey) {
-            return cached
-        }
-
-
-        // 2. Cache miss: find series
-        guard let series = seriesById[seriesId] else {
-            return []
-        }
-
-        // 3. Generate transactions using correct API
-        let existingTransactionIds = transactionIdSet
-        let result = recurringGenerator.generateTransactions(
-            series: [series],
-            existingOccurrences: recurringOccurrences,
-            existingTransactionIds: existingTransactionIds,
-            accounts: accounts,
-            baseCurrency: baseCurrency,
-            horizonMonths: horizon
-        )
-
-        // 4. Cache result
-        recurringCache.set(cacheKey, value: result.transactions)
-
-
-        return result.transactions
-    }
-
     /// Get next charge date for a subscription
     /// Uses cached computation for performance
     /// - Parameter seriesId: The subscription ID
@@ -563,13 +524,6 @@ extension TransactionStore {
             currencies.insert(accountCurrency)
         }
         return (seriesIds, currencies)
-    }
-
-    /// Invalidate cache for a specific series
-    /// Call this when series is updated to ensure fresh data
-    /// - Parameter seriesId: The series ID to invalidate
-    func invalidateCache(for seriesId: String) {
-        recurringStore.invalidateCacheFor(seriesId: seriesId)
     }
 
     /// Pause a subscription (subscription-specific convenience method)

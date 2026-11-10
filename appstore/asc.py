@@ -56,9 +56,11 @@
                                                     default; current subscribers keep theirs
     python3 appstore/asc.py review-notes --version 1.7 [--apply]
                                                     the App Review notes from docs/release-notes.md
-    python3 appstore/asc.py prepare-review --version 1.7
+    python3 appstore/asc.py prepare-review --version 1.7 [--build N] [--submit]
                                                     a draft review submission with the version and
-                                                    the custom pages in preparation, NOT submitted
+                                                    the custom pages in preparation, NOT submitted;
+                                                    --submit sends it (the founder asked for it),
+                                                    --build stops unless the version carries N
     python3 appstore/asc.py reviews [--limit 20]    latest customer reviews
     python3 appstore/asc.py availability            storefronts, EU trader (DSA) status
     python3 appstore/asc.py crashes [--build N]     TestFlight crash reports (no tester details)
@@ -964,11 +966,18 @@ def review_notes(app: str, version: str, apply: bool) -> None:
     print(f"App Review notes set on {version} (contact details from the previous version).")
 
 
-def prepare_review(app: str, version: str) -> None:
-    """A draft review submission with the version and every custom page version in preparation,
-    not submitted: App Store Connect checks each item as it is added (a missing build, screenshot
-    or text is refused here), and the founder sends the whole release with one button."""
+def prepare_review(app: str, version: str, submit: bool = False, expected_build: str | None = None) -> None:
+    """A draft review submission with the version and every custom page version in preparation:
+    App Store Connect checks each item as it is added (a missing build, screenshot or text is
+    refused here). Not submitted, so the founder sends the whole release with one button, unless
+    `submit` (--submit, when the founder asked for the release to go): then it goes to review.
+    With `expected_build` (--build N) nothing is added unless the version carries that build."""
     record = store_version(app, version)
+    build = (get(f"/v1/appStoreVersions/{record['id']}/build").get("data") or {}).get("attributes", {}).get("version")
+    print(f"Version {version}: build {build or 'none'}", flush=True)
+    if expected_build and build != expected_build:
+        sys.exit(f"Version {version} carries build {build or 'none'}, not {expected_build}: "
+                 f"run prepare-version --version {version} --build {expected_build} first.")
     items = [("appStoreVersion", record["id"])]
     pages, _ = get_all(f"/v1/apps/{app}/appCustomProductPages", {"limit": 50})
     for page in pages:
@@ -977,7 +986,7 @@ def prepare_review(app: str, version: str) -> None:
             if page_version["attributes"].get("state") in CPP_EDITABLE:
                 items.append(("appCustomProductPageVersion", page_version["id"]))
                 print(f"  {page['attributes'].get('name')}: version {page_version['id']}", flush=True)
-    submit_for_review(app, items, lenient={"appCustomProductPageVersion"}, submit=False)
+    submit_for_review(app, items, lenient={"appCustomProductPageVersion"}, submit=submit)
 
 
 # Version screenshots -----------------------------------------------------------------------------
@@ -1635,8 +1644,8 @@ def main(argv: list[str]) -> None:
     elif command == "prepare-review":
         version = option("--version")
         if not version:
-            sys.exit("prepare-review needs --version X.Y")
-        prepare_review(app, version)
+            sys.exit("prepare-review needs --version X.Y [--submit]")
+        prepare_review(app, version, "--submit" in args, option("--build"))
     elif command == "reviews":
         reviews(app, int(option("--limit", 20)))
     elif command == "availability":

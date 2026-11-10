@@ -101,11 +101,48 @@ def private_key() -> str:
             pass
     # `openssl ecparam -genkey` without -noout writes an EC PARAMETERS block first: only the key counts.
     match = re.search(r"-----BEGIN ((?:EC )?PRIVATE KEY)-----(.*?)-----END \1-----", raw, re.S)
-    if not match:
-        sys.exit("ADS_PRIVATE_KEY is not a private key: paste all of private-key.pem, BEGIN and END lines included.")
-    label, body = match.group(1), "".join(match.group(2).split())
+    if match:
+        label, body = match.group(1), "".join(match.group(2).split())
+    else:
+        label, body = bare_key(raw)
+    if not body:
+        sys.exit(key_problem(raw))
     lines = "\n".join(body[i:i + 64] for i in range(0, len(body), 64))
     return f"-----BEGIN {label}-----\n{lines}\n-----END {label}-----\n"
+
+
+def bare_key(raw: str) -> tuple[str, str]:
+    """The key's base64 without its BEGIN and END lines (copied from the middle of the file): the
+    DER of an EC key (SEC1) or of PKCS#8, told apart by their first bytes. ("", "") otherwise."""
+    body = "".join(raw.split())
+    if not body or not re.fullmatch(r"[A-Za-z0-9+/]+={0,2}", body):
+        return "", ""
+    try:
+        der = base64.b64decode(body, validate=True)
+    except ValueError:
+        return "", ""
+    if der[:1] != b"\x30" or len(der) < 32:
+        return "", ""
+    if der[2:5] == b"\x02\x01\x01" or der[1:2] == b"\x77":
+        return "EC PRIVATE KEY", body
+    if der[2:6] == b"\x02\x01\x00\x30" or der[3:7] == b"\x02\x01\x00\x30":
+        return "PRIVATE KEY", body
+    return "", ""
+
+
+def key_problem(raw: str) -> str:
+    """What is in ADS_PRIVATE_KEY instead of the key, named without quoting any of it (the log is public)."""
+    hint = "paste all of private-key.pem, BEGIN and END lines included (docs/asc.md, «Apple Ads API»)"
+    if "PUBLIC KEY" in raw:
+        return f"ADS_PRIVATE_KEY holds the public key (public-key.pem), which goes to Apple Ads: {hint}."
+    if "SEARCHADS." in raw or "clientId" in raw or "keyId" in raw:
+        return f"ADS_PRIVATE_KEY holds the clientId/teamId/keyId block from Apple Ads: {hint}."
+    labels = sorted(set(re.findall(r"-----BEGIN ([A-Z0-9 ]+)-----", raw)))
+    if any("PRIVATE KEY" in label for label in labels) or ("BEGIN" in raw) != ("END" in raw):
+        return f"ADS_PRIVATE_KEY is cut short (a BEGIN or END line is missing): {hint}."
+    if labels:
+        return f"ADS_PRIVATE_KEY has only {', '.join(labels)}, no private key: {hint}."
+    return f"ADS_PRIVATE_KEY is not a private key ({len(raw)} characters, no BEGIN line): {hint}."
 
 
 def client_secret(now: int) -> str:

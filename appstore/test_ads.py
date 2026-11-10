@@ -187,15 +187,31 @@ class AdsTest(unittest.TestCase):
             "base64 of the file": base64.b64encode(SEC1.encode()).decode(),
             "pkcs8": PKCS8,
             "with EC PARAMETERS": "-----BEGIN EC PARAMETERS-----\nBggqhkjOPQMBBw==\n-----END EC PARAMETERS-----\n" + SEC1,
+            "without BEGIN and END": "\n".join(lines[1:-1]),
+            "pkcs8 without BEGIN and END": "\n".join(PKCS8.strip().split("\n")[1:-1]),
         }
         for name, value in forms.items():
             with self.subTest(name), mock.patch.dict(os.environ, {"ADS_PRIVATE_KEY": value}):
                 pem = ads.private_key()
                 loaded = serialization.load_pem_private_key(pem.encode(), password=None)
                 self.assertEqual(loaded.private_numbers(), KEY.private_numbers())
-        with mock.patch.dict(os.environ, {"ADS_PRIVATE_KEY": "not a key"}), self.assertRaises(SystemExit) as stop:
-            ads.private_key()
-        self.assertIn("paste all of private-key.pem", str(stop.exception))
+        public = KEY.public_key().public_bytes(serialization.Encoding.PEM,
+                                               serialization.PublicFormat.SubjectPublicKeyInfo).decode()
+        wrong = {
+            "not a key": "no BEGIN line",
+            public: "holds the public key",
+            "clientId SEARCHADS.1\nteamId SEARCHADS.2\nkeyId 3": "clientId/teamId/keyId block",
+            "-----BEGIN EC PARAMETERS-----\nBggqhkjOPQMBBw==\n-----END EC PARAMETERS-----\n": "only EC PARAMETERS",
+            SEC1.split("-----END")[0]: "cut short",
+        }
+        for value, says in wrong.items():
+            with self.subTest(says), mock.patch.dict(os.environ, {"ADS_PRIVATE_KEY": value}), \
+                    self.assertRaises(SystemExit) as stop:
+                ads.private_key()
+            self.assertIn(says, str(stop.exception))
+            self.assertIn("paste all of private-key.pem", str(stop.exception))
+            body = "".join(SEC1.strip().split("\n")[1:-1])
+            self.assertNotIn(body[:20], str(stop.exception))
 
     def test_client_secret_claims(self):
         now = 1_800_000_000

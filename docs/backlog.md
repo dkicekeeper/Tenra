@@ -11,11 +11,6 @@ with the commit of every fix, are in
 
 ## Open
 
-- **Spending reminder: small things left after the final review** (2026-11-05,
-  [archive/plans/plan-spending-reminder.md](archive/plans/plan-spending-reminder.md), in the store with 1.8.1): a CSV import keeps each row's date as
-  `createdAt`, so importing a statement today does not count as recording today. Decide whether
-  it should (the rows are older expenses, not today's).
-
 - **Assistant attachments after a relaunch.** A receipt or statement attached in the chat lives
   in memory: after a relaunch its card is gone from the kept thread (drafts too, by design).
   Plan §3.8 keeps the file in the app's container with the thread; only worth it if people come

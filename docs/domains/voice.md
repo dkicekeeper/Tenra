@@ -83,8 +83,7 @@ Never overwrite `transcribedText` with empty string.
 
 Audio-based VAD is unreliable with background noise, so auto-stop is **text-based**:
 `VoiceInputView` restarts a 5-second timer on every `transcribedText` change and stops
-recording when it fires. (`VoiceInputService` creates a `SilenceDetector`, the audio-based
-detector in `Services/Audio/`, but never feeds it buffers.)
+recording when it fires. There is no audio-based detector (the owner's decision, 2026-11-10).
 
 ### The voice level
 

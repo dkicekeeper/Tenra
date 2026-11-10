@@ -13,9 +13,8 @@ with the commit of every fix, are in
 
 - **Spending reminder: small things left after the final review** (2026-11-05,
   [archive/plans/plan-spending-reminder.md](archive/plans/plan-spending-reminder.md), in the store with 1.8.1): a CSV import keeps each row's date as
-  `createdAt`, so it does not count as recorded today; own-transfer pairing counts as the person's
-  record; `hookDay` is an absolute start-of-day `Date`
-  (a time-zone change can shift yesterday's match); the cards inline `shouldOffer`.
+  `createdAt`, so importing a statement today does not count as recording today. Decide whether
+  it should (the rows are older expenses, not today's).
 
 - **Assistant attachments after a relaunch.** A receipt or statement attached in the chat lives
   in memory: after a relaunch its card is gone from the kept thread (drafts too, by design).

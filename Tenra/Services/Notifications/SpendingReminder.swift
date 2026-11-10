@@ -85,7 +85,13 @@ enum SpendingReminder {
 
     /// Ten offers the reminder once there is a record, until the person answers.
     static func shouldOffer(hasRecords: Bool, defaults: UserDefaults = .standard) -> Bool {
-        hasRecords && offerState(defaults: defaults) == .notAsked && !isEnabled(defaults: defaults)
+        shouldOffer(hasRecords: hasRecords, offer: defaults.string(forKey: offerKey), enabled: isEnabled(defaults: defaults))
+    }
+
+    /// The same rule over the stored values, for the cards that read them through `@AppStorage`
+    /// (Home's setup cards, Ten's chat): `offer` is `offerKey`'s raw value.
+    static func shouldOffer(hasRecords: Bool, offer: String?, enabled: Bool) -> Bool {
+        hasRecords && (OfferState(rawValue: offer ?? "") ?? .notAsked) == .notAsked && !enabled
     }
 
     /// The day's notification id: `spendingReminder_2026-11-05` in the phone's calendar.
@@ -111,6 +117,17 @@ enum SpendingReminder {
     static func noteAppOpened(now: Date = Date(), defaults: UserDefaults = .standard) {
         defaults.set(now, forKey: lastReactionKey)
         requestReschedule(now: now, defaults: defaults)
+    }
+
+    /// The hook kept by `noteRecorded`. Builds before 2026-11-10 kept its day as a start-of-day
+    /// `Date`: read in today's calendar, the way it was meant.
+    static func storedHook(defaults: UserDefaults) -> SpendingReminderPlan.Hook? {
+        guard let category = defaults.string(forKey: hookCategoryKey) else { return nil }
+        let stored = defaults.object(forKey: hookDayKey)
+        guard let day = (stored as? String) ?? (stored as? Date).map({ SpendingReminderPlan.dayKey(for: $0) }) else {
+            return nil
+        }
+        return SpendingReminderPlan.Hook(category: category, day: day)
     }
 
     /// Transactions were added (TransactionStore.onRecorded), in the app or in the background:
@@ -192,11 +209,10 @@ enum SpendingReminder {
         guard isEnabled(defaults: defaults), status == .authorized || status == .provisional else { return }
 
         let time = minutes(defaults: defaults)
-        let hook = (defaults.string(forKey: hookCategoryKey), defaults.object(forKey: hookDayKey) as? Date)
         let reminders = SpendingReminderPlan.reminders(
             lastReaction: lastReaction(defaults: defaults) ?? now,
             lastRecorded: lastRecorded(defaults: defaults),
-            hook: hook.0.flatMap { category in hook.1.map { SpendingReminderPlan.Hook(category: category, day: $0) } },
+            hook: storedHook(defaults: defaults),
             now: now,
             hour: time / 60,
             minute: time % 60

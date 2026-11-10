@@ -193,6 +193,9 @@ Tenra의 새로운 기능:
   questions not answered here, expenses recorded as usual with an example; after that Ten offers
   no questions, the field asks for an expense, "Ask Ten" is gone from the screens, and a question
   typed anyway does not go to the server. Checked again a week later.
+- The evening reminder: a transfer between your own banks merged when Tenra opens no longer
+  counts as recording that day (it keeps the expense's creation time); the next day's line about
+  yesterday's category survives a time-zone change.
 - The evening reminder: no banner while Tenra is open at its time; "Remind me" with
   notifications already off for Tenra opens Tenra's page in iOS Settings (before, the tap did
   nothing visible).

@@ -237,8 +237,9 @@ struct AssistantChatView: View {
     }
 
     /// A record saved since this chat opened (a draft from Ten, say) and the offer unanswered.
+    /// Where the person has just recorded something in this chat.
     private var showsReminderOffer: Bool {
-        !reminderOn && reminderOffer == SpendingReminder.OfferState.notAsked.rawValue && lastRecordedAt > openedAt
+        SpendingReminder.shouldOffer(hasRecords: lastRecordedAt > openedAt, offer: reminderOffer, enabled: reminderOn)
     }
 
     /// Under the latest turn: what the assistant is doing or writing, the Pro offer. The next

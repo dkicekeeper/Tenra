@@ -22,10 +22,18 @@ nonisolated enum SpendingReminderPlan {
     /// Goodbyes per language: `spendingReminder.farewell.1`, `.2`.
     static let farewellPhraseCount = 2
 
-    /// The category of an expense recorded on `day`, for the next day's reminder.
+    /// The category of an expense recorded on `day`, for the next day's reminder. `day` is the
+    /// calendar day where it was recorded (`dayKey`, yyyy-MM-dd), not an instant: a start of
+    /// day stored as a `Date` moved to the day before when the phone went west.
     struct Hook: Equatable, Sendable {
         let category: String
-        let day: Date
+        let day: String
+    }
+
+    /// The calendar day of `date` in `calendar`, yyyy-MM-dd.
+    static func dayKey(for date: Date, calendar: Calendar = .current) -> String {
+        let parts = calendar.dateComponents([.year, .month, .day], from: date)
+        return String(format: "%04d-%02d-%02d", parts.year ?? 0, parts.month ?? 0, parts.day ?? 0)
     }
 
     /// What a reminder says; the numbers count from 1, as the string keys do.
@@ -62,7 +70,7 @@ nonisolated enum SpendingReminderPlan {
                 return Reminder(date: date, phrase: .farewell(phraseIndex(for: day, count: farewellPhraseCount, calendar: calendar)))
             }
             if let hook, let dayBefore = calendar.date(byAdding: .day, value: -1, to: day),
-               calendar.isDate(hook.day, inSameDayAs: dayBefore) {
+               hook.day == dayKey(for: dayBefore, calendar: calendar) {
                 return Reminder(date: date, phrase: .hook(hook.category))
             }
             return Reminder(date: date, phrase: .regular(phraseIndex(for: day, count: regularPhraseCount, calendar: calendar)))
@@ -92,6 +100,6 @@ nonisolated enum SpendingReminderPlan {
         transactions
             .filter { $0.type == .expense && isUserRecord($0, now: now, calendar: calendar) }
             .max { $0.createdAt < $1.createdAt }
-            .map { Hook(category: $0.category, day: calendar.startOfDay(for: now)) }
+            .map { Hook(category: $0.category, day: dayKey(for: now, calendar: calendar)) }
     }
 }

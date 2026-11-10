@@ -96,9 +96,28 @@ struct SpendingReminderPlanTests {
 
     @Test("Yesterday's category only on the day after it was recorded")
     func hookOnlyTheNextDay() {
-        let hook = SpendingReminderPlan.Hook(category: "Кафе", day: date(5, 0))
+        let hook = SpendingReminderPlan.Hook(category: "Кафе", day: "2026-11-05")
         let result = reminders(reaction: date(5), recorded: date(5, 12), hook: hook, now: date(5, 13))
         #expect(result.first?.date == date(6, 20))
+        #expect(result.first?.phrase == .hook("Кафе"))
+        #expect(result.dropFirst().allSatisfy { !isHook($0) })
+    }
+
+    @Test("The hook's day is the calendar day it was recorded on, whatever the time zone later")
+    func hookDayIsACalendarDay() {
+        let recorded = SpendingReminderPlan.hook(
+            from: [transaction(createdAt: date(5, 23, 30))], now: date(5, 23, 30), calendar: calendar
+        )
+        #expect(recorded?.day == "2026-11-05")
+        // The phone moves three hours west (Almaty to Moscow): the 6th's reminder still names the
+        // 5th's expense, and the 7th's does not.
+        var west = Calendar(identifier: .gregorian)
+        west.timeZone = TimeZone(identifier: "Europe/Moscow")!
+        let sixth = west.date(from: DateComponents(year: 2026, month: 11, day: 6, hour: 13))!
+        let result = SpendingReminderPlan.reminders(
+            lastReaction: sixth, lastRecorded: nil, hook: recorded, now: sixth,
+            hour: 20, minute: 0, calendar: west
+        )
         #expect(result.first?.phrase == .hook("Кафе"))
         #expect(result.dropFirst().allSatisfy { !isHook($0) })
     }

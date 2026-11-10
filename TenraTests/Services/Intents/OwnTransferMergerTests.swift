@@ -52,11 +52,12 @@ struct OwnTransferMergerTests {
         _ store: TransactionStore,
         _ captures: WalletCaptureStore,
         isConfident: Bool,
-        sentGuesses: Set<WalletCaptureStore.Guess> = [.category]
+        sentGuesses: Set<WalletCaptureStore.Guess> = [.category],
+        sentCreatedAt: TimeInterval? = nil
     ) async throws -> (Transaction, Transaction) {
         let sent = try await store.add(Transaction(
             id: "out", date: today, description: "Иван П.", amount: 100_000, currency: "KZT",
-            type: .expense, category: "Other", accountId: "freedom"
+            type: .expense, category: "Other", accountId: "freedom", createdAt: sentCreatedAt
         ))
         let received = try await store.add(Transaction(
             id: "in", date: today, description: "Мария С.", amount: 100_000, currency: "KZT",
@@ -90,6 +91,20 @@ struct OwnTransferMergerTests {
         #expect(capture.needsReview)
         #expect(capture.guesses == [.ownTransfer])
         #expect(captures.toReview.map(\.id) == [transfer.id])
+    }
+
+    @Test("The transfer keeps the expense's creation time: merged the next day, it is no record of that day")
+    func keepsTheExpensesCreationTime() async throws {
+        let store = Self.makeStore()
+        let captures = WalletCaptureStore(defaults: UserDefaults(suiteName: "tests.\(UUID().uuidString)")!)
+        let yesterday = Date().addingTimeInterval(-86_400).timeIntervalSince1970
+        _ = try await Self.recordBothSides(store, captures, isConfident: true, sentCreatedAt: yesterday)
+
+        await OwnTransferMerger.mergePending(store: store, captures: captures)
+
+        let transfer = try #require(store.transactions.first { $0.type == .internalTransfer })
+        #expect(transfer.createdAt == yesterday)
+        #expect(!SpendingReminderPlan.isUserRecord(transfer, now: Date()))
     }
 
     @Test("A confident pair needs no review")

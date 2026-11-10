@@ -109,6 +109,9 @@ final class AssistantViewModel {
     private(set) var phase: Phase = .idle
     /// The mood of the latest reply, for the mascot.
     private(set) var replyMood: AgentMood = .idle
+    /// Ten forgot a fact this chat mentions (`forgot`, AgentMemory.onForget): it stays readable,
+    /// and the next question that needs the model starts a new chat.
+    private(set) var isSealed = false
     /// The tools the assistant ran for the question it works on (render_reply aside): after a
     /// long run Ten looks determined (AssistantMetrics.mood).
     private(set) var toolsRun = 0
@@ -148,6 +151,9 @@ final class AssistantViewModel {
     @ObservationIgnored private var failedEntryId: UUID?
     /// The draft states the model was last told about.
     @ObservationIgnored private var reportedDrafts: [String: String] = [:]
+    /// Drafts the phone made before the person agreed to the cloud: their words stayed on the
+    /// phone then, so the model never hears about them (`draftStatus`), now or later.
+    @ObservationIgnored private var draftsBeforeConsent: Set<String> = []
     @ObservationIgnored private let access: Access
     @ObservationIgnored private let persistence: Persistence?
     @ObservationIgnored private let fastPath: FastPath?
@@ -271,6 +277,7 @@ final class AssistantViewModel {
         threadId = snapshot.id
         threadCreatedAt = snapshot.createdAt
         threadUpdatedAt = snapshot.updatedAt
+        isSealed = snapshot.body.sealed
         // The context is in the kept history, but it may be stale: the next question sends it.
         sentContext = nil
         drafts?.continueNumbering(after: Self.lastDraftNumber(in: snapshot.body))
@@ -285,6 +292,8 @@ final class AssistantViewModel {
         streamingReply = []
         drafts?.clear()
         reportedDrafts = [:]
+        draftsBeforeConsent = []
+        isSealed = false
         local = []
         attachments = [:]
         reviewedAttachments = []
@@ -348,7 +357,7 @@ final class AssistantViewModel {
             createdAt: threadCreatedAt,
             updatedAt: threadUpdatedAt,
             title: entries.lazy.compactMap(\.question).first,
-            body: { var body = conversation.body; body.local = local; return body }()
+            body: { var body = conversation.body; body.local = local; body.sealed = isSealed; return body }()
         ))
     }
 
@@ -446,6 +455,7 @@ final class AssistantViewModel {
         if phoneMayAnswer, let operations = await draftOnPhone(text, spoken: spoken, cloudAllowed: cloudAllowed), let drafts {
             dropFailedQuestion()
             let id = drafts.add(operations, madeOnPhoneFrom: text)
+            if !cloudAllowed { draftsBeforeConsent.insert(id) }
             local.append(AgentThreadSnapshot.LocalExchange(position: conversation.messages.count, question: text, draftId: id))
             entries.append(Entry(id: UUID(), content: .question(text)))
             entries.append(Entry(id: UUID(), content: .reply(Self.localReply(id), results: [:])))
@@ -455,6 +465,8 @@ final class AssistantViewModel {
             return true
         }
         guard cloudAllowed else { return false }
+        // A chat where Ten forgot something goes no further to the model: a new one starts.
+        if isSealed { reset() }
         dropFailedQuestion()
         let entry = Entry(id: UUID(), content: .question(text))
         entries.append(entry)
@@ -531,7 +543,24 @@ final class AssistantViewModel {
         guard case .failed = phase, let failedEntryId,
               let entry = entries.first(where: { $0.id == failedEntryId }),
               case .question(let text) = entry.content else { return }
+        // Sealed since it failed: the question goes in a new chat.
+        if isSealed {
+            await send(text, phoneMayAnswer: false)
+            return
+        }
         await ask(text, entry: failedEntryId)
+    }
+
+    /// Ten forgot facts (their texts; nil for all of them): the open chat, if it mentions one,
+    /// is sealed as the kept ones are (AgentThreadStore.seal).
+    func forgot(_ texts: [String]?) {
+        guard !isSealed, !entries.isEmpty else { return }
+        if let texts {
+            var body = conversation.body
+            body.local = local
+            guard body.mentions(texts) else { return }
+        }
+        isSealed = true
     }
 
     /// The drafts saved, undone or edited since the model last heard, and the ones the phone
@@ -541,7 +570,7 @@ final class AssistantViewModel {
     private func draftStatus() -> (text: String, states: [String: String])? {
         guard let drafts else { return nil }
         var states: [String: String] = [:]
-        for (id, state) in drafts.states {
+        for (id, state) in drafts.states where !draftsBeforeConsent.contains(id) {
             let edited = drafts.edited.contains(id)
             let message = drafts.madeOnPhone[id]
             var status: String?

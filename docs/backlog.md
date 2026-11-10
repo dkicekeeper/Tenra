@@ -64,8 +64,6 @@ Found by the release audit of 2026-10-15 (details and file references:
 - **Ten on Home keeps animating** while a notice is unread (`AssistantNoticeCard`'s live
   `ParticleCreature`; its `AmbientMotionGate` stops it only under Reduce Motion or iOS 27's
   low-resource mode): measure on device, else the still `CreatureGlyph` there.
-- **Ten's privacy edges:** a forgotten fact stays in kept threads; FastPath messages typed before
-  consent go out with the next cloud question.
 - **Assistant performance:** full-resolution photo decode on the main thread; each streamed piece
   re-parses the reply and re-renders the chat; allowance Keychain calls on the main thread;
   FastPath runs the voice parser on questions; `forecast_balance` series O(days × occurrences).
@@ -73,8 +71,8 @@ Found by the release audit of 2026-10-15 (details and file references:
   load overwriting an `add`; FastPath vs `reset()`; a chat deleted during its save comes back.
 - **Server before traffic** (sizing in [domains/assistant.md](domains/assistant.md) §11; the
   daily cap of 1 200 calls is live since 2026-10-29, Pro's part of the day, the refund of a
-  failed call and the RevenueCat timeout since 2026-11-10, a stop when the app leaves in main
-  since the same day, not deployed): Durable Objects counters, a Rate Limiting binding, a
+  failed call, the RevenueCat timeout and the stop when the app leaves mid-answer are live since
+  2026-11-10): Durable Objects counters, a Rate Limiting binding, a
   `protocol` range and an app build header.
 
 Found by the docs audit of 2026-10-12, not verified on device yet:

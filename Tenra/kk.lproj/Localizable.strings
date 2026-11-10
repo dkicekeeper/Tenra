@@ -1859,6 +1859,7 @@
 "assistant.forecast.obligations" = "%@ күніне дейінгі төлемдер";
 "assistant.error.generic" = "Бірдеңе дұрыс болмады. Қайталап көріңіз.";
 "assistant.error.tooLong" = "Бұл чат ассистент үшін тым ұзын болып кетті. Жаңа чат бастап, қайта сұраңыз.";
+"assistant.thread.sealed" = "Тэн осы чаттағы бір нәрсені ұмытты. Мұнда қойылған сұрақ жаңа чат бастайды.";
 
 /* AI assistant: the chat screen */
 "tab.assistant" = "Ассистент";

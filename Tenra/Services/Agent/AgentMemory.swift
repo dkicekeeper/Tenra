@@ -143,6 +143,9 @@ final class AgentMemory {
     /// the same run (a thread may still name it).
     @ObservationIgnored private var lastNumber = 0
     @ObservationIgnored private var resetObserver: NSObjectProtocol?
+    /// A fact was forgotten (its text), or all of them (nil): the kept chats that mention it are
+    /// sealed (AppCoordinator, AgentThreadStore.seal, AssistantViewModel.forgot).
+    @ObservationIgnored var onForget: (([String]?) async -> Void)?
 
     /// - Parameter store: nil keeps the facts in memory only (previews, tests).
     init(store: AgentFactStore?, now: @escaping () -> Date = Date.init) {
@@ -234,6 +237,7 @@ final class AgentMemory {
     func forgetAll() async {
         facts = []
         await store?.delete()
+        await onForget?(nil)
     }
 
     /// Saves a draft (the card's Save, the settings screen): checked again against the facts now.
@@ -259,6 +263,7 @@ final class AgentMemory {
         case (nil, let before?):
             facts.removeAll { $0.id == before.id }
             await store?.delete(ids: [before.id])
+            await onForget?([before.text])
             return AgentFactChange(before: before, after: nil)
         case (nil, nil):
             throw AgentMemoryError.empty

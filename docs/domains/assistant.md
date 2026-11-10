@@ -201,6 +201,15 @@ enum AgentBlock {                // AgentReply.swift; source = a tool result's r
   fact is one sentence up to 200 characters, at most 30, no duplicates. The prompt forbids card and
   account numbers, PINs, passwords, codes, documents, health and other people's personal data (eval
   case `ru-no-secret-fact`).
+- **A forgotten fact leaves the chats** (the owner's decision, 2026-11-10): forgetting one (the
+  memory screen or a saved `draft_fact`) or "Forget all" calls `AgentMemory.onForget`
+  (AppCoordinator). Every kept thread that mentions the fact's text, in the context, the person's
+  words, a draft or a reply (`AgentThreadSnapshot.Body.mentions`, case-insensitive over the kept
+  JSON), every thread for "Forget all", is sealed (`Body.sealed`, kept in the payload, so a backup
+  keeps it; `AgentThreadStore.seal`), and the open chat too (`AssistantViewModel.forgot`). A
+  sealed chat can be read on the phone, says `assistant.thread.sealed` under its last turn, and
+  goes no further to the model: the next question that needs it (a retry too) starts a new chat.
+  A record drafted on the phone stays in it. Nothing is deleted.
 - **Settings → Assistant** (`SettingsAssistantSection`): "Cloud answers" (the same consent the
   chat asks for; turned off, the chat asks again), "Ten chats", and "What Ten knows about me"
   (`AssistantMemoryView`: edit on tap, Forget from the touch-and-hold menu, "+" adds by hand,
@@ -447,7 +456,10 @@ spending, no em dashes, in all 11 languages.
   Settings → Assistant: switched on there, the same consent screen asks first
   (`SettingsAssistantSection.cloudToggle`), switched off it turns the cloud off at once. The App Privacy label lists what Ten sends (published 2026-10-18).
 - **Minimisation**: the cloud gets tool results, never the database; files and photos never leave
-  the phone (§7).
+  the phone (§7). A record drafted on the phone before the person agreed to the cloud is never
+  reported to the model (`draftsBeforeConsent`, skipped by `draftStatus`), so the words typed then
+  stay on the phone; the record itself is in the store, which the tools read after consent. A
+  forgotten fact seals the chats that mention it (§5).
 - **No write without a confirmation**, and Undo after saving.
 - **A full finance helper with one boundary** (Anthropic's High-risk Use Case Requirements): Ten
   analyses spending, finds savings, calculates loans and savings growth, explains deposits, bonds,

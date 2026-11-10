@@ -23,15 +23,19 @@ nonisolated struct AgentThreadSnapshot: Equatable, Sendable {
         var results: [String: JSONValue]
         var owedResults: [JSONValue]
         var local: [LocalExchange]
+        /// Ten forgot a fact this thread mentions (AgentMemory.onForget): it can be read on the
+        /// phone, and goes no further to the model; a question from it starts a new thread.
+        var sealed: Bool
 
-        init(messages: [AgentWireMessage], results: [String: JSONValue], owedResults: [JSONValue], local: [LocalExchange] = []) {
+        init(messages: [AgentWireMessage], results: [String: JSONValue], owedResults: [JSONValue], local: [LocalExchange] = [], sealed: Bool = false) {
             self.messages = messages
             self.results = results
             self.owedResults = owedResults
             self.local = local
+            self.sealed = sealed
         }
 
-        private enum CodingKeys: String, CodingKey { case messages, results, owedResults, local }
+        private enum CodingKeys: String, CodingKey { case messages, results, owedResults, local, sealed }
 
         /// A thread kept before the phone answered by itself has no `local`.
         init(from decoder: Decoder) throws {
@@ -40,6 +44,21 @@ nonisolated struct AgentThreadSnapshot: Equatable, Sendable {
             results = try c.decode([String: JSONValue].self, forKey: .results)
             owedResults = try c.decode([JSONValue].self, forKey: .owedResults)
             local = try c.decodeIfPresent([LocalExchange].self, forKey: .local) ?? []
+            sealed = try c.decodeIfPresent(Bool.self, forKey: .sealed) ?? false
+        }
+
+        /// Whether any of `texts` appears anywhere in the thread (the context's facts, the
+        /// person's words, the model's drafts and replies), ignoring case. Compared in the JSON
+        /// the thread is kept as, each text escaped the same way.
+        func mentions(_ texts: [String]) -> Bool {
+            let encoder = JSONEncoder()
+            guard let data = try? encoder.encode(self), let json = String(data: data, encoding: .utf8) else { return false }
+            return texts.contains { text in
+                guard !text.isEmpty, let quoted = try? encoder.encode(text),
+                      let escaped = String(data: quoted, encoding: .utf8)?.dropFirst().dropLast(),
+                      !escaped.isEmpty else { return false }
+                return json.range(of: String(escaped), options: .caseInsensitive) != nil
+            }
         }
     }
 
@@ -126,6 +145,26 @@ nonisolated final class AgentThreadStore: @unchecked Sendable {
             title: entity.title,
             body: body
         )
+    }
+
+    /// Ten forgot facts: every kept thread that mentions one of `texts` (all of them for nil,
+    /// "Forget all") is sealed, so it goes no further to the model.
+    func seal(mentioning texts: [String]?) async {
+        let context = stack.newBackgroundContext()
+        await context.perform {
+            do {
+                let request = NSFetchRequest<AgentThreadEntity>(entityName: Self.entityName)
+                for entity in try context.fetch(request) {
+                    guard let payload = entity.payload, var body = Self.decodePayload(payload), !body.sealed else { continue }
+                    if let texts, !body.mentions(texts) { continue }
+                    body.sealed = true
+                    entity.payload = Self.encodePayload(body)
+                }
+                if context.hasChanges { try context.save() }
+            } catch {
+                Self.logger.error("seal failed: \(error.localizedDescription, privacy: .public)")
+            }
+        }
     }
 
     /// Deletes one kept thread (the person removed it from the assistant's home).

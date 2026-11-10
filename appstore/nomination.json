@@ -1,0 +1,24 @@
+{
+  "name": "Tenra: private money tracking for the new year",
+  "type": "APP_ENHANCEMENTS",
+  "publishStartDate": "2026-12-29",
+  "publishEndDate": "2027-01-19",
+  "deviceFamilies": [
+    "IPHONE"
+  ],
+  "locales": [
+    "en-US",
+    "ru",
+    "de-DE",
+    "fr-FR",
+    "es-ES",
+    "it",
+    "pt-BR",
+    "tr",
+    "uk",
+    "ja",
+    "ko"
+  ],
+  "description": "Tenra is a private money tracker for iPhone by a solo developer in Kazakhstan. It keeps every account in one place without a bank login: records stay on the device, the backup goes to the person's own iCloud Drive.\n\nPayments record themselves. An Apple Pay payment becomes an expense through a Shortcuts automation, and on iOS 27 Tenra reads bank push notifications the same way, so cards of any bank are covered. A purchase can also be spoken, typed, scanned from a receipt or imported from a PDF statement.\n\nBeyond expenses: deposits with daily interest, loans with a payment schedule, subscriptions, goals, debts, homes and cars with net worth, several currencies. Ten, the assistant, answers questions about the person's money.\n\nNative to iOS 26 and 27: Liquid Glass, App Intents and Siri, Home and Lock Screen widgets, a Control Center control. 12 languages, Kazakh among them.\n\nJanuary is when people decide to take control of their money. Tenra lets them start without a bank password.",
+  "notes": "An update is planned for the last week of December. Daily tracking, budgets, subscriptions, goals, analytics and Apple Pay capture are free; Tenra Pro adds deposits, loans, assets, voice, statement import and the assistant without a limit, with a 14-day trial on the annual plan. No ads, no tracking across apps, no analytics SDK."
+}

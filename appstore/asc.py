@@ -65,6 +65,10 @@
                                                     Tenra Pro in the high-price storefronts
                                                     (HIGH_TIER) at Apple's local equivalents of
                                                     three US prices
+    python3 appstore/asc.py nominations         the featuring nominations and their state
+    python3 appstore/asc.py push-nomination [--submit]
+                                                    the nomination of appstore/nomination.json as a
+                                                    draft in App Store Connect; --submit sends it
     python3 appstore/asc.py iap-prices [--product tenra.pro.lifetime] [--territory KAZ,USA]
                                                     a one-time purchase's base territory, manual
                                                     prices and what the storefronts charge
@@ -1214,6 +1218,58 @@ def push_tier(app: str, monthly: str, annual: str, lifetime: str, territories: l
     print(f"tenra.pro.lifetime: {len(new_lifetime)} storefronts from now.")
 
 
+# Featuring nominations ----------------------------------------------------------------------------
+
+
+def open_nominations() -> list[dict]:
+    """Drafts and nominations already sent; the list takes one state at a time."""
+    found = []
+    for state in ("DRAFT", "SUBMITTED"):
+        items, _ = get_all("/v1/nominations", {"filter[state]": state, "limit": 50})
+        found += items
+    return found
+
+NOMINATION = Path(__file__).resolve().parent / "nomination.json"
+
+
+def nominations(app: str) -> None:
+    """The featuring nominations in App Store Connect. Read only."""
+    items = open_nominations()
+    table("Featuring nominations", ["Name", "Type", "State", "From", "Until"],
+          [[n["attributes"].get("name"), n["attributes"].get("type"), n["attributes"].get("state"),
+            (n["attributes"].get("publishStartDate") or "")[:10], (n["attributes"].get("publishEndDate") or "")[:10]]
+           for n in items])
+
+
+def push_nomination(app: str, submit: bool) -> None:
+    """A featuring nomination from appstore/nomination.json: a draft in App Store Connect (Featuring
+    → Nominations), or sent to Apple with `submit`. A nomination of the same name is updated,
+    not doubled; one already sent is left alone."""
+    wanted = json.loads(NOMINATION.read_text(encoding="utf-8"))
+    attributes = {key: wanted[key] for key in ("name", "type", "description", "notes", "deviceFamilies", "locales")
+                  if wanted.get(key)}
+    if len(wanted["description"]) > 1000:
+        sys.exit(f"The description is {len(wanted['description'])} characters; App Store Connect takes 1000.")
+    attributes["publishStartDate"] = wanted["publishStartDate"] + "T00:00:00Z"
+    if wanted.get("publishEndDate"):
+        attributes["publishEndDate"] = wanted["publishEndDate"] + "T00:00:00Z"
+    attributes["submitted"] = submit
+    existing = open_nominations()
+    same = next((n for n in existing if n["attributes"].get("name") == wanted["name"]), None)
+    if same and same["attributes"].get("state") == "SUBMITTED":
+        print(f"Already sent to Apple: {wanted['name']}.")
+        return
+    related = {"relatedApps": {"data": [{"type": "apps", "id": app}]}}
+    if same:
+        send("PATCH", f"/v1/nominations/{same['id']}", {"data": {
+            "type": "nominations", "id": same["id"], "attributes": attributes, "relationships": related}})
+    else:
+        send("POST", "/v1/nominations", {"data": {
+            "type": "nominations", "attributes": attributes, "relationships": related}})
+    print(f"{'Sent to Apple' if submit else 'Draft saved'}: {wanted['name']} "
+          f"({wanted['type']}, from {wanted['publishStartDate']}).")
+
+
 # Review notes and the draft submission ------------------------------------------------------------
 
 def review_notes_text(path: Path = NOTES) -> str:
@@ -1947,6 +2003,10 @@ def main(argv: list[str]) -> None:
         chosen = option("--territory")
         push_tier(app, option("--monthly", "4.99"), option("--annual", "24.99"), option("--lifetime", "69.99"),
                   chosen.split(",") if chosen else HIGH_TIER, "--apply" in args)
+    elif command == "nominations":
+        nominations(app)
+    elif command == "push-nomination":
+        push_nomination(app, "--submit" in args)
     elif command == "iap-prices":
         iap_prices(app, option("--product", "tenra.pro.lifetime"), option("--territory", "KAZ,USA").split(","))
     elif command == "review-notes":

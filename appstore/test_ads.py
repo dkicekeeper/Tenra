@@ -128,8 +128,15 @@ class FakeAds:
                       group(SEARCH_MATCH, DISCOVERY, "Search Match", "0.20", True), group(BROAD, DISCOVERY, "Broad", "0.20")]
             return {"result": [g for g in groups if not campaign_id or g["campaignId"] == campaign_id]}
         if path == "/reports/apps/campaigns/query":
-            return {"result": {"rows": [row({"id": CATEGORY, "name": "KZ-Category"}, 1000, 50, 10, 2, "12.50"),
-                                        row({"id": DISCOVERY, "name": "KZ-Discovery"}, 400, 20, 0, 1, "4.00")]}}
+            rows = [row({"id": CATEGORY, "name": "KZ-Category"}, 1000, 50, 10, 2, "12.50"),
+                    row({"id": DISCOVERY, "name": "KZ-Discovery"}, 400, 20, 0, 1, "4.00")]
+            if (body.get("timeRange") or {}).get("granularity") == "DAILY":
+                rows[0]["granularMetrics"] = [
+                    {"date": "2026-11-01", "impressions": 600, "taps": 30, "tapInstalls": 6, "localSpend": usd("4.00")},
+                    {"date": "2026-11-02", "impressions": 400, "taps": 20, "tapInstalls": 4, "localSpend": usd("2.00")}]
+                rows[1]["granularMetrics"] = [
+                    {"date": "2026-11-02", "impressions": 400, "taps": 20, "tapInstalls": 0, "localSpend": usd("0.50")}]
+            return {"result": {"rows": rows}}
         if path == "/reports/apps/adgroups/query":
             rows = {CATEGORY: [row({"id": GENERAL, "campaignId": CATEGORY}, 900, 45, 10, 2, "11.00")],
                     DISCOVERY: [row({"id": SEARCH_MATCH, "campaignId": DISCOVERY}, 400, 20, 0, 1, "4.00")]}
@@ -316,6 +323,19 @@ class AdsTest(unittest.TestCase):
         with self.assertRaises(SystemExit) as stop:
             self.run_ads(["campaigns"], fake=FakeAds(accounts=[basic, tenra], forbidden=(1001, ACCOUNT)))
         self.assertIn("None of the API user's ad accounts lets it read campaigns", str(stop.exception))
+
+    def test_daily(self):
+        text, fake = self.run_ads(["daily", "--days", "7"])
+        report = [c for c in self.api_calls(fake) if c["url"].endswith("/reports/apps/campaigns/query")][0]
+        self.assertEqual(report["body"]["timeRange"]["granularity"], "DAILY")
+        # Budgets 4.00 + 2.50 = 6.50: 11-01 spent 4.00 (62%), 11-02 2.50 (38%).
+        self.assertIn("| 2026-11-01 | 600 | 30 | 5.0% | 6 | 20.0% | 6 | 0 | 62% | 4.00 USD |", text)
+        self.assertIn("| 2026-11-02 | 800 | 40 | 5.0% | 4 | 10.0% | 4 | 0 | 38% | 2.50 USD |", text)
+        hidden, _ = self.run_ads(["daily", "--days", "7"], actions=True)
+        self.assertIn("| 62% | hidden |", hidden)
+        self.assertNotIn("USD", hidden)
+        with self.assertRaises(SystemExit):
+            self.run_ads(["daily", "--days", "120"])
 
     def test_report(self):
         text, fake = self.run_ads(["report", "--days", "7"])

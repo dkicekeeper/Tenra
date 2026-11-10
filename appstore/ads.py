@@ -8,6 +8,9 @@
                                     per campaign and ad group: impressions, taps, TTR, installs
                                     (tap-through and view-through), conversion; spend, average
                                     CPT and CPI
+    python3 appstore/ads.py daily [--days 30] [--campaign C]
+                                    per day: impressions, taps, installs (and per campaign), the
+                                    share of the daily budgets spent
     python3 appstore/ads.py search-terms --campaign C [--adgroup G] [--days 7]
                                     what people searched, most taps first; flags terms with taps
                                     and no installs, lists the candidates for negative and exact
@@ -595,6 +598,46 @@ def report(args) -> None:
     say("Conv. (tap) = tap-through installs / taps. CPI (tap) = spend / tap-through installs, CPI (all) = spend / all installs.")
 
 
+def daily(args) -> None:
+    """Per day of the campaigns report (granularMetrics, DAILY): impressions, taps, installs, the
+    installs of each campaign, and how much of today's daily budgets the day spent (a share, so it
+    shows in Actions too). The budgets are today's: a day before a budget change compares with the
+    new one."""
+    if args.days < 2 or args.days > 90:
+        sys.exit("daily takes --days from 2 to 90 (Apple's DAILY granularity).")
+    account()
+    items = query("/campaigns/query")
+    if args.campaign:
+        items = [find(items, args.campaign, "campaign")]
+    names = {str(c["id"]): c.get("name", "") for c in items}
+    budget = sum(Decimal(str(((c.get("dailyBudget") or {}).get("value") or {}).get("amount") or 0)) for c in items)
+    per_day: dict[str, dict[str, dict]] = {}
+    for r in report_rows("campaigns", args.days, [eq("campaignId", str(items[0]["id"]))] if args.campaign else None):
+        cid = str((r.get("metadata") or {}).get("id"))
+        if cid not in names:
+            continue
+        for point in r.get("granularMetrics") or []:
+            if point.get("date"):
+                per_day.setdefault(point["date"], {})[cid] = metrics({"totalMetrics": point})
+    order = sorted(names, key=lambda i: names[i])
+    rows = []
+    for day in sorted(per_day):
+        total = ZERO
+        for m in per_day[day].values():
+            total = add(total, m)
+        rows.append([day, total["impressions"], total["taps"], ratio(total["taps"], total["impressions"]),
+                     total["tapInstalls"], ratio(total["tapInstalls"], total["taps"]),
+                     *[per_day[day].get(i, ZERO)["tapInstalls"] for i in order],
+                     f"{total['spend'] / budget * 100:.0f}%" if budget else "-",
+                     cash({"amount": total["spend"], "currency": total["currency"]})])
+    start, end = period(args.days)
+    table(f"Apple Ads by day, {start} to {end} (ad account time zone){money_note()}",
+          ["Date", "Impr.", "Taps", "TTR", "Installs (tap)", "Conv. (tap)",
+           *[f"{names[i]} (inst.)" for i in order], "Spent of daily budgets", "Spend"], rows)
+    say("Spent of daily budgets: the day's spend over the sum of today's daily budgets of these campaigns; "
+        "near 100% means the budget, not the bids, capped the day.")
+
+
 def search_terms(args) -> None:
     campaign, group = target(args)
     filters = [eq("campaignId", str(campaign["id"]))] + ([eq("adGroupId", str(group["id"]))] if group else [])
@@ -722,6 +765,7 @@ def main(argv: list[str]) -> None:
     handlers = {
         "campaigns": (campaigns, "campaigns and ad groups"),
         "report": (report, "per campaign and ad group performance"),
+        "daily": (daily, "per day: impressions, taps, installs by campaign, share of the daily budgets spent"),
         "search-terms": (search_terms, "a campaign's search terms"),
         "keywords": (keywords, "a campaign's keywords"),
         "negatives": (negatives, "a campaign's negative keywords; --add, --apply"),

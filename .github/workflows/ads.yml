@@ -19,7 +19,7 @@ on:
       command:
         description: "What to do"
         type: choice
-        options: [report, campaigns, search-terms, keywords, negatives, add-keywords]
+        options: [report, daily, campaigns, search-terms, keywords, negatives, add-keywords]
         default: report
       campaign:
         description: "Campaign: name, a unique part of it or its id (needed by all but report and campaigns)"

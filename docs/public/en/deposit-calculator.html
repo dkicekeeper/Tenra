@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deposit calculator with compounding and monthly top-ups</title>
+    <meta name="description" content="Work out what a savings deposit earns: rate, term, monthly top-up, compounding and the effective annual rate. Free, no sign-up.">
+    <link rel="canonical" href="https://dkicekeeper.github.io/Tenra/en/deposit-calculator.html">
+    <link rel="alternate" hreflang="ru" href="https://dkicekeeper.github.io/Tenra/ru/deposit-calculator.html">
+    <link rel="alternate" hreflang="kk" href="https://dkicekeeper.github.io/Tenra/kk/deposit-calculator.html">
+    <link rel="alternate" hreflang="en" href="https://dkicekeeper.github.io/Tenra/en/deposit-calculator.html">
+    <link rel="alternate" hreflang="x-default" href="https://dkicekeeper.github.io/Tenra/en/deposit-calculator.html">
+    <meta name="apple-itunes-app" content="app-id=6761530361">
+    <meta property="og:title" content="Deposit calculator with compounding and monthly top-ups">
+    <meta property="og:description" content="Work out what a savings deposit earns: rate, term, monthly top-up, compounding and the effective annual rate. Free, no sign-up.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://dkicekeeper.github.io/Tenra/en/deposit-calculator.html">
+    <link rel="stylesheet" href="../assets/site.css">
+    <script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "How does a top-up change the result?", "acceptedAnswer": {"@type": "Answer", "text": "Each top-up starts earning from the next month. The earlier the money goes in, the longer it works."}}, {"@type": "Question", "name": "Is compounding better?", "acceptedAnswer": {"@type": "Answer", "text": "At the same rate a compounding deposit earns more, because interest is paid on earlier interest too. Compare deposits by their effective rate."}}, {"@type": "Question", "name": "Why is my bank's figure slightly different?", "acceptedAnswer": {"@type": "Answer", "text": "Banks count interest by the day and months differ in length. This calculator counts by the month, so the difference is usually a few tenths of a percent."}}]}</script>
+</head>
+<body>
+<div class="wrap">
+    <header class="top">
+        <a class="brand" href="../">Tenra</a>
+        <nav class="langs" aria-label="Language"><a href="../ru/deposit-calculator.html" lang="ru">Русский</a><a href="../kk/deposit-calculator.html" lang="kk">Қазақша</a><a href="../en/deposit-calculator.html" lang="en" aria-current="true">English</a></nav>
+    </header>
+    <main>
+        <h1>Deposit calculator</h1>
+        <p class="lead">What a deposit earns with compounding and a monthly top-up.</p>
+        <form data-calc="deposit" novalidate>
+            <section class="card">
+                <div class="fields">
+                    <div class="field">
+                        <label for="amount">Amount</label>
+                        <input id="amount" name="amount" inputmode="decimal" autocomplete="off" value="10 000">
+                    </div>
+                    <div class="field">
+                        <label for="currency">Currency</label>
+                        <select id="currency" name="currency"><option>₸</option><option>₽</option><option selected>$</option><option>€</option></select>
+                    </div>
+                    <div class="field">
+                        <label for="rate">Rate, % a year</label>
+                        <input id="rate" name="rate" inputmode="decimal" autocomplete="off" value="4.5">
+                    </div>
+                    <div class="field">
+                        <label for="term">Term</label>
+                        <input id="term" name="term" inputmode="numeric" autocomplete="off" value="12">
+                    </div>
+                    <div class="field wide">
+                        <label for="unit">Term in</label>
+                        <select id="unit" name="unit"><option value="months" selected>months</option><option value="years">years</option></select>
+                    </div>
+                    <div class="field wide">
+                        <label for="topup">Top-up every month</label>
+                        <input id="topup" name="topup" inputmode="decimal" autocomplete="off" value="0">
+                    </div>
+                    <label class="check field wide"><input type="checkbox" name="capitalize" checked> Compound the interest every month</label>
+                </div>
+            </section>
+            <section class="card" aria-live="polite">
+                <div class="results">
+                    <div class="result main wide"><div class="label">Amount at the end</div><div class="value" id="out-total"></div></div>
+                    <div class="result"><div class="label">Interest earned</div><div class="value good" id="out-interest"></div></div>
+                    <div class="result"><div class="label">Effective rate</div><div class="value" id="out-effective"></div></div>
+                    <div class="result wide"><div class="label">Your own money</div><div class="value" id="out-contributed"></div></div>
+                </div>
+            </section>
+        </form>
+        <p class="note">An estimate: banks count interest by the day and may round differently. Check your agreement for the exact terms.</p>
+        <section class="card cta">
+            <h2>Tenra counts the interest for you</h2>
+            <p>Add your deposit to Tenra: interest accrues every day, compounding is counted for you, and top-ups and withdrawals change what the interest is paid on.</p>
+            <p><a class="button" href="https://apps.apple.com/app/id6761530361?ppid=23fa027e-1341-4344-8d3e-e5567b713dda">Download on the App Store</a></p>
+            <p class="note">iPhone, iOS 26 or later. Your data stays on the device, no bank login.</p>
+        </section>
+        <h2>How deposit interest is counted</h2>
+        <p>Every month the bank pays interest on the balance: the balance times the annual rate, divided by 12. With compounding the interest joins the deposit, so next month it earns on a larger amount.</p>
+        <p class="formula">Amount = Deposit × (1 + Rate / 12) ^ Months</p>
+        <p>Without compounding the interest is paid out separately and the deposit does not grow: every month earns the same.</p>
+        <h2>What the effective rate means</h2>
+        <p>The effective rate is what the deposit really earns in a year once compounding is counted. For example, 15% compounded monthly earns 16.08% a year.</p>
+        <h2>Common questions</h2>
+        <h3>How does a top-up change the result?</h3>
+        <p>Each top-up starts earning from the next month. The earlier the money goes in, the longer it works.</p>
+        <h3>Is compounding better?</h3>
+        <p>At the same rate a compounding deposit earns more, because interest is paid on earlier interest too. Compare deposits by their effective rate.</p>
+        <h3>Why is my bank&#x27;s figure slightly different?</h3>
+        <p>Banks count interest by the day and months differ in length. This calculator counts by the month, so the difference is usually a few tenths of a percent.</p>
+        <h2>Other calculators</h2>
+        <div class="links"><a href="../en/loan-calculator.html"><strong>Loan calculator</strong><span>Payment, total interest, schedule and early repayment</span></a></div>
+    </main>
+    <footer>
+        <a href="../">Tenra</a> <a href="../support.html">Support</a> <a href="../privacy-policy.html">Privacy</a> <a href="../terms-of-use.html">Terms</a>
+    </footer>
+</div>
+<script src="../assets/calc.js"></script>
+</body>
+</html>

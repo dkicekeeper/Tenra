@@ -54,6 +54,20 @@
                                                     a new price (a price point of the territory)
                                                     from a date, tomorrow at the earliest and by
                                                     default; current subscribers keep theirs
+                                                    (a one-time purchase: at once, no --start)
+    python3 appstore/asc.py push-iap-multiple [--product tenra.pro.lifetime] [--of tenra.pro.annual]
+                                   [--times 3] [--apply]
+                                                    the one-time purchase in every storefront at
+                                                    N times the subscription's price there (the
+                                                    nearest price point), at once
+    python3 appstore/asc.py push-tier [--monthly 4.99] [--annual 24.99] [--lifetime 69.99]
+                                   [--territory USA,DEU] [--apply]
+                                                    Tenra Pro in the high-price storefronts
+                                                    (HIGH_TIER) at Apple's local equivalents of
+                                                    three US prices
+    python3 appstore/asc.py iap-prices [--product tenra.pro.lifetime] [--territory KAZ,USA]
+                                                    a one-time purchase's base territory, manual
+                                                    prices and what the storefronts charge
     python3 appstore/asc.py review-notes --version 1.7 [--apply]
                                                     the App Review notes from docs/release-notes.md
     python3 appstore/asc.py prepare-review --version 1.7 [--build N] [--submit]
@@ -916,6 +930,290 @@ def push_price(app: str, product: str, territory: str, price: str, start: str | 
     print(f"{product} in {territory}: {price} from {start}; current subscribers keep their price.")
 
 
+# One-time purchase prices -------------------------------------------------------------------------
+
+def in_app_purchase(app: str, product: str) -> dict:
+    """A one-time purchase (not a subscription) by its product id."""
+    items, _ = get_all(f"/v1/apps/{app}/inAppPurchasesV2", {"limit": 50})
+    item = next((i for i in items if i["attributes"].get("productId") == product), None)
+    if not item:
+        sys.exit(f"No in-app purchase {product}.")
+    return item
+
+
+def iap_schedule(purchase_id: str) -> tuple[str, list[dict]]:
+    """A one-time purchase's price schedule: its base territory and its manual prices, each
+    {territory, price, point, start, end}. Every other storefront follows the base territory's
+    price automatically (Apple's equalization)."""
+    schedule = get(f"/v2/inAppPurchases/{purchase_id}/iapPriceSchedule", {"include": "baseTerritory"})
+    base = (((schedule["data"].get("relationships") or {}).get("baseTerritory") or {}).get("data") or {}).get("id", "?")
+    prices, included = get_all(f"/v1/inAppPurchasePriceSchedules/{schedule['data']['id']}/manualPrices",
+                               {"include": "inAppPurchasePricePoint,territory", "limit": 200})
+    points = {item["id"]: item for item in included if item["type"] == "inAppPurchasePricePoints"}
+    rows = []
+    for price in prices:
+        relationships = price.get("relationships") or {}
+        point_id = ((relationships.get("inAppPurchasePricePoint") or {}).get("data") or {}).get("id")
+        point = points.get(point_id) or {}
+        territory = ((relationships.get("territory") or {}).get("data") or {}).get("id") \
+            or ((((point.get("relationships") or {}).get("territory") or {}).get("data")) or {}).get("id", "?")
+        rows.append({"territory": territory, "point": point_id,
+                     "price": (point.get("attributes") or {}).get("customerPrice", "?"),
+                     "start": price["attributes"].get("startDate"), "end": price["attributes"].get("endDate")})
+    return base, rows
+
+
+def iap_automatic_price(purchase_id: str, territory: str) -> str:
+    """What a storefront without a manual price charges now: the base price, equalized."""
+    prices, included = get_all(f"/v1/inAppPurchasePriceSchedules/{purchase_id}/automaticPrices",
+                               {"filter[territory]": territory, "include": "inAppPurchasePricePoint", "limit": 50})
+    points = {item["id"]: item["attributes"].get("customerPrice") for item in included
+              if item["type"] == "inAppPurchasePricePoints"}
+    today = date.today().isoformat()
+    for price in prices:
+        start, end = price["attributes"].get("startDate"), price["attributes"].get("endDate")
+        if (not start or start <= today) and (not end or end > today):
+            point = ((price.get("relationships") or {}).get("inAppPurchasePricePoint") or {}).get("data") or {}
+            return points.get(point.get("id"), "?")
+    return "none"
+
+
+def iap_prices(app: str, product: str, territories: list[str]) -> None:
+    """A one-time purchase's prices: the base territory, every manual price, and what the asked
+    storefronts charge when they follow the base. Read only."""
+    item = in_app_purchase(app, product)
+    base, manual = iap_schedule(item["id"])
+    table(f"{product}: manual prices (base territory {base})", ["Territory", "Price", "From", "Until"],
+          [[row["territory"], row["price"], row["start"] or "now", row["end"] or ""] for row in manual])
+    set_by_hand = {row["territory"] for row in manual}
+    table(f"{product}: storefronts that follow {base}", ["Territory", "Price"],
+          [[territory, iap_automatic_price(item["id"], territory)]
+           for territory in territories if territory not in set_by_hand])
+
+
+def push_iap_price(app: str, product: str, territory: str, price: str, apply: bool) -> None:
+    """A new price for a one-time purchase in one territory, at once. The schedule is replaced
+    whole, so every other manual price is sent again as it stands. When the territory is the
+    base one, every storefront without a manual price follows the new price. The price must be
+    one of the territory's price points. Without `apply` only shows the change."""
+    item = in_app_purchase(app, product)
+    base, manual = iap_schedule(item["id"])
+    today = date.today().isoformat()
+    kept = [row for row in manual if row["territory"] != territory and (not row["end"] or row["end"] > today)]
+    if any(row["start"] and row["start"] > today for row in kept) or any(row["end"] for row in kept):
+        sys.exit("Another territory has a scheduled price change: set this price in App Store Connect.")
+    points, _ = get_all(f"/v2/inAppPurchases/{item['id']}/pricePoints",
+                        {"filter[territory]": territory, "limit": 200}, pages=20)
+    wanted = float(price)
+    point = next((p for p in points if float(p["attributes"].get("customerPrice") or -1) == wanted), None)
+    if not point:
+        near = sorted(points, key=lambda p: abs(float(p["attributes"].get("customerPrice") or 0) - wanted))[:4]
+        sys.exit(f"{price} is not a price point in {territory}; the nearest: "
+                 + ", ".join(p["attributes"].get("customerPrice") for p in near))
+    now = next((row["price"] for row in manual if row["territory"] == territory and not row["end"]), None) \
+        or iap_automatic_price(item["id"], territory)
+    follows = "every storefront without a manual price follows" if territory == base else "this storefront only"
+    table("One-time purchase price" + ("" if apply else " (dry run: --apply sets it)"),
+          ["Product", "Territory", "Now", "New", "Reach"],
+          [[product, territory, now, point["attributes"].get("customerPrice"), follows]])
+    if not apply:
+        return
+    entries = [(row["point"], None) for row in kept] + [(point["id"], None)]
+    included = [{
+        "type": "inAppPurchasePrices", "id": f"${{price{index}}}",
+        "attributes": {"startDate": start},
+        "relationships": {
+            "inAppPurchaseV2": {"data": {"type": "inAppPurchases", "id": item["id"]}},
+            "inAppPurchasePricePoint": {"data": {"type": "inAppPurchasePricePoints", "id": point_id}},
+        },
+    } for index, (point_id, start) in enumerate(entries)]
+    send("POST", "/v1/inAppPurchasePriceSchedules", {
+        "data": {"type": "inAppPurchasePriceSchedules", "relationships": {
+            "inAppPurchase": {"data": {"type": "inAppPurchases", "id": item["id"]}},
+            "baseTerritory": {"data": {"type": "territories", "id": base}},
+            "manualPrices": {"data": [{"type": "inAppPurchasePrices", "id": entry["id"]} for entry in included]},
+        }},
+        "included": included,
+    })
+    print(f"{product} in {territory}: {price} from now ({follows}).")
+
+
+def current_subscription_prices(subscription_id: str) -> dict[str, float]:
+    """What new subscribers pay today in every territory: the latest price already in force."""
+    prices, included = get_all(f"/v1/subscriptions/{subscription_id}/prices", {
+        "include": "subscriptionPricePoint,territory", "limit": 200}, pages=20)
+    points = {item["id"]: item["attributes"].get("customerPrice") for item in included
+              if item["type"] == "subscriptionPricePoints"}
+    today, latest = date.today().isoformat(), {}
+    for price in prices:
+        relationships = price.get("relationships") or {}
+        territory = ((relationships.get("territory") or {}).get("data") or {}).get("id")
+        point = ((relationships.get("subscriptionPricePoint") or {}).get("data") or {}).get("id")
+        start = price["attributes"].get("startDate") or ""
+        if not territory or points.get(point) is None or start > today:
+            continue
+        if territory not in latest or start >= latest[territory][0]:
+            latest[territory] = (start, float(points[point]))
+    return {territory: value for territory, (_, value) in latest.items()}
+
+
+def push_iap_multiple(app: str, product: str, of: str, times: float, apply: bool) -> None:
+    """A one-time purchase priced in every storefront at `times` the subscription `of` there:
+    the storefront's price point nearest to that. Every storefront gets a manual price, so none
+    follows the base territory any more. Takes effect at once. Without `apply` only shows it."""
+    item = in_app_purchase(app, product)
+    subscription = next((s for s in subscriptions(app) if s["attributes"].get("productId") == of), None)
+    if not subscription:
+        sys.exit(f"No subscription {of}.")
+    base, manual = iap_schedule(item["id"])
+    if any(row["start"] and row["start"] > date.today().isoformat() for row in manual):
+        sys.exit("A price change is already scheduled: set these prices in App Store Connect.")
+    annual = current_subscription_prices(subscription["id"])
+    rows, entries = [], []
+    for territory in sorted(annual):
+        points, _ = get_all(f"/v2/inAppPurchases/{item['id']}/pricePoints",
+                            {"filter[territory]": territory, "limit": 200}, pages=20)
+        priced = [p for p in points if p["attributes"].get("customerPrice") is not None]
+        if not priced:
+            rows.append([territory, annual[territory], "", "no price points: skipped"])
+            continue
+        target = annual[territory] * times
+        point = min(priced, key=lambda p: abs(float(p["attributes"]["customerPrice"]) - target))
+        chosen = float(point["attributes"]["customerPrice"])
+        rows.append([territory, annual[territory], point["attributes"]["customerPrice"], f"{chosen / annual[territory]:.2f}"])
+        entries.append(point["id"])
+    table(f"{product} at {times:g} x {of}" + ("" if apply else " (dry run: --apply sets it)"),
+          ["Territory", of, product, "Ratio"], rows)
+    if base not in annual:
+        sys.exit(f"The base territory {base} has no {of} price.")
+    if not apply:
+        return
+    included = [{
+        "type": "inAppPurchasePrices", "id": f"${{price{index}}}",
+        "attributes": {"startDate": None},
+        "relationships": {
+            "inAppPurchaseV2": {"data": {"type": "inAppPurchases", "id": item["id"]}},
+            "inAppPurchasePricePoint": {"data": {"type": "inAppPurchasePricePoints", "id": point_id}},
+        },
+    } for index, point_id in enumerate(entries)]
+    send("POST", "/v1/inAppPurchasePriceSchedules", {
+        "data": {"type": "inAppPurchasePriceSchedules", "relationships": {
+            "inAppPurchase": {"data": {"type": "inAppPurchases", "id": item["id"]}},
+            "baseTerritory": {"data": {"type": "territories", "id": base}},
+            "manualPrices": {"data": [{"type": "inAppPurchasePrices", "id": entry["id"]} for entry in included]},
+        }},
+        "included": included,
+    })
+    print(f"{product}: {len(entries)} storefronts set to {times:g} x {of}, from now.")
+
+
+# The high-price tier ------------------------------------------------------------------------------
+
+# Storefronts priced from the US price instead of Kazakhstan's (docs/promotion-plan.md §2): the
+# US, Canada, the UK, the euro area, Switzerland, Scandinavia, Australia, Japan, Korea,
+# Singapore and the UAE.
+HIGH_TIER = ["USA", "CAN", "GBR", "AUT", "BEL", "BGR", "CYP", "DEU", "ESP", "EST", "FIN", "FRA", "GRC", "HRV",
+             "IRL", "ITA", "LTU", "LUX", "LVA", "MLT", "NLD", "PRT", "SVK", "SVN", "CHE", "DNK", "NOR", "SWE",
+             "AUS", "JPN", "KOR", "SGP", "ARE"]
+
+
+def equalized(points_path: str, kind: str, price: str, territories: list[str]) -> dict[str, dict]:
+    """Apple's equivalents of a US price in other storefronts: {territory: {id, price, currency}}.
+    `points_path` lists the product's price points, `kind` is their resource type."""
+    points, _ = get_all(points_path, {"filter[territory]": "USA", "limit": 200}, pages=20)
+    usa = next((p for p in points if float(p["attributes"].get("customerPrice") or -1) == float(price)), None)
+    if not usa:
+        near = sorted(points, key=lambda p: abs(float(p["attributes"].get("customerPrice") or 0) - float(price)))[:4]
+        sys.exit(f"{price} is not a US price point; the nearest: "
+                 + ", ".join(p["attributes"].get("customerPrice") for p in near))
+    found = {"USA": {"id": usa["id"], "price": usa["attributes"]["customerPrice"], "currency": "USD"}}
+    others, included = get_all(f"/v1/{kind}/{usa['id']}/equalizations", {"include": "territory", "limit": 200}, pages=5)
+    currencies = {item["id"]: item["attributes"].get("currency", "") for item in included if item["type"] == "territories"}
+    for point in others:
+        territory = (((point.get("relationships") or {}).get("territory") or {}).get("data") or {}).get("id")
+        if territory:
+            found[territory] = {"id": point["id"], "price": point["attributes"].get("customerPrice"),
+                                "currency": currencies.get(territory, "")}
+    return {territory: found[territory] for territory in territories if territory in found}
+
+
+def push_tier(app: str, monthly: str, annual: str, lifetime: str, territories: list[str], apply: bool) -> None:
+    """Tenra Pro in the high-price storefronts at Apple's local equivalents of three US prices.
+    Subscriptions change in two days and current subscribers keep what they pay; the one-time
+    purchase changes at once, and its other manual prices are sent again as they stand.
+    Without `apply` only shows the table."""
+    found = {s["attributes"].get("productId"): s for s in subscriptions(app)}
+    plans = [("tenra.pro.monthly", monthly), ("tenra.pro.annual", annual)]
+    for product, _ in plans:
+        if product not in found:
+            sys.exit(f"No subscription {product}.")
+    item = in_app_purchase(app, "tenra.pro.lifetime")
+    base, manual = iap_schedule(item["id"])
+    today = date.today().isoformat()
+    if any((row["start"] and row["start"] > today) or row["end"] for row in manual):
+        sys.exit("The one-time purchase has a scheduled price change: set its prices in App Store Connect.")
+
+    new = {product: equalized(f"/v1/subscriptions/{found[product]['id']}/pricePoints", "subscriptionPricePoints",
+                              price, territories) for product, price in plans}
+    new_lifetime = equalized(f"/v2/inAppPurchases/{item['id']}/pricePoints", "inAppPurchasePricePoints",
+                             lifetime, territories)
+    now = {product: current_subscription_prices(found[product]["id"]) for product, _ in plans}
+    by_hand = {row["territory"]: row["price"] for row in manual}
+
+    rows = []
+    for territory in territories:
+        cells = [territory, (new["tenra.pro.annual"].get(territory) or {}).get("currency", "")]
+        for product, _ in plans:
+            target = new[product].get(territory)
+            cells.append(f"{now[product].get(territory, '?'):g} → {target['price'] if target else 'no equivalent'}")
+        target = new_lifetime.get(territory)
+        was = by_hand.get(territory) or iap_automatic_price(item["id"], territory)
+        cells.append(f"{was} → {target['price'] if target else 'no equivalent'}")
+        rows.append(cells)
+    table("Tenra Pro in the high-price storefronts" + ("" if apply else " (dry run: --apply sets it)"),
+          ["Territory", "Currency", "Monthly", "Annual", "Lifetime"], rows)
+    if not apply:
+        return
+
+    # Two days out: late in the UTC day App Store Connect already refuses tomorrow
+    # ("must be on or after" the day after).
+    start = (date.today() + timedelta(days=2)).isoformat()
+    for product, _ in plans:
+        for territory, point in new[product].items():
+            if now[product].get(territory) == float(point["price"]):
+                continue
+            send("POST", "/v1/subscriptionPrices", {"data": {
+                "type": "subscriptionPrices",
+                "attributes": {"preserveCurrentPrice": True, "startDate": start},
+                "relationships": {
+                    "subscription": {"data": {"type": "subscriptions", "id": found[product]["id"]}},
+                    "subscriptionPricePoint": {"data": {"type": "subscriptionPricePoints", "id": point["id"]}},
+                    "territory": {"data": {"type": "territories", "id": territory}},
+                },
+            }})
+        print(f"{product}: {len(new[product])} storefronts from {start}; current subscribers keep their price.")
+
+    kept = [row["point"] for row in manual if row["territory"] not in new_lifetime]
+    entries = kept + [point["id"] for point in new_lifetime.values()]
+    included = [{
+        "type": "inAppPurchasePrices", "id": f"${{price{index}}}",
+        "attributes": {"startDate": None},
+        "relationships": {
+            "inAppPurchaseV2": {"data": {"type": "inAppPurchases", "id": item["id"]}},
+            "inAppPurchasePricePoint": {"data": {"type": "inAppPurchasePricePoints", "id": point_id}},
+        },
+    } for index, point_id in enumerate(entries)]
+    send("POST", "/v1/inAppPurchasePriceSchedules", {
+        "data": {"type": "inAppPurchasePriceSchedules", "relationships": {
+            "inAppPurchase": {"data": {"type": "inAppPurchases", "id": item["id"]}},
+            "baseTerritory": {"data": {"type": "territories", "id": base}},
+            "manualPrices": {"data": [{"type": "inAppPurchasePrices", "id": entry["id"]} for entry in included]},
+        }},
+        "included": included,
+    })
+    print(f"tenra.pro.lifetime: {len(new_lifetime)} storefronts from now.")
+
+
 # Review notes and the draft submission ------------------------------------------------------------
 
 def review_notes_text(path: Path = NOTES) -> str:
@@ -1635,7 +1933,22 @@ def main(argv: list[str]) -> None:
         product, price = option("--product"), option("--price")
         if not product or not price:
             sys.exit("push-price needs --product ID --price N [--territory KAZ] [--start YYYY-MM-DD]")
-        push_price(app, product, option("--territory", "KAZ"), price, option("--start"), "--apply" in args)
+        territory = option("--territory", "KAZ")
+        if any(s["attributes"].get("productId") == product for s in subscriptions(app)):
+            push_price(app, product, territory, price, option("--start"), "--apply" in args)
+        elif option("--start"):
+            sys.exit("A one-time purchase's price changes at once: no --start.")
+        else:
+            push_iap_price(app, product, territory, price, "--apply" in args)
+    elif command == "push-iap-multiple":
+        push_iap_multiple(app, option("--product", "tenra.pro.lifetime"), option("--of", "tenra.pro.annual"),
+                          float(option("--times", 3)), "--apply" in args)
+    elif command == "push-tier":
+        chosen = option("--territory")
+        push_tier(app, option("--monthly", "4.99"), option("--annual", "24.99"), option("--lifetime", "69.99"),
+                  chosen.split(",") if chosen else HIGH_TIER, "--apply" in args)
+    elif command == "iap-prices":
+        iap_prices(app, option("--product", "tenra.pro.lifetime"), option("--territory", "KAZ,USA").split(","))
     elif command == "review-notes":
         version = option("--version")
         if not version:

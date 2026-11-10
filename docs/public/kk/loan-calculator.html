@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Несие және бөліп төлеу калькуляторы, мерзімінен бұрын өтеу</title>
+    <meta name="description" content="Несиенің ай сайынғы төлемін, артық төлемін және кестесін онлайн есептеңіз. Аннуитеттік және сараланған төлемдер, 0% бөліп төлеу, мерзімінен бұрын өтеу.">
+    <link rel="canonical" href="https://dkicekeeper.github.io/Tenra/kk/loan-calculator.html">
+    <link rel="alternate" hreflang="ru" href="https://dkicekeeper.github.io/Tenra/ru/loan-calculator.html">
+    <link rel="alternate" hreflang="kk" href="https://dkicekeeper.github.io/Tenra/kk/loan-calculator.html">
+    <link rel="alternate" hreflang="en" href="https://dkicekeeper.github.io/Tenra/en/loan-calculator.html">
+    <link rel="alternate" hreflang="x-default" href="https://dkicekeeper.github.io/Tenra/en/loan-calculator.html">
+    <meta name="apple-itunes-app" content="app-id=6761530361">
+    <meta property="og:title" content="Несие және бөліп төлеу калькуляторы, мерзімінен бұрын өтеу">
+    <meta property="og:description" content="Несиенің ай сайынғы төлемін, артық төлемін және кестесін онлайн есептеңіз. Аннуитеттік және сараланған төлемдер, 0% бөліп төлеу, мерзімінен бұрын өтеу.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://dkicekeeper.github.io/Tenra/kk/loan-calculator.html">
+    <link rel="stylesheet" href="../assets/site.css">
+    <script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Қай төлем түрі тиімді?", "acceptedAnswer": {"@type": "Answer", "text": "Сараланған төлемде артық төлем аз, бірақ алғашқы төлемдер жоғары. Аннуитеттік төлем бюджетке ыңғайлы: сома ай сайын бірдей."}}, {"@type": "Question", "name": "Несиенің артық төлемін қалай азайтуға болады?", "acceptedAnswer": {"@type": "Answer", "text": "Мерзімінен бұрын төлеңіз, әсіресе қарыз қалдығы ең көп алғашқы айларда. Қосымша төлемді «Ай сайын мерзімінен бұрын қосымша» өрісіне енгізіңіз, калькулятор үнемді көрсетеді."}}, {"@type": "Question", "name": "Калькулятор комиссия мен сақтандыруды ескере ме?", "acceptedAnswer": {"@type": "Answer", "text": "Жоқ. Калькулятор тек мөлшерлеме бойынша сыйақыны есептейді. Комиссия мен сақтандыруды артық төлемге бөлек қосыңыз."}}]}</script>
+</head>
+<body>
+<div class="wrap">
+    <header class="top">
+        <a class="brand" href="../kk/">Tenra</a>
+        <nav class="langs" aria-label="Тіл"><a href="../ru/loan-calculator.html" lang="ru">Русский</a><a href="../kk/loan-calculator.html" lang="kk" aria-current="true">Қазақша</a><a href="../en/loan-calculator.html" lang="en">English</a></nav>
+    </header>
+    <main>
+        <h1>Несие және бөліп төлеу калькуляторы</h1>
+        <p class="lead">Ай сайынғы төлем, артық төлем және кесте. Бөліп төлеу үшін мөлшерлемені 0 қойыңыз.</p>
+        <form data-calc="loan" novalidate>
+            <section class="card">
+                <div class="fields">
+                    <div class="field">
+                        <label for="amount">Сомасы</label>
+                        <input id="amount" name="amount" inputmode="decimal" autocomplete="off" value="1 000 000">
+                    </div>
+                    <div class="field">
+                        <label for="currency">Валюта</label>
+                        <select id="currency" name="currency"><option selected>₸</option><option>₽</option><option>$</option><option>€</option></select>
+                    </div>
+                    <div class="field">
+                        <label for="rate">Жылдық мөлшерлеме, %</label>
+                        <input id="rate" name="rate" inputmode="decimal" autocomplete="off" value="20">
+                    </div>
+                    <div class="field">
+                        <label for="term">Мерзімі</label>
+                        <input id="term" name="term" inputmode="numeric" autocomplete="off" value="24">
+                    </div>
+                    <div class="field wide">
+                        <label for="unit">Мерзім өлшемі</label>
+                        <select id="unit" name="unit"><option value="months" selected>ай</option><option value="years">жыл</option></select>
+                    </div>
+                    <div class="field wide">
+                        <label for="type">Төлем түрі</label>
+                        <select id="type" name="type"><option value="annuity" selected>Аннуитеттік (тең төлемдер)</option><option value="diff">Сараланған (азаятын төлемдер)</option></select>
+                    </div>
+                    <div class="field wide">
+                        <label for="extra">Ай сайын мерзімінен бұрын қосымша</label>
+                        <input id="extra" name="extra" inputmode="decimal" autocomplete="off" value="0">
+                    </div>
+                </div>
+            </section>
+            <section class="card" aria-live="polite">
+                <div class="results">
+                    <div class="result main wide">
+                        <div class="label"><span id="label-payment">Ай сайынғы төлем</span><span id="label-first" hidden>Бірінші төлем</span></div>
+                        <div class="value" id="out-payment"></div>
+                    </div>
+                    <div class="result wide" id="row-last" hidden><div class="label">Соңғы төлем</div><div class="value" id="out-last"></div></div>
+                    <div class="result"><div class="label">Артық төлем</div><div class="value" id="out-interest"></div></div>
+                    <div class="result"><div class="label">Барлық төлем</div><div class="value" id="out-total"></div></div>
+                    <div class="result wide"><div class="label">Мерзімі, ай</div><div class="value" id="out-months"></div></div>
+                    <div class="result wide" id="row-saved" hidden>
+                        <div class="label">Мерзімінен бұрын төлеу үнемдейді</div>
+                        <div class="value good"><span id="out-saved"></span>, мерзім қысқарады: <span id="out-saved-months"></span> ай</div>
+                    </div>
+                </div>
+            </section>
+            <h2>Төлем кестесі</h2>
+            <div class="table-scroll">
+                <table>
+                    <thead><tr><th>Ай</th><th>Төлем</th><th>Сыйақы</th><th>Негізгі борыш</th><th>Қалдық</th></tr></thead>
+                    <tbody id="schedule"></tbody>
+                </table>
+            </div>
+            <p><button type="button" class="button plain" id="show-all" hidden>Бүкіл кестені көрсету</button></p>
+        </form>
+        <p class="note">Есеп шамамен алынған: банк сыйақыны күн сайын есептейді және басқаша дөңгелектеуі мүмкін. Нақты шарттарды шарттан қараңыз.</p>
+        <section class="card cta">
+            <h2>Барлық несие мен бөліп төлеу Tenra-да</h2>
+            <p>Tenra-да несие ашыңыз: қолданба кестені жүргізеді, төленген айларды белгілейді, қарыз қалдығын көрсетеді және мерзімінен бұрын төлем қанша үнемдейтінін есептейді.</p>
+            <p><a class="button" href="https://apps.apple.com/app/id6761530361?ppid=23fa027e-1341-4344-8d3e-e5567b713dda">App Store-дан жүктеу</a></p>
+            <p class="note">iPhone, iOS 26 және одан жаңа. Деректер құрылғыда сақталады, банкке кіру қажет емес.</p>
+        </section>
+        <h2>Несие төлемі қалай есептеледі</h2>
+        <p>Аннуитеттік несиеде төлем ай сайын бірдей. Басында оның көп бөлігі сыйақы, мерзім соңына қарай негізгі борыш көбейеді.</p>
+        <p class="formula">Төлем = Сома × Мөлшерлеме / 12 / (1 − (1 + Мөлшерлеме / 12) ^ −Айлар)</p>
+        <p>Сараланған несиеде негізгі борыш тең үлестермен өтеледі, ал сыйақы қалдыққа есептеледі. Алғашқы төлемдер жоғары, бірақ жалпы артық төлем аз.</p>
+        <h2>Бөліп төлеу</h2>
+        <p>Пайызсыз бөліп төлеу оңай есептеледі: сома ай санына бөлінеді. Мөлшерлемені 0 қойыңыз, калькулятор төлемді көрсетеді.</p>
+        <h2>Мерзімінен бұрын өтеу</h2>
+        <p>Кестеден артық төлегеннің бәрі негізгі борышты азайтады. Келесі айдың сыйақысы азырақ қалдықтан есептеледі, сондықтан шағын қосымша төлемнің өзі мерзім мен артық төлемді қысқартады.</p>
+        <h2>Жиі қойылатын сұрақтар</h2>
+        <h3>Қай төлем түрі тиімді?</h3>
+        <p>Сараланған төлемде артық төлем аз, бірақ алғашқы төлемдер жоғары. Аннуитеттік төлем бюджетке ыңғайлы: сома ай сайын бірдей.</p>
+        <h3>Несиенің артық төлемін қалай азайтуға болады?</h3>
+        <p>Мерзімінен бұрын төлеңіз, әсіресе қарыз қалдығы ең көп алғашқы айларда. Қосымша төлемді «Ай сайын мерзімінен бұрын қосымша» өрісіне енгізіңіз, калькулятор үнемді көрсетеді.</p>
+        <h3>Калькулятор комиссия мен сақтандыруды ескере ме?</h3>
+        <p>Жоқ. Калькулятор тек мөлшерлеме бойынша сыйақыны есептейді. Комиссия мен сақтандыруды артық төлемге бөлек қосыңыз.</p>
+        <h2>Басқа калькуляторлар</h2>
+        <div class="links"><a href="../kk/deposit-calculator.html"><strong>Депозит калькуляторы</strong><span>Капиталдандыру мен толықтыруы бар салым табысы</span></a></div>
+    </main>
+    <footer>
+        <a href="../kk/">Tenra</a> <a href="../support.html">Қолдау</a> <a href="../privacy-policy.html">Құпиялылық</a> <a href="../terms-of-use.html">Шарттар</a>
+    </footer>
+</div>
+<script src="../assets/calc.js"></script>
+</body>
+</html>

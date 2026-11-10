@@ -12,7 +12,7 @@
 | Создать версию в App Store, вставить What's New из `docs/release-notes.md` (заметки версии, которая готовится) во все локали, выбрать сборку после обработки (на ревью не отправляет) | GitHub Actions, `.github/workflows/asc.yml` | Actions → App Store Connect → `prepare-version`, поля `version` и `build`; или Claude через GitHub API |
 | Специальные страницы продукта и тест страницы (скриншоты, промо-текст, ключевые слова) из `appstore/product-pages.json` | GitHub Actions, `.github/workflows/asc.yml` | `push-custom-pages`, `push-experiment` (поле `args`: `--submit`, `--start`) |
 | Выдать или забрать Tenra Pro (`pro`) одному покупателю, посмотреть, что о нём знает RevenueCat | GitHub Actions, `.github/workflows/revenuecat.yml`, секрет `REVENUECAT_SECRET_KEY` | Actions → RevenueCat: `grant` / `revoke` / `status`, `app_user_id`, `days`; id в логе скрыт |
-| Пробные, подписки, MRR, выручка из графиков RevenueCat (для §6 [promotion-plan.md](promotion-plan.md)) | локальная сессия Claude Code с плагином RevenueCat (MCP), проект `proj3c40e272` | Claude вызывает `get-chart-data` сам; установки берутся из ASC, New Customers и Active Users до 23.10 раздуты прогонами симулятора в CI |
+| Пробные, подписки, MRR, выручка из графиков RevenueCat (для §6 [promotion-plan.md](promotion-plan.md)) | локальная сессия Claude Code с плагином RevenueCat (MCP), проект `proj3c40e272`; из облака: окружение «Tenra» (с 10.11.2026), в нём ключ API v2 для `mcp.revenuecat.ai` подставляет прокси, вызовы JSON-RPC через `curl` (`initialize`, взять заголовок `Mcp-Session-Id`, дальше `tools/call`; пейволлы: `get-paywall`, `render-paywall-screenshot`, `edit-paywall-ai`, `publish-paywall`). В окружении Default ключа нет | Claude вызывает `get-chart-data` сам; установки берутся из ASC, New Customers и Active Users до 23.10 раздуты прогонами симулятора в CI |
 | Исходные скриншоты стора на симуляторе без Mac | GitHub Actions, `.github/workflows/screenshots.yml` (macOS) | Actions → Screenshots: языки, `frames` = `all`, `cpp`, `ten`, `autocapture` или `home`; `art` рисует Тэна для шапки |
 | Продажи и выручка по дням, плюс всё из строки выше | облачная сессия Claude, `appstore/asc.py` | Claude запускает сам, если ключ есть в переменных окружения |
 | Apple Ads: кампании и группы, отчёт по ним, поисковые запросы, ключи, минус-слова; добавить минус-слова и ключи | GitHub Actions, `.github/workflows/ads.yml` (`appstore/ads.py`); с деньгами из облачной сессии Claude | Actions → Apple Ads (выбрать команду); пишет только с `--apply` в `args`. Ждёт API-пользователя и секретов ([Apple Ads API](#apple-ads-api)) |
@@ -143,6 +143,18 @@ python3 appstore/asc.py push-price --product tenra.pro.annual --price 7990 [--te
                                                 # новая цена (точка цены страны) с даты, не раньше завтра
                                                 # (сегодня API не принимает; по умолчанию завтра); текущие
                                                 # подписчики платят прежнюю (preserveCurrentPrice)
+                                                # разовая покупка (lifetime): сразу, без --start
+python3 appstore/asc.py push-iap-multiple [--product tenra.pro.lifetime] [--of tenra.pro.annual] [--times 3] [--apply]
+                                                # разовая покупка в каждой витрине = N цен подписки
+                                                # там же (ближайшая точка цены), сразу; после этого
+                                                # все витрины с ценой вручную, за базовой не идут
+python3 appstore/asc.py push-tier [--monthly 4.99] [--annual 24.99] [--lifetime 69.99] [--territory USA,DEU] [--apply]
+                                                # три продукта в дорогих витринах (HIGH_TIER в asc.py)
+                                                # по местным эквивалентам цен США; подписки через 2 дня,
+                                                # lifetime сразу
+python3 appstore/asc.py iap-prices [--product tenra.pro.lifetime] [--territory KAZ,USA]
+                                                # разовая покупка: базовая страна, цены, заданные
+                                                # вручную, и цена витрин, которые идут за базовой
 python3 appstore/asc.py review-notes --version 1.7 [--apply]   # заметки для App Review из release-notes.md
 python3 appstore/asc.py prepare-review --version 1.7 [--build N] [--submit]
                                                 # черновик отправки на проверку: версия и спецстраницы;
@@ -158,6 +170,12 @@ python3 appstore/asc.py availability            # в скольких стран
 python3 appstore/asc.py crashes [--build 12]    # отчёты о сбоях из TestFlight, без данных тестировщика
 python3 appstore/asc.py sales [--days 7]        # продажи и выручка по дням; только не в Actions
 ```
+
+**Цены: правила** ([promotion-plan.md](promotion-plan.md) §2 «Цены по витринам», там же таблица
+текущих цен). Перед любым утверждением о цене и перед любой сменой: прочитать её здесь
+(`subscription-prices`, `iap-prices`). Смена всегда в два шага: прогон без `--apply`, его таблица
+основателю, после согласия `--apply`. У подписки цена меняется в одной стране; у lifetime базовая
+страна KZ, и смена там меняет цену во всех витринах сразу.
 
 Нужны `pyjwt` и `cryptography` (в облачном контейнере уже есть; в Actions ставятся в venv).
 Vendor number для отчётов о продажах — 94171379 (`ASC_VENDOR_NUMBER`, если изменится).

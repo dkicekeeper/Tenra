@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Депозит калькуляторы: капиталдандыру және толықтыру</title>
+    <meta name="description" content="Депозит табысын онлайн есептеңіз: мөлшерлеме, мерзім, ай сайын толықтыру, капиталдандыру және тиімді мөлшерлеме. Тегін, тіркелусіз.">
+    <link rel="canonical" href="https://dkicekeeper.github.io/Tenra/kk/deposit-calculator.html">
+    <link rel="alternate" hreflang="ru" href="https://dkicekeeper.github.io/Tenra/ru/deposit-calculator.html">
+    <link rel="alternate" hreflang="kk" href="https://dkicekeeper.github.io/Tenra/kk/deposit-calculator.html">
+    <link rel="alternate" hreflang="en" href="https://dkicekeeper.github.io/Tenra/en/deposit-calculator.html">
+    <link rel="alternate" hreflang="x-default" href="https://dkicekeeper.github.io/Tenra/en/deposit-calculator.html">
+    <meta name="apple-itunes-app" content="app-id=6761530361">
+    <meta property="og:title" content="Депозит калькуляторы: капиталдандыру және толықтыру">
+    <meta property="og:description" content="Депозит табысын онлайн есептеңіз: мөлшерлеме, мерзім, ай сайын толықтыру, капиталдандыру және тиімді мөлшерлеме. Тегін, тіркелусіз.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://dkicekeeper.github.io/Tenra/kk/deposit-calculator.html">
+    <link rel="stylesheet" href="../assets/site.css">
+    <script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Толықтыру табысқа қалай әсер етеді?", "acceptedAnswer": {"@type": "Answer", "text": "Әр толықтыру келесі айдан бастап сыйақы әкеледі. Ақша неғұрлым ерте салынса, соғұрлым ұзақ жұмыс істейді."}}, {"@type": "Question", "name": "Қайсысы тиімді: капиталдандырумен бе, онсыз ба?", "acceptedAnswer": {"@type": "Answer", "text": "Мөлшерлеме бірдей болса, капиталдандыруы бар салым көбірек әкеледі, өйткені сыйақы бұрын алынған сыйақыға да есептеледі. Салымдарды тиімді мөлшерлеме бойынша салыстырыңыз."}}, {"@type": "Question", "name": "Банктегі сома неге сәл өзгеше?", "acceptedAnswer": {"@type": "Answer", "text": "Банк сыйақыны күн сайын есептейді, ал айлардағы күн саны әртүрлі. Калькулятор ай бойынша есептейді, сондықтан айырма әдетте пайыздың оннан бірнеше бөлігінен аспайды."}}]}</script>
+</head>
+<body>
+<div class="wrap">
+    <header class="top">
+        <a class="brand" href="../kk/">Tenra</a>
+        <nav class="langs" aria-label="Тіл"><a href="../ru/deposit-calculator.html" lang="ru">Русский</a><a href="../kk/deposit-calculator.html" lang="kk" aria-current="true">Қазақша</a><a href="../en/deposit-calculator.html" lang="en">English</a></nav>
+    </header>
+    <main>
+        <h1>Депозит калькуляторы</h1>
+        <p class="lead">Капиталдандыруы және ай сайын толықтыруы бар салым қанша табыс әкеледі.</p>
+        <form data-calc="deposit" novalidate>
+            <section class="card">
+                <div class="fields">
+                    <div class="field">
+                        <label for="amount">Сомасы</label>
+                        <input id="amount" name="amount" inputmode="decimal" autocomplete="off" value="1 000 000">
+                    </div>
+                    <div class="field">
+                        <label for="currency">Валюта</label>
+                        <select id="currency" name="currency"><option selected>₸</option><option>₽</option><option>$</option><option>€</option></select>
+                    </div>
+                    <div class="field">
+                        <label for="rate">Жылдық мөлшерлеме, %</label>
+                        <input id="rate" name="rate" inputmode="decimal" autocomplete="off" value="15">
+                    </div>
+                    <div class="field">
+                        <label for="term">Мерзімі</label>
+                        <input id="term" name="term" inputmode="numeric" autocomplete="off" value="12">
+                    </div>
+                    <div class="field wide">
+                        <label for="unit">Мерзім өлшемі</label>
+                        <select id="unit" name="unit"><option value="months" selected>ай</option><option value="years">жыл</option></select>
+                    </div>
+                    <div class="field wide">
+                        <label for="topup">Ай сайын толықтыру</label>
+                        <input id="topup" name="topup" inputmode="decimal" autocomplete="off" value="0">
+                    </div>
+                    <label class="check field wide"><input type="checkbox" name="capitalize" checked> Сыйақыны ай сайын капиталдандыру</label>
+                </div>
+            </section>
+            <section class="card" aria-live="polite">
+                <div class="results">
+                    <div class="result main wide"><div class="label">Мерзім соңындағы сома</div><div class="value" id="out-total"></div></div>
+                    <div class="result"><div class="label">Есептелген сыйақы</div><div class="value good" id="out-interest"></div></div>
+                    <div class="result"><div class="label">Тиімді мөлшерлеме</div><div class="value" id="out-effective"></div></div>
+                    <div class="result wide"><div class="label">Өз қаражатыңыз</div><div class="value" id="out-contributed"></div></div>
+                </div>
+            </section>
+        </form>
+        <p class="note">Есеп шамамен алынған: банк сыйақыны күн сайын есептейді және басқаша дөңгелектеуі мүмкін. Нақты шарттарды шарттан қараңыз.</p>
+        <section class="card cta">
+            <h2>Tenra сыйақыны сіз үшін есептейді</h2>
+            <p>Tenra-да депозит ашыңыз: сыйақы күн сайын есептеледі, капиталдандыру өзі саналады, ал толықтыру мен алу сыйақы базасын өзгертеді.</p>
+            <p><a class="button" href="https://apps.apple.com/app/id6761530361?ppid=23fa027e-1341-4344-8d3e-e5567b713dda">App Store-дан жүктеу</a></p>
+            <p class="note">iPhone, iOS 26 және одан жаңа. Деректер құрылғыда сақталады, банкке кіру қажет емес.</p>
+        </section>
+        <h2>Депозит табысы қалай есептеледі</h2>
+        <p>Банк ай сайын қалдыққа сыйақы есептейді: қалдық жылдық мөлшерлемеге көбейтіліп, 12-ге бөлінеді. Капиталдандыру кезінде сыйақы салымға қосылады, келесі айда табыс үлкенірек сомадан есептеледі.</p>
+        <p class="formula">Сома = Салым × (1 + Мөлшерлеме / 12) ^ Айлар</p>
+        <p>Капиталдандырусыз сыйақы бөлек төленеді, салым өспейді: әр айдың табысы бірдей.</p>
+        <h2>Тиімді мөлшерлеме деген не</h2>
+        <p>Тиімді мөлшерлеме капиталдандыруды ескергендегі бір жылдағы нақты табысты көрсетеді. Қазақстанда банктер оны ЖТСМ деп көрсетеді. Мысалы, ай сайын капиталдандырылатын 15% мөлшерлеме жылына 16,08% береді.</p>
+        <h2>Жиі қойылатын сұрақтар</h2>
+        <h3>Толықтыру табысқа қалай әсер етеді?</h3>
+        <p>Әр толықтыру келесі айдан бастап сыйақы әкеледі. Ақша неғұрлым ерте салынса, соғұрлым ұзақ жұмыс істейді.</p>
+        <h3>Қайсысы тиімді: капиталдандырумен бе, онсыз ба?</h3>
+        <p>Мөлшерлеме бірдей болса, капиталдандыруы бар салым көбірек әкеледі, өйткені сыйақы бұрын алынған сыйақыға да есептеледі. Салымдарды тиімді мөлшерлеме бойынша салыстырыңыз.</p>
+        <h3>Банктегі сома неге сәл өзгеше?</h3>
+        <p>Банк сыйақыны күн сайын есептейді, ал айлардағы күн саны әртүрлі. Калькулятор ай бойынша есептейді, сондықтан айырма әдетте пайыздың оннан бірнеше бөлігінен аспайды.</p>
+        <h2>Басқа калькуляторлар</h2>
+        <div class="links"><a href="../kk/loan-calculator.html"><strong>Несие калькуляторы</strong><span>Төлем, артық төлем, кесте және мерзімінен бұрын өтеу</span></a></div>
+    </main>
+    <footer>
+        <a href="../kk/">Tenra</a> <a href="../support.html">Қолдау</a> <a href="../privacy-policy.html">Құпиялылық</a> <a href="../terms-of-use.html">Шарттар</a>
+    </footer>
+</div>
+<script src="../assets/calc.js"></script>
+</body>
+</html>

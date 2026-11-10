@@ -33,8 +33,8 @@ The API user's credentials come from the environment (docs/asc.md, «Apple Ads A
     ADS_PRIVATE_KEY                          the text of private-key.pem (BEGIN/END lines
                                              included; one line, "\\n" escapes or base64 of the
                                              file are accepted too);
-    ADS_ACCOUNT_ID                           optional: the ad account, else the first one the
-                                             API user reaches.
+    ADS_ACCOUNT_ID                           optional: the ad account (or --account), else the
+                                             first one whose campaigns the API user can read.
 In GitHub Actions they come from the repository secrets (.github/workflows/ads.yml).
 
 This is the Apple Ads Platform API (api.ads.apple.com/v1), not the Campaign Management API v5,
@@ -316,15 +316,38 @@ def account() -> dict:
             sys.exit("The API user reaches no ad account: check its role in Apple Ads → Account Settings → User Management.")
         listing = ", ".join(f"{(a.get('adAccount') or {}).get('name', '')} ({(a.get('adAccount') or {}).get('id')})" for a in acls)
         wanted = os.environ.get("ADS_ACCOUNT_ID", "").strip()
-        found = [a for a in acls if str((a.get("adAccount") or {}).get("id")) == wanted] if wanted else acls[:1]
-        if not found:
-            sys.exit(f"ADS_ACCOUNT_ID {wanted} is not among the API user's ad accounts: {listing}.")
-        ad = found[0]["adAccount"]
-        _account.update(id=ad["id"], name=ad.get("name", ""), roles=", ".join(found[0].get("roles") or []) or "?")
-        if len(acls) > 1 and not wanted:
-            print(f"The API user reaches {len(acls)} ad accounts: {listing}. Using the first; ADS_ACCOUNT_ID picks another.")
+        if wanted:
+            found = [a for a in acls if str((a.get("adAccount") or {}).get("id")) == wanted]
+            if not found:
+                sys.exit(f"ADS_ACCOUNT_ID {wanted} is not among the API user's ad accounts: {listing}.")
+            use_account(found[0])
+        elif len(acls) == 1:
+            use_account(acls[0])
+        else:
+            # An API user often reaches an Apple Ads Basic account too, whose campaigns the API does
+            # not serve (403): the first account that lets it read campaigns is the one meant.
+            for acl in acls:
+                use_account(acl)
+                try:
+                    call("POST", "/campaigns/query", {"pagination": {"offset": 0, "pageSize": 1}}, retry=True)
+                    break
+                except ApiError as error:
+                    if error.code != 403:
+                        raise
+                    _account.clear()
+            if not _account:
+                sys.exit(f"None of the API user's ad accounts lets it read campaigns ({listing}): give it an API "
+                         "role on the account with the campaigns (Account Settings → User Management).")
+            print(f"The API user reaches {len(acls)} ad accounts: {listing}. Using {_account['name']} "
+                  f"({_account['id']}), the first whose campaigns it can read; ADS_ACCOUNT_ID or --account picks another.")
         say(f"Ad account: {_account['name']} ({_account['id']}), role: {_account['roles']}")
     return _account
+
+
+def use_account(acl: dict) -> None:
+    ad = acl.get("adAccount") or {}
+    _account.clear()
+    _account.update(id=ad["id"], name=ad.get("name", ""), roles=", ".join(acl.get("roles") or []) or "?")
 
 
 def account_currency() -> str:
@@ -685,6 +708,7 @@ def main(argv: list[str]) -> None:
     common.add_argument("--campaign", help="campaign: id, name or a unique part of the name")
     common.add_argument("--adgroup", help="ad group of that campaign: id, name or a unique part")
     common.add_argument("--days", type=days_arg, default=7, help="days of data, up to yesterday (default 7)")
+    common.add_argument("--account", help="ad account id (else ADS_ACCOUNT_ID, else the first whose campaigns the API user can read)")
     writes = argparse.ArgumentParser(add_help=False)
     writes.add_argument("--add", help='comma-separated terms, e.g. "учет расходов, бюджет"')
     writes.add_argument("--match", choices=("EXACT", "BROAD"), default="EXACT", type=str.upper)
@@ -706,6 +730,8 @@ def main(argv: list[str]) -> None:
         if name == "add-keywords":
             sub.add_argument("--bid", help="keyword bid in the ad account's currency (default: the ad group's)")
     args = parser.parse_args(argv)
+    if args.account:
+        os.environ["ADS_ACCOUNT_ID"] = args.account.strip()
     handlers[args.command][0](args)
 
 

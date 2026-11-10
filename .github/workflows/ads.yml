@@ -29,6 +29,10 @@ on:
         description: "Ad group of that campaign (add-keywords; optional for search-terms, keywords, negatives)"
         required: false
         default: ""
+      account:
+        description: "Ad account id (empty: ADS_ACCOUNT_ID, else the first whose campaigns the API user can read)"
+        required: false
+        default: ""
       days:
         description: "Days of data up to yesterday (report, search-terms, keywords)"
         required: false
@@ -62,6 +66,7 @@ jobs:
           COMMAND: ${{ inputs.command }}
           CAMPAIGN: ${{ inputs.campaign }}
           ADGROUP: ${{ inputs.adgroup }}
+          ACCOUNT: ${{ inputs.account }}
           DAYS: ${{ inputs.days }}
           ARGS: ${{ inputs.args }}
         run: |
@@ -74,6 +79,7 @@ jobs:
           args=("$COMMAND")
           if [ -n "$CAMPAIGN" ]; then args+=(--campaign "$CAMPAIGN"); fi
           if [ -n "$ADGROUP" ]; then args+=(--adgroup "$ADGROUP"); fi
+          if [ -n "$ACCOUNT" ]; then args+=(--account "$ACCOUNT"); fi
           if [ -n "$DAYS" ]; then args+=(--days "$DAYS"); fi
           if [ -n "$ARGS" ]; then
             # Split like a shell, so quotes keep "учет расходов, бюджет" in one argument, without running anything.

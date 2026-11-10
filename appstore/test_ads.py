@@ -75,8 +75,11 @@ def filters_of(body: dict) -> dict:
 class FakeAds:
     """Answers like api.ads.apple.com and appleid.apple.com, and records every request."""
 
-    def __init__(self, throttle_first_query: bool = False, fail: dict | None = None):
+    def __init__(self, throttle_first_query: bool = False, fail: dict | None = None,
+                 accounts: list | None = None, forbidden: tuple = ()):
         self.requests = []
+        self.accounts = accounts or [{"adAccount": {"id": ACCOUNT, "name": "Tenra", "orgId": 1}, "roles": ["API Account Manager"]}]
+        self.forbidden = forbidden  # ad accounts whose campaigns answer 403 (Apple Ads Basic)
         self.throttle = throttle_first_query
         self.fail = fail or {}  # path → (status, body)
         self.negatives = [
@@ -99,6 +102,10 @@ class FakeAds:
             headers["Retry-After"] = "0"
             raise urllib.error.HTTPError(req.full_url, 429, "Too Many Requests", headers,
                                          io.BytesIO(b'{"error": {"code": "rate_limit_exceeded"}}'))
+        context = record["headers"].get("x-ap-context", "")
+        if path == "/campaigns/query" and any(context == f"adAccountId={a}" for a in self.forbidden):
+            raise urllib.error.HTTPError(req.full_url, 403, "Forbidden", Message(),
+                                         io.BytesIO(b'{"error": {"errors": [{"messageCode": "FORBIDDEN"}]}}'))
         if path in self.fail:
             status, payload = self.fail[path]
             raise urllib.error.HTTPError(req.full_url, status, "Error", Message(), io.BytesIO(json.dumps(payload).encode()))
@@ -112,7 +119,7 @@ class FakeAds:
         where = filters_of(body)
         campaign_id = int((where.get("campaignId") or (None, 0))[1] or 0)
         if (method, path) == ("GET", "/acls"):
-            return {"result": {"acls": [{"adAccount": {"id": ACCOUNT, "name": "Tenra", "orgId": 1}, "roles": ["API Account Manager"]}]}}
+            return {"result": {"acls": self.accounts}}
         if path == "/campaigns/query":
             return {"result": [campaign(CATEGORY, "KZ-Category", "4.00"), campaign(DISCOVERY, "KZ-Discovery", "2.50")],
                     "pagination": {"totalCount": 2, "offset": 0, "pageSize": 1000}}
@@ -156,6 +163,8 @@ class AdsTest(unittest.TestCase):
 
     def run_ads(self, argv: list[str], actions: bool = False, env: dict | None = None, fake: FakeAds | None = None):
         fake = fake or FakeAds()
+        ads._token.update(value="", exp=0)  # each run is a fresh process
+        ads._account.clear()
         environment = dict(ENV if env is None else env)
         if actions:
             environment["GITHUB_ACTIONS"] = "true"
@@ -289,6 +298,24 @@ class AdsTest(unittest.TestCase):
         hidden, _ = self.run_ads(["campaigns"], actions=True)
         self.assertNotIn("USD", hidden)
         self.assertIn("| MANUAL_CPT | hidden |", hidden)
+
+    def test_account_choice(self):
+        basic = {"adAccount": {"id": 1001, "name": "Search Ads Basic"}, "roles": ["API Campaign Manager"]}
+        tenra = {"adAccount": {"id": ACCOUNT, "name": "Tenra"}, "roles": ["API Account Manager"]}
+        # Several accounts and none chosen: Basic's campaigns answer 403, the next one is used.
+        text, fake = self.run_ads(["campaigns"], fake=FakeAds(accounts=[basic, tenra], forbidden=(1001,)))
+        self.assertIn(f"Using Tenra ({ACCOUNT}), the first whose campaigns it can read", text)
+        calls = self.api_calls(fake)
+        self.assertEqual(calls[1]["headers"]["x-ap-context"], "adAccountId=1001")
+        self.assertTrue(all(c["headers"]["x-ap-context"] == f"adAccountId={ACCOUNT}" for c in calls[2:]))
+        # --account picks one, and a 403 there is reported, not skipped.
+        with self.assertRaises(ads.ApiError) as stop:
+            self.run_ads(["campaigns", "--account", "1001"], fake=FakeAds(accounts=[basic, tenra], forbidden=(1001,)))
+        self.assertEqual(stop.exception.code, 403)
+        # None readable: a clear stop.
+        with self.assertRaises(SystemExit) as stop:
+            self.run_ads(["campaigns"], fake=FakeAds(accounts=[basic, tenra], forbidden=(1001, ACCOUNT)))
+        self.assertIn("None of the API user's ad accounts lets it read campaigns", str(stop.exception))
 
     def test_report(self):
         text, fake = self.run_ads(["report", "--days", "7"])

@@ -60,14 +60,6 @@ class VoiceInputService: NSObject {
     /// Every start takes a token; every stop bumps it.
     @ObservationIgnored private var startToken: UInt64 = 0
 
-    // MARK: - Voice Activity Detection (always-on)
-
-    /// Silence detector for automatic stop
-    @ObservationIgnored private var silenceDetector: SilenceDetector?
-
-    /// True once any text has been recognized — silence detection only starts after this
-    @ObservationIgnored private var hasRecognizedText: Bool = false
-
     // MARK: - Dynamic Context (iOS 17+)
 
     /// Weak references to ViewModels for contextual strings
@@ -170,10 +162,6 @@ class VoiceInputService: NSObject {
         finalTranscription = ""
         errorMessage = nil
         isStopping = false
-        hasRecognizedText = false
-
-        // Always-on silence detector
-        silenceDetector = SilenceDetector()
         
         // Claim a token for this start; a stop arriving during the awaits below bumps it.
         startToken &+= 1
@@ -257,7 +245,6 @@ class VoiceInputService: NSObject {
                     // Never overwrite with empty — preserve last recognized text
                     if !transcription.isEmpty {
                         self.transcribedText = transcription
-                        self.hasRecognizedText = true
                     }
 
                     if result.isFinal {
@@ -339,10 +326,6 @@ class VoiceInputService: NSObject {
 
         // Деактивируем аудио сессию — тоже вне главного актора.
         await VoiceAudioSession.deactivate()
-
-        // Reset silence detector
-        silenceDetector?.reset()
-        silenceDetector = nil
 
         // Сбрасываем флаг остановки
         isStopping = false

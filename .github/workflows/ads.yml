@@ -30,9 +30,9 @@ on:
         required: false
         default: ""
       account:
-        description: "Ad account id (empty: ADS_ACCOUNT_ID, else the first whose campaigns the API user can read)"
+        description: "Ad account id: Daulet Kydrali (22970790) holds the campaigns; empty: ADS_ACCOUNT_ID, else the first whose campaigns the API user can read"
         required: false
-        default: ""
+        default: "22970790"
       days:
         description: "Days of data up to yesterday (report, search-terms, keywords)"
         required: false

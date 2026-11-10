@@ -1,18 +1,18 @@
 # Tenra 1.8.2: What's New (ASC, 13 storefront locales and en-GB)
 
-Version 1.8.2 in the project since 2026-11-06, TestFlight build 75 (from the cloud, 2026-11-09,
-with the action audit and "Ask Ten" opening a new chat, merged into `main` the same day, #138;
-build 74 of 2026-11-07 is without them). **Status 2026-11-09:** version 1.8.2 created in App Store
-Connect (released after approval), What's New in all 14 localizations, build 75 selected, a draft
-review submission with the version (no custom page versions in preparation) waiting for the
-founder's "Submit for Review"; the device checks below not done. 1.8.1 is in the store since 2026-11-06/07 (its notes and checklist:
-[archive/release-notes-1.8.1.md](archive/release-notes-1.8.1.md)), so 1.8.2 can go to review once the
-device check below passes. `prepare-version` (Actions → App Store Connect, [asc.md](asc.md)) pastes
-each block into App Store Connect; en-GB (search in Kazakhstan) carries ru's text. No em dashes
-(user rule).
+Version 1.8.2 in the project since 2026-11-06. **Status 2026-11-10:** waiting for review since
+07:20 UTC, sent with
+TestFlight build 76 (from the cloud, `main` at 78a16c2: build 75 plus Ten's field, sentence case
+and the unused keys, all strings; CI green on bf137c8, the same app code), released after
+approval. What's New in all 14 localizations as written on 2026-11-09. The founder asked for the
+release on 2026-11-10; the device checks below are not marked done here. Builds 73 to 75
+(2026-11-06 to 09) are earlier states of the same version. 1.8.1 is in the store since
+2026-11-06/07 (its notes and checklist: [archive/release-notes-1.8.1.md](archive/release-notes-1.8.1.md)).
+`prepare-version` (Actions → App Store Connect, [asc.md](asc.md)) pastes each block into App Store
+Connect; en-GB (search in Kazakhstan) carries ru's text. No em dashes (user rule).
 
 Names of screens as the app shows them (`walletReview.title`, `assistant.ask`). The trial offer
-at the end of onboarding and the soft paywall are not announced.
+at the end of onboarding, the soft paywall and Ten's field (build 76) are not announced.
 
 ## en-US
 
@@ -174,10 +174,22 @@ Tenra의 새로운 기능:
   is now in the menus of a deposit ("How much interest has it earned?"), a loan ("When will I pay
   it off?", "How much would paying it off early save?") and a subscription ("What does it cost a
   year?", "Has it gone up?"). From build 75.
+- Ten's field reads "Log an expense or ask…" and the greeting gives an example in each language
+  ("кофе 1500", "coffee 5"): a newcomer on a phone met "Ask about your money…" with nothing saying a
+  typed expense is recorded. From build 76.
+- en, tr and pt-BR labels in sentence case everywhere (time filters, Settings, CSV import, Insights
+  cards, loan and deposit fields), not only actions. From build 76.
+- 273 localization keys nothing reads removed (no change on screen; none is read by a literal or
+  a key built at run time). From build 76.
 
 ## Submission checklist
 
-1. **CI green**, then a TestFlight build (done: build 75, CI green on b79f44b, merged as 40b3f32).
+1. **CI green**, then a TestFlight build (done: build 76 from 78a16c2, 2026-11-10; CI green on
+   bf137c8, the same app code. Build 75: CI green on b79f44b, merged as 40b3f32).
+
+Items 2 to 4 are not marked done: the founder sent the release on 2026-11-10. Worth doing on the
+store build once it is out.
+
 2. **Device check of 1.8.2** (build 74): a fresh install as a free person reaches the paywall
    after the last onboarding step, ✕ lands on Home with the account and categories saved; after a
    purchase or restore too. Analytics' paywall appears after the 3rd entry, not on the day of the
@@ -197,16 +209,9 @@ Tenra의 새로운 기능:
    "Спросить Ten" on an account, a deposit, a loan and a subscription opens a new empty chat with
    two questions over the field; the previous chat is in the home's list; a question tapped goes
    (the consent sheet first on a fresh install).
-5. **What's New** in this file and `prepare-version --version 1.8.2 --build 75` (done 2026-11-09).
+5. **What's New** in this file and `prepare-version --version 1.8.2 --build 75` (done 2026-11-09),
+   then `--build 76` (done 2026-11-10: build 76 selected, What's New sent again unchanged).
 6. **One submission**: `asc.py prepare-review --version 1.8.2` (draft made 2026-11-09, 1 item);
-   the founder sends it: App Store Connect → Tenra → Distribution → the draft submission →
-   "Submit for Review".
-
-## The next version (in `main` after build 75, not in 1.8.2)
-
-- Ten's field reads "Log an expense or ask…" and the greeting gives an example in each language
-  ("кофе 1500", "coffee 5"): a newcomer on a phone met "Ask about your money…" with nothing saying a
-  typed expense is recorded.
-- en, tr and pt-BR labels in sentence case everywhere (time filters, Settings, CSV import, Insights
-  cards, loan and deposit fields), not only actions.
-- 273 localization keys nothing reads removed (no change on screen).
+   sent on 2026-11-10 at 07:20 UTC at the founder's request with `prepare-review --version 1.8.2
+   --build 76 --submit` (Actions → App Store Connect); `review-submissions` shows it
+   WAITING_FOR_REVIEW.

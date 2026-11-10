@@ -112,6 +112,8 @@ final class GoalStore {
 
     /// Adds a goal at the end of the list.
     func add(_ goal: SavingsGoal) async {
+        // A change made before the first read finishes would be overwritten by it.
+        await load()
         var goal = goal
         goal.order = (goals.map(\.order).max() ?? -1) + 1
         goals.append(goal)
@@ -120,12 +122,14 @@ final class GoalStore {
 
     /// Writes the goal over its earlier copy.
     func update(_ goal: SavingsGoal) async {
+        await load()
         guard let index = goals.firstIndex(where: { $0.id == goal.id }) else { return }
         goals[index] = goal
         await writes.run { [repository] in await repository?.save(goal) }
     }
 
     func delete(id: String) async {
+        await load()
         goals.removeAll { $0.id == id }
         await writes.run { [repository] in await repository?.delete(id: id) }
     }
@@ -134,6 +138,7 @@ final class GoalStore {
     /// (DesignKit 8.0.0's list): they take that list's places among all the goals, in memory at
     /// once (the list moves while the finger does), then kept.
     func reorder(_ orderedIds: [String]) async {
+        await load()
         await save(placing(orderedIds))
     }
 
@@ -167,6 +172,7 @@ final class GoalStore {
     }
 
     func addContribution(_ contribution: GoalContribution, to goalId: String) async {
+        await load()
         guard var goal = goal(id: goalId) else { return }
         goal.contributions.append(contribution)
         goal.contributions.sort { $0.date < $1.date }
@@ -174,6 +180,7 @@ final class GoalStore {
     }
 
     func deleteContribution(id: String, from goalId: String) async {
+        await load()
         guard var goal = goal(id: goalId) else { return }
         goal.contributions.removeAll { $0.id == id }
         await update(goal)
@@ -183,6 +190,7 @@ final class GoalStore {
     /// it was reached just now (the screen celebrates once).
     @discardableResult
     func refreshReached(goalId: String, now: Date = Date()) async -> Bool {
+        await load()
         guard var goal = goal(id: goalId) else { return false }
         let isReached = status(for: goal, today: now).isReached
         switch (isReached, goal.reachedAt) {
@@ -203,6 +211,7 @@ final class GoalStore {
     /// keeps its date without its screen being open. Runs when the goals are read and when the
     /// app comes to the front; the goal's screen still celebrates one reached while it is open.
     func refreshAllReached(now: Date = Date()) async {
+        await load()
         for id in goals.map(\.id) {
             await refreshReached(goalId: id, now: now)
         }

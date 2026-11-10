@@ -16,15 +16,6 @@ with the commit of every fix, are in
   Plan §3.8 keeps the file in the app's container with the thread; only worth it if people come
   back to an unsaved attachment.
 
-- **One merchant under several keys.** Every merchant store keys on
-  `CategorySuggestionService.normalizedMerchant`, which keeps processor prefixes, legal forms and
-  a trailing city: Wallet's "MAGNUM CASH&CARRY 123" and a statement's "ТОО MAGNUM CASH&CARRY
-  ALMATY KZ" are two merchants (name, logo choice, merchant screen totals, subscription runs).
-  Keying on the clean name (`MerchantName.displayName`, normalized) needs a migration of the stored
-  keys in `MerchantCategoryMemory`, `MerchantLogoStore`, `WalletCaptureStore` and the candidate
-  dismissals. Decide whether it is worth it. Since 2026-10-30 the person can merge such keys by
-  hand on the merchant's screen ("Combine points", `MerchantGroupStore`), which covers the
-  merchant screen and the top merchant, not the logo, the name or the category memory per key.
 - **Legacy converted deposits (DP1).** A read-only DEBUG diagnostic lists deposits converted
   before the `conversionTimestamp` fix (Settings → Experiments, `LegacyDepositDiagnostics`).
   Recovery waits for real data.
@@ -67,21 +58,13 @@ Found by the release audit of 2026-10-15 (details and file references:
 - **Assistant performance:** full-resolution photo decode on the main thread; each streamed piece
   re-parses the reply and re-renders the chat; allowance Keychain calls on the main thread;
   FastPath runs the voice parser on questions; `forecast_balance` series O(days × occurrences).
-- **Races:** fetch-or-insert without a uniqueness constraint (threads, goals, debts, facts); a
-  load overwriting an `add`; FastPath vs `reset()`; a chat deleted during its save comes back.
 - **Server before traffic** (sizing in [domains/assistant.md](domains/assistant.md) §11; the
   daily cap of 1 200 calls is live since 2026-10-29, Pro's part of the day, the refund of a
   failed call, the RevenueCat timeout and the stop when the app leaves mid-answer are live since
   2026-11-10): Durable Objects counters, a Rate Limiting binding, a
   `protocol` range and an app build header.
 
-Found by the docs audit of 2026-10-12, not verified on device yet:
-- **Duplicate Siri submissions:** repeating a phrase can log the same transaction twice; the
-  confirmation snippet is the only guard. Decide whether intents deduplicate. (Wallet payments and
-  bank notifications have their own guard: [domains/intents.md](domains/intents.md) §6.1.)
-- **Health score budget adherence** uses the calendar month, not each budget's own period;
-  **`largeTransaction`** counts `.expense` only, so loan payments never qualify. Design calls.
-- **`SilenceDetector`** is created in `VoiceInputService` but never fed audio.
+Found by the docs audit of 2026-10-12:
 - **`AccountEntity.isDeposit`** is written but never read: drop it at the next schema bump.
 
 Left by the action audit of 2026-11-08 (the rules: [design-system.md](design-system.md) §4 Actions,
@@ -109,6 +92,16 @@ Left by the action audit of 2026-11-08 (the rules: [design-system.md](design-sys
 
 ## Decisions (stand until the owner changes them)
 
+- **Merchant keys stay as they are** (2026-11-10): every store keys on
+  `CategorySuggestionService.normalizedMerchant`, so Wallet's "MAGNUM CASH&CARRY 123" and a
+  statement's "ТОО MAGNUM CASH&CARRY ALMATY KZ" can be two merchants; no migration to the clean
+  name. "Combine points" on the merchant's screen (`MerchantGroupStore`) merges them by hand for
+  the screen and the top merchant.
+- **Siri intents do not deduplicate** (2026-11-10): repeating a phrase can log the same
+  transaction twice, and the confirmation snippet is the guard. Wallet payments and bank
+  notifications keep their own ([domains/intents.md](domains/intents.md) §6.1).
+- **The health score's budget adherence stays on the calendar month** and `largeTransaction`
+  counts expenses only, so loan payments never qualify (2026-11-10).
 - **The repositories stay public** (2026-11-10): Tenra, Dalada, DesignKit, tenra-assets,
   lottie-files, paws-world. Private ones would cost: macOS minutes count 10x against a private
   repository's quota (Tenra alone ran about 13,200 macOS minutes in the 30 days to 2026-11-10,

@@ -143,6 +143,26 @@ final class CoreDataStack: @unchecked Sendable {
 }
 ```
 
+### Write order on a fresh context per call
+
+A store that opens a fresh background context for every call (the container can be replaced on a
+restore, so it keeps none) runs two calls side by side unless it orders them. Then two writes can
+finish in either order (the older copy last on disk), a fetch-or-insert can insert a row twice
+(the entities have no uniqueness constraints), and a delete can finish before an earlier save
+and the row comes back. Order every call:
+
+- **Main-actor stores** (`GoalStore`, `DebtStore`, `AssetStore`): `SerialTaskQueue` around the
+  repository calls.
+- **Nonisolated stores** (`AgentThreadStore`, `AgentFactStore`): `OrderedWork.enqueue`, called
+  from `@MainActor` public methods. `enqueue` is synchronous on purpose: a nonisolated `async`
+  entry point first hops to the global executor, so two calls made one after another on the main
+  actor can reach the queue in either order (CI caught exactly this, 2026-11-10).
+- **A store that reads once and keeps the result in memory**: every change awaits the first read
+  (`await load()`), else that read lands after the change and overwrites it.
+
+Pin it with a test that asks for two calls in a row from tasks made on the main actor (a save,
+then a delete of the same row) and checks what is left (`AgentThreadStoreTests`).
+
 CoreData pitfalls (FRC, predicates, batch deletes, `viewContext.perform`) are in [domains/transactions.md §CoreData gotchas](domains/transactions.md#coredata-gotchas); save ordering (tickets, `BalancePersistQueue`) and whole-table saves during a load are in [architecture.md §Background saves](architecture.md#background-saves-coredatasavecoordinator) and [§The load window](architecture.md#the-load-window).
 
 ## Main Actor Isolation Patterns

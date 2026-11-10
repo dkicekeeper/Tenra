@@ -34,7 +34,8 @@ purchase price and day. The sale is the `.sale` valuation, and `soldAt` its day.
   one by one: one that does not decode (a later version's) is skipped, not the list.
 - Writes go one after another in the order asked for (`SerialTaskQueue` in `AssetStore`, as in
   `GoalStore` and `DebtStore`), each on a fresh background context: two quick edits never land in
-  the other order.
+  the other order. Every change waits for the first read (`await load()`), which would otherwise
+  overwrite it.
 - Backups carry the assets (the store file is copied whole), "delete all data" destroys them with
   the store, and `AssetStore` reloads on `CoreDataStack.storeDidResetNotification`.
 - `AssetStore` (`ViewModels/`, `@Observable`) is the single source of truth, owned by

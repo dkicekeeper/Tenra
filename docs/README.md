@@ -35,7 +35,7 @@ this file is the full index.
 | File | Purpose |
 |------|---------|
 | [architecture.md](architecture.md) | MVVM + Coordinator, TransactionStore, BalanceCoordinator, Repository, CoreData v19, backups |
-| [concurrency.md](concurrency.md) | Swift 6 concurrency, CoreData threading, `@Observable` rules, DataSnapshot |
+| [concurrency.md](concurrency.md) | Swift 6 concurrency, CoreData threading and write order on fresh contexts, `@Observable` rules, DataSnapshot |
 | [design-system.md](design-system.md) | Tenra on DesignKit: the bridge and hooks, what stays in Tenra, screen patterns, amount formatting, dates and category styling, effects in use (tokens and components: DesignKit's own docs) |
 | [gotchas.md](gotchas.md) | SwiftUI layout, performance hot paths, previews, ignorable console warnings |
 | [localization.md](localization.md) | Locales, rules for changing a string, permission prompts, adding a language |

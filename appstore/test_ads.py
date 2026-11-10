@@ -75,8 +75,11 @@ def filters_of(body: dict) -> dict:
 class FakeAds:
     """Answers like api.ads.apple.com and appleid.apple.com, and records every request."""
 
-    def __init__(self, throttle_first_query: bool = False, fail: dict | None = None):
+    def __init__(self, throttle_first_query: bool = False, fail: dict | None = None,
+                 accounts: list | None = None, forbidden: tuple = ()):
         self.requests = []
+        self.accounts = accounts or [{"adAccount": {"id": ACCOUNT, "name": "Tenra", "orgId": 1}, "roles": ["API Account Manager"]}]
+        self.forbidden = forbidden  # ad accounts whose campaigns answer 403 (Apple Ads Basic)
         self.throttle = throttle_first_query
         self.fail = fail or {}  # path → (status, body)
         self.negatives = [
@@ -99,6 +102,14 @@ class FakeAds:
             headers["Retry-After"] = "0"
             raise urllib.error.HTTPError(req.full_url, 429, "Too Many Requests", headers,
                                          io.BytesIO(b'{"error": {"code": "rate_limit_exceeded"}}'))
+        context = record["headers"].get("x-ap-context", "")
+        if path == "/campaigns/query" and any(context == f"adAccountId={a}" for a in self.forbidden):
+            raise urllib.error.HTTPError(req.full_url, 403, "Forbidden", Message(),
+                                         io.BytesIO(b'{"error": {"errors": [{"messageCode": "FORBIDDEN"}]}}'))
+        if path == "/reports/apps/campaigns/query" and "campaignId" in filters_of(record["body"] or {}):
+            # As Apple does: the campaigns report takes no campaignId filter.
+            raise urllib.error.HTTPError(req.full_url, 400, "Bad Request", Message(), io.BytesIO(
+                b'{"error": {"errors": [{"messageCode": "INVALID_FIELD_ATTRIBUTE", "message": "Filters contain unsupported fields campaignId"}]}}'))
         if path in self.fail:
             status, payload = self.fail[path]
             raise urllib.error.HTTPError(req.full_url, status, "Error", Message(), io.BytesIO(json.dumps(payload).encode()))
@@ -112,7 +123,7 @@ class FakeAds:
         where = filters_of(body)
         campaign_id = int((where.get("campaignId") or (None, 0))[1] or 0)
         if (method, path) == ("GET", "/acls"):
-            return {"result": {"acls": [{"adAccount": {"id": ACCOUNT, "name": "Tenra", "orgId": 1}, "roles": ["API Account Manager"]}]}}
+            return {"result": {"acls": self.accounts}}
         if path == "/campaigns/query":
             return {"result": [campaign(CATEGORY, "KZ-Category", "4.00"), campaign(DISCOVERY, "KZ-Discovery", "2.50")],
                     "pagination": {"totalCount": 2, "offset": 0, "pageSize": 1000}}
@@ -121,8 +132,15 @@ class FakeAds:
                       group(SEARCH_MATCH, DISCOVERY, "Search Match", "0.20", True), group(BROAD, DISCOVERY, "Broad", "0.20")]
             return {"result": [g for g in groups if not campaign_id or g["campaignId"] == campaign_id]}
         if path == "/reports/apps/campaigns/query":
-            return {"result": {"rows": [row({"id": CATEGORY, "name": "KZ-Category"}, 1000, 50, 10, 2, "12.50"),
-                                        row({"id": DISCOVERY, "name": "KZ-Discovery"}, 400, 20, 0, 1, "4.00")]}}
+            rows = [row({"id": CATEGORY, "name": "KZ-Category"}, 1000, 50, 10, 2, "12.50"),
+                    row({"id": DISCOVERY, "name": "KZ-Discovery"}, 400, 20, 0, 1, "4.00")]
+            if (body.get("timeRange") or {}).get("granularity") == "DAILY":
+                rows[0]["granularMetrics"] = [
+                    {"date": "2026-11-01", "impressions": 600, "taps": 30, "tapInstalls": 6, "localSpend": usd("4.00")},
+                    {"date": "2026-11-02", "impressions": 400, "taps": 20, "tapInstalls": 4, "localSpend": usd("2.00")}]
+                rows[1]["granularMetrics"] = [
+                    {"date": "2026-11-02", "impressions": 400, "taps": 20, "tapInstalls": 0, "localSpend": usd("0.50")}]
+            return {"result": {"rows": rows}}
         if path == "/reports/apps/adgroups/query":
             rows = {CATEGORY: [row({"id": GENERAL, "campaignId": CATEGORY}, 900, 45, 10, 2, "11.00")],
                     DISCOVERY: [row({"id": SEARCH_MATCH, "campaignId": DISCOVERY}, 400, 20, 0, 1, "4.00")]}
@@ -156,6 +174,8 @@ class AdsTest(unittest.TestCase):
 
     def run_ads(self, argv: list[str], actions: bool = False, env: dict | None = None, fake: FakeAds | None = None):
         fake = fake or FakeAds()
+        ads._token.update(value="", exp=0)  # each run is a fresh process
+        ads._account.clear()
         environment = dict(ENV if env is None else env)
         if actions:
             environment["GITHUB_ACTIONS"] = "true"
@@ -187,15 +207,31 @@ class AdsTest(unittest.TestCase):
             "base64 of the file": base64.b64encode(SEC1.encode()).decode(),
             "pkcs8": PKCS8,
             "with EC PARAMETERS": "-----BEGIN EC PARAMETERS-----\nBggqhkjOPQMBBw==\n-----END EC PARAMETERS-----\n" + SEC1,
+            "without BEGIN and END": "\n".join(lines[1:-1]),
+            "pkcs8 without BEGIN and END": "\n".join(PKCS8.strip().split("\n")[1:-1]),
         }
         for name, value in forms.items():
             with self.subTest(name), mock.patch.dict(os.environ, {"ADS_PRIVATE_KEY": value}):
                 pem = ads.private_key()
                 loaded = serialization.load_pem_private_key(pem.encode(), password=None)
                 self.assertEqual(loaded.private_numbers(), KEY.private_numbers())
-        with mock.patch.dict(os.environ, {"ADS_PRIVATE_KEY": "not a key"}), self.assertRaises(SystemExit) as stop:
-            ads.private_key()
-        self.assertIn("paste all of private-key.pem", str(stop.exception))
+        public = KEY.public_key().public_bytes(serialization.Encoding.PEM,
+                                               serialization.PublicFormat.SubjectPublicKeyInfo).decode()
+        wrong = {
+            "not a key": "no BEGIN line",
+            public: "holds the public key",
+            "clientId SEARCHADS.1\nteamId SEARCHADS.2\nkeyId 3": "clientId/teamId/keyId block",
+            "-----BEGIN EC PARAMETERS-----\nBggqhkjOPQMBBw==\n-----END EC PARAMETERS-----\n": "only EC PARAMETERS",
+            SEC1.split("-----END")[0]: "cut short",
+        }
+        for value, says in wrong.items():
+            with self.subTest(says), mock.patch.dict(os.environ, {"ADS_PRIVATE_KEY": value}), \
+                    self.assertRaises(SystemExit) as stop:
+                ads.private_key()
+            self.assertIn(says, str(stop.exception))
+            self.assertIn("paste all of private-key.pem", str(stop.exception))
+            body = "".join(SEC1.strip().split("\n")[1:-1])
+            self.assertNotIn(body[:20], str(stop.exception))
 
     def test_client_secret_claims(self):
         now = 1_800_000_000
@@ -274,6 +310,44 @@ class AdsTest(unittest.TestCase):
         self.assertNotIn("USD", hidden)
         self.assertIn("| MANUAL_CPT | hidden |", hidden)
 
+    def test_account_choice(self):
+        basic = {"adAccount": {"id": 1001, "name": "Search Ads Basic"}, "roles": ["API Campaign Manager"]}
+        tenra = {"adAccount": {"id": ACCOUNT, "name": "Tenra"}, "roles": ["API Account Manager"]}
+        # Several accounts and none chosen: Basic's campaigns answer 403, the next one is used.
+        text, fake = self.run_ads(["campaigns"], fake=FakeAds(accounts=[basic, tenra], forbidden=(1001,)))
+        self.assertIn(f"Using Tenra ({ACCOUNT}), the first whose campaigns it can read", text)
+        calls = self.api_calls(fake)
+        self.assertEqual(calls[1]["headers"]["x-ap-context"], "adAccountId=1001")
+        self.assertTrue(all(c["headers"]["x-ap-context"] == f"adAccountId={ACCOUNT}" for c in calls[2:]))
+        # --account picks one, and a 403 there is reported, not skipped.
+        with self.assertRaises(ads.ApiError) as stop:
+            self.run_ads(["campaigns", "--account", "1001"], fake=FakeAds(accounts=[basic, tenra], forbidden=(1001,)))
+        self.assertEqual(stop.exception.code, 403)
+        # None readable: a clear stop.
+        with self.assertRaises(SystemExit) as stop:
+            self.run_ads(["campaigns"], fake=FakeAds(accounts=[basic, tenra], forbidden=(1001, ACCOUNT)))
+        self.assertIn("None of the API user's ad accounts lets it read campaigns", str(stop.exception))
+
+    def test_daily(self):
+        text, fake = self.run_ads(["daily", "--days", "7"])
+        report = [c for c in self.api_calls(fake) if c["url"].endswith("/reports/apps/campaigns/query")][0]
+        self.assertEqual(report["body"]["timeRange"]["granularity"], "DAILY")
+        # Budgets 4.00 + 2.50 = 6.50: 11-01 spent 4.00 (62%), 11-02 2.50 (38%).
+        self.assertIn("| 2026-11-01 | 600 | 30 | 5.0% | 6 | 20.0% | 6 | 0 | 62% | 4.00 USD |", text)
+        self.assertIn("| 2026-11-02 | 800 | 40 | 5.0% | 4 | 10.0% | 4 | 0 | 38% | 2.50 USD |", text)
+        hidden, _ = self.run_ads(["daily", "--days", "7"], actions=True)
+        self.assertIn("| 62% | hidden |", hidden)
+        self.assertNotIn("USD", hidden)
+        with self.assertRaises(SystemExit):
+            self.run_ads(["daily", "--days", "120"])
+        # One campaign: the campaigns report takes no campaignId filter (Apple answers 400), the
+        # rows and the budget are that campaign's.
+        one, fake = self.run_ads(["daily", "--campaign", "category", "--days", "7"])
+        report = [c for c in self.api_calls(fake) if c["url"].endswith("/reports/apps/campaigns/query")][0]
+        self.assertEqual(filters_of(report["body"]), {})
+        self.assertIn("KZ-Category (inst.)", one)
+        self.assertNotIn("KZ-Discovery (inst.)", one)
+
     def test_report(self):
         text, fake = self.run_ads(["report", "--days", "7"])
         paths = [c["url"][len(ads.API):] for c in self.api_calls(fake)]
@@ -301,7 +375,8 @@ class AdsTest(unittest.TestCase):
         self.assertIn("| калькулятор | Search Match | Search Match | 300 | 12 | 0 | 0 | 2.40 USD | taps, no installs |", text)
         self.assertIn("(low volume, withheld by Apple)", text)
         self.assertIn("candidates for negative keywords: калькулятор", text)
-        self.assertIn("candidates for exact keywords: учет денег", text)
+        self.assertIn("candidates for exact keywords if they look for an app like Tenra", text)
+        self.assertIn("is a negative): учет денег", text)
 
     def test_keywords(self):
         text, _ = self.run_ads(["keywords", "--campaign", "KZ-Category"])

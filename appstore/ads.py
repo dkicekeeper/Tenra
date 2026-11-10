@@ -8,6 +8,9 @@
                                     per campaign and ad group: impressions, taps, TTR, installs
                                     (tap-through and view-through), conversion; spend, average
                                     CPT and CPI
+    python3 appstore/ads.py daily [--days 30] [--campaign C]
+                                    per day: impressions, taps, installs (and per campaign), the
+                                    share of the daily budgets spent
     python3 appstore/ads.py search-terms --campaign C [--adgroup G] [--days 7]
                                     what people searched, most taps first; flags terms with taps
                                     and no installs, lists the candidates for negative and exact
@@ -33,8 +36,8 @@ The API user's credentials come from the environment (docs/asc.md, «Apple Ads A
     ADS_PRIVATE_KEY                          the text of private-key.pem (BEGIN/END lines
                                              included; one line, "\\n" escapes or base64 of the
                                              file are accepted too);
-    ADS_ACCOUNT_ID                           optional: the ad account, else the first one the
-                                             API user reaches.
+    ADS_ACCOUNT_ID                           optional: the ad account (or --account), else the
+                                             first one whose campaigns the API user can read.
 In GitHub Actions they come from the repository secrets (.github/workflows/ads.yml).
 
 This is the Apple Ads Platform API (api.ads.apple.com/v1), not the Campaign Management API v5,
@@ -101,11 +104,48 @@ def private_key() -> str:
             pass
     # `openssl ecparam -genkey` without -noout writes an EC PARAMETERS block first: only the key counts.
     match = re.search(r"-----BEGIN ((?:EC )?PRIVATE KEY)-----(.*?)-----END \1-----", raw, re.S)
-    if not match:
-        sys.exit("ADS_PRIVATE_KEY is not a private key: paste all of private-key.pem, BEGIN and END lines included.")
-    label, body = match.group(1), "".join(match.group(2).split())
+    if match:
+        label, body = match.group(1), "".join(match.group(2).split())
+    else:
+        label, body = bare_key(raw)
+    if not body:
+        sys.exit(key_problem(raw))
     lines = "\n".join(body[i:i + 64] for i in range(0, len(body), 64))
     return f"-----BEGIN {label}-----\n{lines}\n-----END {label}-----\n"
+
+
+def bare_key(raw: str) -> tuple[str, str]:
+    """The key's base64 without its BEGIN and END lines (copied from the middle of the file): the
+    DER of an EC key (SEC1) or of PKCS#8, told apart by their first bytes. ("", "") otherwise."""
+    body = "".join(raw.split())
+    if not body or not re.fullmatch(r"[A-Za-z0-9+/]+={0,2}", body):
+        return "", ""
+    try:
+        der = base64.b64decode(body, validate=True)
+    except ValueError:
+        return "", ""
+    if der[:1] != b"\x30" or len(der) < 32:
+        return "", ""
+    if der[2:5] == b"\x02\x01\x01" or der[1:2] == b"\x77":
+        return "EC PRIVATE KEY", body
+    if der[2:6] == b"\x02\x01\x00\x30" or der[3:7] == b"\x02\x01\x00\x30":
+        return "PRIVATE KEY", body
+    return "", ""
+
+
+def key_problem(raw: str) -> str:
+    """What is in ADS_PRIVATE_KEY instead of the key, named without quoting any of it (the log is public)."""
+    hint = "paste all of private-key.pem, BEGIN and END lines included (docs/asc.md, «Apple Ads API»)"
+    if "PUBLIC KEY" in raw:
+        return f"ADS_PRIVATE_KEY holds the public key (public-key.pem), which goes to Apple Ads: {hint}."
+    if "SEARCHADS." in raw or "clientId" in raw or "keyId" in raw:
+        return f"ADS_PRIVATE_KEY holds the clientId/teamId/keyId block from Apple Ads: {hint}."
+    labels = sorted(set(re.findall(r"-----BEGIN ([A-Z0-9 ]+)-----", raw)))
+    if any("PRIVATE KEY" in label for label in labels) or ("BEGIN" in raw) != ("END" in raw):
+        return f"ADS_PRIVATE_KEY is cut short (a BEGIN or END line is missing): {hint}."
+    if labels:
+        return f"ADS_PRIVATE_KEY has only {', '.join(labels)}, no private key: {hint}."
+    return f"ADS_PRIVATE_KEY is not a private key ({len(raw)} characters, no BEGIN line): {hint}."
 
 
 def client_secret(now: int) -> str:
@@ -279,15 +319,38 @@ def account() -> dict:
             sys.exit("The API user reaches no ad account: check its role in Apple Ads → Account Settings → User Management.")
         listing = ", ".join(f"{(a.get('adAccount') or {}).get('name', '')} ({(a.get('adAccount') or {}).get('id')})" for a in acls)
         wanted = os.environ.get("ADS_ACCOUNT_ID", "").strip()
-        found = [a for a in acls if str((a.get("adAccount") or {}).get("id")) == wanted] if wanted else acls[:1]
-        if not found:
-            sys.exit(f"ADS_ACCOUNT_ID {wanted} is not among the API user's ad accounts: {listing}.")
-        ad = found[0]["adAccount"]
-        _account.update(id=ad["id"], name=ad.get("name", ""), roles=", ".join(found[0].get("roles") or []) or "?")
-        if len(acls) > 1 and not wanted:
-            print(f"The API user reaches {len(acls)} ad accounts: {listing}. Using the first; ADS_ACCOUNT_ID picks another.")
+        if wanted:
+            found = [a for a in acls if str((a.get("adAccount") or {}).get("id")) == wanted]
+            if not found:
+                sys.exit(f"ADS_ACCOUNT_ID {wanted} is not among the API user's ad accounts: {listing}.")
+            use_account(found[0])
+        elif len(acls) == 1:
+            use_account(acls[0])
+        else:
+            # An API user often reaches an Apple Ads Basic account too, whose campaigns the API does
+            # not serve (403): the first account that lets it read campaigns is the one meant.
+            for acl in acls:
+                use_account(acl)
+                try:
+                    call("POST", "/campaigns/query", {"pagination": {"offset": 0, "pageSize": 1}}, retry=True)
+                    break
+                except ApiError as error:
+                    if error.code != 403:
+                        raise
+                    _account.clear()
+            if not _account:
+                sys.exit(f"None of the API user's ad accounts lets it read campaigns ({listing}): give it an API "
+                         "role on the account with the campaigns (Account Settings → User Management).")
+            print(f"The API user reaches {len(acls)} ad accounts: {listing}. Using {_account['name']} "
+                  f"({_account['id']}), the first whose campaigns it can read; ADS_ACCOUNT_ID or --account picks another.")
         say(f"Ad account: {_account['name']} ({_account['id']}), role: {_account['roles']}")
     return _account
+
+
+def use_account(acl: dict) -> None:
+    ad = acl.get("adAccount") or {}
+    _account.clear()
+    _account.update(id=ad["id"], name=ad.get("name", ""), roles=", ".join(acl.get("roles") or []) or "?")
 
 
 def account_currency() -> str:
@@ -320,7 +383,7 @@ def report_body(days: int, filters: list | None, offset: int = 0, today: date | 
 
 def report_rows(entity: str, days: int, filters: list | None = None) -> list[dict]:
     """POST /v1/reports/apps/{campaigns|adgroups|keywords|searchterms}/query, every page. All but
-    the campaigns report need a campaignId filter."""
+    the campaigns report need a campaignId filter; the campaigns report refuses one."""
     rows, offset = [], 0
     while True:
         response = call("POST", f"/reports/apps/{entity}/query", report_body(days, filters, offset), retry=True)
@@ -516,8 +579,9 @@ def report(args) -> None:
     if args.campaign:
         items = [find(items, args.campaign, "campaign")]
     groups = query("/adgroups/query")
+    # The campaigns report takes no campaignId filter (HTTP 400): every campaign, picked here by id.
     by_campaign = {str((r.get("metadata") or {}).get("id")): metrics(r)
-                   for r in report_rows("campaigns", args.days, [eq("campaignId", str(items[0]["id"]))] if args.campaign else None)}
+                   for r in report_rows("campaigns", args.days)}
     rows, grand = [], ZERO
     for c in sorted(items, key=lambda c: c.get("name", "")):
         m = by_campaign.get(str(c["id"]), ZERO)
@@ -533,6 +597,46 @@ def report(args) -> None:
     table(f"Apple Ads, {start} to {end} ({args.days} days, ad account time zone){money_note()}",
           ["Campaign", "Ad group", *PERF], rows)
     say("Conv. (tap) = tap-through installs / taps. CPI (tap) = spend / tap-through installs, CPI (all) = spend / all installs.")
+
+
+def daily(args) -> None:
+    """Per day of the campaigns report (granularMetrics, DAILY): impressions, taps, installs, the
+    installs of each campaign, and how much of today's daily budgets the day spent (a share, so it
+    shows in Actions too). The budgets are today's: a day before a budget change compares with the
+    new one."""
+    if args.days < 2 or args.days > 90:
+        sys.exit("daily takes --days from 2 to 90 (Apple's DAILY granularity).")
+    account()
+    items = query("/campaigns/query")
+    if args.campaign:
+        items = [find(items, args.campaign, "campaign")]
+    names = {str(c["id"]): c.get("name", "") for c in items}
+    budget = sum(Decimal(str(((c.get("dailyBudget") or {}).get("value") or {}).get("amount") or 0)) for c in items)
+    per_day: dict[str, dict[str, dict]] = {}
+    for r in report_rows("campaigns", args.days):
+        cid = str((r.get("metadata") or {}).get("id"))
+        if cid not in names:
+            continue
+        for point in r.get("granularMetrics") or []:
+            if point.get("date"):
+                per_day.setdefault(point["date"], {})[cid] = metrics({"totalMetrics": point})
+    order = sorted(names, key=lambda i: names[i])
+    rows = []
+    for day in sorted(per_day):
+        total = ZERO
+        for m in per_day[day].values():
+            total = add(total, m)
+        rows.append([day, total["impressions"], total["taps"], ratio(total["taps"], total["impressions"]),
+                     total["tapInstalls"], ratio(total["tapInstalls"], total["taps"]),
+                     *[per_day[day].get(i, ZERO)["tapInstalls"] for i in order],
+                     f"{total['spend'] / budget * 100:.0f}%" if budget else "-",
+                     cash({"amount": total["spend"], "currency": total["currency"]})])
+    start, end = period(args.days)
+    table(f"Apple Ads by day, {start} to {end} (ad account time zone){money_note()}",
+          ["Date", "Impr.", "Taps", "TTR", "Installs (tap)", "Conv. (tap)",
+           *[f"{names[i]} (inst.)" for i in order], "Spent of daily budgets", "Spend"], rows)
+    say("Spent of daily budgets: the day's spend over the sum of today's daily budgets of these campaigns; "
+        "near 100% means the budget, not the bids, capped the day.")
 
 
 def search_terms(args) -> None:
@@ -561,7 +665,10 @@ def search_terms(args) -> None:
     junk = [text for text, _, _, m in found if text and m["taps"] and not m["totalInstalls"]]
     good = [text for text, _, _, m in found if text and m["totalInstalls"]]
     say("Taps and no installs, candidates for negative keywords: " + (", ".join(junk) or "none"))
-    say("With installs, candidates for exact keywords: " + (", ".join(good) or "none"))
+    # A search for another app (a bank, госуслуги) installs Tenra by mistake: such a term is a
+    # negative too, whatever its installs (the first KZ-Discovery report, 2026-11-10).
+    say("With installs, candidates for exact keywords if they look for an app like Tenra "
+        "(a search for another app, a bank or a government service, is a negative): " + (", ".join(good) or "none"))
 
 
 def keywords(args) -> None:
@@ -648,6 +755,7 @@ def main(argv: list[str]) -> None:
     common.add_argument("--campaign", help="campaign: id, name or a unique part of the name")
     common.add_argument("--adgroup", help="ad group of that campaign: id, name or a unique part")
     common.add_argument("--days", type=days_arg, default=7, help="days of data, up to yesterday (default 7)")
+    common.add_argument("--account", help="ad account id (else ADS_ACCOUNT_ID, else the first whose campaigns the API user can read)")
     writes = argparse.ArgumentParser(add_help=False)
     writes.add_argument("--add", help='comma-separated terms, e.g. "учет расходов, бюджет"')
     writes.add_argument("--match", choices=("EXACT", "BROAD"), default="EXACT", type=str.upper)
@@ -658,6 +766,7 @@ def main(argv: list[str]) -> None:
     handlers = {
         "campaigns": (campaigns, "campaigns and ad groups"),
         "report": (report, "per campaign and ad group performance"),
+        "daily": (daily, "per day: impressions, taps, installs by campaign, share of the daily budgets spent"),
         "search-terms": (search_terms, "a campaign's search terms"),
         "keywords": (keywords, "a campaign's keywords"),
         "negatives": (negatives, "a campaign's negative keywords; --add, --apply"),
@@ -669,6 +778,8 @@ def main(argv: list[str]) -> None:
         if name == "add-keywords":
             sub.add_argument("--bid", help="keyword bid in the ad account's currency (default: the ad group's)")
     args = parser.parse_args(argv)
+    if args.account:
+        os.environ["ADS_ACCOUNT_ID"] = args.account.strip()
     handlers[args.command][0](args)
 
 

@@ -73,6 +73,12 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
         withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
     ) {
 
+        // Ten's evening reminder asks the person to open Tenra and record the day: while Tenra
+        // is open at its time it has nothing to ask, so it stays out of sight.
+        if notification.request.identifier.hasPrefix(SpendingReminder.identifierPrefix) {
+            completionHandler([])
+            return
+        }
         // Show notification even when app is in foreground
         completionHandler([.banner, .sound, .badge])
     }

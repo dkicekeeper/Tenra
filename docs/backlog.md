@@ -14,8 +14,7 @@ with the commit of every fix, are in
 - **Spending reminder: small things left after the final review** (2026-11-05,
   [archive/plans/plan-spending-reminder.md](archive/plans/plan-spending-reminder.md), in the store with 1.8.1): a CSV import keeps each row's date as
   `createdAt`, so it does not count as recorded today; own-transfer pairing counts as the person's
-  record; "Remind me" with notifications already denied gives no feedback; the reminder shows as a
-  banner while the person is in the app at its time; `hookDay` is an absolute start-of-day `Date`
+  record; `hookDay` is an absolute start-of-day `Date`
   (a time-zone change can shift yesterday's match); the cards inline `shouldOffer`.
 
 - **Assistant attachments after a relaunch.** A receipt or statement attached in the chat lives
@@ -72,8 +71,13 @@ Found by the release audit of 2026-10-15 (details and file references:
   `ParticleCreature`; its `AmbientMotionGate` stops it only under Reduce Motion or iOS 27's
   low-resource mode): measure on device, else the still `CreatureGlyph` there.
 - **Ten's privacy edges:** a forgotten fact stays in kept threads; FastPath messages typed before
-  consent go out with the next cloud question; the Settings toggle skips the consent sheet; the
-  cloud mode shows in the RU/BY storefronts (451 on every question).
+  consent go out with the next cloud question.
+- **Ten in Russia and Belarus** (RU 25 of 260 new customers on 26.10-06.11, about 10%, §6 of
+  [promotion-plan.md](promotion-plan.md)): every question that needs the model gets "not
+  available in your region" (the server's 451), and the tab still invites questions. A product
+  call for the owner: say so once and keep Ten to what the phone does (typed entries, notices),
+  or hide the cloud mode by storefront until Apple's models can answer there
+  ([plan-assistant-ios27.md](plan-assistant-ios27.md)).
 - **Assistant performance:** full-resolution photo decode on the main thread; each streamed piece
   re-parses the reply and re-renders the chat; allowance Keychain calls on the main thread;
   FastPath runs the voice parser on questions; `forecast_balance` series O(days × occurrences).

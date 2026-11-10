@@ -444,7 +444,8 @@ spending, no em dashes, in all 11 languages.
 
 - **Consent before the cloud** (App Review 5.1.2(i)): a screen at the first cloud question (what
   is sent, where, that nothing is stored; `assistant.consent.*` in all 11 languages), the toggle in
-  Settings → Assistant. The App Privacy label lists what Ten sends (published 2026-10-18).
+  Settings → Assistant: switched on there, the same consent screen asks first
+  (`SettingsAssistantSection.cloudToggle`), switched off it turns the cloud off at once. The App Privacy label lists what Ten sends (published 2026-10-18).
 - **Minimisation**: the cloud gets tool results, never the database; files and photos never leave
   the phone (§7).
 - **No write without a confirmation**, and Undo after saving.
@@ -455,8 +456,10 @@ spending, no em dashes, in all 11 languages.
   sentence pointing to a licensed adviser, then it keeps helping. A refusal without help on a money
   question is forbidden by the prompt and caught by the eval (`no_refusal`), a product pick too
   (`noPick`). The consent screen says Ten runs on AI.
-- Russia and Belarus: the server answers 451 by the request's country. Hiding the cloud mode by
-  storefront is open (backlog).
+- Russia and Belarus: the server answers 451 by the request's country, before App Attest and
+  any count. In the app every question that needs the model gets that answer
+  (`assistant.error.region`); `cloudOutOfRegion` only keeps a guessed category on the phone for
+  the rest of the session. What Ten should offer there instead is open (backlog).
 
 ## 11. Limits, Pro and cost
 

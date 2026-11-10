@@ -46,6 +46,8 @@ enum SpendingReminder {
     static var center: SpendingReminderCenter = SystemSpendingReminderCenter()
     static var drawArt: (ParticleCreature.Mood) -> Data? = { TenNotificationArt.pngData(mood: $0) }
     static var writeAttribute: (String) -> Void = { PremiumManager.shared.noteSpendingReminder($0) }
+    static var requestPermission: () async -> Void = { _ = await NotificationPermissionManager.shared.requestAuthorization() }
+    static var openNotificationSettings: () -> Void = { NotificationPermissionManager.shared.openAppSettings() }
 
     /// Ten's picture per mood and appearance, drawn once a process.
     private static var artCache: [String: Data] = [:]
@@ -135,10 +137,15 @@ enum SpendingReminder {
         requestReschedule(now: now, defaults: defaults)
     }
 
-    /// "Remind me" on Ten's offer: on, and the system's permission prompt.
+    /// "Remind me" on Ten's offer: on, and the system's permission prompt. With notifications
+    /// already turned off for Tenra iOS shows no prompt and the tap did nothing visible, so the
+    /// person is taken to Tenra's page in iOS Settings to allow them, as Settings › Spending
+    /// reminder's row does. Someone who refuses the prompt just now is not sent there.
     static func acceptOffer(defaults: UserDefaults = .standard) async {
         defaults.set(OfferState.accepted.rawValue, forKey: offerKey)
+        let wasDenied = await center.authorizationStatus() == .denied
         await setEnabled(true, defaults: defaults)
+        if wasDenied { openNotificationSettings() }
     }
 
     /// ✕ on Ten's offer: never offered again; Settings can still turn it on.
@@ -155,7 +162,7 @@ enum SpendingReminder {
             if offerState(defaults: defaults) == .notAsked {
                 defaults.set(OfferState.accepted.rawValue, forKey: offerKey)
             }
-            await NotificationPermissionManager.shared.requestAuthorization()
+            await requestPermission()
         }
         requestReschedule(defaults: defaults)
         await waitUntilIdle()

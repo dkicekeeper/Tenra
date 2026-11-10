@@ -202,6 +202,31 @@ Tenra의 새로운 기능:
 - The evening reminder: no banner while Tenra is open at its time; "Remind me" with
   notifications already off for Tenra opens Tenra's page in iOS Settings (before, the tap did
   nothing visible).
+- Fixes nobody should notice (release audit 1.6 races): a chat deleted while its reply is
+  written stays deleted, and two saves of a chat or a fact keep one copy; a goal, a debt or an
+  asset added right after launch no longer vanishes until the next one; "New chat" while Ten
+  drafts a typed expense keeps the expense in its chat, and a message sent then stays in the
+  field. Voice input lost an audio silence detector it never used (auto-stop is the 5-second
+  pause, as before).
+
+Not for the user's notes, already live on Ten's server (no release needed): free users' share
+of the day (900 of 1 200 calls) with 300 kept for Pro and trials, a call the model never
+started is given back, a 5-second RevenueCat timeout, and the model stops when the app leaves
+mid-answer.
+
+**On the phone before this version goes out** (from the PRs' test plans, Tenra#150, #151, #153):
+1. The paywall opens from every gate as before (no placements set up yet).
+2. Settings › Assistant: switching cloud answers on shows the consent screen; off is immediate.
+3. "Remind me" on Ten's offer with notifications off for Tenra opens iOS Settings; at the
+   reminder's time with Tenra open, no banner.
+4. With a VPN to Russia: the first question gets Ten's one message, then no ready-made
+   questions, the field reads "Запишите трату, например «кофе 1500»", "Спросить Ten" is gone from
+   the screens' menus, and "кофе 1500" is recorded.
+5. Forget a fact Ten used in a chat (What Ten knows about me): that chat shows "Тэн забыл
+   кое-что из этого чата", and a question from it opens a new chat; "Forget all" marks every
+   chat in the history.
+6. Two own banks' pushes merged into a transfer the next morning: that day's evening reminder
+   still comes if nothing else was recorded.
 
 ## Submission checklist
 

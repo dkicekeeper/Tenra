@@ -1859,6 +1859,7 @@
 "assistant.forecast.obligations" = "%@까지 나갈 금액";
 "assistant.error.generic" = "문제가 발생했습니다. 다시 시도하세요.";
 "assistant.error.tooLong" = "이 채팅은 어시스턴트에게 너무 길어졌습니다. 새 채팅을 시작하고 다시 물어보세요.";
+"assistant.thread.sealed" = "텐이 이 채팅의 일부를 잊었어요. 여기서 질문하면 새 채팅이 시작돼요.";
 
 /* AI assistant: the chat screen */
 "tab.assistant" = "어시스턴트";

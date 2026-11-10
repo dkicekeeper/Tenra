@@ -712,6 +712,82 @@ struct AssistantViewModelTests {
         ])
     }
 
+    @Test func aRecordMadeBeforeConsentIsNeverReported() async {
+        let transport = ScriptedTransport([
+            [AgentScript.done([AgentScript.render("toolu_1", source: "none")])],
+            [AgentScript.done([AgentScript.render("toolu_2", source: "none")])],
+        ])
+        let book = Self.book()
+        let model = AssistantViewModel(
+            conversation: AgentConversation(transport: transport, toolkit: FakeToolkit()),
+            context: { "<app_context>a</app_context>" },
+            drafts: book,
+            describeDraft: { operation in
+                guard case .single(let draft) = operation else { return .null }
+                return ["amount": .number(draft.amount)]
+            },
+            fastPath: Self.coffeeFastPath
+        )
+
+        // Typed before the cloud was allowed: drafted on the phone, its words stay there.
+        #expect(await model.send("кофе 1500 с Машей", cloudAllowed: false))
+        await model.send("Сколько осталось на кафе?")
+        await book.save("draft_1")
+        await model.send("А на такси?")
+
+        let texts = transport.calls.map { call in call.last?.content.compactMap { $0["text"]?.stringValue } ?? [] }
+        #expect(texts[0] == ["<app_context>a</app_context>", "Сколько осталось на кафе?"])
+        #expect(texts[1] == ["А на такси?"])
+        #expect(!texts.joined().joined().contains("Машей"))
+    }
+
+    @Test func aChatMentioningAForgottenFactStartsANewOne() async {
+        let transport = ScriptedTransport([
+            [AgentScript.done([AgentScript.render("toolu_1", source: "none")])],
+            [AgentScript.done([AgentScript.render("toolu_2", source: "none")])],
+        ])
+        let model = makeModel(transport, context: { "<app_context>facts you remember about the user: f1 \"Зарплата 10-го\"</app_context>" })
+
+        await model.send("Когда зарплата?")
+        model.forgot(["Помню отпуск в мае"])
+        #expect(!model.isSealed)
+        model.forgot(["зарплата 10-го"])
+        #expect(model.isSealed)
+        #expect(model.entries.count == 2)
+
+        await model.send("Сколько осталось?")
+        #expect(!model.isSealed)
+        #expect(model.entries.first?.content == .question("Сколько осталось?"))
+        // A new thread: the second call carries its own question only, not the first exchange.
+        #expect(transport.calls[1].count == 1)
+    }
+
+    @Test func forgettingEverythingSealsAnyChat() async {
+        let transport = ScriptedTransport([[AgentScript.done([AgentScript.render("toolu_1", source: "none")])]])
+        let model = makeModel(transport)
+        model.forgot(nil)
+        #expect(!model.isSealed)
+        await model.send("Сколько у меня денег?")
+        model.forgot(nil)
+        #expect(model.isSealed)
+    }
+
+    @Test func aKeptThreadFindsTheFactsItMentions() {
+        let body = AgentThreadSnapshot.Body(
+            messages: [.userText(["<app_context>facts you remember about the user: f2 \"Коплю на «машину»\"</app_context>"])],
+            results: [:],
+            owedResults: []
+        )
+        #expect(body.mentions(["коплю на «машину»"]))
+        #expect(!body.mentions(["Коплю на квартиру"]))
+        #expect(!body.mentions([""]))
+        var sealed = body
+        sealed.sealed = true
+        let data = AgentThreadStore.encodePayload(sealed)
+        #expect(data.flatMap(AgentThreadStore.decodePayload)?.sealed == true)
+        #expect(AgentThreadStore.encodePayload(body).flatMap(AgentThreadStore.decodePayload)?.sealed == false)
+    }
+
     @Test func aThreadKeepsWhereThePhoneAnswered() async throws {
         let box = ThreadBox()
         let first = AssistantViewModel(

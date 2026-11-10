@@ -666,6 +666,14 @@ class AppCoordinator {
         }
         transactionStore.onSeriesCreated = { _ in SpendingReminder.noteSeriesCreated() }
 
+        // A fact Ten forgot (Settings or a saved draft) leaves every kept chat that mentions it:
+        // they are sealed, the open one too, and go no further to the model.
+        let sealingThreads = repository is CoreDataRepository ? AgentThreadStore() : nil
+        AgentMemory.shared.onForget = { [weak self] texts in
+            await sealingThreads?.seal(mentioning: texts)
+            self?.assistantModel?.forgot(texts)
+        }
+
         // Settings › Formats, or the phone's region: everything that writes dates and amounts.
         formatSettings.onChange = { [weak self] formats in self?.formatsDidChange(formats) }
 

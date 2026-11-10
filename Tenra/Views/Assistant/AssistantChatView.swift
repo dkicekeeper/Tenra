@@ -259,6 +259,12 @@ struct AssistantChatView: View {
             workingRow(String(localized: "assistant.attachment.reading"))
                 .transition(.opacity)
         }
+        // Ten forgot something this chat mentions: it goes no further to the model.
+        if model.isSealed, model.phase == .idle {
+            Text(String(localized: "assistant.thread.sealed"))
+                .font(AppTypography.caption)
+                .foregroundStyle(AppColors.Text.tertiary)
+        }
         if case .failed(let failure) = model.phase,
            failure == .proRequired || failure == .limitReached || failure == .freeLimit, !premium.isPro {
             DSButton(String(localized: "settings.pro.cta.title"), systemImage: "sparkles") {

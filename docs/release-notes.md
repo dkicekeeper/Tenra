@@ -193,6 +193,9 @@ Tenra의 새로운 기능:
   questions not answered here, expenses recorded as usual with an example; after that Ten offers
   no questions, the field asks for an expense, "Ask Ten" is gone from the screens, and a question
   typed anyway does not go to the server. Checked again a week later.
+- Ten's privacy: a fact Ten forgot leaves the chats that mention it (they can still be read; a
+  question from one starts a new chat, "Ten forgot something from this chat"); expenses typed
+  before cloud answers were allowed are never described to the AI later.
 - The evening reminder: a transfer between your own banks merged when Tenra opens no longer
   counts as recording that day (it keeps the expense's creation time); the next day's line about
   yesterday's category survives a time-zone change.

@@ -1859,6 +1859,7 @@
 "assistant.forecast.obligations" = "Abbuchungen bis %@";
 "assistant.error.generic" = "Etwas ist schiefgelaufen. Versuchen Sie es erneut.";
 "assistant.error.tooLong" = "Dieser Chat ist für den Assistenten zu lang geworden. Starten Sie einen neuen und fragen Sie noch einmal.";
+"assistant.thread.sealed" = "Ten hat etwas aus diesem Chat vergessen. Eine Frage hier startet einen neuen Chat.";
 
 /* AI assistant: the chat screen */
 "tab.assistant" = "Assistent";

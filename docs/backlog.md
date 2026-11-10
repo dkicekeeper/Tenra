@@ -64,8 +64,6 @@ Found by the release audit of 2026-10-15 (details and file references:
 - **Ten on Home keeps animating** while a notice is unread (`AssistantNoticeCard`'s live
   `ParticleCreature`; its `AmbientMotionGate` stops it only under Reduce Motion or iOS 27's
   low-resource mode): measure on device, else the still `CreatureGlyph` there.
-- **Ten's privacy edges:** a forgotten fact stays in kept threads; FastPath messages typed before
-  consent go out with the next cloud question.
 - **Assistant performance:** full-resolution photo decode on the main thread; each streamed piece
   re-parses the reply and re-renders the chat; allowance Keychain calls on the main thread;
   FastPath runs the voice parser on questions; `forecast_balance` series O(days × occurrences).

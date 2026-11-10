@@ -2,8 +2,8 @@
 //  OrderedWorkTests.swift
 //  TenraTests
 //
-//  OrderedWork runs what it is given one piece after another, in the order asked: a slow first
-//  piece holds the second back, and each caller gets its own result.
+//  OrderedWork runs what it is given one piece after another, in the order it was queued: a slow
+//  first piece holds the second back, and each piece hands back its own result.
 //
 
 import Foundation
@@ -35,21 +35,20 @@ struct OrderedWorkTests {
     func runsInTheOrderAsked() async {
         let work = OrderedWork()
         let log = Log()
-        // Tasks made on the main actor start in the order they were made.
-        let first = Task { await work.run { try? await Task.sleep(for: .milliseconds(50)); log.append("first") } }
-        let second = Task { await work.run { log.append("second") } }
+        // Queued synchronously, in this order; the first is slow.
+        let first = work.enqueue { try? await Task.sleep(for: .milliseconds(50)); log.append("first") }
+        let second = work.enqueue { log.append("second") }
         await first.value
         await second.value
         #expect(log.all == ["first", "second"])
     }
 
-    @Test("Each caller gets its own result")
+    @Test("Each piece hands back its own result")
     func returnsResults() async {
         let work = OrderedWork()
-        async let a = work.run { 1 }
-        async let b = work.run { "b" }
-        let (one, bee) = await (a, b)
-        #expect(one == 1)
-        #expect(bee == "b")
+        let one = work.enqueue { 1 }
+        let bee = work.enqueue { "b" }
+        #expect(await one.value == 1)
+        #expect(await bee.value == "b")
     }
 }

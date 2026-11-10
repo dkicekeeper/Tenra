@@ -65,17 +65,21 @@ nonisolated final class AgentFactStore: @unchecked Sendable {
 
     // Every call waits for the ones asked for before it (OrderedWork): a forget never loses to
     // the save before it, and two saves of a fact never both insert it.
+    // On the main actor, where every caller is, so the place in the queue follows the calls.
 
+    @MainActor
     func all() async -> [AgentFact] {
-        await order.run { [self] in await self.allNow() }
+        await order.enqueue { [self] in await self.allNow() }.value
     }
 
+    @MainActor
     func save(_ fact: AgentFact) async {
-        await order.run { [self] in await self.saveNow(fact) }
+        await order.enqueue { [self] in await self.saveNow(fact) }.value
     }
 
+    @MainActor
     func delete(ids: [String]? = nil) async {
-        await order.run { [self] in await self.deleteNow(ids: ids) }
+        await order.enqueue { [self] in await self.deleteNow(ids: ids) }.value
     }
 
     /// Every fact, oldest first.

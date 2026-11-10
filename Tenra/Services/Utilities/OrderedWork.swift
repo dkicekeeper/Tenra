@@ -16,16 +16,19 @@ nonisolated final class OrderedWork: @unchecked Sendable {
     private let lock = NSLock()
     private var tail: Task<Void, Never>?
 
-    /// Runs `work` once everything asked for before it has finished, and returns its result.
-    func run<T: Sendable>(_ work: @escaping @Sendable () async -> T) async -> T {
+    /// Queues `work` behind everything queued before it and returns its task. Synchronous on
+    /// purpose: the place in the queue is taken when this is called, so callers on one actor
+    /// (the stores' methods are `@MainActor`) keep the order of their calls. An async `run` would
+    /// first hop to the global executor, and two callers could reach the queue in either order.
+    func enqueue<T: Sendable>(_ work: @escaping @Sendable () async -> T) -> Task<T, Never> {
         lock.lock()
+        defer { lock.unlock() }
         let previous = tail
         let task = Task { () -> T in
             await previous?.value
             return await work()
         }
         tail = Task { _ = await task.value }
-        lock.unlock()
-        return await task.value
+        return task
     }
 }

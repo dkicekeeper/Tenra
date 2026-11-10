@@ -99,29 +99,36 @@ nonisolated final class AgentThreadStore: @unchecked Sendable {
 
     // Every call waits for the ones asked for before it (OrderedWork): reads see the writes
     // before them, two saves of a thread never both insert it, a delete never loses to a save.
+    // On the main actor, where every caller is, so the place in the queue follows the calls.
 
+    @MainActor
     func latest() async -> AgentThreadSnapshot? {
-        await order.run { [self] in await self.latestNow() }
+        await order.enqueue { [self] in await self.latestNow() }.value
     }
 
+    @MainActor
     func thread(id: String) async -> AgentThreadSnapshot? {
-        await order.run { [self] in await self.threadNow(id: id) }
+        await order.enqueue { [self] in await self.threadNow(id: id) }.value
     }
 
+    @MainActor
     func recent(limit: Int) async -> [AgentThreadSummary] {
-        await order.run { [self] in await self.recentNow(limit: limit) }
+        await order.enqueue { [self] in await self.recentNow(limit: limit) }.value
     }
 
+    @MainActor
     func seal(mentioning texts: [String]?) async {
-        await order.run { [self] in await self.sealNow(mentioning: texts) }
+        await order.enqueue { [self] in await self.sealNow(mentioning: texts) }.value
     }
 
+    @MainActor
     func delete(id: String) async {
-        await order.run { [self] in await self.deleteNow(id: id) }
+        await order.enqueue { [self] in await self.deleteNow(id: id) }.value
     }
 
+    @MainActor
     func save(_ snapshot: AgentThreadSnapshot) async {
-        await order.run { [self] in await self.saveNow(snapshot) }
+        await order.enqueue { [self] in await self.saveNow(snapshot) }.value
     }
 
     /// The thread written last; nil when there is none or it cannot be read.

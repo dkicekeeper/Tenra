@@ -116,13 +116,15 @@ private enum AskAssistantGlyph {
     static let menu = CreatureGlyph.templateImage(size: AppIconSize.md)
 }
 
-/// "Ask Ten" in a screen's toolbar: the creature's glyph.
+/// "Ask Ten" in a screen's toolbar: the creature's glyph. Not where the cloud does not answer
+/// (AssistantRegion): it would open questions Ten cannot take.
 struct AskAssistantToolbarButton: View {
     @Environment(AppCoordinator.self) private var coordinator
+    @AppStorage(AssistantRegion.outOfRegionKey) private var outOfRegionAt: Double = 0
     let topic: AssistantTopic
 
     var body: some View {
-        if AssistantAvailability.isAvailable {
+        if AssistantAvailability.isAvailable, !AssistantRegion.isOutOfRegion(markedAt: outOfRegionAt, now: Date()) {
             Button {
                 HapticManager.light()
                 coordinator.ask(about: topic)
@@ -137,13 +139,14 @@ struct AskAssistantToolbarButton: View {
     }
 }
 
-/// "Ask Ten" in a screen's "…" menu.
+/// "Ask Ten" in a screen's "…" menu; not where the cloud does not answer, as the button.
 struct AskAssistantMenuItem: View {
     @Environment(AppCoordinator.self) private var coordinator
+    @AppStorage(AssistantRegion.outOfRegionKey) private var outOfRegionAt: Double = 0
     let topic: AssistantTopic
 
     var body: some View {
-        if AssistantAvailability.isAvailable {
+        if AssistantAvailability.isAvailable, !AssistantRegion.isOutOfRegion(markedAt: outOfRegionAt, now: Date()) {
             Button {
                 coordinator.ask(about: topic)
             } label: {

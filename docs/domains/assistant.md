@@ -456,10 +456,18 @@ spending, no em dashes, in all 11 languages.
   sentence pointing to a licensed adviser, then it keeps helping. A refusal without help on a money
   question is forbidden by the prompt and caught by the eval (`no_refusal`), a product pick too
   (`noPick`). The consent screen says Ten runs on AI.
-- Russia and Belarus: the server answers 451 by the request's country, before App Attest and
-  any count. In the app every question that needs the model gets that answer
-  (`assistant.error.region`); `cloudOutOfRegion` only keeps a guessed category on the phone for
-  the rest of the session. What Ten should offer there instead is open (backlog).
+- Russia and Belarus (the owner's decision, 2026-11-10: say it once, keep the records): the
+  server answers 451 by the request's country, before App Attest and any count. The app keeps
+  that answer (`AssistantRegion`, UserDefaults `assistant.region.outOfRegionAt`) for a week. The
+  first 451 ever becomes Ten's own message (`assistant.region.explained`: questions are not
+  answered here, records are, with the language's example), not an error. While the mark holds:
+  no question goes to the server (a typed one gets the short `assistant.error.region`), Ten
+  offers no questions (no ready-made ones on its home, no suggestions), the field asks for a
+  record (`assistant.composer.placeholder.entries`), "Ask Ten" is gone from the screens, and a
+  guessed category stays on the phone. Records drafted on the phone (FastPath), voice included,
+  work as everywhere. A week on, one question goes to the server again; an answer clears the
+  mark. Home's notices stay (their "go through it" gets the short answer). Pinned by
+  `AssistantRegionTests`.
 
 ## 11. Limits, Pro and cost
 

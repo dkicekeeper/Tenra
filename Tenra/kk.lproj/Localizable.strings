@@ -1801,6 +1801,7 @@
 "assistant.error.limit" = "Осы айдағы сұрақтарыңыз таусылды. Лимит келесі айда жаңарады.";
 "assistant.error.pro" = "Ассистент Tenra Pro құрамына кіреді.";
 "assistant.error.region" = "Ассистент сіздің аймағыңызда әлі қолжетімсіз.";
+"assistant.region.explained" = "Сіздің аймағыңызда мен әзірге сұрақтарға жауап бере алмаймын: оларға жауап беретін бұлттық модель мұнда қолжетімсіз. Шығыстарды бұрынғыдай жазамын: «кофе 1500» деп жазыңыз немесе айтыңыз.";
 "assistant.error.unavailable" = "Ассистент қазір қолжетімсіз. Кейінірек қайталап көріңіз.";
 "assistant.error.device" = "Ассистент бұл құрылғыда қолжетімсіз.";
 "assistant.error.refused" = "Бұған көмектесе алмаймын. Ақшаңыз туралы сұраңыз.";
@@ -1868,6 +1869,7 @@
 "composer.send" = "Жіберу";
 "composer.voice" = "Дауыспен жазу";
 "assistant.composer.placeholder" = "Шығысты жазыңыз немесе сұраңыз…";
+"assistant.composer.placeholder.entries" = "Шығысты жазыңыз, мысалы «кофе 1500»";
 "assistant.preset.month" = "Осы айдағы шығыстарым";
 "assistant.preset.compare" = "Өткен аймен салыстыр";
 "assistant.preset.budgets" = "Бюджеттерім қалай?";

@@ -189,6 +189,10 @@ Tenra의 새로운 기능:
   placements are set up in the dashboard.
 - Settings › Assistant: turning cloud answers on shows the same consent screen as the chat's
   first question (App Review 5.1.2(i)); before, the switch turned the cloud on without it.
+- Ten in Russia and Belarus (no cloud there): the first question gets Ten's message once,
+  questions not answered here, expenses recorded as usual with an example; after that Ten offers
+  no questions, the field asks for an expense, "Ask Ten" is gone from the screens, and a question
+  typed anyway does not go to the server. Checked again a week later.
 - The evening reminder: no banner while Tenra is open at its time; "Remind me" with
   notifications already off for Tenra opens Tenra's page in iOS Settings (before, the tap did
   nothing visible).

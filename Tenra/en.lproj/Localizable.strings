@@ -1801,6 +1801,7 @@
 "assistant.error.limit" = "You’ve used this month’s questions. The limit renews next month.";
 "assistant.error.pro" = "The assistant is part of Tenra Pro.";
 "assistant.error.region" = "The assistant isn’t available in your region yet.";
+"assistant.region.explained" = "In your region I can’t answer questions yet: the AI service behind them isn’t available here. I still log expenses as usual: type “coffee 5” or say it.";
 "assistant.error.unavailable" = "The assistant is unavailable right now. Try again later.";
 "assistant.error.device" = "The assistant isn’t available on this device.";
 "assistant.error.refused" = "I can’t help with that. Ask me about your money.";
@@ -1868,6 +1869,7 @@
 "composer.send" = "Send";
 "composer.voice" = "Dictate";
 "assistant.composer.placeholder" = "Log an expense or ask…";
+"assistant.composer.placeholder.entries" = "Log an expense, like “coffee 5”";
 "assistant.preset.month" = "My spending this month";
 "assistant.preset.compare" = "Compare with last month";
 "assistant.preset.budgets" = "How are my budgets?";

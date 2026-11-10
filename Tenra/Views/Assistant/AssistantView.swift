@@ -52,6 +52,8 @@ struct AssistantView: View {
     /// What waits for the cloud consent.
     @State private var awaitingConsent: Start?
     @AppStorage(AssistantMetrics.consentKey) private var hasConsent = false
+    /// The server refused this country (AssistantRegion): no ready-made questions then.
+    @AppStorage(AssistantRegion.outOfRegionKey) private var outOfRegionAt: Double = 0
     @FocusState private var composerFocused: Bool
     // Ten's lines and gestures on the home (AssistantChatter).
     @AppStorage(AssistantChatter.enabledKey) private var chatterOn = true
@@ -229,11 +231,13 @@ struct AssistantView: View {
                     .foregroundStyle(AppColors.Text.tertiary)
             }
             .multilineTextAlignment(.center)
-            SuggestionChips(topicQuestions.isEmpty ? Self.presets : topicQuestions, systemImage: "sparkles", layout: .wrap) {
-                start(.question($0, spoken: false))
+            if !AssistantRegion.isOutOfRegion(markedAt: outOfRegionAt, now: Date()) {
+                SuggestionChips(topicQuestions.isEmpty ? Self.presets : topicQuestions, systemImage: "sparkles", layout: .wrap) {
+                    start(.question($0, spoken: false))
+                }
+                .accessibilityElement(children: .contain)
+                .accessibilityIdentifier("assistant.presets")
             }
-            .accessibilityElement(children: .contain)
-            .accessibilityIdentifier("assistant.presets")
             if !chats.isEmpty {
                 recentChats
             }

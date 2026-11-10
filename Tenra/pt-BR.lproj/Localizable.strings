@@ -1801,6 +1801,7 @@
 "assistant.error.limit" = "Você já usou as perguntas deste mês. O limite renova no mês que vem.";
 "assistant.error.pro" = "O assistente faz parte do Tenra Pro.";
 "assistant.error.region" = "O assistente ainda não está disponível na sua região.";
+"assistant.region.explained" = "Na sua região ainda não consigo responder perguntas: o serviço de IA por trás delas não está disponível aqui. Continuo anotando seus gastos: escreva “café 8” ou fale.";
 "assistant.error.unavailable" = "O assistente está indisponível agora. Tente mais tarde.";
 "assistant.error.device" = "O assistente não está disponível neste dispositivo.";
 "assistant.error.refused" = "Com isso eu não posso ajudar. Pergunte sobre o seu dinheiro.";
@@ -1868,6 +1869,7 @@
 "composer.send" = "Enviar";
 "composer.voice" = "Ditar";
 "assistant.composer.placeholder" = "Anote um gasto ou pergunte…";
+"assistant.composer.placeholder.entries" = "Anote um gasto, como “café 8”";
 "assistant.preset.month" = "Meus gastos deste mês";
 "assistant.preset.compare" = "Compare com o mês passado";
 "assistant.preset.budgets" = "Como estão meus orçamentos?";

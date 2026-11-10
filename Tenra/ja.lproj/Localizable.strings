@@ -1801,6 +1801,7 @@
 "assistant.error.limit" = "今月の質問回数を使い切りました。上限は来月リセットされます。";
 "assistant.error.pro" = "アシスタントは Tenra Pro の機能です。";
 "assistant.error.region" = "お住まいの地域ではまだアシスタントを利用できません。";
+"assistant.region.explained" = "お住まいの地域では、まだ質問にお答えできません。回答に使う AI サービスがこの地域で利用できないためです。支出の記録はこれまでどおりです。「コーヒー 500」と入力するか、話しかけてください。";
 "assistant.error.unavailable" = "アシスタントは現在利用できません。後でもう一度お試しください。";
 "assistant.error.device" = "このデバイスではアシスタントを利用できません。";
 "assistant.error.refused" = "その内容にはお答えできません。お金のことを聞いてください。";
@@ -1868,6 +1869,7 @@
 "composer.send" = "送信";
 "composer.voice" = "音声入力";
 "assistant.composer.placeholder" = "支出を記録、または質問…";
+"assistant.composer.placeholder.entries" = "支出を記録（例：「コーヒー 500」）";
 "assistant.preset.month" = "今月の支出";
 "assistant.preset.compare" = "先月と比べて";
 "assistant.preset.budgets" = "予算の状況は？";

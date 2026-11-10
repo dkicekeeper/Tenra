@@ -41,7 +41,6 @@ final class RecurringStore {
 
     @ObservationIgnored let recurringGenerator: RecurringTransactionGenerator
     @ObservationIgnored let recurringValidator: RecurringValidationService
-    @ObservationIgnored let recurringCache: LRUCache<String, [Transaction]>
     @ObservationIgnored private let repository: DataRepositoryProtocol
 
     // MARK: - Load window (see TransactionStore+LoadMerge.swift)
@@ -59,11 +58,10 @@ final class RecurringStore {
 
     // MARK: - Init
 
-    init(repository: DataRepositoryProtocol, cacheCapacity: Int = 100) {
+    init(repository: DataRepositoryProtocol) {
         self.repository = repository
         self.recurringGenerator = RecurringTransactionGenerator(dateFormatter: DateFormatters.dateFormatter)
         self.recurringValidator = RecurringValidationService()
-        self.recurringCache = LRUCache<String, [Transaction]>(capacity: cacheCapacity)
     }
 
     // MARK: - Data Loading
@@ -290,11 +288,5 @@ final class RecurringStore {
         }
         hasHeldSeriesSave = false
         repository.saveRecurringSeries(recurringSeries)
-    }
-
-    func invalidateCacheFor(seriesId: String) {
-        for horizon in [1, 3, 6, 12] {
-            recurringCache.remove("\(seriesId)_\(horizon)")
-        }
     }
 }

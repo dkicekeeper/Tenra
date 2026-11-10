@@ -214,10 +214,10 @@ class DepositsViewModel {
     // MARK: - Link Existing Transactions as Deposit Interest
 
     /// Convert income transactions on the deposit account into `.depositInterestAccrual`.
-    /// Pure classification — does NOT mutate the deposit's `principalBalance` or
-    /// `interestAccruedNotCapitalized`. The deposit balance is already what the user
-    /// expects (it was entered at creation or computed by the interest service).
-    /// Double-counting historical interest into the principal would inflate the balance.
+    /// Pure classification: rewrites the transactions' type, category and account, never
+    /// `DepositInfo` (no stored principal; the balance is `initialBalance` plus contributions,
+    /// BalanceCalculationEngine). Only `DepositInterestService.reconcileDepositInterest`
+    /// advances the interest state (CLAUDE.md red flag 2).
     func linkTransactionsAsInterest(
         depositId: String,
         transactions: [Transaction],

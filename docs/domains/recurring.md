@@ -138,7 +138,7 @@ The add screen saves no separate one-off when a frequency is picked: the generat
 
 Occurrence records, not transaction ids, are what stop regeneration across launches: `TransactionIDGenerator` hashes with Swift's per-process `Hasher` seed, so the generator's `existingTransactionIds` check only matches ids made in the same process.
 
-`TransactionStore.getPlannedTransactions(for:horizon:)` has no callers: to list a series' transactions, filter `transactionStore.transactions` (or use `transactionsBySeriesId`).
+To list a series' transactions, use `transactionsBySeriesId` (or filter `transactionStore.transactions`).
 
 ## Subscriptions order
 

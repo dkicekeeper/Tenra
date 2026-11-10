@@ -290,7 +290,6 @@ final class TransactionStore {
     var recurringOccurrences: [RecurringOccurrence] { recurringStore.recurringOccurrences }
     internal var recurringGenerator: RecurringTransactionGenerator { recurringStore.recurringGenerator }
     internal var recurringValidator: RecurringValidationService { recurringStore.recurringValidator }
-    internal var recurringCache: LRUCache<String, [Transaction]> { recurringStore.recurringCache }
 
     // Settings
     internal var baseCurrency: String = "KZT"

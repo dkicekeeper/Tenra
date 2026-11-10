@@ -96,13 +96,7 @@ Found by the docs audit of 2026-10-12, not verified on device yet:
 - **Health score budget adherence** uses the calendar month, not each budget's own period;
   **`largeTransaction`** counts `.expense` only, so loan payments never qualify. Design calls.
 - **`SilenceDetector`** is created in `VoiceInputService` but never fed audio.
-- **Dead code and stale comments:** `TransactionStore.getPlannedTransactions(for:horizon:)`,
-  `RecurringTransactionCoordinatorProtocol` and `TransactionGroupingService.groupByMonth` (its
-  month formatter is not POSIX either) have no callers or conformers;
-  `AccountEntity.isDeposit` is written but never read (drop at the next schema bump); comments
-  still name removed things (`principalBalance` in `DepositsViewModel` and `DepositDetailView`,
-  aggregate services in `TransactionCacheManager`, the "no Other category" case in
-  `LogTransactionIntent`).
+- **`AccountEntity.isDeposit`** is written but never read: drop it at the next schema bump.
 
 Left by the action audit of 2026-11-08 (the rules: [design-system.md](design-system.md) §4 Actions,
 [localization.md](localization.md) §Action words):

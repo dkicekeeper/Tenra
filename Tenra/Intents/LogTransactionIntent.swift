@@ -95,8 +95,7 @@ struct LogTransactionIntent: AppIntent {
                 | eligibleAccounts=\(services.accounts.accounts.filter { !$0.isLoan && !$0.isDeposit }.count, privacy: .public) \
                 | expenseCategories=\(services.categories.customCategories.filter { $0.type == .expense }.count, privacy: .public)
                 """)
-            // Amount missing, no eligible account, no Other category, or a cold
-            // FX cache. Hand it to the UI with the fields prefilled. No network
+            // Amount missing, no eligible account, or a cold FX cache (DraftIssue). Hand it to the UI with the fields prefilled. No network
             // call is attempted here on purpose.
             IntentHandoff.shared.request(first)
             // Voice-only surfaces (HomePod, AirPods) cannot bring the app forward, and

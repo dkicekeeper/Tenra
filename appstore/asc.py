@@ -1248,6 +1248,8 @@ def push_nomination(app: str, submit: bool) -> None:
     wanted = json.loads(NOMINATION.read_text(encoding="utf-8"))
     attributes = {key: wanted[key] for key in ("name", "type", "description", "notes", "deviceFamilies", "locales")
                   if wanted.get(key)}
+    if len(wanted["description"]) > 1000:
+        sys.exit(f"The description is {len(wanted['description'])} characters; App Store Connect takes 1000.")
     attributes["publishStartDate"] = wanted["publishStartDate"] + "T00:00:00Z"
     if wanted.get("publishEndDate"):
         attributes["publishEndDate"] = wanted["publishEndDate"] + "T00:00:00Z"

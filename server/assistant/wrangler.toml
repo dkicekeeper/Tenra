@@ -28,6 +28,10 @@ FREE_MONTHLY_CALLS = "150"
 # silences Ten until midnight UTC instead of the limit silencing it for the rest of the month.
 # Expected with ads at $10 a day: about 100 calls a day. Raise it with the limit (limit × 24).
 GLOBAL_DAILY_CALLS = "1200"
+# Free callers' share of that day (src/quota.ts): free calls stop at it, so the 300 calls above
+# it stay for Pro customers and trials (about 100 messages) however many free users the ads
+# bring. Keep it at about three quarters of GLOBAL_DAILY_CALLS when raising the two.
+FREE_DAILY_CALLS = "900"
 # Countries not served by the Anthropic API (anthropic.com/supported-countries).
 BLOCKED_COUNTRIES = "RU,BY"
 # The app App Attest assertions must come from: Team ID + bundle id.

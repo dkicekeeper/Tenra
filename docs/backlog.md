@@ -80,9 +80,10 @@ Found by the release audit of 2026-10-15 (details and file references:
 - **Races:** fetch-or-insert without a uniqueness constraint (threads, goals, debts, facts); a
   load overwriting an `add`; FastPath vs `reset()`; a chat deleted during its save comes back.
 - **Server before traffic** (sizing in [domains/assistant.md](domains/assistant.md) §11; the
-  daily cap of 1 200 calls is live since 2026-10-29): Durable Objects counters, a Rate Limiting binding, separate free and Pro caps, a
-  RevenueCat timeout, no count for a failed upstream call, abort on disconnect, a `protocol`
-  range and an app build header.
+  daily cap of 1 200 calls is live since 2026-10-29, Pro's part of the day, the refund of a
+  failed call and the RevenueCat timeout since 2026-11-10): Durable Objects counters, a Rate
+  Limiting binding, abort on disconnect (the model keeps generating for a closed chat), a
+  `protocol` range and an app build header.
 
 Found by the docs audit of 2026-10-12, not verified on device yet:
 - **Duplicate Siri submissions:** repeating a phrase can log the same transaction twice; the

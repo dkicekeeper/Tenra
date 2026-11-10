@@ -6,6 +6,9 @@ import type { KVLike, Tier } from "./quota";
 
 export const ENTITLEMENT = "pro";
 const CACHE_SECONDS = 600;
+/** RevenueCat answers in well under a second; past this the turn fails fast as
+ * `entitlement_unavailable` instead of hanging until the Worker's own limit. */
+export const REVENUECAT_TIMEOUT_MS = 5000;
 
 export class UpstreamError extends Error {
   constructor(
@@ -34,14 +37,22 @@ export async function resolveTier(
   secretKey: string,
   userId: string,
   fetchImpl: typeof fetch = fetch,
+  timeoutMs = REVENUECAT_TIMEOUT_MS,
 ): Promise<Tier> {
   const cacheKey = `tier:${userId}`;
   const cached = await kv.get(cacheKey);
   if (cached === "pro" || cached === "free") return cached;
 
-  const response = await fetchImpl(`https://api.revenuecat.com/v1/subscribers/${encodeURIComponent(userId)}`, {
-    headers: { Authorization: `Bearer ${secretKey}`, Accept: "application/json" },
-  });
+  let response: Response;
+  try {
+    response = await fetchImpl(`https://api.revenuecat.com/v1/subscribers/${encodeURIComponent(userId)}`, {
+      headers: { Authorization: `Bearer ${secretKey}`, Accept: "application/json" },
+      signal: AbortSignal.timeout(timeoutMs),
+    });
+  } catch (error) {
+    // A timeout (504 in the log) or a network failure (0): RevenueCat did not answer.
+    throw new UpstreamError("revenuecat", error instanceof Error && error.name === "TimeoutError" ? 504 : 0);
+  }
   if (!response.ok) throw new UpstreamError("revenuecat", response.status);
   const tier = tierFromSubscriber((await response.json()) as Subscriber);
   await kv.put(cacheKey, tier, { expirationTtl: CACHE_SECONDS });

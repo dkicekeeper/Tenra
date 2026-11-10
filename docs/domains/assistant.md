@@ -300,7 +300,7 @@ keeps quotas in KV (`tenra-assistant-quota`), **logs no content**, and has a swi
 (`ASSISTANT_ENABLED`) to stop the cloud without a release. Configuration in `wrangler.toml`:
 `ASSISTANT_MODEL` `claude-haiku-5-5`, `ASSISTANT_EFFORT` low, `ASSISTANT_MAX_TOKENS`,
 `FREE_MONTHLY_CALLS` 150 and `PRO_MONTHLY_CALLS` 900 (per App Attest key), `GLOBAL_DAILY_CALLS`,
-`BLOCKED_COUNTRIES` `RU,BY` (not in Anthropic's supported countries; Kazakhstan is), `APP_ID`.
+`FREE_DAILY_CALLS`, `BLOCKED_COUNTRIES` `RU,BY` (not in Anthropic's supported countries; Kazakhstan is), `APP_ID`.
 Keys are Worker secrets. The prompt and its version are `src/prompt.ts` (`PROMPT_VERSION`);
 `GET /v1/health` returns the protocol and the prompt version.
 
@@ -338,7 +338,7 @@ The app runs the agent loop, because the tools run on the phone: one server call
   and open debts (format: `eval/fixture.ts`, `appContext`). A new one
   is sent when the date or the lists change.
 - Errors before the stream: 400 `invalid`, 401 `user`, 401 `attest` (with `reason`), 429 `quota`
-  or `busy`, 451 `region_unavailable` (the app shows `assistant.error.region`), 502
+  or `busy` (the global stop, or for a free caller the free share of the day, §11), 451 `region_unavailable` (the app shows `assistant.error.region`), 502
   `entitlement_unavailable`, 503 `disabled`.
 - In the app (`AssistantFailure`): a turn refused as `invalid` (its size, its fields) is
   `tooLong`, with no Retry (resending fails the same way); 502 (RevenueCat did not answer) and
@@ -488,6 +488,17 @@ spending, no em dashes, in all 11 languages.
   for everyone until the next month or until the limit is raised). `GLOBAL_DAILY_CALLS` (1 200)
   keeps one day under a 30th of that limit, about $0.0014 a call, so a busy day silences Ten until
   midnight UTC rather than the limit for the month; raise the two together (calls ≈ limit × 24).
+- **Pro's part of the day**: free calls (and free valuations, by their weight) also count in
+  `calls:free:<day>` and stop at `FREE_DAILY_CALLS` (900, about three quarters of the global
+  stop; unset, it equals it), so the 300 calls above it stay for Pro customers and trials however
+  many free users the ads bring. A free caller over it gets the same 429 `busy`. Pro calls do not
+  count in the free share.
+- **A failed call is given back** (`refund` in `src/quota.ts`): a turn whose model stream fails
+  before its first event (Anthropic down, overloaded or refusing the request) produced nothing,
+  so its month and day counts are lowered again; one that fails mid-answer keeps them. Valuations
+  keep their count either way (their searches may have run).
+- **RevenueCat** is asked with a 5-second timeout (`REVENUECAT_TIMEOUT_MS`); a timeout or a
+  network failure is 502 `entitlement_unavailable` (logged as `entitlement 504` or `0`).
 
 ## 12. Setup, deploy and eval
 
@@ -541,7 +552,8 @@ spending, no em dashes, in all 11 languages.
   `AgentReplyDataTests` (figures by reference), `AgentDraftTests`, `AgentFastPathTests`,
   `AgentMemoryTests`, `AgentAttachmentTests`, and the tools over fixtures (`AgentCurrencyToolsTests`,
   `AgentForecastTests`, `AgentPlanningTests`, `PlanToolsTests`, `AssetToolsTests`).
-- Server: `npm test` in `server/assistant/` (`test/`: `index`, `quota`, `entitlement`, `claude`,
+- Server: `npm test` in `server/assistant/` (`test/`: `index`, `turn` for a failed model call's
+  refund, `quota` with Pro's part of the day, `entitlement` with the RevenueCat timeout, `claude`,
   `appattest` on a synthetic chain, `tools` for the schemas, `eval` for the grader, `valuation`
   for the valuation's checks, arithmetic, model loop, endpoint and its eval cases).
 - Not testable here: the real App Attest flow, streaming on a device, Ten's animation; checked on

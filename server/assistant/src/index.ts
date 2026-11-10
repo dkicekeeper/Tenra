@@ -5,7 +5,7 @@ import { readConfig, type Config, type Env } from "./config";
 import { resolveTier, UpstreamError } from "./entitlement";
 import { PROMPT_VERSION } from "./prompt";
 import { RENDER_REPLY } from "./tools";
-import { consumeCall, consumeValuation, type Tier } from "./quota";
+import { consumeCall, consumeValuation, refund, type Tier } from "./quota";
 import { isValidUserId, parseTurnRequest, PROTOCOL_VERSION, ValidationError } from "./validate";
 import { parseValuationRequest, valuate, VALUATION_PROMPT_VERSION, valuationConfig } from "./valuation";
 
@@ -88,6 +88,10 @@ export default {
     const send = (event: string, data: unknown) =>
       writer.write(encoder.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`)).catch(() => undefined);
 
+    // Set by the first event of the model's stream. A call that fails before it (Anthropic down,
+    // overloaded, or refusing the request) produced nothing and costs nothing: its count is given
+    // back. One that fails mid-answer keeps it, since part of it was generated.
+    let started = false;
     ctx.waitUntil(
       (async () => {
         try {
@@ -95,6 +99,7 @@ export default {
           // The content block that is render_reply's call, while it streams.
           let replyIndex: number | undefined;
           for await (const event of stream) {
+            started = true;
             if (event.type === "content_block_start" && event.content_block.type === "tool_use") {
               if (event.content_block.name === RENDER_REPLY) replyIndex = event.index;
               await send("tool", { name: event.content_block.name });
@@ -108,8 +113,9 @@ export default {
           await send("done", { ...donePayload(message), tier, quota: { used: quota.used, limit: quota.limit } });
         } catch (error) {
           const payload = errorPayload(error);
-          console.log(`turn error ${payload.code}${error instanceof Anthropic.APIError ? ` ${error.status}` : ""}`);
+          console.log(`turn error ${payload.code}${error instanceof Anthropic.APIError ? ` ${error.status}` : ""}${started ? "" : " refunded"}`);
           await send("error", payload);
+          if (!started && quota.charge) await refund(env.QUOTA, quota.charge);
         } finally {
           await writer.close().catch(() => undefined);
         }

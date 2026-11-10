@@ -30,4 +30,21 @@ describe("resolveTier", () => {
     const fetchMock = vi.fn(async () => new Response("", { status: 503 }));
     await expect(resolveTier(new MemoryKV(), "sk", "u", fetchMock as unknown as typeof fetch)).rejects.toBeInstanceOf(UpstreamError);
   });
+
+  it("gives up on a RevenueCat that does not answer", async () => {
+    // A fetch that only ends when its signal aborts it, as the runtime's does.
+    const hanging = vi.fn(
+      (_url: string, init?: RequestInit) =>
+        new Promise<Response>((_resolve, reject) => init?.signal?.addEventListener("abort", () => reject(init.signal!.reason))),
+    );
+    const failure = resolveTier(new MemoryKV(), "sk", "u", hanging as unknown as typeof fetch, 20);
+    await expect(failure).rejects.toMatchObject({ service: "revenuecat", status: 504 });
+  });
+
+  it("reads a network failure as RevenueCat not answering", async () => {
+    const offline = vi.fn(async () => {
+      throw new TypeError("fetch failed");
+    });
+    await expect(resolveTier(new MemoryKV(), "sk", "u", offline as unknown as typeof fetch)).rejects.toMatchObject({ service: "revenuecat", status: 0 });
+  });
 });

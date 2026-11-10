@@ -9,6 +9,7 @@ export interface Env {
   PRO_MONTHLY_CALLS?: string;
   FREE_MONTHLY_CALLS?: string;
   GLOBAL_DAILY_CALLS?: string;
+  FREE_DAILY_CALLS?: string;
   BLOCKED_COUNTRIES?: string;
   APP_ID?: string;
   VALUATION_ENABLED?: string;
@@ -33,6 +34,9 @@ export interface Config {
   proMonthlyCalls: number;
   freeMonthlyCalls: number;
   globalDailyCalls: number;
+  /** Free callers' share of the day: free calls stop here, the rest of the global stop is Pro's.
+   * Unset, it equals the global stop (no share kept for Pro). */
+  freeDailyCalls: number;
   blockedCountries: Set<string>;
   /** TEAMID.bundle-id, the app App Attest assertions must come from. */
   appId: string;
@@ -61,6 +65,7 @@ function int(value: string | undefined, fallback: number): number {
 const effortOf = (value: string | undefined): Effort => (EFFORTS.includes(value as Effort) ? (value as Effort) : "low");
 
 export function readConfig(env: Partial<Env>): Config {
+  const globalDailyCalls = int(env.GLOBAL_DAILY_CALLS, 5000);
   return {
     enabled: env.ASSISTANT_ENABLED !== "false",
     model: env.ASSISTANT_MODEL || "claude-haiku-5-5",
@@ -68,7 +73,8 @@ export function readConfig(env: Partial<Env>): Config {
     maxTokens: int(env.ASSISTANT_MAX_TOKENS, 16000),
     proMonthlyCalls: int(env.PRO_MONTHLY_CALLS, 900),
     freeMonthlyCalls: int(env.FREE_MONTHLY_CALLS, 0),
-    globalDailyCalls: int(env.GLOBAL_DAILY_CALLS, 5000),
+    globalDailyCalls,
+    freeDailyCalls: Math.min(int(env.FREE_DAILY_CALLS, globalDailyCalls), globalDailyCalls),
     blockedCountries: new Set(
       (env.BLOCKED_COUNTRIES ?? "RU,BY")
         .split(",")

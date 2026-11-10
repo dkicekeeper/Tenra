@@ -60,6 +60,11 @@
                                                     the one-time purchase in every storefront at
                                                     N times the subscription's price there (the
                                                     nearest price point), at once
+    python3 appstore/asc.py push-tier [--monthly 4.99] [--annual 24.99] [--lifetime 69.99]
+                                   [--territory USA,DEU] [--apply]
+                                                    Tenra Pro in the high-price storefronts
+                                                    (HIGH_TIER) at Apple's local equivalents of
+                                                    three US prices
     python3 appstore/asc.py iap-prices [--product tenra.pro.lifetime] [--territory KAZ,USA]
                                                     a one-time purchase's base territory, manual
                                                     prices and what the storefronts charge
@@ -1102,6 +1107,111 @@ def push_iap_multiple(app: str, product: str, of: str, times: float, apply: bool
     print(f"{product}: {len(entries)} storefronts set to {times:g} x {of}, from now.")
 
 
+# The high-price tier ------------------------------------------------------------------------------
+
+# Storefronts priced from the US price instead of Kazakhstan's (docs/promotion-plan.md §2): the
+# US, Canada, the UK, the euro area, Switzerland, Scandinavia, Australia, Japan, Korea,
+# Singapore and the UAE.
+HIGH_TIER = ["USA", "CAN", "GBR", "AUT", "BEL", "BGR", "CYP", "DEU", "ESP", "EST", "FIN", "FRA", "GRC", "HRV",
+             "IRL", "ITA", "LTU", "LUX", "LVA", "MLT", "NLD", "PRT", "SVK", "SVN", "CHE", "DNK", "NOR", "SWE",
+             "AUS", "JPN", "KOR", "SGP", "ARE"]
+
+
+def equalized(points_path: str, kind: str, price: str, territories: list[str]) -> dict[str, dict]:
+    """Apple's equivalents of a US price in other storefronts: {territory: {id, price, currency}}.
+    `points_path` lists the product's price points, `kind` is their resource type."""
+    points, _ = get_all(points_path, {"filter[territory]": "USA", "limit": 200}, pages=20)
+    usa = next((p for p in points if float(p["attributes"].get("customerPrice") or -1) == float(price)), None)
+    if not usa:
+        near = sorted(points, key=lambda p: abs(float(p["attributes"].get("customerPrice") or 0) - float(price)))[:4]
+        sys.exit(f"{price} is not a US price point; the nearest: "
+                 + ", ".join(p["attributes"].get("customerPrice") for p in near))
+    found = {"USA": {"id": usa["id"], "price": usa["attributes"]["customerPrice"], "currency": "USD"}}
+    others, included = get_all(f"/v1/{kind}/{usa['id']}/equalizations", {"include": "territory", "limit": 200}, pages=5)
+    currencies = {item["id"]: item["attributes"].get("currency", "") for item in included if item["type"] == "territories"}
+    for point in others:
+        territory = (((point.get("relationships") or {}).get("territory") or {}).get("data") or {}).get("id")
+        if territory:
+            found[territory] = {"id": point["id"], "price": point["attributes"].get("customerPrice"),
+                                "currency": currencies.get(territory, "")}
+    return {territory: found[territory] for territory in territories if territory in found}
+
+
+def push_tier(app: str, monthly: str, annual: str, lifetime: str, territories: list[str], apply: bool) -> None:
+    """Tenra Pro in the high-price storefronts at Apple's local equivalents of three US prices.
+    Subscriptions change tomorrow and current subscribers keep what they pay; the one-time
+    purchase changes at once, and its other manual prices are sent again as they stand.
+    Without `apply` only shows the table."""
+    found = {s["attributes"].get("productId"): s for s in subscriptions(app)}
+    plans = [("tenra.pro.monthly", monthly), ("tenra.pro.annual", annual)]
+    for product, _ in plans:
+        if product not in found:
+            sys.exit(f"No subscription {product}.")
+    item = in_app_purchase(app, "tenra.pro.lifetime")
+    base, manual = iap_schedule(item["id"])
+    today = date.today().isoformat()
+    if any((row["start"] and row["start"] > today) or row["end"] for row in manual):
+        sys.exit("The one-time purchase has a scheduled price change: set its prices in App Store Connect.")
+
+    new = {product: equalized(f"/v1/subscriptions/{found[product]['id']}/pricePoints", "subscriptionPricePoints",
+                              price, territories) for product, price in plans}
+    new_lifetime = equalized(f"/v2/inAppPurchases/{item['id']}/pricePoints", "inAppPurchasePricePoints",
+                             lifetime, territories)
+    now = {product: current_subscription_prices(found[product]["id"]) for product, _ in plans}
+    by_hand = {row["territory"]: row["price"] for row in manual}
+
+    rows = []
+    for territory in territories:
+        cells = [territory, (new["tenra.pro.annual"].get(territory) or {}).get("currency", "")]
+        for product, _ in plans:
+            target = new[product].get(territory)
+            cells.append(f"{now[product].get(territory, '?'):g} → {target['price'] if target else 'no equivalent'}")
+        target = new_lifetime.get(territory)
+        was = by_hand.get(territory) or iap_automatic_price(item["id"], territory)
+        cells.append(f"{was} → {target['price'] if target else 'no equivalent'}")
+        rows.append(cells)
+    table("Tenra Pro in the high-price storefronts" + ("" if apply else " (dry run: --apply sets it)"),
+          ["Territory", "Currency", "Monthly", "Annual", "Lifetime"], rows)
+    if not apply:
+        return
+
+    start = (date.today() + timedelta(days=1)).isoformat()
+    for product, _ in plans:
+        for territory, point in new[product].items():
+            if now[product].get(territory) == float(point["price"]):
+                continue
+            send("POST", "/v1/subscriptionPrices", {"data": {
+                "type": "subscriptionPrices",
+                "attributes": {"preserveCurrentPrice": True, "startDate": start},
+                "relationships": {
+                    "subscription": {"data": {"type": "subscriptions", "id": found[product]["id"]}},
+                    "subscriptionPricePoint": {"data": {"type": "subscriptionPricePoints", "id": point["id"]}},
+                    "territory": {"data": {"type": "territories", "id": territory}},
+                },
+            }})
+        print(f"{product}: {len(new[product])} storefronts from {start}; current subscribers keep their price.")
+
+    kept = [row["point"] for row in manual if row["territory"] not in new_lifetime]
+    entries = kept + [point["id"] for point in new_lifetime.values()]
+    included = [{
+        "type": "inAppPurchasePrices", "id": f"${{price{index}}}",
+        "attributes": {"startDate": None},
+        "relationships": {
+            "inAppPurchaseV2": {"data": {"type": "inAppPurchases", "id": item["id"]}},
+            "inAppPurchasePricePoint": {"data": {"type": "inAppPurchasePricePoints", "id": point_id}},
+        },
+    } for index, point_id in enumerate(entries)]
+    send("POST", "/v1/inAppPurchasePriceSchedules", {
+        "data": {"type": "inAppPurchasePriceSchedules", "relationships": {
+            "inAppPurchase": {"data": {"type": "inAppPurchases", "id": item["id"]}},
+            "baseTerritory": {"data": {"type": "territories", "id": base}},
+            "manualPrices": {"data": [{"type": "inAppPurchasePrices", "id": entry["id"]} for entry in included]},
+        }},
+        "included": included,
+    })
+    print(f"tenra.pro.lifetime: {len(new_lifetime)} storefronts from now.")
+
+
 # Review notes and the draft submission ------------------------------------------------------------
 
 def review_notes_text(path: Path = NOTES) -> str:
@@ -1831,6 +1941,10 @@ def main(argv: list[str]) -> None:
     elif command == "push-iap-multiple":
         push_iap_multiple(app, option("--product", "tenra.pro.lifetime"), option("--of", "tenra.pro.annual"),
                           float(option("--times", 3)), "--apply" in args)
+    elif command == "push-tier":
+        chosen = option("--territory")
+        push_tier(app, option("--monthly", "4.99"), option("--annual", "24.99"), option("--lifetime", "69.99"),
+                  chosen.split(",") if chosen else HIGH_TIER, "--apply" in args)
     elif command == "iap-prices":
         iap_prices(app, option("--product", "tenra.pro.lifetime"), option("--territory", "KAZ,USA").split(","))
     elif command == "review-notes":

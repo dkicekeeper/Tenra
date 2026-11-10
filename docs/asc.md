@@ -148,6 +148,10 @@ python3 appstore/asc.py push-iap-multiple [--product tenra.pro.lifetime] [--of t
                                                 # разовая покупка в каждой витрине = N цен подписки
                                                 # там же (ближайшая точка цены), сразу; после этого
                                                 # все витрины с ценой вручную, за базовой не идут
+python3 appstore/asc.py push-tier [--monthly 4.99] [--annual 24.99] [--lifetime 69.99] [--territory USA,DEU] [--apply]
+                                                # три продукта в дорогих витринах (HIGH_TIER в asc.py)
+                                                # по местным эквивалентам цен США; подписки с завтра,
+                                                # lifetime сразу
 python3 appstore/asc.py iap-prices [--product tenra.pro.lifetime] [--territory KAZ,USA]
                                                 # разовая покупка: базовая страна, цены, заданные
                                                 # вручную, и цена витрин, которые идут за базовой

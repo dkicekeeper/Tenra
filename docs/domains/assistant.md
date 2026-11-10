@@ -510,6 +510,9 @@ spending, no em dashes, in all 11 languages.
   keep their count either way (their searches may have run).
 - **RevenueCat** is asked with a 5-second timeout (`REVENUECAT_TIMEOUT_MS`); a timeout or a
   network failure is 502 `entitlement_unavailable` (logged as `entitlement 504` or `0`).
+- **The app left mid-answer** (the chat closed, the connection lost): the response's reader goes,
+  the writer errors (`writer.closed`), and the model's stream is aborted instead of running to
+  its end. The call keeps its count; the log says `turn stopped: the app left`.
 
 ## 12. Setup, deploy and eval
 

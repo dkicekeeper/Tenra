@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Калькулятор кредита и рассрочки с досрочным погашением</title>
+    <meta name="description" content="Посчитайте ежемесячный платёж, переплату и график кредита онлайн. Аннуитетные и дифференцированные платежи, рассрочка 0%, досрочное погашение.">
+    <link rel="canonical" href="https://dkicekeeper.github.io/Tenra/ru/loan-calculator.html">
+    <link rel="alternate" hreflang="ru" href="https://dkicekeeper.github.io/Tenra/ru/loan-calculator.html">
+    <link rel="alternate" hreflang="kk" href="https://dkicekeeper.github.io/Tenra/kk/loan-calculator.html">
+    <link rel="alternate" hreflang="en" href="https://dkicekeeper.github.io/Tenra/en/loan-calculator.html">
+    <link rel="alternate" hreflang="x-default" href="https://dkicekeeper.github.io/Tenra/en/loan-calculator.html">
+    <meta name="apple-itunes-app" content="app-id=6761530361">
+    <meta property="og:title" content="Калькулятор кредита и рассрочки с досрочным погашением">
+    <meta property="og:description" content="Посчитайте ежемесячный платёж, переплату и график кредита онлайн. Аннуитетные и дифференцированные платежи, рассрочка 0%, досрочное погашение.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://dkicekeeper.github.io/Tenra/ru/loan-calculator.html">
+    <link rel="stylesheet" href="../assets/site.css">
+    <script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Какой вид платежа выгоднее?", "acceptedAnswer": {"@type": "Answer", "text": "Дифференцированный даёт меньшую переплату, но первые платежи выше. Аннуитетный удобнее для бюджета: сумма каждый месяц одна и та же."}}, {"@type": "Question", "name": "Как уменьшить переплату по кредиту?", "acceptedAnswer": {"@type": "Answer", "text": "Платить досрочно, особенно в первые месяцы, когда остаток долга самый большой. Введите доплату в поле «Досрочно сверху каждый месяц», и калькулятор покажет экономию."}}, {"@type": "Question", "name": "Учитывает ли калькулятор комиссии и страховку?", "acceptedAnswer": {"@type": "Answer", "text": "Нет. Калькулятор считает только проценты по ставке. Комиссии и страховку прибавьте к переплате отдельно."}}]}</script>
+</head>
+<body>
+<div class="wrap">
+    <header class="top">
+        <a class="brand" href="../ru/">Tenra</a>
+        <nav class="langs" aria-label="Язык"><a href="../ru/loan-calculator.html" lang="ru" aria-current="true">Русский</a><a href="../kk/loan-calculator.html" lang="kk">Қазақша</a><a href="../en/loan-calculator.html" lang="en">English</a></nav>
+    </header>
+    <main>
+        <h1>Калькулятор кредита и рассрочки</h1>
+        <p class="lead">Платёж в месяц, переплата и график. Для рассрочки поставьте ставку 0.</p>
+        <form data-calc="loan" novalidate>
+            <section class="card">
+                <div class="fields">
+                    <div class="field">
+                        <label for="amount">Сумма</label>
+                        <input id="amount" name="amount" inputmode="decimal" autocomplete="off" value="1 000 000">
+                    </div>
+                    <div class="field">
+                        <label for="currency">Валюта</label>
+                        <select id="currency" name="currency"><option selected>₸</option><option>₽</option><option>$</option><option>€</option></select>
+                    </div>
+                    <div class="field">
+                        <label for="rate">Ставка, % годовых</label>
+                        <input id="rate" name="rate" inputmode="decimal" autocomplete="off" value="20">
+                    </div>
+                    <div class="field">
+                        <label for="term">Срок</label>
+                        <input id="term" name="term" inputmode="numeric" autocomplete="off" value="24">
+                    </div>
+                    <div class="field wide">
+                        <label for="unit">Срок в</label>
+                        <select id="unit" name="unit"><option value="months" selected>месяцах</option><option value="years">годах</option></select>
+                    </div>
+                    <div class="field wide">
+                        <label for="type">Вид платежа</label>
+                        <select id="type" name="type"><option value="annuity" selected>Аннуитетный (равные платежи)</option><option value="diff">Дифференцированный (убывающие платежи)</option></select>
+                    </div>
+                    <div class="field wide">
+                        <label for="extra">Досрочно сверху каждый месяц</label>
+                        <input id="extra" name="extra" inputmode="decimal" autocomplete="off" value="0">
+                    </div>
+                </div>
+            </section>
+            <section class="card" aria-live="polite">
+                <div class="results">
+                    <div class="result main wide">
+                        <div class="label"><span id="label-payment">Платёж в месяц</span><span id="label-first" hidden>Первый платёж</span></div>
+                        <div class="value" id="out-payment"></div>
+                    </div>
+                    <div class="result wide" id="row-last" hidden><div class="label">Последний платёж</div><div class="value" id="out-last"></div></div>
+                    <div class="result"><div class="label">Переплата</div><div class="value" id="out-interest"></div></div>
+                    <div class="result"><div class="label">Всего выплат</div><div class="value" id="out-total"></div></div>
+                    <div class="result wide"><div class="label">Срок, месяцев</div><div class="value" id="out-months"></div></div>
+                    <div class="result wide" id="row-saved" hidden>
+                        <div class="label">Досрочные платежи экономят</div>
+                        <div class="value good"><span id="out-saved"></span>, срок короче на <span id="out-saved-months"></span> мес.</div>
+                    </div>
+                </div>
+            </section>
+            <h2>График платежей</h2>
+            <div class="table-scroll">
+                <table>
+                    <thead><tr><th>Месяц</th><th>Платёж</th><th>Проценты</th><th>Основной долг</th><th>Остаток</th></tr></thead>
+                    <tbody id="schedule"></tbody>
+                </table>
+            </div>
+            <p><button type="button" class="button plain" id="show-all" hidden>Показать весь график</button></p>
+        </form>
+        <p class="note">Расчёт приблизительный: банк считает проценты по дням и может округлять иначе. Точные условия смотрите в договоре.</p>
+        <section class="card cta">
+            <h2>Все кредиты и рассрочки в Tenra</h2>
+            <p>Заведите кредит в Tenra: приложение ведёт график, отмечает оплаченные месяцы, показывает остаток долга и считает, сколько сэкономит досрочный платёж.</p>
+            <p><a class="button" href="https://apps.apple.com/app/id6761530361?ppid=23fa027e-1341-4344-8d3e-e5567b713dda">Скачать в App Store</a></p>
+            <p class="note">iPhone, iOS 26 и новее. Данные хранятся на устройстве, вход в банк не нужен.</p>
+        </section>
+        <h2>Как считается платёж по кредиту</h2>
+        <p>При аннуитетном кредите платёж каждый месяц одинаковый. Сначала в нём больше процентов, к концу срока больше основного долга.</p>
+        <p class="formula">Платёж = Сумма × Ставка / 12 / (1 − (1 + Ставка / 12) ^ −Месяцы)</p>
+        <p>При дифференцированном кредите основной долг гасится равными долями, а проценты считаются на остаток. Первые платежи больше, зато общая переплата меньше.</p>
+        <h2>Рассрочка</h2>
+        <p>Рассрочка без процентов считается просто: сумма делится на число месяцев. Поставьте ставку 0, и калькулятор покажет платёж.</p>
+        <h2>Досрочное погашение</h2>
+        <p>Всё, что вы платите сверх графика, уменьшает основной долг. Проценты следующего месяца считаются уже с меньшего остатка, поэтому даже небольшая доплата сокращает срок и переплату.</p>
+        <h2>Частые вопросы</h2>
+        <h3>Какой вид платежа выгоднее?</h3>
+        <p>Дифференцированный даёт меньшую переплату, но первые платежи выше. Аннуитетный удобнее для бюджета: сумма каждый месяц одна и та же.</p>
+        <h3>Как уменьшить переплату по кредиту?</h3>
+        <p>Платить досрочно, особенно в первые месяцы, когда остаток долга самый большой. Введите доплату в поле «Досрочно сверху каждый месяц», и калькулятор покажет экономию.</p>
+        <h3>Учитывает ли калькулятор комиссии и страховку?</h3>
+        <p>Нет. Калькулятор считает только проценты по ставке. Комиссии и страховку прибавьте к переплате отдельно.</p>
+        <h2>Другие калькуляторы</h2>
+        <div class="links"><a href="../ru/deposit-calculator.html"><strong>Калькулятор депозита</strong><span>Доход по вкладу с капитализацией и пополнением</span></a></div>
+    </main>
+    <footer>
+        <a href="../ru/">Tenra</a> <a href="../support.html">Поддержка</a> <a href="../privacy-policy.html">Конфиденциальность</a> <a href="../terms-of-use.html">Условия</a>
+    </footer>
+</div>
+<script src="../assets/calc.js"></script>
+</body>
+</html>

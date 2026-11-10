@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Калькулятор депозита с капитализацией и пополнением</title>
+    <meta name="description" content="Посчитайте доход по депозиту онлайн: ставка, срок, ежемесячное пополнение, капитализация и эффективная ставка. Бесплатно и без регистрации.">
+    <link rel="canonical" href="https://dkicekeeper.github.io/Tenra/ru/deposit-calculator.html">
+    <link rel="alternate" hreflang="ru" href="https://dkicekeeper.github.io/Tenra/ru/deposit-calculator.html">
+    <link rel="alternate" hreflang="kk" href="https://dkicekeeper.github.io/Tenra/kk/deposit-calculator.html">
+    <link rel="alternate" hreflang="en" href="https://dkicekeeper.github.io/Tenra/en/deposit-calculator.html">
+    <link rel="alternate" hreflang="x-default" href="https://dkicekeeper.github.io/Tenra/en/deposit-calculator.html">
+    <meta name="apple-itunes-app" content="app-id=6761530361">
+    <meta property="og:title" content="Калькулятор депозита с капитализацией и пополнением">
+    <meta property="og:description" content="Посчитайте доход по депозиту онлайн: ставка, срок, ежемесячное пополнение, капитализация и эффективная ставка. Бесплатно и без регистрации.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://dkicekeeper.github.io/Tenra/ru/deposit-calculator.html">
+    <link rel="stylesheet" href="../assets/site.css">
+    <script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Как пополнение влияет на доход?", "acceptedAnswer": {"@type": "Answer", "text": "Каждое пополнение начинает приносить проценты со следующего месяца. Чем раньше внесены деньги, тем дольше они работают."}}, {"@type": "Question", "name": "Что выгоднее: с капитализацией или без?", "acceptedAnswer": {"@type": "Answer", "text": "При одной и той же ставке вклад с капитализацией приносит больше, потому что проценты начисляются и на уже полученные проценты. Сравнивайте вклады по эффективной ставке."}}, {"@type": "Question", "name": "Почему сумма в банке немного отличается?", "acceptedAnswer": {"@type": "Answer", "text": "Банк считает проценты по дням, а в месяцах разное число дней. Калькулятор считает по месяцам, поэтому разница обычно в пределах нескольких десятых процента."}}]}</script>
+</head>
+<body>
+<div class="wrap">
+    <header class="top">
+        <a class="brand" href="../ru/">Tenra</a>
+        <nav class="langs" aria-label="Язык"><a href="../ru/deposit-calculator.html" lang="ru" aria-current="true">Русский</a><a href="../kk/deposit-calculator.html" lang="kk">Қазақша</a><a href="../en/deposit-calculator.html" lang="en">English</a></nav>
+    </header>
+    <main>
+        <h1>Калькулятор депозита</h1>
+        <p class="lead">Сколько принесёт вклад с капитализацией и ежемесячным пополнением.</p>
+        <form data-calc="deposit" novalidate>
+            <section class="card">
+                <div class="fields">
+                    <div class="field">
+                        <label for="amount">Сумма</label>
+                        <input id="amount" name="amount" inputmode="decimal" autocomplete="off" value="1 000 000">
+                    </div>
+                    <div class="field">
+                        <label for="currency">Валюта</label>
+                        <select id="currency" name="currency"><option selected>₸</option><option>₽</option><option>$</option><option>€</option></select>
+                    </div>
+                    <div class="field">
+                        <label for="rate">Ставка, % годовых</label>
+                        <input id="rate" name="rate" inputmode="decimal" autocomplete="off" value="15">
+                    </div>
+                    <div class="field">
+                        <label for="term">Срок</label>
+                        <input id="term" name="term" inputmode="numeric" autocomplete="off" value="12">
+                    </div>
+                    <div class="field wide">
+                        <label for="unit">Срок в</label>
+                        <select id="unit" name="unit"><option value="months" selected>месяцах</option><option value="years">годах</option></select>
+                    </div>
+                    <div class="field wide">
+                        <label for="topup">Пополнение каждый месяц</label>
+                        <input id="topup" name="topup" inputmode="decimal" autocomplete="off" value="0">
+                    </div>
+                    <label class="check field wide"><input type="checkbox" name="capitalize" checked> Капитализация процентов каждый месяц</label>
+                </div>
+            </section>
+            <section class="card" aria-live="polite">
+                <div class="results">
+                    <div class="result main wide"><div class="label">Сумма в конце срока</div><div class="value" id="out-total"></div></div>
+                    <div class="result"><div class="label">Начисленные проценты</div><div class="value good" id="out-interest"></div></div>
+                    <div class="result"><div class="label">Эффективная ставка</div><div class="value" id="out-effective"></div></div>
+                    <div class="result wide"><div class="label">Вложено своих денег</div><div class="value" id="out-contributed"></div></div>
+                </div>
+            </section>
+        </form>
+        <p class="note">Расчёт приблизительный: банк считает проценты по дням и может округлять иначе. Точные условия смотрите в договоре.</p>
+        <section class="card cta">
+            <h2>Tenra считает проценты за вас</h2>
+            <p>Заведите депозит в Tenra: проценты начисляются каждый день, капитализация считается сама, а пополнения и снятия меняют базу для процентов.</p>
+            <p><a class="button" href="https://apps.apple.com/app/id6761530361?ppid=23fa027e-1341-4344-8d3e-e5567b713dda">Скачать в App Store</a></p>
+            <p class="note">iPhone, iOS 26 и новее. Данные хранятся на устройстве, вход в банк не нужен.</p>
+        </section>
+        <h2>Как считается доход по депозиту</h2>
+        <p>Каждый месяц банк начисляет проценты на остаток: остаток умножается на годовую ставку и делится на 12. С капитализацией проценты прибавляются к вкладу, и в следующем месяце доход считается уже с большей суммы.</p>
+        <p class="formula">Сумма = Вклад × (1 + Ставка / 12) ^ Месяцы</p>
+        <p>Без капитализации проценты выплачиваются отдельно, а вклад не растёт: доход за каждый месяц одинаковый.</p>
+        <h2>Что такое эффективная ставка</h2>
+        <p>Эффективная ставка показывает настоящий доход за год с учётом капитализации. В Казахстане банки указывают её как ГЭСВ. Например, ставка 15% с ежемесячной капитализацией даёт 16,08% за год.</p>
+        <h2>Частые вопросы</h2>
+        <h3>Как пополнение влияет на доход?</h3>
+        <p>Каждое пополнение начинает приносить проценты со следующего месяца. Чем раньше внесены деньги, тем дольше они работают.</p>
+        <h3>Что выгоднее: с капитализацией или без?</h3>
+        <p>При одной и той же ставке вклад с капитализацией приносит больше, потому что проценты начисляются и на уже полученные проценты. Сравнивайте вклады по эффективной ставке.</p>
+        <h3>Почему сумма в банке немного отличается?</h3>
+        <p>Банк считает проценты по дням, а в месяцах разное число дней. Калькулятор считает по месяцам, поэтому разница обычно в пределах нескольких десятых процента.</p>
+        <h2>Другие калькуляторы</h2>
+        <div class="links"><a href="../ru/loan-calculator.html"><strong>Калькулятор кредита</strong><span>Платёж, переплата, график и досрочное погашение</span></a></div>
+    </main>
+    <footer>
+        <a href="../ru/">Tenra</a> <a href="../support.html">Поддержка</a> <a href="../privacy-policy.html">Конфиденциальность</a> <a href="../terms-of-use.html">Условия</a>
+    </footer>
+</div>
+<script src="../assets/calc.js"></script>
+</body>
+</html>

@@ -31,6 +31,12 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      # The landing pages and calculators are generated (docs/plan-growth.md §4): what is
+      # committed must match its sources, and the calculators' math must hold.
+      - name: Site pages match their sources
+        run: python3 scripts/build_site.py --check
+      - name: Calculator math
+        run: node scripts/test_site_calc.js
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact

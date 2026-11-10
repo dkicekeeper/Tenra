@@ -378,6 +378,7 @@ When working with this project:
 - To check a layout you changed, render it with `ImageRenderer` in a throwaway test that writes a PNG to a host path (e.g. your scratchpad), run it with `-parallel-testing-enabled NO` (parallel clones discard their tmp), look at it, delete the test. To show the owner a layout before it ships (no Mac needed), add it to `TenraTests/Mockups/ScreenMockupTests.swift` and push: the **Mockups** workflow renders it in a real window (glass and navigation included), per language, light and dark ([docs/asc.md](docs/asc.md) «Макеты экранов»).
 - **Don't change the layout of shipped UI components as a side effect of an audit or plan** (category grid: 3 per row, one-line titles). Report and ask first. User rule.
 - ⚠️ Bank statements the user shares contain name/IIN/IBAN/balances/counterparties: never commit the files or any value from them (tests, comments, docs, commit messages). Invent fixtures; grep the diff for real values before committing.
+- ⚠️ **The repository is public, its whole history and its Actions logs too** (owner's decision, [backlog.md](docs/backlog.md) §Decisions): a key that lands in a commit stays readable after it is deleted, so it must be revoked, not just removed. Secrets live only in GitHub repository secrets (and the cloud environment's network secrets); the code carries only keys made to ship inside the app (RevenueCat `appl_…`, Logo.dev `pk_…`). Scan a change before pushing: `gitleaks git . --log-opts="origin/main..HEAD" --redact` (`brew install gitleaks`; in a cloud session `go install github.com/zricethezav/gitleaks/v8@v8.28.0`). Evidence: the 2026-11-10 audit of every public repository, archived at [docs/archive/security-audit-2026-11-10.md](docs/archive/security-audit-2026-11-10.md).
 
 ## Questions?
 
@@ -407,6 +408,6 @@ When unsure about architecture decisions:
 
 ---
 
-**Last Updated**: 2026-10-29
+**Last Updated**: 2026-11-10
 **iOS Target**: 26.0+ (built with Xcode 27 / SDK 27 — iOS 27 APIs need `if #available(iOS 27, *)` **inside `#if compiler(>=6.4)`**, with the iOS 26 path in `#else`, so the project still builds with Xcode 26. Every GitHub workflow (CI, TestFlight, DesignKit update, Screenshots) builds with Xcode 27.0 on the `xcode-27` runner since 2026-10-21, so the iOS 27 paths are compiled, tested and shipped from the cloud; the Xcode pin is raised in all four at once, see [docs/asc.md](docs/asc.md))
 **Swift Version**: 5.0 project setting; Swift 6 patterns; `SWIFT_STRICT_CONCURRENCY = minimal`; `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor`

@@ -214,6 +214,8 @@ final class AssetStore {
     /// Links payments to the asset by hand ("Link payments"): they count whatever their
     /// category or day, and are no longer removed.
     func include(_ transactionIds: [String], in assetId: String) async {
+        // A change made before the first read finishes would be overwritten by it.
+        await load()
         guard var asset = asset(id: assetId), !transactionIds.isEmpty else { return }
         let ids = Set(transactionIds)
         asset.excludedTransactionIds.removeAll { ids.contains($0) }
@@ -224,6 +226,7 @@ final class AssetStore {
     /// Removes payments from the asset ("Remove payments"): one linked by hand is unlinked, and
     /// one its category links count is excluded (then listed under "Removed payments").
     func exclude(_ transactionIds: [String], from assetId: String) async {
+        await load()
         guard var asset = asset(id: assetId), !transactionIds.isEmpty else { return }
         let ids = Set(transactionIds)
         let byLink = transactionsOfLinks(of: asset)
@@ -237,6 +240,7 @@ final class AssetStore {
 
     /// Gives removed payments back to the asset ("Removed payments").
     func restore(_ transactionIds: [String], to assetId: String) async {
+        await load()
         guard var asset = asset(id: assetId), !transactionIds.isEmpty else { return }
         let ids = Set(transactionIds)
         asset.excludedTransactionIds.removeAll { ids.contains($0) }
@@ -320,6 +324,7 @@ final class AssetStore {
 
     /// Adds an asset at the end of the list.
     func add(_ asset: Asset) async {
+        await load()
         var asset = asset
         asset.order = (assets.map(\.order).max() ?? -1) + 1
         assets.append(asset)
@@ -329,6 +334,7 @@ final class AssetStore {
 
     /// Writes the asset over its earlier copy.
     func update(_ asset: Asset) async {
+        await load()
         guard let index = assets.firstIndex(where: { $0.id == asset.id }) else { return }
         assets[index] = asset
         await writes.run { [repository] in await repository?.save(asset) }
@@ -336,6 +342,7 @@ final class AssetStore {
     }
 
     func delete(id: String) async {
+        await load()
         assets.removeAll { $0.id == id }
         await writes.run { [repository] in await repository?.delete(id: id) }
         didChange()
@@ -345,6 +352,7 @@ final class AssetStore {
     /// list): they take that section's places among all the assets, in memory at once, then
     /// kept.
     func reorder(_ orderedIds: [String]) async {
+        await load()
         await save(placing(orderedIds))
     }
 
@@ -379,6 +387,7 @@ final class AssetStore {
 
     /// A new valuation: the value from its day on.
     func addValuation(_ valuation: AssetValuation, to assetId: String) async {
+        await load()
         guard var asset = asset(id: assetId) else { return }
         asset.valuations.append(valuation)
         await update(asset)
@@ -387,6 +396,7 @@ final class AssetStore {
     /// A valuation changed in place (its value, day or note); the sale's day is the asset's
     /// sale day.
     func updateValuation(_ valuation: AssetValuation, in assetId: String) async {
+        await load()
         guard var asset = asset(id: assetId), let index = asset.valuations.firstIndex(where: { $0.id == valuation.id }) else { return }
         asset.valuations[index] = valuation
         if valuation.source == .sale {
@@ -397,6 +407,7 @@ final class AssetStore {
 
     /// Deleting the sale's valuation puts the asset back among the held ones.
     func deleteValuation(id: String, from assetId: String) async {
+        await load()
         guard var asset = asset(id: assetId) else { return }
         let removed = asset.valuations.first { $0.id == id }
         asset.valuations.removeAll { $0.id == id }
@@ -410,6 +421,7 @@ final class AssetStore {
     /// held ones (and net worth). No transaction is made: the money comes in as the person
     /// records it.
     func sell(assetId: String, price: Double, date: Date, note: String? = nil) async {
+        await load()
         guard var asset = asset(id: assetId) else { return }
         asset.valuations.removeAll { $0.source == .sale }
         asset.valuations.append(AssetValuation(date: date, value: price, source: .sale, note: note))
@@ -419,6 +431,7 @@ final class AssetStore {
 
     /// Takes the sale back: the asset is held again, at its value before the sale.
     func undoSale(assetId: String) async {
+        await load()
         guard var asset = asset(id: assetId) else { return }
         asset.valuations.removeAll { $0.source == .sale }
         asset.soldAt = nil

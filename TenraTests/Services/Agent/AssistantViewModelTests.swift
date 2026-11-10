@@ -712,6 +712,36 @@ struct AssistantViewModelTests {
         ])
     }
 
+    @Test func aRecordBeingDraftedKeepsItsChat() async {
+        let transport = ScriptedTransport([[AgentScript.done([AgentScript.render("toolu_1", source: "none")])]])
+        let (released, release) = AsyncStream<Void>.makeStream()
+        let slowFastPath = AssistantViewModel.FastPath { _ in
+            for await _ in released { break }
+            return AssistantViewModel.FastPath.Draft(operations: [Self.coffee()])
+        }
+        let model = AssistantViewModel(
+            conversation: AgentConversation(transport: transport, toolkit: FakeToolkit()),
+            context: { "<app_context>a</app_context>" },
+            drafts: Self.book(),
+            fastPath: slowFastPath
+        )
+        await model.send("Сколько у меня денег?", phoneMayAnswer: false)
+        let chat = model.currentThread?.id
+
+        let drafting = Task { await model.send("кофе 1500") }
+        for _ in 0..<1000 where !model.isBusy { await Task.yield() }
+        #expect(model.isBusy)
+        // "New chat" while the record is drafted: refused, the record lands in its own chat.
+        model.reset()
+        release.yield()
+        release.finish()
+        await drafting.value
+
+        #expect(model.currentThread?.id == chat)
+        #expect(model.entries.count == 4)
+        #expect(!model.isBusy)
+    }
+
     @Test func aRecordMadeBeforeConsentIsNeverReported() async {
         let transport = ScriptedTransport([
             [AgentScript.done([AgentScript.render("toolu_1", source: "none")])],

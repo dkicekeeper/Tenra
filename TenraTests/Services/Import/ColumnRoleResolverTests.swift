@@ -69,7 +69,7 @@ struct ColumnRoleResolverTests {
     func noDateColumn() {
         let table = DocumentSnapshot.Table(rows: [
             ["Account", "Holder"],
-            ["KZ51998PB00009669873", "IVANOV I"]
+            ["KZ000000000000000000", "IVANOV I"]
         ])
         #expect(ColumnRoleResolver.resolve(table: table) == nil)
     }

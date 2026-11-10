@@ -16,7 +16,9 @@
 //      } label: { ... }
 //      .paywallSheet(isPresented: $showPaywall, source: .assetAdd)
 //
-//  `source` names the gate for RevenueCat's `paywall_source` attribute (PremiumManager).
+//  `source` names the gate for RevenueCat's `paywall_source` attribute (PremiumManager) and
+//  picks the gate's placement: a placement set up in the RevenueCat dashboard under the same
+//  identifier shows its own offering's paywall; without one, the current offering's (as before).
 //
 //  RevenueCatUI is shown only once PremiumManager has confirmed the App Store has something to
 //  sell. When the offerings can't load (RevenueCat error 23 when the App Store has no products,
@@ -37,7 +39,7 @@ struct PaywallSheet: ViewModifier {
 
     func body(content: Content) -> some View {
         content.sheet(isPresented: $isPresented) {
-            PaywallSheetContent(isPresented: $isPresented, onUnlocked: onUnlocked)
+            PaywallSheetContent(isPresented: $isPresented, source: source, onUnlocked: onUnlocked)
                 .onAppear { PremiumManager.shared.notePaywallShown(from: source) }
         }
     }
@@ -47,6 +49,7 @@ struct PaywallSheet: ViewModifier {
 /// localized unavailable state with a retry.
 private struct PaywallSheetContent: View {
     @Binding var isPresented: Bool
+    let source: PaywallSource
     let onUnlocked: (() -> Void)?
 
     /// The singleton rather than `@Environment`: the sheet is presented from many screens
@@ -54,6 +57,9 @@ private struct PaywallSheetContent: View {
     private let premium = PremiumManager.shared
 
     @State private var phase: Phase
+    /// The gate's placement offering, resolved once when the paywall becomes ready; nil shows
+    /// the current offering.
+    @State private var offer: PaywallOffer?
     @State private var showingNothingToRestore = false
 
     private enum Phase: Equatable {
@@ -62,13 +68,16 @@ private struct PaywallSheetContent: View {
         case unavailable(OfferingsAvailability)
     }
 
-    init(isPresented: Binding<Bool>, onUnlocked: (() -> Void)?) {
+    init(isPresented: Binding<Bool>, source: PaywallSource, onUnlocked: (() -> Void)?) {
         _isPresented = isPresented
+        self.source = source
         self.onUnlocked = onUnlocked
         // A check that already found products (the launch health check runs one) opens the
         // paywall at once; anything else is verified before RevenueCatUI is shown.
-        let known = PremiumManager.shared.offeringsAvailability
-        _phase = State(initialValue: known?.canSell == true ? .ready : .checking)
+        let premium = PremiumManager.shared
+        let ready = premium.offeringsAvailability?.canSell == true
+        _phase = State(initialValue: ready ? .ready : .checking)
+        _offer = State(initialValue: ready ? premium.paywallOffer(for: source) : nil)
     }
 
     var body: some View {
@@ -101,12 +110,23 @@ private struct PaywallSheetContent: View {
         }
     }
 
+    /// The gate's placement offering when the dashboard sets one up, else the current offering
+    /// ("default", or `default_kk` through the Kazakh Targeting rule).
+    @ViewBuilder
+    private var paywallView: some View {
+        if let offer {
+            PaywallView(offering: offer.offering, displayCloseButton: true)
+        } else {
+            PaywallView(displayCloseButton: true)
+        }
+    }
+
     private var paywall: some View {
-        // Renders the current "default" offering's paywall as designed in the
-        // RevenueCat dashboard. `PremiumManager.customerInfoStream` also picks
-        // up the entitlement change independently, so `isPro` flips even if a
-        // call site forgets to react to `onUnlocked`.
-        PaywallView(displayCloseButton: true)
+        // Renders the offering's paywall as designed in the RevenueCat dashboard.
+        // `PremiumManager.customerInfoStream` also picks up the entitlement change
+        // independently, so `isPro` flips even if a call site forgets to react to
+        // `onUnlocked`.
+        paywallView
             .onPurchaseCompleted { customerInfo in
                 premium.applyPaywallResult(customerInfo)
                 // Rarest, highest-emotion success moment in the app — acknowledge the
@@ -155,6 +175,7 @@ private struct PaywallSheetContent: View {
 
     private func check() async {
         let availability = await premium.checkOfferings()
+        if availability.canSell { offer = premium.paywallOffer(for: source) }
         phase = availability.canSell ? .ready : .unavailable(availability)
     }
 }

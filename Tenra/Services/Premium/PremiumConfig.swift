@@ -70,7 +70,11 @@ enum PremiumConfig {
 /// Which gate opened the paywall: RevenueCat's subscriber attribute `paywall_source`, so a
 /// trial or a purchase can be traced to the feature that sold it (docs/promotion-plan.md §6).
 /// Written only by `PremiumManager.notePaywallShown(from:)`.
-enum PaywallSource: String, Sendable {
+///
+/// The raw value is also the gate's RevenueCat placement (`placementID`): a placement set up in
+/// the dashboard under this identifier gives the gate its own paywall without a release
+/// (`PremiumManager.paywallOffer(for:)`, promotion-plan §2). Renaming a case breaks both.
+enum PaywallSource: String, Sendable, CaseIterable {
     case accountAdd = "account_add"
     case depositAdd = "deposit_add"
     case loanAdd = "loan_add"
@@ -85,4 +89,7 @@ enum PaywallSource: String, Sendable {
     case settings
     /// The trial offer at the end of onboarding (OnboardingViewModel).
     case onboarding
+
+    /// The RevenueCat placement identifier of this gate: the same as `paywall_source`.
+    var placementID: String { rawValue }
 }

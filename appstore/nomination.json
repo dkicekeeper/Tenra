@@ -1,0 +1,10 @@
+{
+  "name": "Tenra: private money tracking for the new year",
+  "type": "APP_ENHANCEMENTS",
+  "publishStartDate": "2026-12-29",
+  "publishEndDate": "2027-01-19",
+  "deviceFamilies": ["IPHONE"],
+  "locales": ["en-US", "ru", "de-DE", "fr-FR", "es-ES", "it", "pt-BR", "tr", "uk", "ja", "ko"],
+  "description": "Tenra is a private money tracker for iPhone, built by a solo developer in Kazakhstan. It keeps every account in one place without ever asking for a bank login: all records stay on the device and the backup goes to the person's own iCloud Drive.\n\nPayments record themselves. An Apple Pay payment becomes an expense through a Shortcuts automation, and on iOS 27 Tenra reads bank push notifications the same way, so cards from any bank are covered without a connection to the bank. A purchase can also be spoken, typed as \"coffee 4.50\", scanned from a receipt or imported from a PDF statement.\n\nTenra goes deeper than expenses: deposits with daily interest and compounding, loans with a payment schedule and early payments, subscriptions, savings goals, personal debts, homes and cars with net worth, and several currencies at the real rate. Ten, the built-in assistant, answers questions about the person's money and prepares entries as drafts to confirm.\n\nThe app is native to iOS 26 and 27: Liquid Glass throughout, App Intents and Siri, widgets on the Home Screen and Lock Screen, a Control Center control, and Apple Intelligence for categories where the device supports it. It is localized into 12 languages, Kazakh among them.\n\nJanuary is when people decide to take control of their money. Tenra is a way to start that does not begin with handing over a bank password.",
+  "notes": "An update is planned for the last week of December. Daily tracking, budgets, subscriptions, goals, analytics and Apple Pay capture are free; Tenra Pro adds deposits, loans, assets, voice, statement import and the assistant without a limit, with a 14-day trial on the annual plan. No ads, no tracking across apps, no analytics SDK."
+}

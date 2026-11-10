@@ -152,6 +152,10 @@ python3 appstore/asc.py push-tier [--monthly 4.99] [--annual 24.99] [--lifetime 
                                                 # три продукта в дорогих витринах (HIGH_TIER в asc.py)
                                                 # по местным эквивалентам цен США; подписки через 2 дня,
                                                 # lifetime сразу
+python3 appstore/asc.py nominations             # заявки на featuring и их состояние
+python3 appstore/asc.py push-nomination [--submit]
+                                                # заявка из appstore/nomination.json черновиком в ASC
+                                                # (Featuring → Nominations); --submit отправляет Apple
 python3 appstore/asc.py iap-prices [--product tenra.pro.lifetime] [--territory KAZ,USA]
                                                 # разовая покупка: базовая страна, цены, заданные
                                                 # вручную, и цена витрин, которые идут за базовой

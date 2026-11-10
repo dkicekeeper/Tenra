@@ -1220,12 +1220,21 @@ def push_tier(app: str, monthly: str, annual: str, lifetime: str, territories: l
 
 # Featuring nominations ----------------------------------------------------------------------------
 
+
+def open_nominations() -> list[dict]:
+    """Drafts and nominations already sent; the list takes one state at a time."""
+    found = []
+    for state in ("DRAFT", "SUBMITTED"):
+        items, _ = get_all("/v1/nominations", {"filter[state]": state, "limit": 50})
+        found += items
+    return found
+
 NOMINATION = Path(__file__).resolve().parent / "nomination.json"
 
 
 def nominations(app: str) -> None:
     """The featuring nominations in App Store Connect. Read only."""
-    items, _ = get_all("/v1/nominations", {"filter[state]": "DRAFT,SUBMITTED", "limit": 50})
+    items = open_nominations()
     table("Featuring nominations", ["Name", "Type", "State", "From", "Until"],
           [[n["attributes"].get("name"), n["attributes"].get("type"), n["attributes"].get("state"),
             (n["attributes"].get("publishStartDate") or "")[:10], (n["attributes"].get("publishEndDate") or "")[:10]]
@@ -1243,7 +1252,7 @@ def push_nomination(app: str, submit: bool) -> None:
     if wanted.get("publishEndDate"):
         attributes["publishEndDate"] = wanted["publishEndDate"] + "T00:00:00Z"
     attributes["submitted"] = submit
-    existing, _ = get_all("/v1/nominations", {"filter[state]": "DRAFT,SUBMITTED", "limit": 50})
+    existing = open_nominations()
     same = next((n for n in existing if n["attributes"].get("name") == wanted["name"]), None)
     if same and same["attributes"].get("state") == "SUBMITTED":
         print(f"Already sent to Apple: {wanted['name']}.")

@@ -3,8 +3,9 @@
 //  TenraTests
 //
 //  The assistant's threads in CoreData (v13, AgentThreadEntity): a thread written comes back
-//  whole as the latest, writing it again replaces it, only the latest `keep` stay, and the
-//  history lists the latest threads with a question and opens one by id.
+//  whole as the latest, writing it again replaces it, only the latest `keep` stay, the
+//  history lists the latest threads with a question and opens one by id, and calls keep their
+//  order (OrderedWork): a thread deleted while it is saved stays deleted, two saves keep one row.
 //
 
 import CoreData
@@ -57,6 +58,34 @@ struct AgentThreadStoreTests {
         later.body.owedResults = [["type": "tool_result", "tool_use_id": "toolu_1", "content": "shown"]]
         await store.save(later)
         #expect(await store.latest() == later)
+    }
+
+    @Test func aThreadDeletedWhileItIsSavedStaysDeleted() async throws {
+        let stack = try makeStack()
+        let store = AgentThreadStore(stack: stack)
+        // The save is asked for first, the delete right after, as when a chat is deleted while
+        // its last reply is still being written.
+        let saving = Task { await store.save(snapshot("t1", at: 100)) }
+        let deleting = Task { await store.delete(id: "t1") }
+        await saving.value
+        await deleting.value
+        #expect(await store.thread(id: "t1") == nil)
+        #expect(await store.latest() == nil)
+    }
+
+    @Test func twoSavesOfOneThreadKeepOneRow() async throws {
+        let stack = try makeStack()
+        let store = AgentThreadStore(stack: stack)
+        let first = Task { await store.save(snapshot("t1", at: 100)) }
+        let second = Task { await store.save(snapshot("t1", at: 200)) }
+        await first.value
+        await second.value
+        let context = stack.newBackgroundContext()
+        let stored = try await context.perform {
+            try context.count(for: NSFetchRequest<AgentThreadEntity>(entityName: "AgentThreadEntity"))
+        }
+        #expect(stored == 1)
+        #expect(await store.latest()?.updatedAt == Date(timeIntervalSince1970: 200))
     }
 
     @Test func onlyTheLatestThreadsStay() async throws {

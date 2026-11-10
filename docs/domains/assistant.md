@@ -192,7 +192,12 @@ enum AgentBlock {                // AgentReply.swift; source = a tool result's r
   (`trimIfNeeded`: at most 60 messages and 128 KB; the server takes 80 and 256 KB) and the context
   is sent again. "Delete all data" and a restore reset the open thread and Ten's Home notices
   (`AssistantViewModel.storeDidReset`, `AssistantInbox.clear`). The assistant's home lists the open
-  thread and five more; tap opens, touch and hold deletes (`deleteThread`).
+  thread and five more; tap opens, touch and hold deletes (`deleteThread`). Every call of the
+  thread store, and of the fact store, waits for the ones before it (`OrderedWork`, one
+  `AgentThreadStore` for the chat and the sealing): two saves of a thread never both insert it,
+  and a chat deleted while its reply is written stays deleted. "New chat" and a new message wait
+  while a record is drafted on the phone (`AssistantViewModel.isBusy`): the record stays in the
+  chat it was typed in, and the typed text stays in the field.
 - **Facts** ("salary on the 10th", "saving for a car"): the model proposes one with `draft_fact`,
   as any draft ("Ten will remember this", "Was: …" for a change, "Ten will forget this"). The same
   tool changes a fact (`replaces` with its id) and forgets one (`replaces` without text). CoreData

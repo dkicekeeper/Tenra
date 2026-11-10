@@ -58,8 +58,6 @@ Found by the release audit of 2026-10-15 (details and file references:
 - **Assistant performance:** full-resolution photo decode on the main thread; each streamed piece
   re-parses the reply and re-renders the chat; allowance Keychain calls on the main thread;
   FastPath runs the voice parser on questions; `forecast_balance` series O(days × occurrences).
-- **Races:** fetch-or-insert without a uniqueness constraint (threads, goals, debts, facts); a
-  load overwriting an `add`; FastPath vs `reset()`; a chat deleted during its save comes back.
 - **Server before traffic** (sizing in [domains/assistant.md](domains/assistant.md) §11; the
   daily cap of 1 200 calls is live since 2026-10-29, Pro's part of the day, the refund of a
   failed call, the RevenueCat timeout and the stop when the app leaves mid-answer are live since

@@ -91,13 +91,48 @@ nonisolated final class AgentThreadStore: @unchecked Sendable {
     private static let logger = Logger(subsystem: "Tenra", category: "AgentThreadStore")
     private static let entityName = "AgentThreadEntity"
     private let stack: CoreDataStack
+    private let order = OrderedWork()
 
     init(stack: CoreDataStack = .shared) {
         self.stack = stack
     }
 
-    /// The thread written last; nil when there is none or it cannot be read.
+    // Every call waits for the ones asked for before it (OrderedWork): reads see the writes
+    // before them, two saves of a thread never both insert it, a delete never loses to a save.
+    // On the main actor, where every caller is, so the place in the queue follows the calls.
+
+    @MainActor
     func latest() async -> AgentThreadSnapshot? {
+        await order.enqueue { [self] in await self.latestNow() }.value
+    }
+
+    @MainActor
+    func thread(id: String) async -> AgentThreadSnapshot? {
+        await order.enqueue { [self] in await self.threadNow(id: id) }.value
+    }
+
+    @MainActor
+    func recent(limit: Int) async -> [AgentThreadSummary] {
+        await order.enqueue { [self] in await self.recentNow(limit: limit) }.value
+    }
+
+    @MainActor
+    func seal(mentioning texts: [String]?) async {
+        await order.enqueue { [self] in await self.sealNow(mentioning: texts) }.value
+    }
+
+    @MainActor
+    func delete(id: String) async {
+        await order.enqueue { [self] in await self.deleteNow(id: id) }.value
+    }
+
+    @MainActor
+    func save(_ snapshot: AgentThreadSnapshot) async {
+        await order.enqueue { [self] in await self.saveNow(snapshot) }.value
+    }
+
+    /// The thread written last; nil when there is none or it cannot be read.
+    private func latestNow() async -> AgentThreadSnapshot? {
         let context = stack.newBackgroundContext()
         return await context.perform {
             let request = NSFetchRequest<AgentThreadEntity>(entityName: Self.entityName)
@@ -108,7 +143,7 @@ nonisolated final class AgentThreadStore: @unchecked Sendable {
     }
 
     /// One kept thread, to open it again from the history.
-    func thread(id: String) async -> AgentThreadSnapshot? {
+    private func threadNow(id: String) async -> AgentThreadSnapshot? {
         let context = stack.newBackgroundContext()
         return await context.perform {
             let request = NSFetchRequest<AgentThreadEntity>(entityName: Self.entityName)
@@ -119,7 +154,7 @@ nonisolated final class AgentThreadStore: @unchecked Sendable {
     }
 
     /// The latest threads with a question, newest first, without their conversations.
-    func recent(limit: Int) async -> [AgentThreadSummary] {
+    private func recentNow(limit: Int) async -> [AgentThreadSummary] {
         let context = stack.newBackgroundContext()
         return await context.perform {
             let request = NSFetchRequest<AgentThreadEntity>(entityName: Self.entityName)
@@ -149,7 +184,7 @@ nonisolated final class AgentThreadStore: @unchecked Sendable {
 
     /// Ten forgot facts: every kept thread that mentions one of `texts` (all of them for nil,
     /// "Forget all") is sealed, so it goes no further to the model.
-    func seal(mentioning texts: [String]?) async {
+    private func sealNow(mentioning texts: [String]?) async {
         let context = stack.newBackgroundContext()
         await context.perform {
             do {
@@ -168,7 +203,7 @@ nonisolated final class AgentThreadStore: @unchecked Sendable {
     }
 
     /// Deletes one kept thread (the person removed it from the assistant's home).
-    func delete(id: String) async {
+    private func deleteNow(id: String) async {
         let context = stack.newBackgroundContext()
         await context.perform {
             do {
@@ -208,7 +243,7 @@ nonisolated final class AgentThreadStore: @unchecked Sendable {
     }
 
     /// Writes the thread over its earlier copy, and lets the threads beyond `keep` go.
-    func save(_ snapshot: AgentThreadSnapshot) async {
+    private func saveNow(_ snapshot: AgentThreadSnapshot) async {
         guard let payload = Self.encodePayload(snapshot.body) else { return }
         let context = stack.newBackgroundContext()
         await context.perform {

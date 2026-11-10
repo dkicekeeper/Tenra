@@ -117,6 +117,8 @@ final class DebtStore {
     // MARK: - Changes
 
     func add(_ debt: PersonalDebt) async {
+        // A change made before the first read finishes would be overwritten by it.
+        await load()
         debts.append(debt)
         await writes.run { [repository] in await repository?.save(debt) }
         didChange()
@@ -124,6 +126,7 @@ final class DebtStore {
 
     /// Writes the debt over its earlier copy.
     func update(_ debt: PersonalDebt) async {
+        await load()
         guard let index = debts.firstIndex(where: { $0.id == debt.id }) else { return }
         debts[index] = debt
         await writes.run { [repository] in await repository?.save(debt) }
@@ -131,6 +134,7 @@ final class DebtStore {
     }
 
     func delete(id: String) async {
+        await load()
         debts.removeAll { $0.id == id }
         await writes.run { [repository] in await repository?.delete(id: id) }
         didChange()
@@ -139,6 +143,7 @@ final class DebtStore {
     /// The debts of one list in the order the person dragged them to: each gets its place, in
     /// memory at once (the list moves while the finger does), then kept.
     func reorder(_ orderedIds: [String]) async {
+        await load()
         await save(placing(orderedIds))
     }
 
@@ -171,6 +176,7 @@ final class DebtStore {
 
     /// Adds a repayment; one that covers what is left settles the debt on its date.
     func addRepayment(_ repayment: DebtRepayment, to debtId: String) async {
+        await load()
         guard var debt = debt(id: debtId) else { return }
         debt.repayments.append(repayment)
         debt.repayments.sort { $0.date < $1.date }
@@ -184,6 +190,7 @@ final class DebtStore {
     /// cover it, whichever one goes. One settled by hand (the rest forgiven) never was covered,
     /// and stays settled.
     func deleteRepayment(id: String, from debtId: String) async {
+        await load()
         guard var debt = debt(id: debtId), debt.repayments.contains(where: { $0.id == id }) else { return }
         let wasCovered = debt.isCovered
         debt.repayments.removeAll { $0.id == id }
@@ -195,12 +202,14 @@ final class DebtStore {
 
     /// Settles the debt by hand (returned outside the app, or the rest forgiven).
     func settle(id: String, at date: Date = Date()) async {
+        await load()
         guard var debt = debt(id: id), debt.settledAt == nil else { return }
         debt.settledAt = date
         await update(debt)
     }
 
     func reopen(id: String) async {
+        await load()
         guard var debt = debt(id: id), debt.settledAt != nil else { return }
         debt.settledAt = nil
         await update(debt)

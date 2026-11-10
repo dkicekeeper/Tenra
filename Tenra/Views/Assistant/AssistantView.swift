@@ -136,7 +136,7 @@ struct AssistantView: View {
             onRead: { attachment, summary in
                 HapticManager.success()
                 // An attachment from here, or a file opened in Tenra, starts a chat of its own.
-                if !model.isWorking { model.reset() }
+                if !model.isBusy { model.reset() }
                 model.attach(attachment, summary: summary)
                 showChat()
             },
@@ -369,9 +369,9 @@ struct AssistantView: View {
 
     /// Starts a new chat with a question or a message Ten wrote. A plain record is drafted on
     /// the phone and needs no consent (FastPath); anything else waits for the cloud mode. While
-    /// a chat is still answering, it is shown instead.
+    /// a chat is still answering or drafting a record, it is shown instead (the text stays).
     private func start(_ start: Start) {
-        guard !model.isWorking else {
+        guard !model.isBusy else {
             showChat()
             return
         }

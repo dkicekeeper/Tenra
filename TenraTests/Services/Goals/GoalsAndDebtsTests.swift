@@ -267,4 +267,21 @@ struct GoalsAndDebtsTests {
         #expect(await GoalRepository(stack: stack).all().isEmpty)
         #expect(await DebtRepository(stack: stack).all().isEmpty)
     }
+
+    @Test func aChangeBeforeTheFirstReadKeepsWhatIsOnDisk() async throws {
+        let stack = try makeStack()
+        await GoalRepository(stack: stack).save(SavingsGoal(id: "kept", name: "Car", targetAmount: 1000, currency: "KZT"))
+        await DebtRepository(stack: stack).save(PersonalDebt(id: "owed", direction: .iOwe, person: "Mum", amount: 500, currency: "KZT", date: Self.day(2026, 10, 2)))
+
+        // Added before anything read the store: the read comes first, so nothing on disk is lost
+        // and the new goal goes after the kept one.
+        let goals = GoalStore(repository: GoalRepository(stack: stack))
+        await goals.add(SavingsGoal(id: "new", name: "Bike", targetAmount: 500, currency: "KZT"))
+        #expect(goals.isLoaded)
+        #expect(goals.goals.map(\.id) == ["kept", "new"])
+
+        let debts = DebtStore(repository: DebtRepository(stack: stack))
+        await debts.add(PersonalDebt(id: "lent", direction: .owedToMe, person: "Ivan", amount: 200, currency: "KZT", date: Self.day(2026, 10, 3)))
+        #expect(Set(debts.debts.map(\.id)) == ["owed", "lent"])
+    }
 }

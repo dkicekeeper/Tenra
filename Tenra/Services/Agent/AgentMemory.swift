@@ -57,13 +57,33 @@ nonisolated final class AgentFactStore: @unchecked Sendable {
     private static let logger = Logger(subsystem: "Tenra", category: "AgentFactStore")
     private static let entityName = "AgentFactEntity"
     let stack: CoreDataStack
+    private let order = OrderedWork()
 
     init(stack: CoreDataStack = .shared) {
         self.stack = stack
     }
 
-    /// Every fact, oldest first.
+    // Every call waits for the ones asked for before it (OrderedWork): a forget never loses to
+    // the save before it, and two saves of a fact never both insert it.
+    // On the main actor, where every caller is, so the place in the queue follows the calls.
+
+    @MainActor
     func all() async -> [AgentFact] {
+        await order.enqueue { [self] in await self.allNow() }.value
+    }
+
+    @MainActor
+    func save(_ fact: AgentFact) async {
+        await order.enqueue { [self] in await self.saveNow(fact) }.value
+    }
+
+    @MainActor
+    func delete(ids: [String]? = nil) async {
+        await order.enqueue { [self] in await self.deleteNow(ids: ids) }.value
+    }
+
+    /// Every fact, oldest first.
+    private func allNow() async -> [AgentFact] {
         let context = stack.newBackgroundContext()
         return await context.perform {
             let request = NSFetchRequest<AgentFactEntity>(entityName: Self.entityName)
@@ -77,7 +97,7 @@ nonisolated final class AgentFactStore: @unchecked Sendable {
     }
 
     /// Writes the fact over its earlier copy, or adds it.
-    func save(_ fact: AgentFact) async {
+    private func saveNow(_ fact: AgentFact) async {
         let context = stack.newBackgroundContext()
         await context.perform {
             do {
@@ -103,7 +123,7 @@ nonisolated final class AgentFactStore: @unchecked Sendable {
     }
 
     /// Deletes the facts with these ids; none deletes them all.
-    func delete(ids: [String]? = nil) async {
+    private func deleteNow(ids: [String]? = nil) async {
         let context = stack.newBackgroundContext()
         await context.perform {
             do {

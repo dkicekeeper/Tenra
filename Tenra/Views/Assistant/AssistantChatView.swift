@@ -324,12 +324,16 @@ struct AssistantChatView: View {
     /// Sends the next message. A plain record is drafted on the phone and needs no consent
     /// (FastPath); anything else waits for the cloud mode to be turned on.
     private func send(_ text: String, spoken: Bool = false) {
-        guard !model.isWorking, !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
+        // Busy (an answer, or a record drafted on the phone): the text stays in the field.
+        guard !model.isBusy, !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
         if hasConsent { draft = "" }
         Task {
             if await model.send(text, spoken: spoken, cloudAllowed: hasConsent) {
                 draft = ""
-            } else if !hasConsent {
+            } else if hasConsent {
+                // Not taken after all: give the text back.
+                if draft.isEmpty { draft = text }
+            } else {
                 questionAwaitingConsent = text
                 showingConsent = true
             }

@@ -380,6 +380,9 @@ final class AssistantViewModel {
         return false
     }
 
+    /// Working, or drafting a record on the phone (FastPath): a new message or a new chat waits.
+    var isBusy: Bool { isWorking || draftingLocally }
+
     /// The question that failed, to mark it in the thread.
     var failedEntry: UUID? {
         if case .failed = phase { return failedEntryId }
@@ -508,7 +511,8 @@ final class AssistantViewModel {
 
     /// A new thread; the next question carries the context again. The old one stays kept.
     func reset() {
-        guard !isWorking else { return }
+        // A record still being drafted on the phone belongs to the chat it was typed in.
+        guard !isWorking, !draftingLocally else { return }
         restoreDone = true
         threadId = UUID().uuidString
         threadCreatedAt = access.now()

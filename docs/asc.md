@@ -144,8 +144,13 @@ python3 appstore/asc.py push-price --product tenra.pro.annual --price 7990 [--te
                                                 # (сегодня API не принимает; по умолчанию завтра); текущие
                                                 # подписчики платят прежнюю (preserveCurrentPrice)
 python3 appstore/asc.py review-notes --version 1.7 [--apply]   # заметки для App Review из release-notes.md
-python3 appstore/asc.py prepare-review --version 1.7   # черновик отправки на проверку: версия и спецстраницы,
-                                                # не отправляет; отправляет основатель кнопкой в ASC.
+python3 appstore/asc.py prepare-review --version 1.7 [--build N] [--submit]
+                                                # черновик отправки на проверку: версия и спецстраницы;
+                                                # без --submit не отправляет, отправляет основатель
+                                                # кнопкой в ASC. --submit отправляет (только когда
+                                                # основатель так сказал); --build N: ничего не делает,
+                                                # если у версии другая сборка. В Actions поле build,
+                                                # --submit в args.
                                                 # Спецстраницу с кадрами в обработке ASC не берёт
                                                 # (ASSET_IN_POST_PROCESSING): повторить через пару минут
 python3 appstore/asc.py reviews [--limit 20]    # отзывы с текстом (оценки без текста API не отдаёт)

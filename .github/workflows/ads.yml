@@ -45,8 +45,10 @@ on:
 permissions:
   contents: read
 
+# One run per command and campaign at a time; GitHub keeps one waiting run per group and cancels
+# an older waiting one, so runs for different campaigns get groups of their own.
 concurrency:
-  group: ads-${{ inputs.command }}
+  group: ads-${{ inputs.command }}-${{ inputs.campaign }}
   cancel-in-progress: false
 
 jobs:

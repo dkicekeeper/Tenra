@@ -106,6 +106,10 @@ class FakeAds:
         if path == "/campaigns/query" and any(context == f"adAccountId={a}" for a in self.forbidden):
             raise urllib.error.HTTPError(req.full_url, 403, "Forbidden", Message(),
                                          io.BytesIO(b'{"error": {"errors": [{"messageCode": "FORBIDDEN"}]}}'))
+        if path == "/reports/apps/campaigns/query" and "campaignId" in filters_of(record["body"] or {}):
+            # As Apple does: the campaigns report takes no campaignId filter.
+            raise urllib.error.HTTPError(req.full_url, 400, "Bad Request", Message(), io.BytesIO(
+                b'{"error": {"errors": [{"messageCode": "INVALID_FIELD_ATTRIBUTE", "message": "Filters contain unsupported fields campaignId"}]}}'))
         if path in self.fail:
             status, payload = self.fail[path]
             raise urllib.error.HTTPError(req.full_url, status, "Error", Message(), io.BytesIO(json.dumps(payload).encode()))
@@ -336,6 +340,13 @@ class AdsTest(unittest.TestCase):
         self.assertNotIn("USD", hidden)
         with self.assertRaises(SystemExit):
             self.run_ads(["daily", "--days", "120"])
+        # One campaign: the campaigns report takes no campaignId filter (Apple answers 400), the
+        # rows and the budget are that campaign's.
+        one, fake = self.run_ads(["daily", "--campaign", "category", "--days", "7"])
+        report = [c for c in self.api_calls(fake) if c["url"].endswith("/reports/apps/campaigns/query")][0]
+        self.assertEqual(filters_of(report["body"]), {})
+        self.assertIn("KZ-Category (inst.)", one)
+        self.assertNotIn("KZ-Discovery (inst.)", one)
 
     def test_report(self):
         text, fake = self.run_ads(["report", "--days", "7"])

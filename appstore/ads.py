@@ -383,7 +383,7 @@ def report_body(days: int, filters: list | None, offset: int = 0, today: date | 
 
 def report_rows(entity: str, days: int, filters: list | None = None) -> list[dict]:
     """POST /v1/reports/apps/{campaigns|adgroups|keywords|searchterms}/query, every page. All but
-    the campaigns report need a campaignId filter."""
+    the campaigns report need a campaignId filter; the campaigns report refuses one."""
     rows, offset = [], 0
     while True:
         response = call("POST", f"/reports/apps/{entity}/query", report_body(days, filters, offset), retry=True)
@@ -579,8 +579,9 @@ def report(args) -> None:
     if args.campaign:
         items = [find(items, args.campaign, "campaign")]
     groups = query("/adgroups/query")
+    # The campaigns report takes no campaignId filter (HTTP 400): every campaign, picked here by id.
     by_campaign = {str((r.get("metadata") or {}).get("id")): metrics(r)
-                   for r in report_rows("campaigns", args.days, [eq("campaignId", str(items[0]["id"]))] if args.campaign else None)}
+                   for r in report_rows("campaigns", args.days)}
     rows, grand = [], ZERO
     for c in sorted(items, key=lambda c: c.get("name", "")):
         m = by_campaign.get(str(c["id"]), ZERO)
@@ -612,7 +613,7 @@ def daily(args) -> None:
     names = {str(c["id"]): c.get("name", "") for c in items}
     budget = sum(Decimal(str(((c.get("dailyBudget") or {}).get("value") or {}).get("amount") or 0)) for c in items)
     per_day: dict[str, dict[str, dict]] = {}
-    for r in report_rows("campaigns", args.days, [eq("campaignId", str(items[0]["id"]))] if args.campaign else None):
+    for r in report_rows("campaigns", args.days):
         cid = str((r.get("metadata") or {}).get("id"))
         if cid not in names:
             continue

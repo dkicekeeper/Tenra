@@ -203,7 +203,8 @@ Freedom: продавец в заголовке, сумма со знаком, �
       (`WalletCaptureStore.transferSides`), пара сводится в один перевод сразу в действии и при
       открытии приложения (`OwnTransferMatcher`, [domains/intents.md](domains/intents.md) §7.3).
 - [x] Переводы между своими банками без пометки банка и слияние списаний подписок с плановыми,
-      07.11 (`OwnTransferPairing`, `SubscriptionChargeLinker`). Проверка на телефоне впереди.
+      07.11 (`OwnTransferPairing`, `SubscriptionChargeLinker`), выходят с 1.8.2 (на ревью с 10.11,
+      сборка 76). Проверка на телефоне впереди.
 - [ ] Шаблон, выученный на правке (слой 2), экран «Не разобрано», если владелец решит его держать.
 - [x] Гайд и «Проверить уведомление» в Настройках и в онбординге (iOS 27), строки в 11 локалях
       и казахском, 22.10 (`BankNotificationGuideView`, [domains/intents.md](domains/intents.md) §7.4).

@@ -228,6 +228,38 @@ struct ScreenMockupTests {
         _ = store
     }
 
+    // MARK: - Feedback ("Write to Ten", docs/domains/assistant.md §6)
+
+    /// Takes the message and says yes: the mockups never reach the server.
+    private nonisolated struct AcceptingFeedback: AgentFeedbackTransport {
+        func feedback(_ message: AgentFeedbackMessage) async throws {}
+    }
+
+    /// Ten's message on Home, as "Ten writes" shows it.
+    @Test func feedbackNotice() async throws {
+        let notice = try #require(AssistantNotices.feedbackAsk(round: 1, now: Date()))
+        try await render("feedback-notice", height: 300) {
+            AssistantNoticeCard(notice: notice, onAsk: {}, onHide: {})
+                .screenPadding()
+                .frame(maxHeight: .infinity)
+                .background(AppColors.Background.base)
+        }
+    }
+
+    /// The sheet its "Write" opens.
+    @Test func feedbackSheet() async throws {
+        try await render("feedback-sheet") {
+            FeedbackSheet(source: .notice, transport: AcceptingFeedback())
+        }
+    }
+
+    /// The same sheet after the rating survey's "not really": "There are problems" chosen.
+    @Test func feedbackSheetFromSurvey() async throws {
+        try await render("feedback-sheet-survey") {
+            FeedbackSheet(source: .survey, transport: AcceptingFeedback())
+        }
+    }
+
     // MARK: - Rendering
 
     /// Draws `content` in an iPhone-sized window, in the light and the dark theme, into

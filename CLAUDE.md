@@ -216,7 +216,7 @@ New file needed?
 | `Tenra/Intents/**`, `Services/Intents/**`, Siri, App Shortcuts, the Wallet automation | [docs/domains/intents.md](docs/domains/intents.md) |
 | Adding a CoreData entity/attribute, bumping `Tenra.xcdatamodeld` | `/coredata-schema-bump` skill |
 | Open items, ideas, decisions that stand | [docs/backlog.md](docs/backlog.md) — delete a line when it lands, edit it when a decision changes |
-| The AI assistant (Ten): `Services/Agent/**`, `Views/Assistant/**`, `server/assistant/**` (Cloudflare Worker, prompt, tools, eval), the app ↔ server protocol, the mascot, reply blocks | [docs/domains/assistant.md](docs/domains/assistant.md) (§8 protocol, §12 setup); Apple models and Siri on iOS 27: [docs/plan-assistant-ios27.md](docs/plan-assistant-ios27.md) |
+| The AI assistant (Ten): `Services/Agent/**`, `Views/Assistant/**`, `server/assistant/**` (Cloudflare Worker, prompt, tools, eval), the app ↔ server protocol, the mascot, reply blocks | [docs/domains/assistant.md](docs/domains/assistant.md) (§8 protocol, §12 setup); Apple models and Siri on iOS 27: [docs/plan-assistant-ios27.md](docs/plan-assistant-ios27.md); Ten as an agent for the app: [docs/plan-ten-agent.md](docs/plan-ten-agent.md) |
 
 **Rule**: before editing files in a domain, Read the matching doc.
 
@@ -249,6 +249,7 @@ These cause silent data corruption or crashes — internalize even without readi
 3. Create/update ViewModel in `ViewModels/`
 4. Build SwiftUI view in `Views/`
 5. Wire up dependencies in `AppCoordinator`
+6. Tell Ten: a paragraph in the guide to Tenra (`server/assistant/src/prompt.ts`, [domains/assistant.md](docs/domains/assistant.md) §1), once the feature is in the store
 
 ### Working with Transactions
 - Use `TransactionStore` for all transaction operations

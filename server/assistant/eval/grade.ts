@@ -42,6 +42,8 @@ export type Check =
   | { kind: "toolArgs"; tool: string; match: (input: Input) => boolean; label: string }
   | { kind: "cardFrom"; tool: string; label: string }
   | { kind: "textAtLeast"; chars: number }
+  /** The reply's text names every group: one of each group's words, case-insensitive (word stems work). */
+  | { kind: "textHas"; groups: string[][]; label: string }
   | { kind: "noPick" };
 
 export interface CheckResult {
@@ -243,6 +245,11 @@ export function caseCheck(record: RunRecord, check: Check): CheckResult {
     case "textAtLeast": {
       const length = textOf(record).length;
       return { name: `text at least ${check.chars} chars`, pass: length >= check.chars, detail: `${length}` };
+    }
+    case "textHas": {
+      const text = textOf(record).toLowerCase();
+      const missing = check.groups.filter((group) => !group.some((word) => text.includes(word.toLowerCase())));
+      return { name: check.label, pass: missing.length === 0, detail: missing.length ? `missing ${missing.map((g) => g.join("|")).join("; ")}` : undefined };
     }
     case "noPick": {
       const pick = textOf(record).match(PICK)?.[0];

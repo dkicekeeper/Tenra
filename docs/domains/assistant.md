@@ -4,7 +4,8 @@ Domain reference for Ten, Tenra's AI finance assistant: the app side (`Tenra/Ser
 `Tenra/ViewModels/AssistantViewModel.swift`, `Tenra/Views/Assistant/`), the server
 (`server/assistant/`, a Cloudflare Worker) and the protocol between them. Ten shipped in 1.6
 (2026-10-19). Open work (the Apple models and Siri on iOS 27) is
-[plan-assistant-ios27.md](../plan-assistant-ios27.md); smaller open items are in
+[plan-assistant-ios27.md](../plan-assistant-ios27.md), and Ten as an agent for the whole app is
+[plan-ten-agent.md](../plan-ten-agent.md); smaller open items are in
 [backlog.md](../backlog.md). The original design with its reasoning is archived in
 [archive/plans/plan-ai-assistant.md](../archive/plans/plan-ai-assistant.md).
 
@@ -21,6 +22,7 @@ One chat for what a person tells the app and asks it:
 | **Attach** | A receipt photo, a PDF or CSV statement | A summary card; the app's own review screen saves it |
 | **Writes first** | (by itself) "The café budget is almost gone" | A "Ten writes" card on Home; "Go through it" opens a chat |
 | **Plan** | "How much can I spend a day until payday?" | A daily amount and the balance forecast with what-ifs |
+| **Help with the app** | "How do I open a deposit?", "Where do I fix a transaction?" | The way there in two to four steps, a button when a screen leads there, or a draft when Ten can do it itself |
 
 **Where it runs.** Only where the app has a server address (`TenraAssistantURL` in Info.plist) and
 the device has App Attest. There the action tab ("+") is Ten (`CreatureTabLabel`) and the
@@ -35,6 +37,20 @@ one stays kept) with two or three questions about that object over the field
 message); nothing is sent until the person picks one or types. While a reply is still coming its
 chat cannot be left, so the questions show on the assistant's home instead. "Go through it" on a
 Home notice; a PDF or CSV opened in Tenra from another app.
+
+**The guide to Tenra** (`src/prompt.ts`, "Helping with the app itself" and "The guide to
+Tenra"): Ten is the app's help. The guide is written from the code: the layout, how each thing
+is added and changed, the settings, what Tenra Pro adds, and what Tenra does not have. It names
+screens and buttons in English and Ten says them in the person's language. It holds no prices
+and no counts of free answers. Rules: do it with a draft tool when one does it, else the steps
+and an `open` block; say only what the guide says; say plainly what Tenra lacks and what it has
+instead.
+
+- ⚠️ **A change to a screen, a button's name, a path, a setting or a Pro gate changes the guide
+  in the same commit**, with a new `PROMPT_VERSION` and the eval's `howto` cases; a new feature
+  adds its paragraph. The guide reaches every shipped version at once, so it describes the
+  version in the store, and a feature not yet released waits for its release. Next steps (new
+  `open` destinations, prefilled forms): [plan-ten-agent.md](../plan-ten-agent.md).
 
 ## 2. Architecture
 
@@ -545,7 +561,8 @@ spending, no em dashes, in all 11 languages.
 - **Pro for a person on the server**: the server sees only RevenueCat, so a Founding User (kept on
   the phone) needs `pro` granted there (Actions → RevenueCat → `grant`).
 - **Eval** (`server/assistant/eval/`): a synthetic user (`fixture.ts`; never real statements), a
-  tool simulator, 52 cases in Russian and English (`cases.ts`; assets: `ru-asset-new`,
+  tool simulator, 66 cases in Russian and English (`cases.ts`; help with the app: the 14 `ru-howto-*` and
+  `en-howto-*`, whose `textHas` check wants the guide's steps named; assets: `ru-asset-new`,
   `ru-asset-valuation`, `ru-asset-worth-asks`, `ru-asset-worth-listings`, `en-car-worth-listings`,
   `ru-car-worth-saved` (the car's characteristics are saved: no question), `ru-net-worth`,
   `en-rental-yield`; the eval offers `estimate_asset_value` and the fixture's context has its

@@ -57,6 +57,11 @@ const hasAmount = (input: Input, amount: number) => items(input).some((i) => Num
 const mentions = (value: unknown, ...needles: string[]) => needles.some((n) => String(value ?? "").toLowerCase().includes(n));
 const untilPayday = (input: Input) => input.until === "2026-11-10" || input.until === "2026-11-09";
 
+const DRAFTS = [
+  "draft_transactions", "draft_budget", "draft_recurring", "draft_fact", "draft_goal", "draft_goal_contribution",
+  "draft_debt", "draft_debt_repayment", "draft_asset", "draft_asset_valuation",
+];
+
 export const CASES: EvalCase[] = [
   {
     id: "ru-attachment-statement",
@@ -572,5 +577,106 @@ export const CASES: EvalCase[] = [
     checks: [
       { kind: "blockWith", type: "open", match: (b) => b.destination === "asset" && b.target_id === "asset_flat", label: "opens the flat's screen" },
     ],
+  },
+  // Help with the app itself (the prompt's guide to Tenra): the way there as the guide has it,
+  // nothing recorded, and what Tenra lacks said plainly with what it has instead.
+  {
+    id: "ru-howto-deposit",
+    locale: "ru",
+    prompt: "Не понял, как создать депозит. Где это?",
+    checks: [
+      { kind: "notCalled", tools: DRAFTS },
+      { kind: "textHas", groups: [["финанс"], ["депозит"], ["+", "плюс"]], label: "Finances, Deposits, +" },
+    ],
+  },
+  {
+    id: "ru-howto-expense",
+    locale: "ru",
+    prompt: "Как добавить расход вручную, без тебя?",
+    checks: [
+      { kind: "notCalled", tools: DRAFTS },
+      { kind: "textHas", groups: [["главн"], ["категори"], ["сегодня", "дат"]], label: "Home, the category, the date button" },
+    ],
+  },
+  {
+    id: "ru-howto-transfer",
+    locale: "ru",
+    prompt: "Где в приложении сделать перевод между своими счетами?",
+    checks: [{ kind: "textHas", groups: [["счёт", "счет"], ["перевод"]], label: "the account's card, Transfer" }],
+  },
+  {
+    id: "en-howto-fix-transaction",
+    locale: "en",
+    prompt: "I logged a wrong amount yesterday. Where do I fix a transaction?",
+    checks: [
+      { kind: "notCalled", tools: DRAFTS },
+      { kind: "textHas", groups: [["history"]], label: "History" },
+    ],
+  },
+  {
+    id: "ru-howto-budget",
+    locale: "ru",
+    prompt: "Где в приложении ставится бюджет на категорию?",
+    checks: [{ kind: "textHas", groups: [["категори"], ["бюджет"]], label: "inside the category" }],
+  },
+  {
+    id: "ru-howto-loan-payment",
+    locale: "ru",
+    prompt: "Как внести платёж по моему кредиту в приложении?",
+    checks: [
+      { kind: "notCalled", tools: ["draft_transactions"] },
+      { kind: "textHas", groups: [["кредит"], ["платёж", "платеж"]], label: "the loan's screen, Make payment" },
+    ],
+  },
+  {
+    id: "ru-howto-new-phone",
+    locale: "ru",
+    prompt: "Купил новый айфон. Как перенести туда все данные?",
+    checks: [{ kind: "textHas", groups: [["icloud"], ["копи"], ["восстанов"]], label: "an iCloud backup, restore on the first screen" }],
+  },
+  {
+    id: "en-howto-hide-amounts",
+    locale: "en",
+    prompt: "How do I hide my balances when someone is looking at my screen?",
+    checks: [{ kind: "textHas", groups: [["eye"], ["home"]], label: "the eye on Home" }],
+  },
+  {
+    id: "en-howto-lock",
+    locale: "en",
+    prompt: "Can I lock Tenra with Face ID?",
+    checks: [{ kind: "textHas", groups: [["settings"], ["privacy"]], label: "Settings, Privacy" }],
+  },
+  {
+    id: "en-howto-export",
+    locale: "en",
+    prompt: "How do I get all my data out of the app?",
+    checks: [{ kind: "textHas", groups: [["settings"], ["export"]], label: "Settings, Export data" }],
+  },
+  {
+    id: "ru-howto-bank-sync",
+    locale: "ru",
+    prompt: "Можно подключить мой банк, чтобы операции загружались сами?",
+    checks: [
+      { kind: "notCalled", tools: DRAFTS },
+      { kind: "textHas", groups: [["выписк", "apple pay", "уведомлен"]], label: "what Tenra has instead of a bank connection" },
+    ],
+  },
+  {
+    id: "ru-howto-pro",
+    locale: "ru",
+    prompt: "Что даёт Tenra Pro?",
+    checks: [{ kind: "textHas", groups: [["депозит"], ["кредит"]], label: "what Pro adds, without prices" }],
+  },
+  {
+    id: "en-howto-wallet",
+    locale: "en",
+    prompt: "How do I make Apple Pay payments log themselves?",
+    checks: [{ kind: "textHas", groups: [["settings", "home"], ["shortcuts", "automation"]], label: "the Wallet automation guide" }],
+  },
+  {
+    id: "ru-howto-subscriptions",
+    locale: "ru",
+    prompt: "Где посмотреть все мои подписки?",
+    checks: [{ kind: "blockWith", type: "open", match: (b) => b.destination === "subscriptions", label: "opens the subscriptions" }],
   },
 ];

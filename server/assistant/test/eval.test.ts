@@ -141,6 +141,15 @@ describe("grader", () => {
     expect(picked("Обычно сравнивают комиссии и диверсификацию фондов.")).toBe(false);
   });
 
+  it("checks that a how-to names every step, by word stems", () => {
+    const reply = (text: string): RunRecord => ({ calls: [], reply: { blocks: [{ type: "text", text }], mood: "idle", suggestions: [] } });
+    const check = { kind: "textHas" as const, groups: [["финанс"], ["депозит"], ["+", "плюс"]], label: "steps" };
+    expect(caseCheck(reply("1. Откройте «Финансы».\n2. Выберите «Депозиты».\n3. Нажмите «+»."), check).pass).toBe(true);
+    const missed = caseCheck(reply("Откройте раздел с депозитами и нажмите плюс."), check);
+    expect(missed.pass).toBe(false);
+    expect(missed.detail).toBe("missing финанс");
+  });
+
   it("catches a claim that a draft was saved", () => {
     resetDrafts();
     const input = { items: [{ type: "expense", amount: 1500, currency: null, category: "кофе", account: "acc_kaspi", to_account: null, date: null, note: "Кофе" }] };

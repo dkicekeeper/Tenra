@@ -1,17 +1,17 @@
-# Tenra, the version after 1.8.2: What's New and the checklist
+# Tenra 1.8.3: What's New and the checklist
 
-The number is not chosen. 1.8.2 is in the store since 2026-11-10/11 (build 76; its notes and
-checklist: [archive/release-notes-1.8.2.md](archive/release-notes-1.8.2.md)). **Status
-2026-11-11:** the changes below are in `main`, no TestFlight build of this version yet, the What's
-New blocks for the 13 storefronts and en-GB are not written. The featuring nomination sent on
-2026-11-10 promises an update in the last week of December: a build by 2026-12-22, the release on
-2026-12-26 to 29 ([plan-growth.md](plan-growth.md) stage 4).
+Version 1.8.3 in the project since 2026-11-11 (the founder's call: a small update now; 1.9 is
+kept for the update the featuring nomination promises in the last week of December,
+[plan-growth.md](plan-growth.md) stage 4). 1.8.2 is in the store since 2026-11-10/11 (build 76;
+its notes and checklist: [archive/release-notes-1.8.2.md](archive/release-notes-1.8.2.md)).
+**Status 2026-11-11:** the changes below are in `main`, a TestFlight build follows the merge, the
+What's New blocks for the 13 storefronts and en-GB are not written.
 
 When the blocks are written: one `## <locale>` heading per storefront (en-US, ru, en-GB, de-DE,
 es-ES, es-MX, fr-FR, fr-CA, tr, pt-BR, it, uk, ja, ko), which `prepare-version` (Actions → App
 Store Connect, [asc.md](asc.md)) pastes into App Store Connect; en-GB (search in Kazakhstan)
-carries ru's text. No em dashes (user rule). The title then names the version as
-`# Tenra <X.Y>: …`: `prepare-version` refuses notes whose title names another version.
+carries ru's text. No em dashes (user rule). `prepare-version` refuses notes whose title names
+another version.
 
 ## In this version (main since 2026-11-10)
 
@@ -40,7 +40,7 @@ carries ru's text. No em dashes (user rule). The title then names the version as
   field. Voice input lost an audio silence detector it never used (auto-stop is the 5-second
   pause, as before).
 
-- Feedback through Ten (on the branch since 2026-11-11): Ten asks on Home "How do you like
+- Feedback through Ten (in `main` since 2026-11-11): Ten asks on Home "How do you like
   Tenra?" from the third day with five entries, then every 45 days while the person records.
   "Write" opens Ten's chat, where Ten asks and two chips answer ("I like it", "Not really"); Ten
   then asks what else to add, or what went wrong and how to fix it, and the person's words go to
@@ -104,6 +104,6 @@ out; the store build is the one to check):
 
 1. **CI green**, then a TestFlight build.
 2. **The phone checks above.**
-3. **What's New** in this file, then `prepare-version --version <X.Y> --build <N>`.
-4. **One submission**: `asc.py prepare-review --version <X.Y>`; the founder sends it, or
+3. **What's New** in this file, then `prepare-version --version 1.8.3 --build <N>`.
+4. **One submission**: `asc.py prepare-review --version 1.8.3`; the founder sends it, or
    `--submit` on the founder's word.

@@ -65,6 +65,8 @@ struct AssistantNoticesSection: View {
     @State private var assetLoanId: String?
     @State private var showingAssetPaywall = false
     @State private var paywallLoanId: String?
+    /// The "what do you think of Tenra?" message being answered.
+    @State private var feedbackNotice: AssistantNotice?
 
     var body: some View {
         // A message about a subscription, a debt or a goal deleted since is not shown; the next
@@ -102,6 +104,14 @@ struct AssistantNoticesSection: View {
         // Adding an asset is Tenra Pro: after unlocking it, the form opens.
         .paywallSheet(isPresented: $showingAssetPaywall, source: .assetAdd) {
             assetLoanId = paywallLoanId
+        }
+        .sheet(item: $feedbackNotice) { notice in
+            if let transport = coordinator.feedbackTransport {
+                // The message leaves once it is answered; closing the sheet keeps it.
+                FeedbackSheet(source: .notice, transport: transport) {
+                    inbox.markRead(notice.id)
+                }
+            }
         }
         .sheet(item: $valuingAsset) { asset in
             let assetStore = coordinator.assetStore
@@ -143,6 +153,8 @@ struct AssistantNoticesSection: View {
                             paywallLoanId = notice.subjectId
                             showingAssetPaywall = true
                         }
+                    } else if notice.kind == .feedback {
+                        feedbackNotice = notice
                     } else {
                         coordinator.goThrough(notice)
                     }
@@ -168,6 +180,7 @@ extension AssistantNoticeCard {
         case .setup: String(localized: "home.autoCapture.action")
         case .asset: String(localized: "asset.updateValue")
         case .loanAsset: String(localized: "loan.asset.add")
+        case .feedback: String(localized: "feedback.notice.action")
         default: String(localized: "assistant.notice.goThrough")
         }
     }
@@ -177,6 +190,7 @@ extension AssistantNoticeCard {
         case .setup: "wave.3.right"
         case .asset: "chart.line.uptrend.xyaxis"
         case .loanAsset: "house"
+        case .feedback: "square.and.pencil"
         default: "sparkles"
         }
     }

@@ -2376,3 +2376,18 @@
 "formats.cents.footer" = "Тиындар, центтер және сомалардың басқа бөлшек бөліктері.";
 "formats.cents.bothSamples" = "%1$@ және %2$@";
 "formats.cents.rounded" = "%@, дөңгелектеумен";
+
+/* Feedback: "Write to Ten" (FeedbackSheet) and Ten's message on Home */
+"feedback.title" = "Тэнге жазу";
+"feedback.intro" = "Не ұнайды, не кедергі келтіреді, не жетіспейді? Тэн мұны әзірлеушіге жеткізеді.";
+"feedback.mood.good" = "Ұнайды";
+"feedback.mood.bad" = "Мәселелер бар";
+"feedback.placeholder" = "Хабарламаңыз";
+"feedback.privacy" = "Хабарлама Tenra әзірлеушісіне қолданба нұсқасымен, iOS нұсқасымен және қолданба тілімен бірге жіберіледі. Атыңыз бен жазбаларыңыз жіберілмейді.";
+"feedback.send" = "Жіберу";
+"feedback.sent.title" = "Рақмет!";
+"feedback.sent.message" = "Хабарлама жіберілді. Оны әзірлеуші оқиды.";
+"feedback.error" = "Жіберу мүмкін болмады. Интернетті тексеріп, қайталап көріңіз.";
+"feedback.notice.title" = "Tenra сізге ұнай ма?";
+"feedback.notice.body" = "Не ұнайтынын және не кедергі келтіретінін маған жазыңыз. Әзірлеушіге жеткіземін.";
+"feedback.notice.action" = "Жазу";

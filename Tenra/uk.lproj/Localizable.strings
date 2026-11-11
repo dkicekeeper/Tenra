@@ -2376,3 +2376,18 @@
 "formats.cents.footer" = "Копійки, центи та інші дробові частини сум.";
 "formats.cents.bothSamples" = "%1$@ і %2$@";
 "formats.cents.rounded" = "%@, з округленням";
+
+/* Feedback: "Write to Ten" (FeedbackSheet) and Ten's message on Home */
+"feedback.title" = "Написати Тену";
+"feedback.intro" = "Що подобається, що заважає, чого бракує? Тен передасть це розробнику.";
+"feedback.mood.good" = "Подобається";
+"feedback.mood.bad" = "Є проблеми";
+"feedback.placeholder" = "Ваше повідомлення";
+"feedback.privacy" = "Повідомлення надійде розробнику Tenra разом із версією застосунку, версією iOS і мовою застосунку. Без імені й без ваших записів.";
+"feedback.send" = "Надіслати";
+"feedback.sent.title" = "Дякуємо!";
+"feedback.sent.message" = "Повідомлення надіслано. Його прочитає розробник.";
+"feedback.error" = "Не вдалося надіслати. Перевірте інтернет і спробуйте ще раз.";
+"feedback.notice.title" = "Як вам Tenra?";
+"feedback.notice.body" = "Напишіть мені, що подобається і що заважає. Я передам розробнику.";
+"feedback.notice.action" = "Написати";

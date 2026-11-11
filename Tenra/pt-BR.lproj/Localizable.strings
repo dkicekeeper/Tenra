@@ -2376,3 +2376,18 @@
 "formats.cents.footer" = "Centavos e outras frações dos valores.";
 "formats.cents.bothSamples" = "%1$@ e %2$@";
 "formats.cents.rounded" = "%@, arredondado";
+
+/* Feedback: "Write to Ten" (FeedbackSheet) and Ten's message on Home */
+"feedback.title" = "Escrever ao Ten";
+"feedback.intro" = "Do que você gosta, o que atrapalha, o que falta? O Ten vai passar para o desenvolvedor.";
+"feedback.mood.good" = "Gosto";
+"feedback.mood.bad" = "Há problemas";
+"feedback.placeholder" = "Sua mensagem";
+"feedback.privacy" = "Sua mensagem vai para o desenvolvedor do Tenra com a versão do app, a versão do iOS e o idioma do app. Sem nome e sem seus registros.";
+"feedback.send" = "Enviar";
+"feedback.sent.title" = "Obrigado!";
+"feedback.sent.message" = "Sua mensagem foi enviada. O desenvolvedor vai ler.";
+"feedback.error" = "Não foi possível enviar. Verifique a conexão e tente de novo.";
+"feedback.notice.title" = "O que você acha do Tenra?";
+"feedback.notice.body" = "Escreva para mim do que você gosta e o que atrapalha. Vou passar para o desenvolvedor.";
+"feedback.notice.action" = "Escrever";

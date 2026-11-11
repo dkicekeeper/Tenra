@@ -2376,3 +2376,18 @@
 "formats.cents.footer" = "Kuruşlar, sentler ve tutarların diğer kesirli kısımları.";
 "formats.cents.bothSamples" = "%1$@ ve %2$@";
 "formats.cents.rounded" = "%@, yuvarlanır";
+
+/* Feedback: "Write to Ten" (FeedbackSheet) and Ten's message on Home */
+"feedback.title" = "Ten’e yaz";
+"feedback.intro" = "Neyi seviyorsun, ne engel oluyor, ne eksik? Ten bunu geliştiriciye iletir.";
+"feedback.mood.good" = "Beğeniyorum";
+"feedback.mood.bad" = "Sorunlar var";
+"feedback.placeholder" = "Mesajın";
+"feedback.privacy" = "Mesajın Tenra’nın geliştiricisine uygulama sürümü, iOS sürümü ve uygulama diliyle birlikte gider. İsim ve kayıtların gönderilmez.";
+"feedback.send" = "Gönder";
+"feedback.sent.title" = "Teşekkürler!";
+"feedback.sent.message" = "Mesajın gönderildi. Geliştirici okuyacak.";
+"feedback.error" = "Gönderilemedi. Bağlantını kontrol edip tekrar dene.";
+"feedback.notice.title" = "Tenra’yı nasıl buluyorsun?";
+"feedback.notice.body" = "Neyi sevdiğini ve neyin engel olduğunu bana yaz. Geliştiriciye iletirim.";
+"feedback.notice.action" = "Yaz";

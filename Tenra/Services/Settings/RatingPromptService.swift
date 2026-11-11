@@ -76,6 +76,11 @@ final class RatingPromptService {
         self.defaults = defaults
     }
 
+    /// The first day Tenra was opened on this phone, for rules counted from it (FeedbackAsk).
+    nonisolated static func installDate(defaults: UserDefaults = .standard) -> Date? {
+        defaults.object(forKey: "rating.installDate") as? Date
+    }
+
     // MARK: Signals
 
     /// Call once when the app becomes active (cold launch or foreground). A returning

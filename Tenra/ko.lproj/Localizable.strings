@@ -2376,3 +2376,18 @@
 "formats.cents.footer" = "금액의 소수점 이하 부분이에요.";
 "formats.cents.bothSamples" = "%1$@ 및 %2$@";
 "formats.cents.rounded" = "%@, 반올림";
+
+/* Feedback: "Write to Ten" (FeedbackSheet) and Ten's message on Home */
+"feedback.title" = "텐에게 쓰기";
+"feedback.intro" = "마음에 드는 점, 불편한 점, 부족한 점은 무엇인가요? 텐이 개발자에게 전해 드려요.";
+"feedback.mood.good" = "마음에 들어요";
+"feedback.mood.bad" = "문제가 있어요";
+"feedback.placeholder" = "메시지";
+"feedback.privacy" = "메시지는 앱 버전, iOS 버전, 앱 언어와 함께 Tenra 개발자에게 전달돼요. 이름과 기록은 보내지 않아요.";
+"feedback.send" = "보내기";
+"feedback.sent.title" = "감사합니다!";
+"feedback.sent.message" = "메시지를 보냈어요. 개발자가 읽을 거예요.";
+"feedback.error" = "보내지 못했어요. 연결을 확인하고 다시 시도해 주세요.";
+"feedback.notice.title" = "Tenra는 어떠세요?";
+"feedback.notice.body" = "마음에 드는 점과 불편한 점을 알려 주세요. 개발자에게 전해 드릴게요.";
+"feedback.notice.action" = "쓰기";

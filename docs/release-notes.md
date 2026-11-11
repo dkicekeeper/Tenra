@@ -4,8 +4,10 @@ Version 1.8.3 in the project since 2026-11-11 (the founder's call: a small updat
 kept for the update the featuring nomination promises in the last week of December,
 [plan-growth.md](plan-growth.md) stage 4). 1.8.2 is in the store since 2026-11-10/11 (build 76;
 its notes and checklist: [archive/release-notes-1.8.2.md](archive/release-notes-1.8.2.md)).
-**Status 2026-11-11:** the changes below are in `main`, a TestFlight build follows the merge, the
-What's New blocks for the 13 storefronts and en-GB are not written.
+**Status 2026-11-11:** the changes below are in `main` (Tenra#160), TestFlight build 77 is
+processed (from the cloud, `main` at a1e3b00), the server with `POST /v1/feedback` and the
+Telegram secrets is deployed, the What's New blocks for the 13 storefronts and en-GB are not
+written, the phone checks are not done.
 
 When the blocks are written: one `## <locale>` heading per storefront (en-US, ru, en-GB, de-DE,
 es-ES, es-MX, fr-FR, fr-CA, tr, pt-BR, it, uk, ja, ko), which `prepare-version` (Actions → App
@@ -104,7 +106,8 @@ out; the store build is the one to check):
 
 ## Submission checklist
 
-1. **CI green**, then a TestFlight build.
+1. **CI green**, then a TestFlight build (done: build 77 from a1e3b00, 2026-11-11; CI green on
+   cf089ea, the branch's head before the merge).
 2. **The phone checks above.**
 3. **What's New** in this file, then `prepare-version --version 1.8.3 --build <N>`.
 4. **One submission**: `asc.py prepare-review --version 1.8.3`; the founder sends it, or

@@ -74,8 +74,8 @@ mid-answer.
    leaves, and the message arrives in Telegram; after "Нравится" Apple's rating prompt may follow;
    with no network Ten says "Не получилось отправить" and the next message is tried again. The
    rating survey's "not really" opens the chat with "Что именно не понравилось…" at once.
-   **App Privacy** in App Store Connect: check that "Other User Content" covers a message to the
-   developer (app functionality, not linked to the person), or add "Customer Support".
+   **App Privacy** in App Store Connect: updated by the founder on 2026-11-11 for a message to
+   the developer (user content for app functionality, not linked to the person, no tracking).
 
 **On the phone, left from the versions already in the store** (not marked done before 1.8.2 went
 out; the store build is the one to check):

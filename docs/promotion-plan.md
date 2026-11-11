@@ -246,8 +246,9 @@ tab, Android.
   перед оценкой открывает тот же диалог вместо почты; «Нравится» после отправки просит у Apple
   системный запрос оценки. Сообщения лежат на сервере год (без идентификатора) и,
   если заданы секреты `TELEGRAM_BOT_TOKEN` и `TELEGRAM_CHAT_ID`, приходят основателю в Telegram.
-  За основателем: бот в Telegram и два секрета в GitHub, деплой сервера (Actions → Assistant
-  server → deploy), ярлык App Privacy (чек-лист в [release-notes.md](release-notes.md)). В
+  Сделано основателем 11.11: бот в Telegram и два секрета в GitHub, ярлык App Privacy. Осталось:
+  слить ветку, задеплоить сервер (Actions → Assistant server → deploy) и пройти диалог на сборке
+  из TestFlight (чек-лист в [release-notes.md](release-notes.md)). В
   субботней сессии: разбор сообщений за неделю, что чинить.
 
 ### B. Apple Search Ads (четыре кампании в KZ идут с 29.10)

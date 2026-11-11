@@ -246,7 +246,7 @@ struct InsightDormantAccountList: View {
                     currency: currency
                 ) {
                     if let lastActivity = account.lastActivityDate {
-                        Text(lastActivity, style: .relative)
+                        RelativeTime(lastActivity)
                             .font(AppTypography.bodySmall)
                             .foregroundStyle(AppColors.textSecondary)
                     }

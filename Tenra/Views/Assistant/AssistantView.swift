@@ -333,7 +333,7 @@ struct AssistantView: View {
                 } label: {
                     ItemRow(
                         thread.title,
-                        meta: [MetaLine([.text(thread.updatedAt.formatted(.relative(presentation: .named)))])],
+                        meta: [MetaLine([.text(Formatting.relativeTime(thread.updatedAt))])],
                         leading: .symbol("bubble.left.and.text.bubble.right"),
                         style: .large,
                         titleLineLimit: 1

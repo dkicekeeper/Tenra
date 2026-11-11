@@ -1879,6 +1879,9 @@
 "assistant.preset.save" = "Де я можу заощадити?";
 "assistant.preset.invest" = "З чого почати інвестувати?";
 "common.retry" = "Повторити";
+/* DesignKit 8.9.0: RelativeTime, Formatting.relativeTime */
+"time.justNow" = "Щойно";
+"time.dayAndTime" = "%1$@, %2$@";
 
 /* AI assistant: consent before the first question goes to the cloud (App Review 5.1.2(i)) */
 "assistant.consent.title" = "Асистент працює через хмару";

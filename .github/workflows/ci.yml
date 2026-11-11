@@ -11,20 +11,18 @@ on:
   workflow_dispatch:
 
 jobs:
-  # No literal colours, fonts, spacing, radii or animations outside DesignKit tokens.
-  # Fails only on values beyond scripts/design-lint-baseline.json (CLAUDE.md, UI Components).
+  # DesignKit's design checks at the version Tenra builds with (scripts/designkit_lint.sh runs its
+  # scripts/designkit_lint.py): no literal colours, fonts, spacing, radii or animations beyond
+  # scripts/design-lint-baseline.json, no swipe actions, no system Form; every row of a glass
+  # section pads itself and keeps its divider under its text (CLAUDE.md, UI Components).
   design-lint:
     name: Design lint
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
-      - name: No raw design values beyond the baseline
-        run: python3 scripts/design_lint.py
-      # Every row of a glass section pads itself and keeps its divider under its text
-      # (DesignKit 8.1.0; CLAUDE.md, UI Components).
-      - name: Rows of glass sections
-        run: python3 scripts/section_rows_lint.py
+      - name: DesignKit's design rules
+        run: bash scripts/designkit_lint.sh
 
   build-and-test:
     # GitHub's Xcode 27 image (public preview since 2026-10, macOS 27): the iOS 27 SDK, so the

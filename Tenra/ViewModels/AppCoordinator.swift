@@ -377,7 +377,32 @@ class AppCoordinator {
         ) {
             candidates.append(nudge)
         }
+        if let ask = AssistantNotices.feedbackAsk(round: feedbackRound(now: now), now: now) {
+            candidates.append(ask)
+        }
         return candidates
+    }
+
+    /// The round of "what do you think of Tenra?" open now (FeedbackAsk); nil where the message
+    /// could not be sent (no server, no App Attest) and in the screenshot demo.
+    private func feedbackRound(now: Date) -> Int? {
+        guard feedbackTransport != nil else { return nil }
+        return FeedbackAsk.round(
+            installed: RatingPromptService.installDate(),
+            entries: transactionStore.transactionsCount,
+            lastRecorded: SpendingReminder.lastRecorded(),
+            now: now
+        )
+    }
+
+    /// Where the feedback talk sends what the person wrote (`POST /v1/feedback`); nil without a
+    /// server, on a device without App Attest and in the screenshot demo.
+    var feedbackTransport: AgentFeedbackTransport? {
+        #if DEBUG
+        if ScreenshotDemoMode.isActive { return nil }
+        #endif
+        guard AgentAttestation.isSupported else { return nil }
+        return agentServer()
     }
 
     /// What Ten's messages may still talk about (AssistantNotices.Subjects); nil until every
@@ -390,7 +415,8 @@ class AppCoordinator {
             goals: Set(goalStore.goals.map(\.id)),
             capturing: WalletCaptureStore.shared.hasEverCaptured,
             staleAssets: Set(assetStore.staleAssets().map(\.id)),
-            loansWithoutAsset: Set(AssistantNotices.loansWithoutAsset(transactionStore.accounts, assets: assetStore.assets, now: Date()).compactMap(\.subjectId))
+            loansWithoutAsset: Set(AssistantNotices.loansWithoutAsset(transactionStore.accounts, assets: assetStore.assets, now: Date()).compactMap(\.subjectId)),
+            feedbackRound: feedbackRound(now: Date())
         )
     }
 

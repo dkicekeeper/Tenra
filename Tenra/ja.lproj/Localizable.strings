@@ -2379,3 +2379,16 @@
 "formats.cents.footer" = "金額の小数点以下の部分です。";
 "formats.cents.bothSamples" = "%1$@ と %2$@";
 "formats.cents.rounded" = "%@（四捨五入）";
+
+/* Feedback: Ten's message on Home and the talk it opens in Ten's chat (AssistantViewModel.startFeedback) */
+"feedback.notice.title" = "Tenraはいかがですか？";
+"feedback.notice.body" = "気に入っている点や使いにくい点を教えてください。開発者に伝えます。";
+"feedback.notice.action" = "書く";
+"feedback.chat.askMood" = "Tenraはいかがですか？率直に教えてください。開発者に伝えます。";
+"feedback.chat.like" = "気に入っている";
+"feedback.chat.dislike" = "あまり";
+"feedback.chat.askGood" = "うれしいです！ほかに欲しい機能はありますか？追加や改善してほしい点を教えてください。";
+"feedback.chat.askBad" = "残念です。具体的に何が良くなかったですか？どうすれば直せるでしょうか？";
+"feedback.chat.thanks" = "ありがとうございます！メッセージは開発者に届きました。すべてのメッセージが読まれています。";
+"feedback.chat.failed" = "送信できませんでした。接続を確認して、もう一度書いてください。";
+"feedback.chat.placeholder" = "回答を入力…";

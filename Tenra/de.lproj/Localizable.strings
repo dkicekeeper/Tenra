@@ -2379,3 +2379,16 @@
 "formats.cents.footer" = "Cent und andere Bruchteile von Beträgen.";
 "formats.cents.bothSamples" = "%1$@ und %2$@";
 "formats.cents.rounded" = "%@, gerundet";
+
+/* Feedback: Ten's message on Home and the talk it opens in Ten's chat (AssistantViewModel.startFeedback) */
+"feedback.notice.title" = "Wie gefällt Ihnen Tenra?";
+"feedback.notice.body" = "Schreiben Sie mir, was Ihnen gefällt und was stört. Ich gebe es an den Entwickler weiter.";
+"feedback.notice.action" = "Schreiben";
+"feedback.chat.askMood" = "Wie gefällt Ihnen Tenra? Sagen Sie es ehrlich, ich gebe es an den Entwickler weiter.";
+"feedback.chat.like" = "Gefällt mir";
+"feedback.chat.dislike" = "Nicht so sehr";
+"feedback.chat.askGood" = "Das freut mich! Was wünschen Sie sich noch? Was sollte dazukommen oder besser werden?";
+"feedback.chat.askBad" = "Das tut mir leid. Was genau hat Ihnen nicht gefallen, und wie könnten wir es beheben?";
+"feedback.chat.thanks" = "Danke! Ihre Nachricht ist beim Entwickler. Jede Nachricht wird gelesen.";
+"feedback.chat.failed" = "Senden nicht möglich. Prüfen Sie die Verbindung und schreiben Sie noch einmal.";
+"feedback.chat.placeholder" = "Antwort schreiben…";

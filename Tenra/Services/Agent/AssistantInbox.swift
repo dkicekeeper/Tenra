@@ -39,6 +39,9 @@ struct AssistantNotice: Codable, Equatable, Identifiable, Sendable {
         /// A long loan no asset is bought with (plan-assets-roadmap 1.2): its action opens a new
         /// asset with the loan, not Ten.
         case loanAsset
+        /// "What do you think of Tenra?" (FeedbackAsk): its action opens the feedback talk in Ten's
+        /// chat, scripted on the phone.
+        case feedback
     }
 
     enum Mood: String, Codable, Sendable {
@@ -485,6 +488,9 @@ extension AssistantNotices {
         var staleAssets: Set<String> = []
         /// The loans still without an asset.
         var loansWithoutAsset: Set<String> = []
+        /// The feedback round open now (FeedbackAsk): an earlier round's message has had its
+        /// time. nil keeps whatever is there.
+        var feedbackRound: Int? = nil
 
         func contains(_ notice: AssistantNotice) -> Bool {
             switch notice.kind {
@@ -497,6 +503,7 @@ extension AssistantNotices {
             case .setup: return !capturing
             case .asset: return notice.subjectId.map(staleAssets.contains) ?? true
             case .loanAsset: return notice.subjectId.map(loansWithoutAsset.contains) ?? true
+            case .feedback: return feedbackRound.map { notice.id == FeedbackAsk.noticeID(round: $0) } ?? true
             case .signal, .digest: return true
             }
         }

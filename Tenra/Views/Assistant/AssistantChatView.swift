@@ -383,7 +383,7 @@ struct AssistantChatView: View {
             case .love:
                 speech = AssistantChatter.aww
                 play(.hop)
-            case .concerned:
+            case .concerned, .sad:
                 speech = AssistantChatter.sympathy
                 play(.nod)
             case .surprised:

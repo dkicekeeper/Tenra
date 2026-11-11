@@ -3,6 +3,7 @@ import { AttestError, checkAssertion, isValidKeyId, issueChallenge, registerKey 
 import { buildParams, donePayload, errorPayload } from "./claude";
 import { readConfig, type Config, type Env } from "./config";
 import { resolveTier, UpstreamError } from "./entitlement";
+import { allowFeedback, notifyOwner, parseFeedbackRequest, storeFeedback, type FeedbackRecord } from "./feedback";
 import { PROMPT_VERSION } from "./prompt";
 import { RENDER_REPLY } from "./tools";
 import { consumeCall, consumeValuation, refund, type Tier } from "./quota";
@@ -23,13 +24,18 @@ import { parseValuationRequest, valuate, VALUATION_PROMPT_VERSION, valuationConf
 // (src/valuation.ts): one JSON answer, off until VALUATION_ENABLED. Same App Attest, user and
 // Pro rules as a turn, its own monthly count.
 //
+// POST /v1/feedback — what a person wrote to Ten about the app, kept for the owner
+// (src/feedback.ts). No model call, so neither the off switch nor the country gate applies; the
+// App Attest routes are open the same way, since an install must register its key to send it.
+//
 // Every turn must come from the real app: it carries an App Attest assertion over its body
 // (x-tenra-key, x-tenra-assertion). The user id counts only inside that signed body, so a
 // copied Pro customer's id alone spends nothing. Free answers are counted per attested key,
 // Pro calls per customer. GET /v1/attest/challenge and POST /v1/attest register that key once
 // per install.
 //
-// Nothing about the conversation is logged: only status codes and error codes.
+// Nothing about the conversation is logged: only status codes and error codes. Feedback is the
+// exception by design: its words are stored, because the person wrote them to be read.
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json", "cache-control": "no-store" } });
@@ -43,23 +49,32 @@ export default {
       const valuation = readConfig(env).valuationEnabled ? VALUATION_PROMPT_VERSION : null;
       return json({ ok: true, protocol: PROTOCOL_VERSION, prompt: PROMPT_VERSION, valuation });
     }
-    const routes = ["/v1/turn", "/v1/valuation", "/v1/attest", "/v1/attest/challenge"];
+    const routes = ["/v1/turn", "/v1/valuation", "/v1/feedback", "/v1/attest", "/v1/attest/challenge"];
     if (!routes.includes(url.pathname)) return fail(404, "not_found");
 
     const config = readConfig(env);
-    if (!config.enabled) return fail(503, "disabled");
-
     // request.cf is set on every request; the cf-ipcountry header only with IP Geolocation on
     // the zone, which a workers.dev route doesn't have.
     const country = ((request.cf?.country as string | undefined) ?? request.headers.get("cf-ipcountry") ?? undefined)?.toUpperCase();
-    if (country && config.blockedCountries.has(country)) return fail(451, "region_unavailable");
 
+    // Feedback and the key registration it needs call no model: they answer everywhere, always.
     if (url.pathname === "/v1/attest/challenge") {
       if (request.method !== "GET") return fail(405, "method");
       return json({ challenge: await issueChallenge(env.QUOTA) });
     }
+    if (url.pathname === "/v1/attest") {
+      if (request.method !== "POST") return fail(405, "method");
+      return attest(request, env, config.appId);
+    }
+    if (url.pathname === "/v1/feedback") {
+      if (request.method !== "POST") return fail(405, "method");
+      return feedback(request, env, ctx, config, country);
+    }
+
+    if (!config.enabled) return fail(503, "disabled");
+    if (country && config.blockedCountries.has(country)) return fail(451, "region_unavailable");
+
     if (request.method !== "POST") return fail(405, "method");
-    if (url.pathname === "/v1/attest") return attest(request, env, config.appId);
     if (url.pathname === "/v1/valuation") return valuation(request, env, config);
 
     const userId = request.headers.get("x-tenra-user");
@@ -150,11 +165,8 @@ interface Caller {
   quotaId: string;
 }
 
-/** Checks the body's App Attest assertion, then the Pro status of the user named inside it. */
-async function identify(request: Request, env: Env, config: Config, bytes: Uint8Array, bodyUser: string | undefined, userId: string): Promise<Caller | Response> {
-  // The body must be signed by a key attested on a real device, Pro or not. Checked before
-  // anything that costs a RevenueCat call or a KV write, so a request that is not from the
-  // app stops here.
+/** The App Attest key that signed the body, or the refusal: the request is not from the app. */
+async function attestedKey(request: Request, env: Env, config: Config, bytes: Uint8Array): Promise<string | Response> {
   const keyId = request.headers.get("x-tenra-key");
   const assertion = request.headers.get("x-tenra-assertion");
   if (!isValidKeyId(keyId) || !assertion || assertion.length > 4096) return fail(401, "attest", { reason: "missing" });
@@ -164,6 +176,16 @@ async function identify(request: Request, env: Env, config: Config, bytes: Uint8
     if (error instanceof AttestError) return fail(401, "attest", { reason: error.reason });
     throw error;
   }
+  return keyId;
+}
+
+/** Checks the body's App Attest assertion, then the Pro status of the user named inside it. */
+async function identify(request: Request, env: Env, config: Config, bytes: Uint8Array, bodyUser: string | undefined, userId: string): Promise<Caller | Response> {
+  // The body must be signed by a key attested on a real device, Pro or not. Checked before
+  // anything that costs a RevenueCat call or a KV write, so a request that is not from the
+  // app stops here.
+  const keyId = await attestedKey(request, env, config, bytes);
+  if (keyId instanceof Response) return keyId;
 
   // Pro is looked up only for the user id inside the signed body: the header alone is a claim
   // anyone could copy from someone's Support ID. Apps before 1.6 (build 27) don't sign it and
@@ -182,6 +204,43 @@ async function identify(request: Request, env: Env, config: Config, bytes: Uint8
     }
   }
   return { tier, quotaId: tier === "free" ? `key:${keyId}` : userId };
+}
+
+async function feedback(request: Request, env: Env, ctx: ExecutionContext, config: Config, country: string | undefined): Promise<Response> {
+  const bytes = new Uint8Array(await request.arrayBuffer());
+  let body;
+  try {
+    body = parseFeedbackRequest(new TextDecoder().decode(bytes));
+  } catch (error) {
+    if (error instanceof ValidationError) return fail(400, "invalid", { reason: error.code });
+    throw error;
+  }
+  const keyId = await attestedKey(request, env, config, bytes);
+  if (keyId instanceof Response) return keyId;
+  if (!(await allowFeedback(env.QUOTA, keyId))) return fail(429, "quota");
+
+  // Pro or free is worth knowing, never worth losing the message for: RevenueCat down means
+  // the record goes without it.
+  let tier: Tier | undefined;
+  if (isValidUserId(body.user ?? null) && body.user === request.headers.get("x-tenra-user")) {
+    tier = await resolveTier(env.QUOTA, env.REVENUECAT_SECRET_KEY, body.user).catch(() => undefined);
+  }
+  const record: FeedbackRecord = {
+    at: new Date().toISOString(),
+    text: body.text,
+    mood: body.mood,
+    source: body.source,
+    app: body.app,
+    os: body.os,
+    locale: body.locale,
+    country,
+    tier,
+  };
+  await storeFeedback(env.QUOTA, record);
+  if (env.TELEGRAM_BOT_TOKEN && env.TELEGRAM_CHAT_ID) {
+    ctx.waitUntil(notifyOwner(env.TELEGRAM_BOT_TOKEN, env.TELEGRAM_CHAT_ID, record));
+  }
+  return json({ ok: true });
 }
 
 async function valuation(request: Request, env: Env, config: Config): Promise<Response> {

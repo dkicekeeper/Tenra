@@ -2379,3 +2379,16 @@
 "formats.cents.footer" = "Тиындар, центтер және сомалардың басқа бөлшек бөліктері.";
 "formats.cents.bothSamples" = "%1$@ және %2$@";
 "formats.cents.rounded" = "%@, дөңгелектеумен";
+
+/* Feedback: Ten's message on Home and the talk it opens in Ten's chat (AssistantViewModel.startFeedback) */
+"feedback.notice.title" = "Tenra сізге ұнай ма?";
+"feedback.notice.body" = "Не ұнайтынын және не кедергі келтіретінін маған жазыңыз. Әзірлеушіге жеткіземін.";
+"feedback.notice.action" = "Жазу";
+"feedback.chat.askMood" = "Tenra сізге қалай? Шыныңызды айтыңыз, әзірлеушіге жеткіземін.";
+"feedback.chat.like" = "Ұнайды";
+"feedback.chat.dislike" = "Онша емес";
+"feedback.chat.askGood" = "Керемет! Тағы не қалар едіңіз? Нені қосу немесе жақсарту керек?";
+"feedback.chat.askBad" = "Өкінішті. Нақты не ұнамады және оны қалай түзетуге болады?";
+"feedback.chat.thanks" = "Рақмет! Хабарлама әзірлеушіге жетті. Әр хабарлама оқылады.";
+"feedback.chat.failed" = "Жіберу мүмкін болмады. Интернетті тексеріп, қайта жазыңыз.";
+"feedback.chat.placeholder" = "Жауабыңызды жазыңыз…";

@@ -3,7 +3,8 @@
 //  Tenra
 //
 //  Calls the assistant Worker (`POST /v1/turn`) and streams its server-sent events, and asks it
-//  what an asset is worth by listings (`POST /v1/valuation`, the estimate_asset_value tool).
+//  what an asset is worth by listings (`POST /v1/valuation`, the estimate_asset_value tool), and
+//  hands it what the person wrote about Tenra (`POST /v1/feedback`).
 //  Network work runs off the main actor (docs/concurrency.md). The base URL comes from Info.plist
 //  (`TenraAssistantURL`); without it the cloud brain is off. With App Attest every body is
 //  signed (AgentAttestation); the server needs that from people without Pro.
@@ -26,6 +27,63 @@ nonisolated struct AgentValuationRequest: Sendable, Encodable {
     let `protocol`: Int
     let user: String
     let asset: [String: JSONValue]
+}
+
+/// `POST /v1/feedback` (docs/domains/assistant.md §8): what the person wrote about Tenra, kept
+/// on the server for the owner. No model reads it.
+nonisolated protocol AgentFeedbackTransport: Sendable {
+    func feedback(_ message: AgentFeedbackMessage) async throws
+}
+
+/// What the person wrote, how they feel about the app, and where in the app they wrote it.
+nonisolated struct AgentFeedbackMessage: Sendable, Equatable {
+    enum Mood: String, Sendable {
+        case good, bad
+    }
+
+    enum Source: String, Sendable {
+        /// Ten's message on Home.
+        case notice
+        /// The "not really" answer of the rating survey.
+        case survey
+        case settings
+    }
+
+    var text: String
+    var mood: Mood?
+    var source: Source
+}
+
+/// The body of `POST /v1/feedback`: the words, and the versions that tell the owner where a
+/// problem lives. The user id only tells Pro from free; the server does not keep it.
+nonisolated struct AgentFeedbackRequest: Sendable, Encodable {
+    let `protocol`: Int
+    let text: String
+    let mood: String?
+    let source: String
+    let app: String
+    let os: String
+    let locale: String
+    let user: String?
+
+    /// "1.8.2 (76)".
+    static var appVersion: String {
+        let info = Bundle.main.infoDictionary
+        let version = info?["CFBundleShortVersionString"] as? String ?? "0"
+        let build = info?["CFBundleVersion"] as? String ?? "0"
+        return "\(version) (\(build))"
+    }
+
+    /// "27.0.1".
+    static var systemVersion: String {
+        let version = ProcessInfo.processInfo.operatingSystemVersion
+        return "\(version.majorVersion).\(version.minorVersion).\(version.patchVersion)"
+    }
+
+    /// The language Tenra runs in ("ru", "pt-BR").
+    static var appLanguage: String {
+        Bundle.main.preferredLocalizations.first ?? "en"
+    }
 }
 
 nonisolated enum AgentServerError: Error, Equatable {
@@ -72,7 +130,7 @@ nonisolated enum AgentConfig {
     }
 }
 
-nonisolated final class AgentServerClient: AgentTransport, AgentValuationTransport {
+nonisolated final class AgentServerClient: AgentTransport, AgentValuationTransport, AgentFeedbackTransport {
     private let baseURL: URL
     private let session: URLSession
     private let userID: @Sendable () async -> String?
@@ -126,6 +184,27 @@ nonisolated final class AgentServerClient: AgentTransport, AgentValuationTranspo
             answer = try await Self.post(body, path: "v1/valuation", user: user, baseURL: baseURL, session: session, attestation: attestation)
         }
         return try JSONDecoder().decode(JSONValue.self, from: answer.get())
+    }
+
+    func feedback(_ message: AgentFeedbackMessage) async throws {
+        // Without a customer id the message still goes: the server then cannot tell Pro from free.
+        let user = await userID()
+        let body = try JSONEncoder().encode(AgentFeedbackRequest(
+            protocol: AgentProtocol.version,
+            text: message.text,
+            mood: message.mood?.rawValue,
+            source: message.source.rawValue,
+            app: AgentFeedbackRequest.appVersion,
+            os: AgentFeedbackRequest.systemVersion,
+            locale: AgentFeedbackRequest.appLanguage,
+            user: user
+        ))
+        var answer = try await Self.post(body, path: "v1/feedback", user: user ?? "", baseURL: baseURL, session: session, attestation: attestation)
+        if case .failure(let error) = answer, error == .attestation(reason: "unknown_key"), let attestation {
+            await attestation.reset()
+            answer = try await Self.post(body, path: "v1/feedback", user: user ?? "", baseURL: baseURL, session: session, attestation: attestation)
+        }
+        _ = try answer.get()
     }
 
     /// Whether the server values assets from listings (`GET /v1/health` names the valuation

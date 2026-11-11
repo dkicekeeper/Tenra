@@ -2379,3 +2379,16 @@
 "formats.cents.footer" = "Копейки, центы и другие дробные части сумм.";
 "formats.cents.bothSamples" = "%1$@ и %2$@";
 "formats.cents.rounded" = "%@, с округлением";
+
+/* Feedback: Ten's message on Home and the talk it opens in Ten's chat (AssistantViewModel.startFeedback) */
+"feedback.notice.title" = "Как вам Tenra?";
+"feedback.notice.body" = "Напишите мне, что нравится и что мешает. Я передам разработчику.";
+"feedback.notice.action" = "Написать";
+"feedback.chat.askMood" = "Как вам Tenra? Скажите честно, я передам разработчику.";
+"feedback.chat.like" = "Нравится";
+"feedback.chat.dislike" = "Не очень";
+"feedback.chat.askGood" = "Здорово! А чего ещё хотелось бы? Что добавить или улучшить?";
+"feedback.chat.askBad" = "Жаль это слышать. Что именно не понравилось и как это исправить?";
+"feedback.chat.thanks" = "Спасибо! Сообщение у разработчика. Каждое сообщение читают.";
+"feedback.chat.failed" = "Не получилось отправить. Проверьте интернет и напишите ещё раз.";
+"feedback.chat.placeholder" = "Напишите ответ…";

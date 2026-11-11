@@ -144,6 +144,7 @@ struct AssistantNoticesSection: View {
                             showingAssetPaywall = true
                         }
                     } else {
+                        // The feedback message too: its talk is in Ten's chat (AssistantView).
                         coordinator.goThrough(notice)
                     }
                 },
@@ -168,6 +169,7 @@ extension AssistantNoticeCard {
         case .setup: String(localized: "home.autoCapture.action")
         case .asset: String(localized: "asset.updateValue")
         case .loanAsset: String(localized: "loan.asset.add")
+        case .feedback: String(localized: "feedback.notice.action")
         default: String(localized: "assistant.notice.goThrough")
         }
     }
@@ -177,6 +179,7 @@ extension AssistantNoticeCard {
         case .setup: "wave.3.right"
         case .asset: "chart.line.uptrend.xyaxis"
         case .loanAsset: "house"
+        case .feedback: "square.and.pencil"
         default: "sparkles"
         }
     }

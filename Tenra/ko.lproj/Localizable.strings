@@ -2379,3 +2379,16 @@
 "formats.cents.footer" = "금액의 소수점 이하 부분이에요.";
 "formats.cents.bothSamples" = "%1$@ 및 %2$@";
 "formats.cents.rounded" = "%@, 반올림";
+
+/* Feedback: Ten's message on Home and the talk it opens in Ten's chat (AssistantViewModel.startFeedback) */
+"feedback.notice.title" = "Tenra는 어떠세요?";
+"feedback.notice.body" = "마음에 드는 점과 불편한 점을 알려 주세요. 개발자에게 전해 드릴게요.";
+"feedback.notice.action" = "쓰기";
+"feedback.chat.askMood" = "Tenra는 어떠세요? 솔직하게 말씀해 주세요. 개발자에게 전해 드릴게요.";
+"feedback.chat.like" = "마음에 들어요";
+"feedback.chat.dislike" = "별로예요";
+"feedback.chat.askGood" = "다행이에요! 더 바라는 점이 있나요? 추가하거나 개선할 점을 알려 주세요.";
+"feedback.chat.askBad" = "아쉽네요. 정확히 어떤 점이 불편했나요? 어떻게 고치면 좋을까요?";
+"feedback.chat.thanks" = "감사합니다! 메시지가 개발자에게 전달됐어요. 모든 메시지를 읽고 있어요.";
+"feedback.chat.failed" = "보내지 못했어요. 연결을 확인하고 다시 써 주세요.";
+"feedback.chat.placeholder" = "답변을 입력하세요…";

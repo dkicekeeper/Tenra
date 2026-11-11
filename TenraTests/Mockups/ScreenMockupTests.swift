@@ -228,6 +228,70 @@ struct ScreenMockupTests {
         _ = store
     }
 
+    // MARK: - Feedback ("Write to Ten", docs/domains/assistant.md §6)
+
+    /// Takes the message and says yes: the mockups never reach the server.
+    private nonisolated struct AcceptingFeedback: AgentFeedbackTransport {
+        func feedback(_ message: AgentFeedbackMessage) async throws {}
+    }
+
+    /// Ten's message on Home, as "Ten writes" shows it.
+    @Test func feedbackNotice() async throws {
+        let notice = try #require(AssistantNotices.feedbackAsk(round: 1, now: Date()))
+        try await render("feedback-notice", height: 300) {
+            AssistantNoticeCard(notice: notice, onAsk: {}, onHide: {})
+                .screenPadding()
+                .frame(maxHeight: .infinity)
+                .background(AppColors.Background.base)
+        }
+    }
+
+    /// Ten's chat in the feedback talk, at the step the test leaves it on.
+    private func feedbackChat(_ steps: (AssistantViewModel) async -> Void) async -> AssistantViewModel {
+        let model = AssistantViewModel(
+            conversation: AgentConversation(transport: ScriptedTransport([]), toolkit: FakeToolkit()),
+            context: { "" }
+        )
+        AssistantViewModel.feedbackPause = .zero
+        model.startFeedback(source: .notice, transport: AcceptingFeedback())
+        await steps(model)
+        return model
+    }
+
+    private func renderChat(_ name: String, _ model: AssistantViewModel) async throws {
+        let coordinator = AppCoordinator()
+        try await render(name) {
+            NavigationStack {
+                AssistantChatView(model: model)
+            }
+            .environment(coordinator)
+            .environment(PremiumManager.shared)
+        }
+    }
+
+    /// "Write" opens Ten's chat: Ten asks, the two answers sit over the field.
+    @Test func feedbackChatAsks() async throws {
+        let model = await feedbackChat { _ in }
+        try await renderChat("feedback-chat-1-asks", model)
+    }
+
+    /// "I like it": Ten asks what else to add.
+    @Test func feedbackChatLikes() async throws {
+        let model = await feedbackChat { model in
+            await model.send(AssistantViewModel.feedbackLike)
+        }
+        try await renderChat("feedback-chat-2-likes", model)
+    }
+
+    /// "Not really", the person's words, and Ten's thanks once they are sent.
+    @Test func feedbackChatSent() async throws {
+        let model = await feedbackChat { model in
+            await model.send(AssistantViewModel.feedbackDislike)
+            await model.send("The loan screen is confusing: I cannot find where to add a payment.")
+        }
+        try await renderChat("feedback-chat-3-sent", model)
+    }
+
     // MARK: - Rendering
 
     /// Draws `content` in an iPhone-sized window, in the light and the dark theme, into

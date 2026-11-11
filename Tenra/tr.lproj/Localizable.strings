@@ -2379,3 +2379,16 @@
 "formats.cents.footer" = "Kuruşlar, sentler ve tutarların diğer kesirli kısımları.";
 "formats.cents.bothSamples" = "%1$@ ve %2$@";
 "formats.cents.rounded" = "%@, yuvarlanır";
+
+/* Feedback: Ten's message on Home and the talk it opens in Ten's chat (AssistantViewModel.startFeedback) */
+"feedback.notice.title" = "Tenra’yı nasıl buluyorsun?";
+"feedback.notice.body" = "Neyi sevdiğini ve neyin engel olduğunu bana yaz. Geliştiriciye iletirim.";
+"feedback.notice.action" = "Yaz";
+"feedback.chat.askMood" = "Tenra’yı nasıl buluyorsun? Dürüstçe söyle, geliştiriciye iletirim.";
+"feedback.chat.like" = "Beğeniyorum";
+"feedback.chat.dislike" = "Pek değil";
+"feedback.chat.askGood" = "Harika! Başka ne isterdin? Ne eklenmeli ya da iyileştirilmeli?";
+"feedback.chat.askBad" = "Çok yazık. Tam olarak ne hoşuna gitmedi ve nasıl düzeltebiliriz?";
+"feedback.chat.thanks" = "Teşekkürler! Mesajın geliştiriciye ulaştı. Her mesaj okunuyor.";
+"feedback.chat.failed" = "Gönderilemedi. Bağlantını kontrol edip tekrar yaz.";
+"feedback.chat.placeholder" = "Yanıtını yaz…";

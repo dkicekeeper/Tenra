@@ -256,6 +256,31 @@ reminder (`SpendingReminderOfferCard`, not an `AssistantNotice`) shows where the
 saved, under the turn in this chat as well as among Home's setup cards
 ([plan-spending-reminder.md](../archive/plans/plan-spending-reminder.md) §3.5); its pushes come from Ten too.
 
+**Feedback** (`Kind.feedback`, `FeedbackAsk`, `Services/Feedback/`): Ten asks "How do you like
+Tenra?" so the owner hears from people (no accounts, no analytics, few ratings). Rounds are
+counted from the install day (`RatingPromptService.installDate`), nothing else is stored: round 1
+opens on day `firstAfterDays` (3) for someone with `firstAfterEntries` (5) entries, the next every
+`everyDays` (45) while the person recorded within `activeWithinDays` (14). A round's message has
+its own key (`feedback:<round>`), so it asks once, answered or hidden, and an earlier round's
+message leaves when the next opens (`Subjects.feedbackRound`). Its button is "Write" and opens
+**the feedback talk in Ten's chat** (`AssistantViewModel.startFeedback`, from
+`AssistantView.start`): a new chat where Ten asks, with two chips over the field ("I like it",
+"Not really"); the chip becomes the person's message, Ten answers after a short pause with the
+next question (what else to add, or what went wrong and how to fix it), and the person's words go
+to `POST /v1/feedback` (§8). The talk is scripted on the phone: no model reads it, so it waits for
+no consent, spends no answer, works where turns are refused, and its lines are not kept with the
+threads. While it runs the field's placeholder asks for an answer (`feedback.chat.placeholder`),
+and after "Not really" Ten is sad (`AgentMood.sad`, set on the phone only) through its question
+and its thanks. Ten's lines are gender-neutral in every language (no "glad", no "he reads").
+Words typed instead of a chip are the answer (no mood). A failed send keeps the question
+open and Ten says so. Once sent, Ten thanks, the Home message is marked read, and "I like it" asks
+Apple for the rating prompt (`RatingPromptService.requestNativeReview`); what is typed next is an
+ordinary message. The rating survey's "not really" opens the same talk with the first question
+skipped (source `survey`, `AssistantNotices.feedbackAfterSurvey`) where it used to open an
+e-mail; the e-mail stays as the fallback without a server or App Attest
+(`AppCoordinator.feedbackTransport` is nil, and Ten does not ask either). Pinned by
+`FeedbackAskTests` and `AssistantFeedbackChatTests`.
+
 Auto-capture not set up (`Kind.setup`, `AssistantNotices.setupNudge`): once, after
 `setupAfterEntries` entries, for someone who hid Home's auto-capture card; its button is "Set
 up" and opens the Wallet guide instead of asking Ten (no action spent), and it leaves once an
@@ -388,6 +413,22 @@ The app runs the agent loop, because the tools run on the phone: one server call
   registers the key on the first turn (key id in UserDefaults: an App Attest key does not survive a
   reinstall), `AgentServerClient` signs every body, and `unknown_key` gets a new key and one retry.
 
+### Feedback (`POST /v1/feedback`)
+
+What a person wrote to Ten about the app (`src/feedback.ts`, the app's `AgentFeedbackTransport`).
+The one place where the server keeps words, because they are written to be read. Body:
+`{"protocol": 1, "text", "mood"?: "good"|"bad", "source"?: "notice"|"survey"|"settings", "app",
+"os", "locale", "user"?}`, signed by App Attest like a turn. No model is called, so neither
+`ASSISTANT_ENABLED` nor `BLOCKED_COUNTRIES` applies, and the App Attest routes are open the same
+way (an install in Russia registers its key to send feedback; its turns still answer 451).
+Limits: 16 KB, a text of 2 000 characters, 5 messages a day per App Attest key (429 `quota`).
+The record is kept in KV under `feedback:<ISO time>:<id>` for a year: the text, mood, source,
+versions, language, the request's country and Pro or free (looked up by the signed `user`, which
+is not stored; RevenueCat down drops only that field). With the secrets `TELEGRAM_BOT_TOKEN` and
+`TELEGRAM_CHAT_ID` set, the message also goes to that chat (`notifyOwner`; a failure logs the
+status only). Reading without Telegram: `npx wrangler kv key list --binding QUOTA --prefix
+feedback:` and `kv key get`, never through Actions (its logs are public).
+
 ### Valuation from listings (`POST /v1/valuation`)
 
 What an asset is worth by comparable listings found with web search, in any country
@@ -476,6 +517,11 @@ spending, no em dashes, in all 11 languages.
   is sent, where, that nothing is stored; `assistant.consent.*` in all 11 languages), the toggle in
   Settings → Assistant: switched on there, the same consent screen asks first
   (`SettingsAssistantSection.cloudToggle`), switched off it turns the cloud off at once. The App Privacy label lists what Ten sends (published 2026-10-18).
+- **Feedback is the person's own message to the owner**: Ten says where it goes when it asks
+  ("I will pass it on to the developer"); it carries no id, no records and no chat, and never
+  reaches Anthropic (§8).
+  The privacy policy has its line (2026-11-11). The server's "logs no content" holds for turns
+  and valuations; feedback is stored by design.
 - **Minimisation**: the cloud gets tool results, never the database; files and photos never leave
   the phone (§7). A record drafted on the phone before the person agreed to the cloud is never
   reported to the model (`draftsBeforeConsent`, skipped by `draftStatus`), so the words typed then
@@ -552,7 +598,9 @@ spending, no em dashes, in all 11 languages.
 - **Secrets** (GitHub → Settings → Secrets and variables → Actions): `CLOUDFLARE_API_TOKEN`,
   `CLOUDFLARE_ACCOUNT_ID`, `ANTHROPIC_API_KEY` (a separate "Tenra" workspace with a spend limit),
   `ANTHROPIC_EVAL_API_KEY` (the evals' own "Tenra eval" workspace with its own limit; without it
-  the eval jobs stop before calling the API), `REVENUECAT_SECRET_KEY`. The KV namespace id is in `wrangler.toml`. The server is at
+  the eval jobs stop before calling the API), `REVENUECAT_SECRET_KEY`, and optionally
+  `TELEGRAM_BOT_TOKEN` with `TELEGRAM_CHAT_ID` (feedback to the owner's chat: a bot from
+  @BotFather, the chat id from a message sent to it; uploaded on deploy when both are set). The KV namespace id is in `wrangler.toml`. The server is at
   `https://tenra-assistant.dakacom.workers.dev`, its address in the app's Info.plist
   (`TenraAssistantURL`).
 - **Workflow** `Assistant server` (`.github/workflows/assistant.yml`): typecheck and unit tests on

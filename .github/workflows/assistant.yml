@@ -8,6 +8,8 @@ name: Assistant server
 # Repository secrets used by the manual jobs:
 #   CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID  deploy
 #   ANTHROPIC_API_KEY, REVENUECAT_SECRET_KEY     uploaded to the Worker on deploy
+#   TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID         optional, uploaded on deploy: feedback messages
+#                                                (POST /v1/feedback) also go to that chat
 #   ANTHROPIC_EVAL_API_KEY                       eval, eval-valuation: a key of the separate
 #                                                "Tenra eval" workspace in the Anthropic Console,
 #                                                with its own spend limit, so an eval never spends
@@ -89,6 +91,22 @@ jobs:
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           REVENUECAT_SECRET_KEY: ${{ secrets.REVENUECAT_SECRET_KEY }}
+      # Optional: with both repository secrets set, each feedback message (POST /v1/feedback)
+      # also goes to the owner's Telegram chat. Without them feedback is only kept in KV.
+      - name: Telegram secrets for feedback (optional)
+        working-directory: server/assistant
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          if [ -z "$TELEGRAM_BOT_TOKEN" ] || [ -z "$TELEGRAM_CHAT_ID" ]; then
+            echo "No TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID repository secrets: feedback stays in KV only."
+            exit 0
+          fi
+          printf '%s' "$TELEGRAM_BOT_TOKEN" | npx wrangler secret put TELEGRAM_BOT_TOKEN
+          printf '%s' "$TELEGRAM_CHAT_ID" | npx wrangler secret put TELEGRAM_CHAT_ID
 
   eval:
     if: github.event_name == 'workflow_dispatch' && inputs.action == 'eval'

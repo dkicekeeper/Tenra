@@ -62,4 +62,6 @@ binding = "QUOTA"
 id = "c509b91968924c0b96deba4ebd1ea187"
 
 # Secrets (never in this file): `npx wrangler secret put ANTHROPIC_API_KEY`
-# and `npx wrangler secret put REVENUECAT_SECRET_KEY`.
+# and `npx wrangler secret put REVENUECAT_SECRET_KEY`. Optional: TELEGRAM_BOT_TOKEN and
+# TELEGRAM_CHAT_ID send each feedback message (POST /v1/feedback, src/feedback.ts) to the
+# owner's Telegram chat as well as keeping it in KV under `feedback:`.

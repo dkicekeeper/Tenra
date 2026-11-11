@@ -1,17 +1,17 @@
-# Tenra, the version after 1.8.2: What's New and the checklist
+# Tenra 1.8.3: What's New and the checklist
 
-The number is not chosen. 1.8.2 is in the store since 2026-11-10/11 (build 76; its notes and
-checklist: [archive/release-notes-1.8.2.md](archive/release-notes-1.8.2.md)). **Status
-2026-11-11:** the changes below are in `main`, no TestFlight build of this version yet, the What's
-New blocks for the 13 storefronts and en-GB are not written. The featuring nomination sent on
-2026-11-10 promises an update in the last week of December: a build by 2026-12-22, the release on
-2026-12-26 to 29 ([plan-growth.md](plan-growth.md) stage 4).
+Version 1.8.3 in the project since 2026-11-11 (the founder's call: a small update now; 1.9 is
+kept for the update the featuring nomination promises in the last week of December,
+[plan-growth.md](plan-growth.md) stage 4). 1.8.2 is in the store since 2026-11-10/11 (build 76;
+its notes and checklist: [archive/release-notes-1.8.2.md](archive/release-notes-1.8.2.md)).
+**Status 2026-11-11:** the changes below are in `main`, a TestFlight build follows the merge, the
+What's New blocks for the 13 storefronts and en-GB are not written.
 
 When the blocks are written: one `## <locale>` heading per storefront (en-US, ru, en-GB, de-DE,
 es-ES, es-MX, fr-FR, fr-CA, tr, pt-BR, it, uk, ja, ko), which `prepare-version` (Actions → App
 Store Connect, [asc.md](asc.md)) pastes into App Store Connect; en-GB (search in Kazakhstan)
-carries ru's text. No em dashes (user rule). The title then names the version as
-`# Tenra <X.Y>: …`: `prepare-version` refuses notes whose title names another version.
+carries ru's text. No em dashes (user rule). `prepare-version` refuses notes whose title names
+another version.
 
 ## In this version (main since 2026-11-10)
 
@@ -40,6 +40,15 @@ carries ru's text. No em dashes (user rule). The title then names the version as
   field. Voice input lost an audio silence detector it never used (auto-stop is the 5-second
   pause, as before).
 
+- Feedback through Ten (in `main` since 2026-11-11): Ten asks on Home "How do you like
+  Tenra?" from the third day with five entries, then every 45 days while the person records.
+  "Write" opens Ten's chat, where Ten asks and two chips answer ("I like it", "Not really"); Ten
+  then asks what else to add, or what went wrong and how to fix it, and the person's words go to
+  the developer, not to the AI. The rating survey's "not really" opens the same talk (it opened an
+  e-mail). "I like it" asks Apple for the rating prompt after sending. Needs the server with
+  `POST /v1/feedback` deployed first (Actions → Assistant server → deploy), and the privacy
+  policy's line (on the site once merged).
+
 Not for the user's notes, already live on Ten's server (no release needed): free users' share
 of the day (900 of 1 200 calls) with 300 kept for Pro and trials, a call the model never
 started is given back, a 5-second RevenueCat timeout, and the model stops when the app leaves
@@ -58,6 +67,15 @@ mid-answer.
    chat in the history.
 6. Two own banks' pushes merged into a transfer the next morning: that day's evening reminder
    still comes if nothing else was recorded.
+7. Feedback through Ten: Ten's message "Как вам Tenra?" on Home (a phone with five entries,
+   installed three days ago or more), "Написать" opens Ten's chat with Ten's question and the
+   chips "Нравится" and "Не очень" over the field; a chip becomes your message, Ten asks the next
+   question after a moment; your answer shows "Спасибо! Передал разработчику…", the Home message
+   leaves, and the message arrives in Telegram; after "Нравится" Apple's rating prompt may follow;
+   with no network Ten says "Не получилось отправить" and the next message is tried again. The
+   rating survey's "not really" opens the chat with "Что именно не понравилось…" at once.
+   **App Privacy** in App Store Connect: updated by the founder on 2026-11-11 for a message to
+   the developer (user content for app functionality, not linked to the person, no tracking).
 
 **On the phone, left from the versions already in the store** (not marked done before 1.8.2 went
 out; the store build is the one to check):
@@ -86,6 +104,6 @@ out; the store build is the one to check):
 
 1. **CI green**, then a TestFlight build.
 2. **The phone checks above.**
-3. **What's New** in this file, then `prepare-version --version <X.Y> --build <N>`.
-4. **One submission**: `asc.py prepare-review --version <X.Y>`; the founder sends it, or
+3. **What's New** in this file, then `prepare-version --version 1.8.3 --build <N>`.
+4. **One submission**: `asc.py prepare-review --version 1.8.3`; the founder sends it, or
    `--submit` on the founder's word.

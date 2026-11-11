@@ -20,6 +20,9 @@ export interface Env {
   FREE_MONTHLY_VALUATIONS?: string;
   PRO_MONTHLY_VALUATIONS?: string;
   VALUATION_CALL_WEIGHT?: string;
+  /** Optional secrets: with both set, each feedback message also goes to the owner's Telegram chat. */
+  TELEGRAM_BOT_TOKEN?: string;
+  TELEGRAM_CHAT_ID?: string;
 }
 
 export type Effort = "low" | "medium" | "high" | "xhigh" | "max";

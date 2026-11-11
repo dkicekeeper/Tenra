@@ -212,7 +212,13 @@ struct MainTabView: View {
         }
         // Rating pre-prompt survey. Fired by RatingPromptService at a success moment.
         .sheet(isPresented: $ratingPrompt.shouldShowSurvey) {
-            RatingSurveyView()
+            RatingSurveyView(onWriteFeedback: coordinator.feedbackTransport == nil ? nil : {
+                // Once the survey's sheet is gone, Ten's chat opens and asks what went wrong.
+                Task {
+                    try? await Task.sleep(for: .milliseconds(500))
+                    coordinator.goThrough(AssistantNotices.feedbackAfterSurvey(now: Date()))
+                }
+            })
         }
         // An App Intent that could not resolve a draft headlessly hands the
         // parsed operation over here. Deliberately NOT Pro-gated: logging a

@@ -135,6 +135,8 @@ final class AssistantViewModel {
     /// Ready questions about the screen a new chat was opened from ("Ask Ten",
     /// AssistantEntryPoints): over the field until the first message, nothing sent before.
     private(set) var openingQuestions: [String] = []
+    /// Where the short talk about Tenra itself stands (`startFeedback`); nil in an ordinary chat.
+    private(set) var feedbackStep: FeedbackStep?
     /// The latest kept threads but the open one, for the history (at most `recentLimit`).
     private(set) var recentThreads: [AgentThreadSummary] = []
     /// The free allowance; nil with Pro.
@@ -175,6 +177,10 @@ final class AssistantViewModel {
     @ObservationIgnored private var threadUpdatedAt: Date
     /// The kept thread is brought back once, and never over a thread already going.
     @ObservationIgnored private var restoreDone = false
+    /// The feedback talk's way to the owner, where it was started, and what to do once sent.
+    @ObservationIgnored private var feedbackTransport: AgentFeedbackTransport?
+    @ObservationIgnored private var feedbackSource: AgentFeedbackMessage.Source = .notice
+    @ObservationIgnored private var feedbackSent: ((AgentFeedbackMessage.Mood?) -> Void)?
 
     init(
         conversation: AgentConversation,
@@ -288,6 +294,9 @@ final class AssistantViewModel {
     private func clearThreadState() {
         phase = .idle
         openingQuestions = []
+        feedbackStep = nil
+        feedbackTransport = nil
+        feedbackSent = nil
         failedEntryId = nil
         streamingReply = []
         drafts?.clear()
@@ -393,6 +402,8 @@ final class AssistantViewModel {
     /// to go through it; in a new chat from "Ask Ten", the questions about its screen.
     var suggestions: [String] {
         // Where the cloud does not answer (RU, BY) every suggestion would be a question.
+        // The feedback talk's two answers are not questions to the cloud: they show everywhere.
+        if feedbackStep == .mood { return phase == .idle ? [Self.feedbackLike, Self.feedbackDislike] : [] }
         guard phase == .idle, !access.region.isOutOfRegion(now: access.now()) else { return [] }
         if entries.isEmpty { return openingQuestions }
         switch entries.last?.content {
@@ -400,6 +411,98 @@ final class AssistantViewModel {
         case .attachment(let summary)? where summary.kind == .statement:
             return [String(localized: "assistant.attachment.analyze")]
         default: return []
+        }
+    }
+
+    // MARK: - Feedback
+
+    /// The feedback talk (docs/domains/assistant.md §6, "Feedback"): Ten asks how the person
+    /// likes Tenra, they answer with a chip, Ten asks what to add or what went wrong, and their
+    /// words go to the owner (`POST /v1/feedback`). Scripted on the phone: no model reads it.
+    enum FeedbackStep: Equatable {
+        /// Ten asked whether the person likes Tenra; the two chips are over the field.
+        case mood
+        /// Ten asked for the words; the next message is sent to the owner.
+        case details(AgentFeedbackMessage.Mood?)
+    }
+
+    static var feedbackLike: String { String(localized: "feedback.chat.like") }
+    static var feedbackDislike: String { String(localized: "feedback.chat.dislike") }
+    /// A pause before Ten's next line, as someone typing an answer.
+    static var feedbackPause: Duration = .milliseconds(700)
+
+    /// Starts the feedback talk in a new chat (the open one stays kept). After the rating
+    /// survey's "not really" Ten skips the first question: the person has just answered it.
+    /// False while a reply is still coming: its chat cannot be left.
+    @discardableResult
+    func startFeedback(
+        source: AgentFeedbackMessage.Source,
+        transport: AgentFeedbackTransport,
+        onSent: @escaping (AgentFeedbackMessage.Mood?) -> Void = { _ in }
+    ) -> Bool {
+        guard startChat(suggesting: []) else { return false }
+        feedbackTransport = transport
+        feedbackSource = source
+        feedbackSent = onSent
+        if source == .survey {
+            feedbackStep = .details(.bad)
+            say(String(localized: "feedback.chat.askBad"), mood: .sad)
+        } else {
+            feedbackStep = .mood
+            say(String(localized: "feedback.chat.askMood"), mood: .idle)
+        }
+        return true
+    }
+
+    /// A line of Ten's written on the phone.
+    private func say(_ text: String, mood: AgentMood) {
+        entries.append(Entry(id: UUID(), content: .reply(AgentReply(blocks: [.text(text)], mood: mood, suggestions: []), results: [:])))
+        replyMood = mood
+    }
+
+    private func answerFeedback(_ text: String, step: FeedbackStep) async {
+        entries.append(Entry(id: UUID(), content: .question(text)))
+        switch step {
+        case .mood where text == Self.feedbackLike:
+            await pauseThenSay(String(localized: "feedback.chat.askGood"), mood: .happy, next: .details(.good))
+        case .mood where text == Self.feedbackDislike:
+            await pauseThenSay(String(localized: "feedback.chat.askBad"), mood: .sad, next: .details(.bad))
+        case .mood:
+            // Typed instead of a chip: the words are the answer.
+            await sendFeedback(text, mood: nil)
+        case .details(let mood):
+            await sendFeedback(text, mood: mood)
+        }
+    }
+
+    private func pauseThenSay(_ text: String, mood: AgentMood, next: FeedbackStep) async {
+        phase = .working(.composing)
+        try? await Task.sleep(for: Self.feedbackPause)
+        phase = .idle
+        feedbackStep = next
+        say(text, mood: mood)
+    }
+
+    private func sendFeedback(_ text: String, mood: AgentFeedbackMessage.Mood?) async {
+        guard let transport = feedbackTransport else {
+            say(String(localized: "feedback.chat.failed"), mood: .sad)
+            return
+        }
+        phase = .working(.composing)
+        do {
+            try await transport.feedback(AgentFeedbackMessage(text: text, mood: mood, source: feedbackSource))
+            phase = .idle
+            // The talk is over; what is typed next is an ordinary message to Ten.
+            feedbackStep = nil
+            // After a complaint Ten stays sorry; after kind words it is glad.
+            say(String(localized: "feedback.chat.thanks"), mood: mood == .bad ? .sad : .love)
+            feedbackSent?(mood)
+            feedbackSent = nil
+        } catch {
+            phase = .idle
+            // The same question stands: the next message is tried again.
+            feedbackStep = .details(mood)
+            say(String(localized: "feedback.chat.failed"), mood: .sad)
         }
     }
 
@@ -455,6 +558,12 @@ final class AssistantViewModel {
     func send(_ raw: String, spoken: Bool = false, cloudAllowed: Bool = true, phoneMayAnswer: Bool = true) async -> Bool {
         let text = raw.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty, !isWorking, !draftingLocally else { return false }
+        // In the feedback talk every message is an answer to Ten's question about Tenra: it goes
+        // to the owner, never to the model, so it needs no consent and spends no answer.
+        if let step = feedbackStep {
+            await answerFeedback(text, step: step)
+            return true
+        }
         if phoneMayAnswer, let operations = await draftOnPhone(text, spoken: spoken, cloudAllowed: cloudAllowed), let drafts {
             dropFailedQuestion()
             let id = drafts.add(operations, madeOnPhoneFrom: text)

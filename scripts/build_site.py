@@ -26,6 +26,11 @@ STORE_DEPOSITS_LOANS = f"{STORE}?ppid=23fa027e-1341-4344-8d3e-e5567b713dda"
 LANGS = ["ru", "kk", "en"]
 PAGES = ["index", "deposit-calculator", "loan-calculator"]
 CURRENCIES = ["₸", "₽", "$", "€"]
+# Ownership tags of the search consoles, on the site's root page only (the consoles check the
+# address the property was added with). They are public by nature.
+VERIFICATION = [
+    '<meta name="google-site-verification" content="MZ_Xsv96G4vUOoinEHbOsOd2ThrdY5lC9MnSMk48hcY">',
+]
 # What the forms open with: amount, rate, term in months.
 DEFAULTS = {
     "deposit-calculator": {"₸": ("1 000 000", "15", "12"), "$": ("10 000", "4.5", "12")},
@@ -56,7 +61,7 @@ SHELL = """<!DOCTYPE html>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{title}}</title>
     <meta name="description" content="{{description}}">
-    <link rel="canonical" href="{{canonical}}">
+{{verification}}    <link rel="canonical" href="{{canonical}}">
 {{alternates}}
     <meta name="apple-itunes-app" content="app-id={{app_id}}">
     <meta property="og:title" content="{{title}}">
@@ -277,6 +282,7 @@ def build_page(strings, lang, page):
         "title": esc(p["title"]),
         "description": esc(p["description"]),
         "canonical": BASE + path_of(lang, page).replace("index.html", ""),
+        "verification": "".join(f"    {tag}\n" for tag in VERIFICATION) if path_of(lang, page) == "index.html" else "",
         "alternates": alternates,
         "app_id": APP_ID,
         "up": up,

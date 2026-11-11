@@ -39,7 +39,8 @@ struct AssistantNotice: Codable, Equatable, Identifiable, Sendable {
         /// A long loan no asset is bought with (plan-assets-roadmap 1.2): its action opens a new
         /// asset with the loan, not Ten.
         case loanAsset
-        /// "What do you think of Tenra?" (FeedbackAsk): its action opens FeedbackSheet, not Ten.
+        /// "What do you think of Tenra?" (FeedbackAsk): its action opens the feedback talk in Ten's
+        /// chat, scripted on the phone.
         case feedback
     }
 

@@ -2377,17 +2377,14 @@
 "formats.cents.bothSamples" = "%1$@ и %2$@";
 "formats.cents.rounded" = "%@, с округлением";
 
-/* Feedback: "Write to Ten" (FeedbackSheet) and Ten's message on Home */
-"feedback.title" = "Написать Тэну";
-"feedback.intro" = "Что нравится, что мешает, чего не хватает? Тэн передаст это разработчику.";
-"feedback.mood.good" = "Нравится";
-"feedback.mood.bad" = "Есть проблемы";
-"feedback.placeholder" = "Ваше сообщение";
-"feedback.privacy" = "Сообщение уйдёт разработчику Tenra вместе с версией приложения, версией iOS и языком приложения. Без имени и без ваших записей.";
-"feedback.send" = "Отправить";
-"feedback.sent.title" = "Спасибо!";
-"feedback.sent.message" = "Сообщение отправлено. Его прочитает разработчик.";
-"feedback.error" = "Не удалось отправить. Проверьте интернет и попробуйте ещё раз.";
+/* Feedback: Ten's message on Home and the talk it opens in Ten's chat (AssistantViewModel.startFeedback) */
 "feedback.notice.title" = "Как вам Tenra?";
 "feedback.notice.body" = "Напишите мне, что нравится и что мешает. Я передам разработчику.";
 "feedback.notice.action" = "Написать";
+"feedback.chat.askMood" = "Как вам Tenra? Скажите честно, я передам разработчику.";
+"feedback.chat.like" = "Нравится";
+"feedback.chat.dislike" = "Не очень";
+"feedback.chat.askGood" = "Рад слышать! А чего ещё хотелось бы? Что добавить или улучшить?";
+"feedback.chat.askBad" = "Жаль это слышать. Что именно не понравилось и как это исправить?";
+"feedback.chat.thanks" = "Спасибо! Передал разработчику. Он читает каждое сообщение.";
+"feedback.chat.failed" = "Не получилось отправить. Проверьте интернет и напишите ещё раз.";

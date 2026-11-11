@@ -395,7 +395,7 @@ class AppCoordinator {
         )
     }
 
-    /// Where FeedbackSheet sends what the person wrote (`POST /v1/feedback`); nil without a
+    /// Where the feedback talk sends what the person wrote (`POST /v1/feedback`); nil without a
     /// server, on a device without App Attest and in the screenshot demo.
     var feedbackTransport: AgentFeedbackTransport? {
         #if DEBUG

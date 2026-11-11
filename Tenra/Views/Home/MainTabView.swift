@@ -47,8 +47,6 @@ struct MainTabView: View {
 
     /// Rating-prompt coordinator (singleton). Observed so `shouldShowSurvey` drives the sheet.
     @State private var ratingPrompt = RatingPromptService.shared
-    /// "Write to Ten", opened by the rating survey's "not really".
-    @State private var writingFeedback = false
 
     @State private var selectedTab: AppTab = .home
     @State private var tabBarMode: TabBarMode = .normal
@@ -215,19 +213,12 @@ struct MainTabView: View {
         // Rating pre-prompt survey. Fired by RatingPromptService at a success moment.
         .sheet(isPresented: $ratingPrompt.shouldShowSurvey) {
             RatingSurveyView(onWriteFeedback: coordinator.feedbackTransport == nil ? nil : {
-                // Once the survey's sheet is gone: a sheet asked for while another is closing
-                // never shows.
+                // Once the survey's sheet is gone, Ten's chat opens and asks what went wrong.
                 Task {
                     try? await Task.sleep(for: .milliseconds(500))
-                    writingFeedback = true
+                    coordinator.goThrough(AssistantNotices.feedbackAfterSurvey(now: Date()))
                 }
             })
-        }
-        // "Write to Ten" after the survey's "not really".
-        .sheet(isPresented: $writingFeedback) {
-            if let transport = coordinator.feedbackTransport {
-                FeedbackSheet(source: .survey, transport: transport)
-            }
         }
         // An App Intent that could not resolve a draft headlessly hands the
         // parsed operation over here. Deliberately NOT Pro-gated: logging a

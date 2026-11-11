@@ -8,14 +8,14 @@
 //
 //  Presented by MainTabView, driven by `RatingPromptService.shouldShowSurvey`. Adapter over
 //  DesignKit's `PromptSheet` (which closes itself after either answer): the copy, the rating
-//  service and the unhappy answer's way out stay here: "Write to Ten" (FeedbackSheet, opened by
-//  MainTabView) where the server can take it, else an e-mail to `SupportContact`'s inbox.
+//  service and the unhappy answer's way out stay here: the feedback talk in Ten's chat (opened
+//  by MainTabView) where the server can take it, else an e-mail to `SupportContact`'s inbox.
 //
 
 import SwiftUI
 
 struct RatingSurveyView: View {
-    /// Opens "Write to Ten" for someone who answered "not really"; nil where it cannot be sent
+    /// Opens the feedback talk with Ten for someone who answered "not really"; nil where it cannot be sent
     /// (no server, no App Attest), and the answer opens an e-mail as before.
     var onWriteFeedback: (() -> Void)? = nil
 

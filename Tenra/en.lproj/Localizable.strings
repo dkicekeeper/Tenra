@@ -2377,17 +2377,14 @@
 "formats.cents.bothSamples" = "%1$@ and %2$@";
 "formats.cents.rounded" = "%@, rounded";
 
-/* Feedback: "Write to Ten" (FeedbackSheet) and Ten's message on Home */
-"feedback.title" = "Write to Ten";
-"feedback.intro" = "What do you like, what gets in the way, what is missing? Ten will pass it on to the developer.";
-"feedback.mood.good" = "I like it";
-"feedback.mood.bad" = "There are problems";
-"feedback.placeholder" = "Your message";
-"feedback.privacy" = "Your message goes to Tenra’s developer with the app version, the iOS version and the app language. No name and none of your records.";
-"feedback.send" = "Send";
-"feedback.sent.title" = "Thank you!";
-"feedback.sent.message" = "Your message is sent. The developer will read it.";
-"feedback.error" = "Could not send. Check your connection and try again.";
+/* Feedback: Ten's message on Home and the talk it opens in Ten's chat (AssistantViewModel.startFeedback) */
 "feedback.notice.title" = "How do you like Tenra?";
 "feedback.notice.body" = "Write to me what you like and what gets in the way. I will pass it on to the developer.";
 "feedback.notice.action" = "Write";
+"feedback.chat.askMood" = "How do you like Tenra? Tell me honestly, I will pass it on to the developer.";
+"feedback.chat.like" = "I like it";
+"feedback.chat.dislike" = "Not really";
+"feedback.chat.askGood" = "Glad to hear it! What else would you like? What should be added or made better?";
+"feedback.chat.askBad" = "Sorry to hear that. What exactly went wrong, and how could we fix it?";
+"feedback.chat.thanks" = "Thank you! I have passed it on to the developer. He reads every message.";
+"feedback.chat.failed" = "I could not send it. Check your connection and write again.";

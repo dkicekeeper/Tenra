@@ -2377,17 +2377,14 @@
 "formats.cents.bothSamples" = "%1$@ және %2$@";
 "formats.cents.rounded" = "%@, дөңгелектеумен";
 
-/* Feedback: "Write to Ten" (FeedbackSheet) and Ten's message on Home */
-"feedback.title" = "Тэнге жазу";
-"feedback.intro" = "Не ұнайды, не кедергі келтіреді, не жетіспейді? Тэн мұны әзірлеушіге жеткізеді.";
-"feedback.mood.good" = "Ұнайды";
-"feedback.mood.bad" = "Мәселелер бар";
-"feedback.placeholder" = "Хабарламаңыз";
-"feedback.privacy" = "Хабарлама Tenra әзірлеушісіне қолданба нұсқасымен, iOS нұсқасымен және қолданба тілімен бірге жіберіледі. Атыңыз бен жазбаларыңыз жіберілмейді.";
-"feedback.send" = "Жіберу";
-"feedback.sent.title" = "Рақмет!";
-"feedback.sent.message" = "Хабарлама жіберілді. Оны әзірлеуші оқиды.";
-"feedback.error" = "Жіберу мүмкін болмады. Интернетті тексеріп, қайталап көріңіз.";
+/* Feedback: Ten's message on Home and the talk it opens in Ten's chat (AssistantViewModel.startFeedback) */
 "feedback.notice.title" = "Tenra сізге ұнай ма?";
 "feedback.notice.body" = "Не ұнайтынын және не кедергі келтіретінін маған жазыңыз. Әзірлеушіге жеткіземін.";
 "feedback.notice.action" = "Жазу";
+"feedback.chat.askMood" = "Tenra сізге қалай? Шыныңызды айтыңыз, әзірлеушіге жеткіземін.";
+"feedback.chat.like" = "Ұнайды";
+"feedback.chat.dislike" = "Онша емес";
+"feedback.chat.askGood" = "Естігеніме қуаныштымын! Тағы не қалар едіңіз? Нені қосу немесе жақсарту керек?";
+"feedback.chat.askBad" = "Мұны естігеніме өкініштімін. Нақты не ұнамады және оны қалай түзетуге болады?";
+"feedback.chat.thanks" = "Рақмет! Әзірлеушіге жеткіздім. Ол әр хабарламаны оқиды.";
+"feedback.chat.failed" = "Жіберу мүмкін болмады. Интернетті тексеріп, қайта жазыңыз.";

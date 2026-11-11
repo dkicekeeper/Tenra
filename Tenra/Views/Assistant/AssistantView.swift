@@ -367,6 +367,25 @@ struct AssistantView: View {
         path = chat
     }
 
+    /// Opens the feedback talk (AssistantViewModel.startFeedback). Its message leaves Home once
+    /// the answer is sent; someone who likes Tenra and has just said so is then asked for a
+    /// rating by Apple's prompt.
+    private func startFeedback(_ notice: AssistantNotice) {
+        guard let transport = coordinator.feedbackTransport else { return }
+        let source: AgentFeedbackMessage.Source = notice.id == FeedbackAsk.surveyNoticeID ? .survey : .notice
+        let started = model.startFeedback(source: source, transport: transport) { mood in
+            AssistantInbox.shared.markRead(notice.id)
+            if mood == .good, source != .survey {
+                RatingPromptService.shared.requestNativeReview()
+            }
+        }
+        if started {
+            topicQuestions = []
+            draft = ""
+        }
+        showChat()
+    }
+
     /// Starts a new chat with a question or a message Ten wrote. A plain record is drafted on
     /// the phone and needs no consent (FastPath); anything else waits for the cloud mode. While
     /// a chat is still answering or drafting a record, it is shown instead (the text stays).
@@ -397,6 +416,12 @@ struct AssistantView: View {
                 }
             }
         case .notice(let notice):
+            // "How do you like Tenra?": a talk scripted on the phone whose answer goes to the
+            // owner, not the model, so it waits for no consent.
+            if notice.kind == .feedback {
+                startFeedback(notice)
+                return
+            }
             guard hasConsent else {
                 awaitingConsent = start
                 showingConsent = true

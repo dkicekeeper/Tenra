@@ -2377,17 +2377,14 @@
 "formats.cents.bothSamples" = "%1$@ et %2$@";
 "formats.cents.rounded" = "%@, arrondi";
 
-/* Feedback: "Write to Ten" (FeedbackSheet) and Ten's message on Home */
-"feedback.title" = "Écrire à Ten";
-"feedback.intro" = "Qu’est-ce qui vous plaît, qu’est-ce qui gêne, qu’est-ce qui manque ? Ten le transmettra au développeur.";
-"feedback.mood.good" = "Ça me plaît";
-"feedback.mood.bad" = "Il y a des problèmes";
-"feedback.placeholder" = "Votre message";
-"feedback.privacy" = "Votre message est envoyé au développeur de Tenra avec la version de l’app, la version d’iOS et la langue de l’app. Sans nom et sans vos opérations.";
-"feedback.send" = "Envoyer";
-"feedback.sent.title" = "Merci !";
-"feedback.sent.message" = "Votre message est envoyé. Le développeur le lira.";
-"feedback.error" = "Envoi impossible. Vérifiez votre connexion et réessayez.";
+/* Feedback: Ten's message on Home and the talk it opens in Ten's chat (AssistantViewModel.startFeedback) */
 "feedback.notice.title" = "Que pensez-vous de Tenra ?";
 "feedback.notice.body" = "Écrivez-moi ce qui vous plaît et ce qui gêne. Je le transmettrai au développeur.";
 "feedback.notice.action" = "Écrire";
+"feedback.chat.askMood" = "Que pensez-vous de Tenra ? Dites-le-moi franchement, je le transmettrai au développeur.";
+"feedback.chat.like" = "Ça me plaît";
+"feedback.chat.dislike" = "Pas vraiment";
+"feedback.chat.askGood" = "Ravi de l’entendre ! Que souhaiteriez-vous de plus ? Que faut-il ajouter ou améliorer ?";
+"feedback.chat.askBad" = "Désolé de l’apprendre. Qu’est-ce qui ne vous a pas plu, et comment pourrions-nous le corriger ?";
+"feedback.chat.thanks" = "Merci ! Je l’ai transmis au développeur. Il lit chaque message.";
+"feedback.chat.failed" = "Je n’ai pas pu l’envoyer. Vérifiez votre connexion et écrivez à nouveau.";

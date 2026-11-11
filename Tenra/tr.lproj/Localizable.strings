@@ -2377,17 +2377,14 @@
 "formats.cents.bothSamples" = "%1$@ ve %2$@";
 "formats.cents.rounded" = "%@, yuvarlanır";
 
-/* Feedback: "Write to Ten" (FeedbackSheet) and Ten's message on Home */
-"feedback.title" = "Ten’e yaz";
-"feedback.intro" = "Neyi seviyorsun, ne engel oluyor, ne eksik? Ten bunu geliştiriciye iletir.";
-"feedback.mood.good" = "Beğeniyorum";
-"feedback.mood.bad" = "Sorunlar var";
-"feedback.placeholder" = "Mesajın";
-"feedback.privacy" = "Mesajın Tenra’nın geliştiricisine uygulama sürümü, iOS sürümü ve uygulama diliyle birlikte gider. İsim ve kayıtların gönderilmez.";
-"feedback.send" = "Gönder";
-"feedback.sent.title" = "Teşekkürler!";
-"feedback.sent.message" = "Mesajın gönderildi. Geliştirici okuyacak.";
-"feedback.error" = "Gönderilemedi. Bağlantını kontrol edip tekrar dene.";
+/* Feedback: Ten's message on Home and the talk it opens in Ten's chat (AssistantViewModel.startFeedback) */
 "feedback.notice.title" = "Tenra’yı nasıl buluyorsun?";
 "feedback.notice.body" = "Neyi sevdiğini ve neyin engel olduğunu bana yaz. Geliştiriciye iletirim.";
 "feedback.notice.action" = "Yaz";
+"feedback.chat.askMood" = "Tenra’yı nasıl buluyorsun? Dürüstçe söyle, geliştiriciye iletirim.";
+"feedback.chat.like" = "Beğeniyorum";
+"feedback.chat.dislike" = "Pek değil";
+"feedback.chat.askGood" = "Bunu duyduğuma sevindim! Başka ne isterdin? Ne eklenmeli ya da iyileştirilmeli?";
+"feedback.chat.askBad" = "Bunu duyduğuma üzüldüm. Tam olarak ne hoşuna gitmedi ve nasıl düzeltebiliriz?";
+"feedback.chat.thanks" = "Teşekkürler! Geliştiriciye ilettim. Her mesajı okuyor.";
+"feedback.chat.failed" = "Gönderemedim. Bağlantını kontrol edip tekrar yaz.";

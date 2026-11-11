@@ -247,13 +247,20 @@ opens on day `firstAfterDays` (3) for someone with `firstAfterEntries` (5) entri
 `everyDays` (45) while the person recorded within `activeWithinDays` (14). A round's message has
 its own key (`feedback:<round>`), so it asks once, answered or hidden, and an earlier round's
 message leaves when the next opens (`Subjects.feedbackRound`). Its button is "Write" and opens
-`FeedbackSheet` (no chat, no action spent): a mood (likes it or has problems, optional), the
-words, a line saying where they go. The sheet sends them to `POST /v1/feedback` (§8), never to the
-model; a sent message marks the notice read, and "likes it" asks Apple for the rating prompt
-(`RatingPromptService.requestNativeReview`). The rating survey's "not really" opens the same sheet
-(source `survey`, mood preset to problems) where it used to open an e-mail; the e-mail stays as
-the fallback without a server or App Attest (`AppCoordinator.feedbackTransport` is nil, and Ten
-does not ask either). Pinned by `FeedbackAskTests`.
+**the feedback talk in Ten's chat** (`AssistantViewModel.startFeedback`, from
+`AssistantView.start`): a new chat where Ten asks, with two chips over the field ("I like it",
+"Not really"); the chip becomes the person's message, Ten answers after a short pause with the
+next question (what else to add, or what went wrong and how to fix it), and the person's words go
+to `POST /v1/feedback` (§8). The talk is scripted on the phone: no model reads it, so it waits for
+no consent, spends no answer, works where turns are refused, and its lines are not kept with the
+threads. Words typed instead of a chip are the answer (no mood). A failed send keeps the question
+open and Ten says so. Once sent, Ten thanks, the Home message is marked read, and "I like it" asks
+Apple for the rating prompt (`RatingPromptService.requestNativeReview`); what is typed next is an
+ordinary message. The rating survey's "not really" opens the same talk with the first question
+skipped (source `survey`, `AssistantNotices.feedbackAfterSurvey`) where it used to open an
+e-mail; the e-mail stays as the fallback without a server or App Attest
+(`AppCoordinator.feedbackTransport` is nil, and Ten does not ask either). Pinned by
+`FeedbackAskTests` and `AssistantFeedbackChatTests`.
 
 Auto-capture not set up (`Kind.setup`, `AssistantNotices.setupNudge`): once, after
 `setupAfterEntries` entries, for someone who hid Home's auto-capture card; its button is "Set
@@ -491,8 +498,9 @@ spending, no em dashes, in all 11 languages.
   is sent, where, that nothing is stored; `assistant.consent.*` in all 11 languages), the toggle in
   Settings → Assistant: switched on there, the same consent screen asks first
   (`SettingsAssistantSection.cloudToggle`), switched off it turns the cloud off at once. The App Privacy label lists what Ten sends (published 2026-10-18).
-- **Feedback is the person's own message to the owner**: `FeedbackSheet` says where it goes
-  before it is sent; it carries no id, no records and no chat, and never reaches Anthropic (§8).
+- **Feedback is the person's own message to the owner**: Ten says where it goes when it asks
+  ("I will pass it on to the developer"); it carries no id, no records and no chat, and never
+  reaches Anthropic (§8).
   The privacy policy has its line (2026-11-11). The server's "logs no content" holds for turns
   and valuations; feedback is stored by design.
 - **Minimisation**: the cloud gets tool results, never the database; files and photos never leave

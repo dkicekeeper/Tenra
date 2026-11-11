@@ -2377,17 +2377,14 @@
 "formats.cents.bothSamples" = "%1$@ と %2$@";
 "formats.cents.rounded" = "%@（四捨五入）";
 
-/* Feedback: "Write to Ten" (FeedbackSheet) and Ten's message on Home */
-"feedback.title" = "テンに書く";
-"feedback.intro" = "気に入っている点、使いにくい点、足りないものは何ですか？テンが開発者に伝えます。";
-"feedback.mood.good" = "気に入っている";
-"feedback.mood.bad" = "問題がある";
-"feedback.placeholder" = "メッセージ";
-"feedback.privacy" = "メッセージは、アプリのバージョン、iOSのバージョン、アプリの言語とともにTenraの開発者に送られます。名前や記録は送られません。";
-"feedback.send" = "送信";
-"feedback.sent.title" = "ありがとうございます！";
-"feedback.sent.message" = "メッセージを送信しました。開発者が読みます。";
-"feedback.error" = "送信できませんでした。接続を確認して、もう一度お試しください。";
+/* Feedback: Ten's message on Home and the talk it opens in Ten's chat (AssistantViewModel.startFeedback) */
 "feedback.notice.title" = "Tenraはいかがですか？";
 "feedback.notice.body" = "気に入っている点や使いにくい点を教えてください。開発者に伝えます。";
 "feedback.notice.action" = "書く";
+"feedback.chat.askMood" = "Tenraはいかがですか？率直に教えてください。開発者に伝えます。";
+"feedback.chat.like" = "気に入っている";
+"feedback.chat.dislike" = "あまり";
+"feedback.chat.askGood" = "うれしいです！ほかに欲しい機能はありますか？追加や改善してほしい点を教えてください。";
+"feedback.chat.askBad" = "残念です。具体的に何が良くなかったですか？どうすれば直せるでしょうか？";
+"feedback.chat.thanks" = "ありがとうございます！開発者に伝えました。すべてのメッセージを読んでいます。";
+"feedback.chat.failed" = "送信できませんでした。接続を確認して、もう一度書いてください。";

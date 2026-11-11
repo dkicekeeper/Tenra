@@ -2377,17 +2377,14 @@
 "formats.cents.bothSamples" = "%1$@ 및 %2$@";
 "formats.cents.rounded" = "%@, 반올림";
 
-/* Feedback: "Write to Ten" (FeedbackSheet) and Ten's message on Home */
-"feedback.title" = "텐에게 쓰기";
-"feedback.intro" = "마음에 드는 점, 불편한 점, 부족한 점은 무엇인가요? 텐이 개발자에게 전해 드려요.";
-"feedback.mood.good" = "마음에 들어요";
-"feedback.mood.bad" = "문제가 있어요";
-"feedback.placeholder" = "메시지";
-"feedback.privacy" = "메시지는 앱 버전, iOS 버전, 앱 언어와 함께 Tenra 개발자에게 전달돼요. 이름과 기록은 보내지 않아요.";
-"feedback.send" = "보내기";
-"feedback.sent.title" = "감사합니다!";
-"feedback.sent.message" = "메시지를 보냈어요. 개발자가 읽을 거예요.";
-"feedback.error" = "보내지 못했어요. 연결을 확인하고 다시 시도해 주세요.";
+/* Feedback: Ten's message on Home and the talk it opens in Ten's chat (AssistantViewModel.startFeedback) */
 "feedback.notice.title" = "Tenra는 어떠세요?";
 "feedback.notice.body" = "마음에 드는 점과 불편한 점을 알려 주세요. 개발자에게 전해 드릴게요.";
 "feedback.notice.action" = "쓰기";
+"feedback.chat.askMood" = "Tenra는 어떠세요? 솔직하게 말씀해 주세요. 개발자에게 전해 드릴게요.";
+"feedback.chat.like" = "마음에 들어요";
+"feedback.chat.dislike" = "별로예요";
+"feedback.chat.askGood" = "다행이에요! 더 바라는 점이 있나요? 추가하거나 개선할 점을 알려 주세요.";
+"feedback.chat.askBad" = "아쉽네요. 정확히 어떤 점이 불편했나요? 어떻게 고치면 좋을까요?";
+"feedback.chat.thanks" = "감사합니다! 개발자에게 전했어요. 모든 메시지를 읽고 있어요.";
+"feedback.chat.failed" = "보내지 못했어요. 연결을 확인하고 다시 써 주세요.";

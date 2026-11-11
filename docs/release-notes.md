@@ -40,12 +40,14 @@ carries ru's text. No em dashes (user rule). The title then names the version as
   field. Voice input lost an audio silence detector it never used (auto-stop is the 5-second
   pause, as before).
 
-- "Write to Ten" (in `main` since 2026-11-11): Ten asks on Home "How do you like Tenra?" from
-  the third day with five entries, then every 45 days while the person records; its button opens
-  a sheet with a mood, a text field and a line saying the message goes to the developer. The
-  rating survey's "not really" opens the same sheet (it opened an e-mail). "I like it" asks Apple
-  for the rating prompt after sending. Needs the server with `POST /v1/feedback` deployed first
-  (Actions → Assistant server → deploy), and the privacy policy's line (on the site once merged).
+- Feedback through Ten (on the branch since 2026-11-11): Ten asks on Home "How do you like
+  Tenra?" from the third day with five entries, then every 45 days while the person records.
+  "Write" opens Ten's chat, where Ten asks and two chips answer ("I like it", "Not really"); Ten
+  then asks what else to add, or what went wrong and how to fix it, and the person's words go to
+  the developer, not to the AI. The rating survey's "not really" opens the same talk (it opened an
+  e-mail). "I like it" asks Apple for the rating prompt after sending. Needs the server with
+  `POST /v1/feedback` deployed first (Actions → Assistant server → deploy), and the privacy
+  policy's line (on the site once merged).
 
 Not for the user's notes, already live on Ten's server (no release needed): free users' share
 of the day (900 of 1 200 calls) with 300 kept for Pro and trials, a call the model never
@@ -65,11 +67,13 @@ mid-answer.
    chat in the history.
 6. Two own banks' pushes merged into a transfer the next morning: that day's evening reminder
    still comes if nothing else was recorded.
-7. "Write to Ten": Ten's message "Как вам Tenra?" on Home (a phone with five entries, installed
-   three days ago or more), "Написать" opens the sheet with the keyboard up; a message sent shows
-   "Спасибо!", the notice leaves, and the message arrives (Telegram, or KV); with "Нравится"
-   chosen, Apple's rating prompt may follow; with no network, "Не удалось отправить" and the text
-   stays. The rating survey's "not really" opens the same sheet with "Есть проблемы" chosen.
+7. Feedback through Ten: Ten's message "Как вам Tenra?" on Home (a phone with five entries,
+   installed three days ago or more), "Написать" opens Ten's chat with Ten's question and the
+   chips "Нравится" and "Не очень" over the field; a chip becomes your message, Ten asks the next
+   question after a moment; your answer shows "Спасибо! Передал разработчику…", the Home message
+   leaves, and the message arrives in Telegram; after "Нравится" Apple's rating prompt may follow;
+   with no network Ten says "Не получилось отправить" and the next message is tried again. The
+   rating survey's "not really" opens the chat with "Что именно не понравилось…" at once.
    **App Privacy** in App Store Connect: check that "Other User Content" covers a message to the
    developer (app functionality, not linked to the person), or add "Customer Support".
 

@@ -1879,6 +1879,9 @@
 "assistant.preset.save" = "どこで節約できる？";
 "assistant.preset.invest" = "投資は何から始めればいい？";
 "common.retry" = "再試行";
+/* DesignKit 8.9.0: RelativeTime, Formatting.relativeTime */
+"time.justNow" = "たった今";
+"time.dayAndTime" = "%1$@, %2$@";
 
 /* AI assistant: consent before the first question goes to the cloud (App Review 5.1.2(i)) */
 "assistant.consent.title" = "アシスタントはクラウドで動作します";

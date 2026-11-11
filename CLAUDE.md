@@ -271,8 +271,8 @@ These cause silent data corruption or crashes — internalize even without readi
   - **adapters**: extensions that map Tenra models onto DesignKit components (`DonutSlice.from(...)`, `InsightTrendBadge` → `TrendBadge`, `init(loan:)`-style convenience inits).
 
   A component moved to DesignKit takes text, numbers, dates, colours, icons, closures and `@ViewBuilder` slots, never a Tenra model, and gets a **context-neutral name and API**: any app can use it (a "loan card" becomes a card with a title, an amount and a progress; the `LoanInfo` mapping stays here as an adapter). Porting checklist in DesignKit's CLAUDE.md; the move must be pixel-identical (snapshot tests in DesignKit, device check here).
-- **No raw design values** (CI `design-lint`, `scripts/design_lint.py`): colours, fonts, spacing, corner radii and animations come from DesignKit tokens (`AppColors`, `AppTypography`, `AppSpacing`, `AppRadius`, `AppAnimation`) and components. The baseline (`scripts/design-lint-baseline.json`) is empty since 2026-10: any literal fails the check. Data-driven colours (a category's stored hex) are fine. A justified exception carries `// design-lint:ignore <reason>`. After cleaning one up, lower the baseline: `python3 scripts/design_lint.py --update-baseline`.
-- **Rows of a glass section pad themselves** (CI `design-lint`, `scripts/section_rows_lint.py`): a `FormSection` or `CardList(layout: .section)` puts its rows back to back, so a row without its own vertical padding has its text on the dividers (backups, Ten's memory and subcategories did, Tenra#88). DesignKit's rows pad themselves, 12 pt above and below (`UniversalRow` `.standard` and `.info`, `TransactionRow`, `ScheduleRow`, `ItemRow`; DesignKit 8.6.0); a custom row takes `.padding(.vertical, AppSpacing.md)`. A list of rows is a `FormSection` (or by hand `VStack(spacing: 0)` + `RowDivider`, the card padded only at the sides), never a spaced stack without dividers; a header stands 12 pt above its card ([design-system.md](docs/design-system.md) §4 Entity detail). A `Button`, `NavigationLink` or `Link` around a row with a leading icon carries `.rowDividerInset(_:)`. A justified exception carries `// section-rows-lint:ignore <reason>`.
+- **No raw design values** (CI `design-lint`, `scripts/designkit_lint.sh`: DesignKit's checks at the pinned version since 8.9.0, swipe actions and the system `Form` included): colours, fonts, spacing, corner radii and animations come from DesignKit tokens (`AppColors`, `AppTypography`, `AppSpacing`, `AppRadius`, `AppAnimation`) and components. The baseline (`scripts/design-lint-baseline.json`) is empty since 2026-10: any literal fails the check. Data-driven colours (a category's stored hex) are fine. A justified exception carries `// design-lint:ignore <reason>`. After cleaning one up, lower the baseline: `scripts/designkit_lint.sh tokens --update-baseline`.
+- **Rows of a glass section pad themselves** (CI `design-lint`, `scripts/designkit_lint.sh`): a `FormSection` or `CardList(layout: .section)` puts its rows back to back, so a row without its own vertical padding has its text on the dividers (backups, Ten's memory and subcategories did, Tenra#88). DesignKit's rows pad themselves, 12 pt above and below (`UniversalRow` `.standard` and `.info`, `TransactionRow`, `ScheduleRow`, `ItemRow`; DesignKit 8.6.0); a custom row takes `.padding(.vertical, AppSpacing.md)`. A list of rows is a `FormSection` (or by hand `VStack(spacing: 0)` + `RowDivider`, the card padded only at the sides), never a spaced stack without dividers; a header stands 12 pt above its card ([design-system.md](docs/design-system.md) §4 Entity detail). A `Button`, `NavigationLink` or `Link` around a row with a leading icon carries `.rowDividerInset(_:)`. A justified exception carries `// section-rows-lint:ignore <reason>`.
 - See [design-system.md](docs/design-system.md) for the bridge, what stays in Tenra, screen patterns and the amount rules; tokens, components, decision trees and the padding contract are in DesignKit's `docs/design-system.md`
 
 ### Snapshot `@State` driven by store mutation versions
@@ -413,3 +413,80 @@ When unsure about architecture decisions:
 **Last Updated**: 2026-11-10
 **iOS Target**: 26.0+ (built with Xcode 27 / SDK 27 — iOS 27 APIs need `if #available(iOS 27, *)` **inside `#if compiler(>=6.4)`**, with the iOS 26 path in `#else`, so the project still builds with Xcode 26. Every GitHub workflow (CI, TestFlight, DesignKit update, Screenshots) builds with Xcode 27.0 on the `xcode-27` runner since 2026-10-21, so the iOS 27 paths are compiled, tested and shipped from the cloud; the Xcode pin is raised in all four at once, see [docs/asc.md](docs/asc.md))
 **Swift Version**: 5.0 project setting; Swift 6 patterns; `SWIFT_STRICT_CONCURRENCY = minimal`; `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor`
+
+<!-- designkit:agents:start -->
+<!-- From DesignKit 8.9.0, docs/agents.md. Do not edit here: the DesignKit update workflow rewrites it. -->
+
+## DesignKit for an app's agent
+
+The short version of DesignKit's rules for a session working in Tenra or Dalada (8.9.0, benchmark
+round 4: Astryx's `init`, which writes such a block into an app's AGENTS.md). Each app's
+**DesignKit update** workflow puts this file into the app's CLAUDE.md between the
+`designkit:agents` markers when it moves the pin (`scripts/sync_agents_block.py`), so it always
+matches the version the app builds with. Do not edit the block in the app; change it here.
+
+### Look a component up
+
+- `docs/components.md` in the DesignKit checkout: one entry per component (`### Name`), what it is
+  for, its initialisers, rules, do and don't, its skeleton. `docs/components.json` is the same as
+  data. The full rules: `docs/design-system.md`.
+- The Gallery app (TestFlight) shows every component with its parameters and states.
+- A missing component goes to DesignKit by PR (CLAUDE.md, "Porting a component"); the app keeps a
+  thin adapter over its model.
+
+### The rules
+
+1. Tokens, never raw values: `AppColors`, `AppTypography`, `AppSpacing`, `AppRadius`,
+   `AppIconSize`, `AppAnimation` / `AppMotion`. Status text is `AppColors.Status.*Text` (4.5:1);
+   a colour of your own as text is `AppColors.readable(color)` on `AppColors.pale(color)`.
+2. Every symbol is an `Icon`: a glyph under 44 pt, a tile on its plate from 44 pt. iOS's own bars,
+   menus, tabs and segments, and a symbol inside a line of text, stay `Image` / `Label`.
+3. A form or settings list is `FormSection` glass cards of `UniversalRow(_:icon:accessory:)`; the
+   section draws the dividers. No system `Form`.
+4. A list of things a person keeps is a `CardList`: a tap opens, a long press shows Edit and
+   Delete, the toolbar selects, reorders and adds. No swipe actions.
+5. Every view that shows data has a skeleton (`<Name>Skeleton`); a list that loads pages ends in
+   `LoadMoreFooter`.
+6. An outcome that comes and goes is spoken: `MessageBanner` and the failure states of
+   DesignKit's components do it; an app's own outcome calls `AccessibilityAnnouncer.announce(_:)`.
+7. Motion through DesignKit (`AppMotion` springs, `.popIn`, `.riseIn`, effects); everything stops
+   under Reduce Motion and `.designKitMotion(false)`.
+
+### What a screen needs → the component
+
+| Need | Component |
+|---|---|
+| A button | `DSButton` (`.dsButton` for a custom label) |
+| A form, settings | `FormSection` + `UniversalRow(accessory: .toggle / .menu / .picker / .date / .stepper / .slider / .navigation / .action / .info)` |
+| A list of the person's things | `CardList` (a card per item, or rows in one card), `ItemRow` + `MetaLine` |
+| Pick from a long list, with search and "Create" | `SearchablePicker` |
+| Pick from a few | `UniversalRow(accessory: .menu)`, `ChipPicker`, `SegmentedPicker` |
+| A section title | `SectionHeader` |
+| Money | `FormattedAmountText`, `AmountRow`, `AmountInput` / `CurrencyAmountInput`, `LiveAmountText` |
+| When something happened, how long it runs | `RelativeTime` (`.relative`, `.elapsed`, `.clock`) |
+| Explain a number | `InfoTip` / `.infoTip(_:title:)` |
+| A value over what was tapped, a coachmark | `Tooltip`, `.spotlight` |
+| A state that lasts | `StatusBanner` |
+| An outcome that comes and goes | `MessageBanner` |
+| Nothing here, or loading failed | `EmptyState` (`.error` with Retry) |
+| Loading | the component's `<Name>Skeleton`, `.skeletonReveal` when it gives way |
+| A chat | `MessageBubble` (`markdown:`, `time:`, `status:`), `ConversationDivider`, `MessageComposer`, `TypingIndicator`, `SuggestionChips` |
+| Charts | `LineChart`, `BarChart`, `ChartSwitcher`, `Sparkline`, `OrbChart`, `CalendarHeatmap` (docs/charts.md) |
+| Progress | `ProgressRing`, `LinearProgressBar`, `LimitProgressCard`, `StepTracker` |
+| People | `Avatar`, `AvatarGroup`, `PersonRow`, `CommentRow` |
+| Photos | `RemotePhoto`, `PhotoTile`, `PhotoGrid`, `PhotoCarousel`, `PhotoViewer` |
+| Edit sheet | `EditSheetContainer`, `EditableHero`, `AmountEntrySheet` |
+| A moment of success | `.celebration`, `.completionMoment` |
+
+### Check before pushing
+
+```bash
+python3 <DesignKit>/scripts/designkit_lint.py all --source <the app's Swift folders>
+```
+
+`tokens` finds raw design values, swipe actions and the system `Form` (against the app's
+`scripts/design-lint-baseline.json`); `section-rows` finds section rows without their own padding
+or divider inset. A major DesignKit version: `scripts/migrate.py --from <old> --to <new> --source …`
+rewrites what it can and leaves `TODO(DesignKit X.0)` where `docs/migration-X.0.md` needs a person.
+
+<!-- designkit:agents:end -->

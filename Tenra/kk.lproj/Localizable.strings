@@ -1879,6 +1879,9 @@
 "assistant.preset.save" = "Қай жерден үнемдей аламын?";
 "assistant.preset.invest" = "Инвестициялауды неден бастаймын?";
 "common.retry" = "Қайталау";
+/* DesignKit 8.9.0: RelativeTime, Formatting.relativeTime */
+"time.justNow" = "Жаңа ғана";
+"time.dayAndTime" = "%1$@, %2$@";
 
 /* AI assistant: consent before the first question goes to the cloud (App Review 5.1.2(i)) */
 "assistant.consent.title" = "Ассистент бұлт арқылы жұмыс істейді";

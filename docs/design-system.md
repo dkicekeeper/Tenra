@@ -49,12 +49,12 @@ device.
 builds Tenra and Dalada against the change. Develop with Xcode's local package override: drag a
 DesignKit checkout into the project.
 
-**No raw design values** (`python3 scripts/design_lint.py`, CI `design-lint`): colours, fonts,
+**No raw design values** (`scripts/designkit_lint.sh`, CI `design-lint`): colours, fonts,
 spacing, radii and animations come from the tokens. The baseline is empty, so any literal fails;
 a justified exception carries `// design-lint:ignore <reason>`. A category's stored hex is data,
 not a design value.
 
-**Rows of a glass section** (`python3 scripts/section_rows_lint.py`, CI `design-lint`): a
+**Rows of a glass section** (`scripts/designkit_lint.sh`, CI `design-lint`): a
 `FormSection` or `CardList(layout: .section)` puts its rows back to back, so each row pads itself
 vertically (DesignKit's rows do: `UniversalRow`, `ItemRow` since 8.1.0; a custom row takes
 `.padding(.vertical, AppSpacing.md)`), and a link around a row with a leading icon carries
@@ -694,5 +694,5 @@ Where each DesignKit effect is used in Tenra, so a new screen reuses the pattern
    44 pt a tile on its plate (`HeroSymbol` for a screen's big symbol). A toolbar's, menu's, swipe
    action's, tab's or segment's symbol stays an `Image`: iOS draws it.
 4. Strings in all 12 locales (CLAUDE.md rule #13), an action named as §4 Actions says; no em dashes in user-facing text.
-5. `python3 scripts/design_lint.py` passes. A new `safeAreaBar` names its scroll edge style, a new `NavigationStack` carries `.softScrollEdges()` (§4).
+5. `scripts/designkit_lint.sh` passes. A new `safeAreaBar` names its scroll edge style, a new `NavigationStack` carries `.softScrollEdges()` (§4).
 6. Don't change a shipped screen's layout as a side effect; the owner checks UI on device.

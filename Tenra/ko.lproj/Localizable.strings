@@ -1879,6 +1879,9 @@
 "assistant.preset.save" = "어디서 아낄 수 있을까?";
 "assistant.preset.invest" = "투자는 어떻게 시작하면 돼?";
 "common.retry" = "다시 시도";
+/* DesignKit 8.9.0: RelativeTime, Formatting.relativeTime */
+"time.justNow" = "방금";
+"time.dayAndTime" = "%1$@, %2$@";
 
 /* AI assistant: consent before the first question goes to the cloud (App Review 5.1.2(i)) */
 "assistant.consent.title" = "어시스턴트는 클라우드에서 작동합니다";

@@ -253,7 +253,10 @@ message leaves when the next opens (`Subjects.feedbackRound`). Its button is "Wr
 next question (what else to add, or what went wrong and how to fix it), and the person's words go
 to `POST /v1/feedback` (§8). The talk is scripted on the phone: no model reads it, so it waits for
 no consent, spends no answer, works where turns are refused, and its lines are not kept with the
-threads. Words typed instead of a chip are the answer (no mood). A failed send keeps the question
+threads. While it runs the field's placeholder asks for an answer (`feedback.chat.placeholder`),
+and after "Not really" Ten is sad (`AgentMood.sad`, set on the phone only) through its question
+and its thanks. Ten's lines are gender-neutral in every language (no "glad", no "he reads").
+Words typed instead of a chip are the answer (no mood). A failed send keeps the question
 open and Ten says so. Once sent, Ten thanks, the Home message is marked read, and "I like it" asks
 Apple for the rating prompt (`RatingPromptService.requestNativeReview`); what is typed next is an
 ordinary message. The rating survey's "not really" opens the same talk with the first question

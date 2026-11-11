@@ -25,6 +25,9 @@ nonisolated enum AgentMood: String, Sendable, Equatable, Decodable {
     case playful
     /// What the person asked about has nothing to show.
     case empty
+    /// Something went wrong for the person and Ten is sorry. Set on the phone only (the
+    /// feedback talk after a complaint); the server's render_reply never sends it.
+    case sad
 
     init(from decoder: Decoder) throws {
         let raw = try decoder.singleValueContainer().decode(String.self)

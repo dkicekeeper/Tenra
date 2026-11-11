@@ -446,7 +446,7 @@ final class AssistantViewModel {
         feedbackSent = onSent
         if source == .survey {
             feedbackStep = .details(.bad)
-            say(String(localized: "feedback.chat.askBad"), mood: .concerned)
+            say(String(localized: "feedback.chat.askBad"), mood: .sad)
         } else {
             feedbackStep = .mood
             say(String(localized: "feedback.chat.askMood"), mood: .idle)
@@ -466,7 +466,7 @@ final class AssistantViewModel {
         case .mood where text == Self.feedbackLike:
             await pauseThenSay(String(localized: "feedback.chat.askGood"), mood: .happy, next: .details(.good))
         case .mood where text == Self.feedbackDislike:
-            await pauseThenSay(String(localized: "feedback.chat.askBad"), mood: .concerned, next: .details(.bad))
+            await pauseThenSay(String(localized: "feedback.chat.askBad"), mood: .sad, next: .details(.bad))
         case .mood:
             // Typed instead of a chip: the words are the answer.
             await sendFeedback(text, mood: nil)
@@ -485,7 +485,7 @@ final class AssistantViewModel {
 
     private func sendFeedback(_ text: String, mood: AgentFeedbackMessage.Mood?) async {
         guard let transport = feedbackTransport else {
-            say(String(localized: "feedback.chat.failed"), mood: .concerned)
+            say(String(localized: "feedback.chat.failed"), mood: .sad)
             return
         }
         phase = .working(.composing)
@@ -494,14 +494,15 @@ final class AssistantViewModel {
             phase = .idle
             // The talk is over; what is typed next is an ordinary message to Ten.
             feedbackStep = nil
-            say(String(localized: "feedback.chat.thanks"), mood: .love)
+            // After a complaint Ten stays sorry; after kind words it is glad.
+            say(String(localized: "feedback.chat.thanks"), mood: mood == .bad ? .sad : .love)
             feedbackSent?(mood)
             feedbackSent = nil
         } catch {
             phase = .idle
             // The same question stands: the next message is tried again.
             feedbackStep = .details(mood)
-            say(String(localized: "feedback.chat.failed"), mood: .concerned)
+            say(String(localized: "feedback.chat.failed"), mood: .sad)
         }
     }
 

@@ -2384,7 +2384,8 @@
 "feedback.chat.askMood" = "Que pensez-vous de Tenra ? Dites-le-moi franchement, je le transmettrai au développeur.";
 "feedback.chat.like" = "Ça me plaît";
 "feedback.chat.dislike" = "Pas vraiment";
-"feedback.chat.askGood" = "Ravi de l’entendre ! Que souhaiteriez-vous de plus ? Que faut-il ajouter ou améliorer ?";
-"feedback.chat.askBad" = "Désolé de l’apprendre. Qu’est-ce qui ne vous a pas plu, et comment pourrions-nous le corriger ?";
-"feedback.chat.thanks" = "Merci ! Je l’ai transmis au développeur. Il lit chaque message.";
-"feedback.chat.failed" = "Je n’ai pas pu l’envoyer. Vérifiez votre connexion et écrivez à nouveau.";
+"feedback.chat.askGood" = "Super ! Que souhaiteriez-vous de plus ? Que faut-il ajouter ou améliorer ?";
+"feedback.chat.askBad" = "Dommage. Qu’est-ce qui ne vous a pas plu, et comment pourrions-nous le corriger ?";
+"feedback.chat.thanks" = "Merci ! Votre message est chez le développeur. Chaque message est lu.";
+"feedback.chat.failed" = "Envoi impossible. Vérifiez votre connexion et écrivez à nouveau.";
+"feedback.chat.placeholder" = "Écrivez votre réponse…";

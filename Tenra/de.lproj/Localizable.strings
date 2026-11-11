@@ -2386,5 +2386,6 @@
 "feedback.chat.dislike" = "Nicht so sehr";
 "feedback.chat.askGood" = "Das freut mich! Was wünschen Sie sich noch? Was sollte dazukommen oder besser werden?";
 "feedback.chat.askBad" = "Das tut mir leid. Was genau hat Ihnen nicht gefallen, und wie könnten wir es beheben?";
-"feedback.chat.thanks" = "Danke! Ich habe es an den Entwickler weitergegeben. Er liest jede Nachricht.";
-"feedback.chat.failed" = "Ich konnte es nicht senden. Prüfen Sie die Verbindung und schreiben Sie noch einmal.";
+"feedback.chat.thanks" = "Danke! Ihre Nachricht ist beim Entwickler. Jede Nachricht wird gelesen.";
+"feedback.chat.failed" = "Senden nicht möglich. Prüfen Sie die Verbindung und schreiben Sie noch einmal.";
+"feedback.chat.placeholder" = "Antwort schreiben…";

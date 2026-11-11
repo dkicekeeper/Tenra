@@ -2384,7 +2384,8 @@
 "feedback.chat.askMood" = "Tenra’yı nasıl buluyorsun? Dürüstçe söyle, geliştiriciye iletirim.";
 "feedback.chat.like" = "Beğeniyorum";
 "feedback.chat.dislike" = "Pek değil";
-"feedback.chat.askGood" = "Bunu duyduğuma sevindim! Başka ne isterdin? Ne eklenmeli ya da iyileştirilmeli?";
-"feedback.chat.askBad" = "Bunu duyduğuma üzüldüm. Tam olarak ne hoşuna gitmedi ve nasıl düzeltebiliriz?";
-"feedback.chat.thanks" = "Teşekkürler! Geliştiriciye ilettim. Her mesajı okuyor.";
-"feedback.chat.failed" = "Gönderemedim. Bağlantını kontrol edip tekrar yaz.";
+"feedback.chat.askGood" = "Harika! Başka ne isterdin? Ne eklenmeli ya da iyileştirilmeli?";
+"feedback.chat.askBad" = "Çok yazık. Tam olarak ne hoşuna gitmedi ve nasıl düzeltebiliriz?";
+"feedback.chat.thanks" = "Teşekkürler! Mesajın geliştiriciye ulaştı. Her mesaj okunuyor.";
+"feedback.chat.failed" = "Gönderilemedi. Bağlantını kontrol edip tekrar yaz.";
+"feedback.chat.placeholder" = "Yanıtını yaz…";

@@ -48,9 +48,12 @@ struct AssistantComposerBar: View {
                 // (over the field, shared with the character count).
                 MessageComposer(
                     text: $draft,
-                    placeholder: AssistantRegion.isOutOfRegion(markedAt: outOfRegionAt, now: Date())
-                        ? String(localized: "assistant.composer.placeholder.entries")
-                        : String(localized: "assistant.composer.placeholder"),
+                    // In the feedback talk the field takes an answer to Ten's question.
+                    placeholder: model.feedbackStep != nil
+                        ? String(localized: "feedback.chat.placeholder")
+                        : AssistantRegion.isOutOfRegion(markedAt: outOfRegionAt, now: Date())
+                            ? String(localized: "assistant.composer.placeholder.entries")
+                            : String(localized: "assistant.composer.placeholder"),
                     isSending: model.isWorking,
                     errorMessage: attachmentError,
                     limit: AssistantMetrics.questionLimit,

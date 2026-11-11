@@ -497,6 +497,7 @@ enum AssistantMetrics {
             switch model.replyMood {
             case .happy: return .happy
             case .concerned: return .worried
+            case .sad: return .sad
             case .celebrate: return .celebrating
             case .proud: return .proud
             case .surprised: return .surprised

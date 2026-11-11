@@ -2386,5 +2386,6 @@
 "feedback.chat.dislike" = "あまり";
 "feedback.chat.askGood" = "うれしいです！ほかに欲しい機能はありますか？追加や改善してほしい点を教えてください。";
 "feedback.chat.askBad" = "残念です。具体的に何が良くなかったですか？どうすれば直せるでしょうか？";
-"feedback.chat.thanks" = "ありがとうございます！開発者に伝えました。すべてのメッセージを読んでいます。";
+"feedback.chat.thanks" = "ありがとうございます！メッセージは開発者に届きました。すべてのメッセージが読まれています。";
 "feedback.chat.failed" = "送信できませんでした。接続を確認して、もう一度書いてください。";
+"feedback.chat.placeholder" = "回答を入力…";

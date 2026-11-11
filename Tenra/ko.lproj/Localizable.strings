@@ -2386,5 +2386,6 @@
 "feedback.chat.dislike" = "별로예요";
 "feedback.chat.askGood" = "다행이에요! 더 바라는 점이 있나요? 추가하거나 개선할 점을 알려 주세요.";
 "feedback.chat.askBad" = "아쉽네요. 정확히 어떤 점이 불편했나요? 어떻게 고치면 좋을까요?";
-"feedback.chat.thanks" = "감사합니다! 개발자에게 전했어요. 모든 메시지를 읽고 있어요.";
+"feedback.chat.thanks" = "감사합니다! 메시지가 개발자에게 전달됐어요. 모든 메시지를 읽고 있어요.";
 "feedback.chat.failed" = "보내지 못했어요. 연결을 확인하고 다시 써 주세요.";
+"feedback.chat.placeholder" = "답변을 입력하세요…";

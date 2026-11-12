@@ -4,9 +4,10 @@ Version 1.8.3 in the project since 2026-11-11 (the founder's call: a small updat
 kept for the update the featuring nomination promises in the last week of December,
 [plan-growth.md](plan-growth.md) stage 4). 1.8.2 is in the store since 2026-11-10/11 (build 76;
 its notes and checklist: [archive/release-notes-1.8.2.md](archive/release-notes-1.8.2.md)).
-**Status 2026-11-12:** the changes below are in `main` (Tenra#160, Tenra#161), TestFlight build
-78 is processed (from the cloud, `main` at 219b85e), the server with `POST /v1/feedback` is
-deployed and the owner's Telegram chat is linked (`telegram-link`, a test line arrived 12.11), the What's New blocks for the 13 storefronts and en-GB are not
+**Status 2026-11-12:** the changes below are in `main` (Tenra#160, Tenra#161, then Ten's forms,
+state line and help with complaints, at aa80b93), TestFlight build
+79 is processed (from the cloud, `main` at aa80b93), the server with `POST /v1/feedback` and
+prompt 2026-11-12.4 is deployed and the owner's Telegram chat is linked (`telegram-link`, a test line arrived 12.11), the What's New blocks for the 13 storefronts and en-GB are not
 written, the phone checks are not done.
 
 When the blocks are written: one `## <locale>` heading per storefront (en-US, ru, en-GB, de-DE,
@@ -21,14 +22,14 @@ another version.
   how to), it answers with a button that opens the form with what was said already filled in
   (the bank, the amount, the rate, the term), and with buttons to the lists of Finances, a
   goal, a debt, Settings, the backups and the Wallet guide. After build 77; needs the server
-  with prompt 2026-11-12.3 (deployed 2026-11-12).
+  with prompt 2026-11-12.3 or later (2026-11-12.4 is deployed).
 - Ten knows how the app is set up for the person (the plan, the free accounts used, automatic
   capture, backups, the spending reminder, budgets), so its help is about them: "the weekly
   backup is on, but the copies stay on this phone". After build 78; same server.
 - Ten helps with a complaint: after "Not really" in the feedback talk, once the words are with
   the developer, Ten tries to settle the problem itself (opens the form, checks the data, names
   the nearest thing Tenra has), then asks whether it helped. With cloud answers off it offers to
-  help first. Needs the server with prompt 2026-11-12.4.
+  help first. Needs the server with prompt 2026-11-12.4 (deployed 2026-11-12).
 - Ten's chat: the three typing dots are gone; while Ten works, the step it is on shimmers.
 - Converting an account to a deposit from the account's own screen asks for Tenra Pro, as the
   accounts list already did.
@@ -95,6 +96,21 @@ mid-answer.
    rating survey's "not really" opens the chat with "Что именно не понравилось…" at once.
    **App Privacy** in App Store Connect: updated by the founder on 2026-11-11 for a message to
    the developer (user content for app functionality, not linked to the person, no tracking).
+8. Ten as a helper (build 79, cloud answers on): "Как открыть депозит в Halyk на 2 млн под
+   14,5%?" answers with "Создать депозит"; the button opens the deposits list and the form
+   opens over it by itself with the bank, the amount and the rate filled in (a free person gets
+   the paywall first, then the form). The same for "добавь счёт Freedom в долларах", a loan and
+   a category. "У меня включена резервная копия?" answers about this phone (automatic or not,
+   iCloud or not, the last copy) with a button to the backups. While Ten works there are no
+   three dots, only the shimmering step.
+9. A complaint in the feedback talk (build 79): "Не очень", then "не понял, как завести
+   депозит": Ten thanks, says it will look, and answers with the form's button; then the chips
+   "Помогло" and "Не помогло"; either arrives in Telegram as the same words with "Ten helped"
+   or "Ten did not help". The help spends no free answer. With cloud answers off: the thanks,
+   then the chip "Помоги разобраться", which opens the consent screen and goes on after "Turn
+   on". After "Нравится" nothing changes.
+10. "Convert to deposit" in an account's "…" menu as a free person opens the paywall; after a
+    purchase the conversion form opens.
 
 **On the phone, left from the versions already in the store** (not marked done before 1.8.2 went
 out; the store build is the one to check):
@@ -121,8 +137,8 @@ out; the store build is the one to check):
 
 ## Submission checklist
 
-1. **CI green**, then a TestFlight build (done: build 78 from 219b85e, 2026-11-12; CI green on
-   e32f86b, the branch's head before the merge).
+1. **CI green**, then a TestFlight build (done: build 79 from aa80b93, 2026-11-12; CI green on
+   that commit).
 2. **The phone checks above.**
 3. **What's New** in this file, then `prepare-version --version 1.8.3 --build <N>`.
 4. **One submission**: `asc.py prepare-review --version 1.8.3`; the founder sends it, or

@@ -202,6 +202,40 @@ struct AgentProtocolTests {
         #expect(!text.contains("facts"))
     }
 
+    @Test func contextBlockSaysHowTheAppIsSetUp() throws {
+        let almaty = try #require(TimeZone(identifier: "Asia/Almaty"))
+        var snapshot = AgentContextSnapshot(
+            today: Date(timeIntervalSince1970: 1_793_170_800), // 2026-10-28 12:00 in Almaty
+            timeZone: almaty,
+            locale: "ru",
+            baseCurrency: "KZT",
+            accounts: [
+                .init(id: "acc_1", name: "Kaspi", currency: "KZT", kind: "regular"),
+                .init(id: "acc_2", name: "Cash", currency: "KZT", kind: "regular"),
+                .init(id: "acc_3", name: "Deposit", currency: "KZT", kind: "deposit"),
+            ],
+            categories: []
+        )
+        // Built by hand, without a state: no line.
+        #expect(!AgentContextBuilder.text(for: snapshot).contains("state:"))
+
+        snapshot.state = .init(
+            isPro: false, freeAccountLimit: 3, capturing: false, automaticBackups: true, iCloudBackups: false,
+            lastBackup: Date(timeIntervalSince1970: 1_793_170_800 - 3 * 86_400), spendingReminder: false, budgets: 2
+        )
+        #expect(AgentContextBuilder.text(for: snapshot).contains(
+            "state: plan free; regular accounts 2 of 3 free; auto_capture off; backups automatic on, icloud off, last 2026-10-25; spending_reminder off; budgets 2"
+        ))
+
+        snapshot.state = .init(
+            isPro: true, freeAccountLimit: 3, capturing: true, automaticBackups: false, iCloudBackups: true,
+            lastBackup: nil, spendingReminder: true, budgets: 0
+        )
+        #expect(AgentContextBuilder.text(for: snapshot).contains(
+            "state: plan pro; regular accounts 2; auto_capture on; backups automatic off, icloud on, last none; spending_reminder on; budgets 0"
+        ))
+    }
+
     @Test func contextBlockListsTheRememberedFacts() throws {
         let snapshot = AgentContextSnapshot(
             today: Date(timeIntervalSince1970: 1_793_170_800),

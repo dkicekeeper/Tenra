@@ -313,7 +313,7 @@ const draftTools: Tool[] = [
   {
     name: "draft_goal",
     description:
-      "Prepares a new savings goal for the user to confirm. Nothing is saved. With account (an account id or name, not a loan) the goal follows that account's balance; without one, already_saved is what the user has put aside so far and later money is added with draft_goal_contribution. currency defaults to the account's, else the base currency. Returns draft_id, what is saved, what is left and, with a deadline, months_left and monthly.",
+      "Prepares a new savings goal for the user to confirm. Nothing is saved. With account (an account id or name, not a loan) the goal follows that account's balance; without one, already_saved is what the user has put aside so far and later money is added with draft_goal_contribution. currency defaults to the account's, else the base currency. Returns draft_id, what is saved, what is left and, with a deadline, months_left and monthly: show monthly as a metric block from this result, never as a figure in the text.",
     input_schema: object(
       {
         name: { type: "string", description: "What the user saves for, short, in their language" },

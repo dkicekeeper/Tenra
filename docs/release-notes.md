@@ -21,7 +21,12 @@ another version.
   how to), it answers with a button that opens the form with what was said already filled in
   (the bank, the amount, the rate, the term), and with buttons to the lists of Finances, a
   goal, a debt, Settings, the backups and the Wallet guide. After build 77; needs the server
-  with prompt 2026-11-12.2.
+  with prompt 2026-11-12.3.
+- Ten knows how the app is set up for the person (the plan, the free accounts used, automatic
+  capture, backups, the spending reminder, budgets), so its help is about them: "the weekly
+  backup is on, but the copies stay on this phone". After build 78; same server.
+- Converting an account to a deposit from the account's own screen asks for Tenra Pro, as the
+  accounts list already did.
 - A gate's paywall can come from its own RevenueCat placement (the identifier is the gate's
   `paywall_source`, [promotion-plan.md](promotion-plan.md) §2): no visible change until
   placements are set up in the dashboard.

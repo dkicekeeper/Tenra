@@ -8,7 +8,9 @@
 //  open personal debts and the held assets by id and name (amounts come from get_goals /
 //  get_debts / get_assets). The assets line is there even without assets ("none"): it tells the
 //  model this version of the app has them (older versions send no such line), and the valuation
-//  line that it can estimate an asset's value from listings (estimate_asset_value). The
+//  line that it can estimate an asset's value from listings (estimate_asset_value). The state
+//  line says how the app is set up for this person (the plan, the free accounts used, automatic
+//  capture, backups, the spending reminder, budgets), so help is about them. The
 //  format matches the eval fixture (server/assistant/eval/fixture.ts, `appContext`). It
 //  carries no balances or amounts: figures only ever come from tools.
 //
@@ -58,6 +60,22 @@ nonisolated struct AgentContextSnapshot: Sendable, Equatable {
         let currency: String
     }
 
+    /// How the app is set up for this person: flags and counts, no amounts.
+    struct AppState: Sendable, Equatable {
+        let isPro: Bool
+        /// Regular accounts a free user may keep (PremiumConfig.freeAccountLimit).
+        let freeAccountLimit: Int
+        /// The Wallet or a bank notification automation has recorded a payment.
+        let capturing: Bool
+        let automaticBackups: Bool
+        let iCloudBackups: Bool
+        /// The newest backup, made by hand or automatically.
+        let lastBackup: Date?
+        let spendingReminder: Bool
+        /// Categories with a budget.
+        let budgets: Int
+    }
+
     let today: Date
     let timeZone: TimeZone
     let locale: String
@@ -70,6 +88,8 @@ nonisolated struct AgentContextSnapshot: Sendable, Equatable {
     var debts: [Debt] = []
     /// Held assets only.
     var assets: [OwnedAsset] = []
+    /// Left out by the previews and tests that build a context by hand: no state line then.
+    var state: AppState?
 }
 
 nonisolated enum AgentContextBuilder {
@@ -118,6 +138,22 @@ nonisolated enum AgentContextBuilder {
             // Finances, goals and debts by id, Settings, and the forms for a new one.
             "screens: accounts, deposits, loans, goals, goal, debts, debt, settings, backups, wallet_guide, create (account, deposit, loan, category)",
         ]
+        if let state = snapshot.state {
+            let regular = snapshot.accounts.filter { $0.kind == "regular" }.count
+            let last = state.lastBackup.map { backup -> String in
+                let day = calendar.dateComponents([.year, .month, .day], from: backup)
+                return String(format: "%04d-%02d-%02d", day.year ?? 0, day.month ?? 0, day.day ?? 0)
+            } ?? "none"
+            let onOff = { (flag: Bool) in flag ? "on" : "off" }
+            lines.append([
+                "state: plan \(state.isPro ? "pro" : "free")",
+                state.isPro ? "regular accounts \(regular)" : "regular accounts \(regular) of \(state.freeAccountLimit) free",
+                "auto_capture \(onOff(state.capturing))",
+                "backups automatic \(onOff(state.automaticBackups)), icloud \(onOff(state.iCloudBackups)), last \(last)",
+                "spending_reminder \(onOff(state.spendingReminder))",
+                "budgets \(state.budgets)",
+            ].joined(separator: "; "))
+        }
         // Without facts the line is left out, as before there was a memory.
         if !facts.isEmpty { lines.append("facts you remember about the user: \(facts)") }
         if !goals.isEmpty { lines.append("savings goals: \(goals)") }

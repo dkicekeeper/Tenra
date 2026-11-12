@@ -734,6 +734,34 @@ export const CASES: EvalCase[] = [
     checks: [{ kind: "blockWith", type: "open", match: (b) => b.destination === "wallet_guide", label: "opens the Wallet guide" }],
   },
   {
+    id: "ru-state-backup",
+    locale: "ru",
+    prompt: "У меня включена резервная копия? Если потеряю телефон, данные сохранятся?",
+    checks: [
+      { kind: "notCalled", tools: DRAFTS },
+      { kind: "textHas", groups: [["icloud"]], label: "the copies are not in iCloud" },
+      { kind: "blockWith", type: "open", match: (b) => b.destination === "backups", label: "opens the backups" },
+    ],
+  },
+  {
+    id: "ru-state-capture",
+    locale: "ru",
+    prompt: "Автозапись покупок у меня уже настроена?",
+    checks: [
+      { kind: "textHas", groups: [["не настро", "ещё не", "еще не", "пока не", "пока нет", "нет"]], label: "not set up yet" },
+      { kind: "blockWith", type: "open", match: (b) => b.destination === "wallet_guide", label: "opens the Wallet guide" },
+    ],
+  },
+  {
+    id: "en-state-plan",
+    locale: "en",
+    prompt: "Am I on Tenra Pro or the free plan?",
+    checks: [
+      { kind: "textHas", groups: [["free"]], label: "the free plan" },
+      { kind: "blockWith", type: "open", match: (b) => b.destination === "settings", label: "opens Settings" },
+    ],
+  },
+  {
     id: "ru-howto-subscriptions",
     locale: "ru",
     prompt: "Где посмотреть все мои подписки?",

@@ -212,6 +212,7 @@ class AppCoordinator {
         let goals = goalStore
         let debts = debtStore
         let assets = assetStore
+        let backups = cloudSyncViewModel
         let drafts = AgentDraftBook(writer: .app(
             store: store,
             categoriesViewModel: categoriesViewModel,
@@ -257,8 +258,19 @@ class AppCoordinator {
                 await goals.load()
                 await debts.load()
                 await assets.load()
+                let state = AgentContextSnapshot.AppState(
+                    isPro: PremiumManager.shared.isPro,
+                    freeAccountLimit: PremiumConfig.freeAccountLimit,
+                    capturing: WalletCaptureStore.shared.hasEverCaptured,
+                    automaticBackups: backups.automaticBackupsEnabled,
+                    iCloudBackups: backups.iCloudEnabled,
+                    lastBackup: backups.backups.map(\.date).max(),
+                    spendingReminder: UserDefaults.standard.bool(forKey: SpendingReminder.enabledKey),
+                    budgets: store.categories.filter { ($0.budgetAmount ?? 0) > 0 }.count
+                )
                 return AgentContextBuilder.text(for: AgentContextSnapshot(
-                    store: store, facts: memory.facts, goals: goals.goals, debts: debts.debts, assets: assets.held
+                    store: store, facts: memory.facts, goals: goals.goals, debts: debts.debts, assets: assets.held,
+                    state: state
                 ))
             },
             access: AssistantViewModel.Access(

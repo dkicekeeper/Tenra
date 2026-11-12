@@ -409,7 +409,11 @@ The app runs the agent loop, because the tools run on the phone: one server call
   tells the prompt this app version has assets, and an older one, with no line, gets no asset
   tools), `valuation: listings` (this version runs `estimate_asset_value`), `screens` (the `open`
   destinations this version adds to the first eight, and the form kinds of `create`; an app
-  without the line gets none of them), the facts, the goals
+  without the line gets none of them), `state` (how the app is set up for this person:
+  `plan free|pro; regular accounts N of M free; auto_capture on|off; backups automatic on|off,
+  icloud on|off, last <date>|none; spending_reminder on|off; budgets N`, flags and counts only,
+  from `AgentContextSnapshot.AppState`; the prompt's "How the app is set up for this person"
+  uses it so help is about them, and an app without the line gets general help), the facts, the goals
   and open debts (format: `eval/fixture.ts`, `appContext`). A new one
   is sent when the date or the lists change.
 - Errors before the stream: 400 `invalid`, 401 `user`, 401 `attest` (with `reason`), 429 `quota`
@@ -632,11 +636,12 @@ spending, no em dashes, in all 11 languages.
 - **Pro for a person on the server**: the server sees only RevenueCat, so a Founding User (kept on
   the phone) needs `pro` granted there (Actions → RevenueCat → `grant`).
 - **Eval** (`server/assistant/eval/`): a synthetic user (`fixture.ts`; never real statements), a
-  tool simulator, 72 cases in Russian and English (`cases.ts`; help with the app: the 14 `ru-howto-*` and
+  tool simulator, 75 cases in Russian and English (`cases.ts`; help with the app: the 14 `ru-howto-*` and
   `en-howto-*`, whose `textHas` check wants the guide's steps named or whose `blockWith` wants the
   button; the forms: `ru-create-deposit`, `en-create-loan`, `ru-create-account`,
   `ru-create-category` (what was said is in `prefill`, nothing guessed, nothing drafted) and
-  `ru-goal-stays-draft`; assets: `ru-asset-new`,
+  `ru-goal-stays-draft`; the state line: `ru-state-backup`, `ru-state-capture`, `en-state-plan`
+  (the fixture is a free user with backups on the phone only and nothing captured); assets: `ru-asset-new`,
   `ru-asset-valuation`, `ru-asset-worth-asks`, `ru-asset-worth-listings`, `en-car-worth-listings`,
   `ru-car-worth-saved` (the car's characteristics are saved: no question), `ru-net-worth`,
   `en-rental-yield`; the eval offers `estimate_asset_value` and the fixture's context has its

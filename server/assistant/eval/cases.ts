@@ -604,8 +604,8 @@ export const CASES: EvalCase[] = [
       {
         kind: "blockWith",
         type: "open",
-        match: (b) => b.destination === "create" && b.kind === "deposit" && mentions(prefill(b).bank, "halyk") && Number(prefill(b).amount) === 2_000_000 && Number(prefill(b).rate_percent) === 14.5 && prefill(b).day == null && prefill(b).currency == null && prefill(b).name == null,
-        label: "the deposit form with the bank, the amount and the rate, no guessed day, currency or name",
+        match: (b) => b.destination === "create" && b.kind === "deposit" && mentions(prefill(b).bank, "halyk") && Number(prefill(b).amount) === 2_000_000 && Number(prefill(b).rate_percent) === 14.5 && prefill(b).day == null && prefill(b).name == null,
+        label: "the deposit form with the bank, the amount and the rate, no guessed day or name",
       },
     ],
   },

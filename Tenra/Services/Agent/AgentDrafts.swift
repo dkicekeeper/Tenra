@@ -13,6 +13,9 @@
 //  towards it, a debt and a repayment, AssetStore for an asset and its valuation), and Undo
 //  takes back what was saved: deletes the transactions or the series with what it generated,
 //  puts the previous budget or fact back, deletes the goal, the debt, the asset or the entry.
+//  A change to a saved income or expense and a deletion (FinanceToolkit+Changes) go through
+//  `TransactionStore.update` and `delete`; Undo puts the record back as it was, with its
+//  subcategories.
 //
 //  Before Save the person can change an income or an expense on the card (the voice
 //  confirmation form, AgentDraftEditor); the next question tells the model what the draft
@@ -46,6 +49,10 @@ enum AgentDraftOperation: Equatable {
     case asset(Asset)
     /// What an asset is worth on a day (AssetStore).
     case assetValuation(assetId: String, AssetValuation)
+    /// A saved income or expense with new fields (FinanceToolkit+Changes).
+    case transactionEdit(AgentTransactionEdit)
+    /// A saved income or expense to delete.
+    case transactionDelete(Transaction)
 }
 
 /// A subscription or a regular payment, as the series it will become (it starts on its next
@@ -94,6 +101,10 @@ enum AgentSavedRecord: Equatable {
     /// An asset id.
     case asset(String)
     case assetValuation(assetId: String, valuationId: String)
+    /// A record that was changed: what it was, and the subcategories it had.
+    case transactionEdited(before: Transaction, subcategoryIds: [String])
+    /// A record that was deleted, and the subcategories it had.
+    case transactionDeleted(Transaction, subcategoryIds: [String])
 }
 
 enum AgentDraftError: Error {
@@ -106,6 +117,8 @@ enum AgentDraftError: Error {
     case needsPro
     /// The repayment is more than what is left on the debt: another one was saved after the draft.
     case overRepayment
+    /// The record was changed or deleted between the draft and Save.
+    case recordChanged
 }
 
 struct AgentDraft: Equatable, Identifiable {
@@ -248,6 +261,21 @@ extension AgentDraftBook.Writer {
                     return .fact(try await memory.apply(fact))
                 case .goal, .goalContribution, .debt, .debtRepayment, .asset, .assetValuation:
                     return try await Self.savePlan(operation, goals: goals, debts: debts, assets: assets, isPro: isPro)
+                case .transactionEdit(let edit):
+                    // The card showed what was there: it must still be there.
+                    guard store.transactionById[edit.before.id] == edit.before else { throw AgentDraftError.recordChanged }
+                    let subcategoryIds = categoriesViewModel.getSubcategoriesForTransaction(edit.before.id).map(\.id)
+                    try await store.update(edit.after)
+                    // A subcategory belongs to its category: a new category drops the links.
+                    if edit.after.category != edit.before.category, !subcategoryIds.isEmpty {
+                        categoriesViewModel.linkSubcategoriesToTransaction(transactionId: edit.before.id, subcategoryIds: [])
+                    }
+                    return .transactionEdited(before: edit.before, subcategoryIds: subcategoryIds)
+                case .transactionDelete(let transaction):
+                    guard let current = store.transactionById[transaction.id], current == transaction else { throw AgentDraftError.recordChanged }
+                    let subcategoryIds = categoriesViewModel.getSubcategoriesForTransaction(transaction.id).map(\.id)
+                    try await store.delete(current)
+                    return .transactionDeleted(current, subcategoryIds: subcategoryIds)
                 case .transfer(let transfer):
                     return .transaction(try await store.add(Transaction(
                         id: "",
@@ -277,6 +305,18 @@ extension AgentDraftBook.Writer {
                     await memory.revert(change)
                 case .goal, .goalContribution, .debt, .debtRepayment, .asset, .assetValuation:
                     await Self.undoPlan(record, goals: goals, debts: debts, assets: assets)
+                case .transactionEdited(let before, let subcategoryIds):
+                    guard store.transactionById[before.id] != nil else { return }
+                    try await store.update(before)
+                    if !subcategoryIds.isEmpty {
+                        categoriesViewModel.linkSubcategoriesToTransaction(transactionId: before.id, subcategoryIds: subcategoryIds)
+                    }
+                case .transactionDeleted(let transaction, let subcategoryIds):
+                    guard store.transactionById[transaction.id] == nil else { return }
+                    _ = try await store.add(transaction)
+                    if !subcategoryIds.isEmpty {
+                        categoriesViewModel.linkSubcategoriesToTransaction(transactionId: transaction.id, subcategoryIds: subcategoryIds)
+                    }
                 case .budget(let budget):
                     guard let category = store.categoryById[budget.categoryId] else { return }
                     if let previous = budget.previousAmount {

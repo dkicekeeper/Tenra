@@ -1818,6 +1818,11 @@
 "assistant.draft.budgetWas" = "Бұрын";
 "assistant.draft.editHint" = "Өзгерту үшін операцияны ашады";
 "assistant.draft.editTip" = "Өзгерту үшін операцияны басыңыз.";
+"assistant.draft.becomes" = "Болады";
+"assistant.draft.delete" = "Жою";
+"assistant.draft.deleted" = "Жойылды";
+"assistant.draft.deletes" = "Бұл жазбалар жойылады.";
+"assistant.draft.restored" = "Болдырылмады. Бәрі бұрынғыдай.";
 "assistant.voice.send" = "Тэннен сұрау";
 "assistant.voice.again" = "Қайта айту";
 "assistant.attach.scan" = "Чекті сканерлеу";

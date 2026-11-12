@@ -112,6 +112,8 @@ final class FinanceToolkit: AgentToolExecuting {
             case "draft_budget": return try draftBudget(input)
             case "draft_recurring": return try draftRecurring(input)
             case "draft_fact": return try await draftFact(input)
+            case "draft_transaction_edit": return try draftTransactionEdit(input)
+            case "draft_transaction_delete": return try draftTransactionDelete(input)
             case "get_goals": return try await goalsResult()
             case "get_debts": return try await debtsResult()
             case "draft_goal": return try await draftGoal(input)
@@ -1371,6 +1373,8 @@ final class FinanceToolkit: AgentToolExecuting {
             return describePlan(operation)
         case .asset, .assetValuation:
             return describeAsset(operation)
+        case .transactionEdit, .transactionDelete:
+            return describeChange(operation)
         }
     }
 }

@@ -1818,6 +1818,11 @@
 "assistant.draft.budgetWas" = "Before";
 "assistant.draft.editHint" = "Opens the operation to change it";
 "assistant.draft.editTip" = "Tap the operation to change it.";
+"assistant.draft.becomes" = "After";
+"assistant.draft.delete" = "Delete";
+"assistant.draft.deleted" = "Deleted";
+"assistant.draft.deletes" = "These records will be deleted.";
+"assistant.draft.restored" = "Undone. Everything is as it was.";
 "assistant.voice.send" = "Ask Ten";
 "assistant.voice.again" = "Say it again";
 "assistant.attach.scan" = "Scan a receipt";

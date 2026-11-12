@@ -1818,6 +1818,11 @@
 "assistant.draft.budgetWas" = "Önceki";
 "assistant.draft.editHint" = "İşlemi değiştirmek için açar";
 "assistant.draft.editTip" = "Değiştirmek için işleme dokun.";
+"assistant.draft.becomes" = "Sonra";
+"assistant.draft.delete" = "Sil";
+"assistant.draft.deleted" = "Silindi";
+"assistant.draft.deletes" = "Bu kayıtlar silinecek.";
+"assistant.draft.restored" = "Geri alındı. Her şey eskisi gibi.";
 "assistant.voice.send" = "Ten’e sor";
 "assistant.voice.again" = "Yeniden söyle";
 "assistant.attach.scan" = "Fiş tara";

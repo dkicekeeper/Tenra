@@ -1818,6 +1818,11 @@
 "assistant.draft.budgetWas" = "Antes";
 "assistant.draft.editHint" = "Abre la operación para cambiarla";
 "assistant.draft.editTip" = "Toca la operación para cambiarla.";
+"assistant.draft.becomes" = "Después";
+"assistant.draft.delete" = "Eliminar";
+"assistant.draft.deleted" = "Eliminado";
+"assistant.draft.deletes" = "Estos registros se eliminarán.";
+"assistant.draft.restored" = "Deshecho. Todo está como antes.";
 "assistant.voice.send" = "Preguntar a Ten";
 "assistant.voice.again" = "Decirlo otra vez";
 "assistant.attach.scan" = "Escanear un recibo";

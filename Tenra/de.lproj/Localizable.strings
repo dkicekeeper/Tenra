@@ -1818,6 +1818,11 @@
 "assistant.draft.budgetWas" = "Vorher";
 "assistant.draft.editHint" = "Öffnet die Buchung zum Bearbeiten";
 "assistant.draft.editTip" = "Tippen Sie auf die Buchung, um sie zu ändern.";
+"assistant.draft.becomes" = "Danach";
+"assistant.draft.delete" = "Löschen";
+"assistant.draft.deleted" = "Gelöscht";
+"assistant.draft.deletes" = "Diese Einträge werden gelöscht.";
+"assistant.draft.restored" = "Rückgängig gemacht. Alles ist wie zuvor.";
 "assistant.voice.send" = "Ten fragen";
 "assistant.voice.again" = "Noch mal sagen";
 "assistant.attach.scan" = "Beleg scannen";

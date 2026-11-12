@@ -1818,6 +1818,11 @@
 "assistant.draft.budgetWas" = "Було";
 "assistant.draft.editHint" = "Відкриває операцію для редагування";
 "assistant.draft.editTip" = "Натисніть на операцію, щоб змінити.";
+"assistant.draft.becomes" = "Стане";
+"assistant.draft.delete" = "Видалити";
+"assistant.draft.deleted" = "Видалено";
+"assistant.draft.deletes" = "Ці записи буде видалено.";
+"assistant.draft.restored" = "Скасовано. Усе як було.";
 "assistant.voice.send" = "Запитати Тена";
 "assistant.voice.again" = "Сказати знову";
 "assistant.attach.scan" = "Сканувати чек";

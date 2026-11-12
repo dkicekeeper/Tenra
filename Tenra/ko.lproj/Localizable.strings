@@ -1818,6 +1818,11 @@
 "assistant.draft.budgetWas" = "이전";
 "assistant.draft.editHint" = "거래를 열어 변경합니다";
 "assistant.draft.editTip" = "바꾸려면 거래를 탭하세요.";
+"assistant.draft.becomes" = "변경 후";
+"assistant.draft.delete" = "삭제";
+"assistant.draft.deleted" = "삭제됨";
+"assistant.draft.deletes" = "이 기록들이 삭제됩니다.";
+"assistant.draft.restored" = "취소했습니다. 모두 이전과 같습니다.";
 "assistant.voice.send" = "텐에게 묻기";
 "assistant.voice.again" = "다시 말하기";
 "assistant.attach.scan" = "영수증 스캔";

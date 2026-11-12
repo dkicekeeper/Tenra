@@ -1818,6 +1818,11 @@
 "assistant.draft.budgetWas" = "変更前";
 "assistant.draft.editHint" = "取引を開いて変更します";
 "assistant.draft.editTip" = "変更するには取引をタップしてください。";
+"assistant.draft.becomes" = "変更後";
+"assistant.draft.delete" = "削除";
+"assistant.draft.deleted" = "削除しました";
+"assistant.draft.deletes" = "これらの記録は削除されます。";
+"assistant.draft.restored" = "取り消しました。すべて元どおりです。";
 "assistant.voice.send" = "テンに聞く";
 "assistant.voice.again" = "もう一度話す";
 "assistant.attach.scan" = "レシートをスキャン";

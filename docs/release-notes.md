@@ -30,6 +30,10 @@ another version.
   the developer, Ten tries to settle the problem itself (opens the form, checks the data, names
   the nearest thing Tenra has), then asks whether it helped. With cloud answers off it offers to
   help first. Needs the server with prompt 2026-11-12.4 (deployed 2026-11-12).
+- Ten changes what is saved: "the freelance income on the 24th was 170 000, fix it" or "delete
+  the Steam purchase" gets a card with the record as it is and as it becomes (or the records
+  that go), saved or deleted with one tap and undone with another. Transfers and loan or deposit
+  records stay in History. Needs the server with prompt 2026-11-13.1. After build 79.
 - Settings › Assistant has "Ask Ten about the app", and Ten's home puts first the "how to"
   questions for what the person has not set up yet (automatic capture, a first budget, a backup
   in iCloud). After build 79.

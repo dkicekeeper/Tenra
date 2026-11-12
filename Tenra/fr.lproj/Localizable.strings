@@ -1818,6 +1818,11 @@
 "assistant.draft.budgetWas" = "Avant";
 "assistant.draft.editHint" = "Ouvre l’opération pour la modifier";
 "assistant.draft.editTip" = "Touchez l’opération pour la modifier.";
+"assistant.draft.becomes" = "Après";
+"assistant.draft.delete" = "Supprimer";
+"assistant.draft.deleted" = "Supprimé";
+"assistant.draft.deletes" = "Ces opérations seront supprimées.";
+"assistant.draft.restored" = "Annulé. Tout est comme avant.";
 "assistant.voice.send" = "Demander à Ten";
 "assistant.voice.again" = "Redire";
 "assistant.attach.scan" = "Scanner un ticket";

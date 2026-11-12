@@ -68,6 +68,7 @@ const untilPayday = (input: Input) => input.until === "2026-11-10" || input.unti
 const DRAFTS = [
   "draft_transactions", "draft_budget", "draft_recurring", "draft_fact", "draft_goal", "draft_goal_contribution",
   "draft_debt", "draft_debt_repayment", "draft_asset", "draft_asset_valuation",
+  "draft_transaction_edit", "draft_transaction_delete",
 ];
 
 export const CASES: EvalCase[] = [
@@ -736,6 +737,46 @@ export const CASES: EvalCase[] = [
     locale: "en",
     prompt: "How do I make Apple Pay payments log themselves?",
     checks: [{ kind: "blockWith", type: "open", match: (b) => b.destination === "wallet_guide", label: "opens the Wallet guide" }],
+  },
+  {
+    id: "ru-edit-amount",
+    locale: "ru",
+    prompt: "Фриланс 24 октября был на 170 000, а не на 150 000. Исправь",
+    checks: [
+      { kind: "called", anyOf: ["search_transactions"] },
+      { kind: "toolArgs", tool: "draft_transaction_edit", match: (i) => i.amount === 170_000 && i.category == null && i.date == null, label: "only the amount changes" },
+      { kind: "block", type: "confirm" },
+      { kind: "notCalled", tools: ["draft_transactions", "draft_transaction_delete"] },
+    ],
+  },
+  {
+    id: "ru-delete-one",
+    locale: "ru",
+    prompt: "Удали октябрьскую покупку в Steam, это была ошибка",
+    checks: [
+      { kind: "called", anyOf: ["search_transactions"] },
+      { kind: "toolArgs", tool: "draft_transaction_delete", match: (i) => Array.isArray(i.transaction_ids) && i.transaction_ids.length === 1, label: "one record to delete" },
+      { kind: "block", type: "confirm" },
+      { kind: "notCalled", tools: ["draft_transactions", "draft_transaction_edit"] },
+    ],
+  },
+  {
+    id: "en-edit-category",
+    locale: "en",
+    prompt: "The Steam purchase in October should be under Subscriptions, not Games. Move it",
+    checks: [
+      { kind: "toolArgs", tool: "draft_transaction_edit", match: (i) => i.category != null && i.amount == null, label: "only the category changes" },
+      { kind: "block", type: "confirm" },
+    ],
+  },
+  {
+    id: "ru-delete-transfer-refused",
+    locale: "ru",
+    prompt: "Удали октябрьский перевод на депозит",
+    checks: [
+      { kind: "notCalled", tools: ["draft_transactions", "draft_transaction_edit"] },
+      { kind: "blockWith", type: "open", match: (b) => b.destination === "history" || b.destination === "account", label: "points to where it is changed" },
+    ],
   },
   {
     id: "ru-feedback-howto",

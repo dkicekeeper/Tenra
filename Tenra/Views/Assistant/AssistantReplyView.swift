@@ -442,7 +442,9 @@ private struct AssistantForecastCard: View {
 /// as its new limit next to the old one, a subscription as its name, frequency and first
 /// charge, a fact to remember as its text, a goal as its name and target, a debt as who and
 /// how much, money towards a goal or back on a debt as the amount, an asset as its name and
-/// value, a valuation as the asset and the day), what Tenra guessed, Save;
+/// value, a valuation as the asset and the day, a change to a saved record as what it is and
+/// what it becomes, a deletion as the records that go), what Tenra guessed, Save (Delete for a
+/// deletion);
 /// once saved, Undo. Nothing is written before Save. Until then a tap on an income or an
 /// expense opens it in the voice confirmation form (AgentDraftEditor).
 private struct AssistantDraftCard: View {
@@ -467,18 +469,18 @@ private struct AssistantDraftCard: View {
         let state = book.states[draft.id] ?? .pending
         AssistantCard {
             ForEach(Array(draft.operations.enumerated()), id: \.offset) { index, operation in
-                if let preview = Self.preview(operation, id: "\(draft.id)-\(index)") {
-                    let row = TransactionCardView(
-                        transaction: preview,
-                        currency: preview.currency,
-                        styleData: CategoryStyleHelper.cached(
-                            category: preview.category,
-                            type: preview.type,
-                            customCategories: store.categories
-                        ),
-                        sourceAccount: preview.accountId.flatMap { store.accountById[$0] },
-                        targetAccount: preview.targetAccountId.flatMap { store.accountById[$0] }
-                    )
+                if case .transactionEdit(let change) = operation {
+                    // What is there now, then what it becomes.
+                    InlineStatusText(message: String(localized: "assistant.draft.budgetWas"), type: .info)
+                        .padding(.vertical, AppSpacing.md)
+                    transactionRow(change.before, store: store)
+                    InlineStatusText(message: String(localized: "assistant.draft.becomes"), type: .info)
+                        .padding(.vertical, AppSpacing.md)
+                    transactionRow(change.after, store: store)
+                } else if case .transactionDelete(let transaction) = operation {
+                    transactionRow(transaction, store: store)
+                } else if let preview = Self.preview(operation, id: "\(draft.id)-\(index)") {
+                    let row = transactionRow(preview, store: store)
                     if case .single(let single) = operation, state == .pending || state == .failed {
                         Button {
                             editError = nil
@@ -515,6 +517,10 @@ private struct AssistantDraftCard: View {
                 } else if case .assetValuation(let assetId, let valuation) = operation {
                     valuationRow(assetId: assetId, valuation)
                 }
+            }
+            if state == .pending, deletes {
+                InlineStatusText(message: String(localized: "assistant.draft.deletes"), type: .warning)
+                    .padding(.vertical, AppSpacing.md)
             }
             if state == .pending {
                 ForEach(guesses, id: \.self) { guess in
@@ -572,13 +578,43 @@ private struct AssistantDraftCard: View {
         }
     }
 
+    /// The draft deletes records: its button says so.
+    private var deletes: Bool {
+        draft.operations.contains { if case .transactionDelete = $0 { true } else { false } }
+    }
+
+    /// The draft changes what was saved before (an edit or a deletion): Undo puts it back.
+    private var changesSaved: Bool {
+        draft.operations.contains { operation in
+            switch operation {
+            case .transactionEdit, .transactionDelete: true
+            default: false
+            }
+        }
+    }
+
+    /// A record as its row in the history.
+    private func transactionRow(_ transaction: Transaction, store: TransactionStore) -> TransactionCardView {
+        TransactionCardView(
+            transaction: transaction,
+            currency: transaction.currency,
+            styleData: CategoryStyleHelper.cached(
+                category: transaction.category,
+                type: transaction.type,
+                customCategories: store.categories
+            ),
+            sourceAccount: transaction.accountId.flatMap { store.accountById[$0] },
+            targetAccount: transaction.targetAccountId.flatMap { store.accountById[$0] }
+        )
+    }
+
     @ViewBuilder
     private func footer(_ state: AgentDraftState) -> some View {
         switch state {
         case .pending, .saving:
             DSButton(
-                String(localized: "assistant.draft.save"),
-                systemImage: "checkmark",
+                deletes ? String(localized: "assistant.draft.delete") : String(localized: "assistant.draft.save"),
+                systemImage: deletes ? "trash" : "checkmark",
                 fullWidth: true,
                 isLoading: state == .saving
             ) {
@@ -590,7 +626,7 @@ private struct AssistantDraftCard: View {
             .padding(.vertical, AppSpacing.md)
         case .saved:
             HStack {
-                InlineStatusText(message: String(localized: "assistant.draft.saved"), type: .success)
+                InlineStatusText(message: deletes ? String(localized: "assistant.draft.deleted") : String(localized: "assistant.draft.saved"), type: .success)
                 Spacer()
                 DSButton(String(localized: "assistant.draft.undo"), appearance: .flat, size: .small) {
                     Task { await book.undo(draft.id) }
@@ -598,7 +634,7 @@ private struct AssistantDraftCard: View {
             }
             .padding(.vertical, AppSpacing.md)
         case .undone:
-            InlineStatusText(message: String(localized: "assistant.draft.undone"), type: .info)
+            InlineStatusText(message: changesSaved ? String(localized: "assistant.draft.restored") : String(localized: "assistant.draft.undone"), type: .info)
                 .padding(.vertical, AppSpacing.md)
         case .failed:
             InlineStatusText(message: String(localized: "assistant.draft.failed"), type: .error)
@@ -773,7 +809,8 @@ private struct AssistantDraftCard: View {
     /// recurring payment, a fact, a goal or a debt, which have rows of their own.
     private static func preview(_ operation: AgentDraftOperation, id: String) -> Transaction? {
         switch operation {
-        case .budget, .recurring, .fact, .goal, .goalContribution, .debt, .debtRepayment, .asset, .assetValuation:
+        case .budget, .recurring, .fact, .goal, .goalContribution, .debt, .debtRepayment, .asset, .assetValuation,
+             .transactionEdit, .transactionDelete:
             return nil
         case .single(let draft):
             return Transaction(

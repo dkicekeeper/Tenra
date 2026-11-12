@@ -301,6 +301,28 @@ const draftTools: Tool[] = [
     }),
   },
   {
+    name: "draft_transaction_edit",
+    description:
+      "Prepares a change to one saved income or expense for the user to confirm: a new amount, category, date or note. Nothing changes until they confirm on the card, which shows the record as it is and as it becomes. transaction_id is an id from search_transactions; give only the fields that change, null for the rest. A transfer and a record of a loan or a deposit are refused (they are changed in History). Returns draft_id, before and after.",
+    strict: true,
+    input_schema: strictObject({
+      transaction_id: { type: "string" },
+      amount: nullable({ type: "number" }),
+      category: nullable({ type: "string", description: "Category id or name, of the record's own type" }),
+      date: nullable(date),
+      note: nullable({ type: "string" }),
+    }),
+  },
+  {
+    name: "draft_transaction_delete",
+    description:
+      "Prepares the deletion of saved incomes or expenses for the user to confirm, at most 20 in one draft. Nothing is deleted until they confirm on the card, which lists every record. transaction_ids are ids from search_transactions. A transfer and a record of a loan or a deposit come back under skipped. Returns draft_id, count, items and skipped.",
+    strict: true,
+    input_schema: strictObject({
+      transaction_ids: { type: "array", items: { type: "string" } },
+    }),
+  },
+  {
     name: "draft_fact",
     description:
       "Prepares a fact about the user's money to remember across chats (payday, the main account, a goal they save for, money they owe or are owed), or a change to or the removal of a fact you remember. Nothing is kept until the user taps Save on the confirm block. replaces is the id of a remembered fact from <app_context> to change or forget; text is the fact as one short sentence in the user's language, or null together with replaces to forget it.",

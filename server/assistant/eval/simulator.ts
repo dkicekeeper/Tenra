@@ -310,6 +310,69 @@ function draftBudget(input: Input) {
   return { draft_id: `draft_${++draftSeq}`, category_id: category, category: categoryName(category), amount: input.amount, period: input.period, previous_limit: BUDGETS.find((b) => b.categoryId === category)?.limit ?? null, saved: false };
 }
 
+// As FinanceToolkit+Changes does: an income or an expense on an everyday account may be changed
+// or deleted; a transfer and a loan or deposit record are refused.
+function changeable(id: string): Transaction {
+  const tx = TRANSACTIONS.find((t) => t.id === id);
+  if (!tx) throw new ToolInputError(`Unknown transaction ${id}. Use an id from search_transactions.`);
+  if (tx.type !== "expense" && tx.type !== "income") {
+    throw new ToolInputError(`The record of ${tx.date} is not a plain income or expense (a transfer, a loan or a deposit record): it is changed in History, on its own screen. Offer an open block to the history.`);
+  }
+  const account = ACCOUNTS.find((a) => a.id === tx.accountId);
+  if (account && account.kind !== "regular") {
+    throw new ToolInputError(`The record of ${tx.date} belongs to a loan or a deposit: it is changed on that account's screen. Offer an open block to the account.`);
+  }
+  return tx;
+}
+
+const recordSummary = (tx: Transaction) => ({
+  transaction_id: tx.id, date: tx.date, type: tx.type, amount: tx.amount, currency: tx.currency, category: categoryName(tx.categoryId), merchant: tx.merchant,
+});
+
+function draftTransactionEdit(input: Input) {
+  const before = changeable(str(input, "transaction_id", true) ?? "");
+  const after = { ...before };
+  if (typeof input.amount === "number") {
+    if (!(input.amount > 0)) throw new ToolInputError("amount must be positive.");
+    after.amount = input.amount;
+  }
+  const reference = str(input, "category");
+  if (reference) {
+    const found = CATEGORIES.find((c) => c.type === before.type && (c.id === reference || c.name.toLowerCase() === reference.toLowerCase()));
+    if (!found) throw new ToolInputError(`Unknown ${before.type} category ${reference}. Use a category id from <app_context>.`);
+    after.categoryId = found.id;
+  }
+  const date = dateArg(input, "date");
+  if (date) {
+    if (date > TODAY) throw new ToolInputError("date cannot be in the future.");
+    after.date = date;
+  }
+  const note = str(input, "note");
+  if (note != null) after.merchant = note.trim();
+  if (after.amount === before.amount && after.categoryId === before.categoryId && after.date === before.date && after.merchant === before.merchant) {
+    throw new ToolInputError("Nothing changes: give a new amount, category, date or note.");
+  }
+  return { draft_id: `draft_${++draftSeq}`, transaction_id: before.id, before: recordSummary(before), after: recordSummary(after), saved: false };
+}
+
+function draftTransactionDelete(input: Input) {
+  const ids = [...new Set(Array.isArray(input.transaction_ids) ? input.transaction_ids.map(String) : [])];
+  if (ids.length === 0) throw new ToolInputError("transaction_ids must not be empty.");
+  if (ids.length > 20) throw new ToolInputError("At most 20 records in one draft. Draft the first 20, or point the user to History for a larger clean-up.");
+  const items: ReturnType<typeof recordSummary>[] = [];
+  const skipped: { transaction_id: string; reason: string }[] = [];
+  for (const id of ids) {
+    try {
+      items.push(recordSummary(changeable(id)));
+    } catch (error) {
+      if (!(error instanceof ToolInputError)) throw error;
+      skipped.push({ transaction_id: id, reason: error.message });
+    }
+  }
+  if (items.length === 0) throw new ToolInputError(`Nothing could be drafted: ${skipped.map((s) => s.reason).join("; ")}`);
+  return { draft_id: `draft_${++draftSeq}`, count: items.length, items, skipped, saved: false };
+}
+
 // As FinanceToolkit.draftRecurring does: a category is required (a subscription takes an
 // expense one), next_date is today or later and within a year.
 function draftRecurring(input: Input) {
@@ -915,6 +978,8 @@ const HANDLERS: Record<string, (input: Input) => unknown> = {
   project_savings: projectSavings,
   draft_transactions: draftTransactions,
   draft_budget: draftBudget,
+  draft_transaction_edit: draftTransactionEdit,
+  draft_transaction_delete: draftTransactionDelete,
   draft_recurring: draftRecurring,
   draft_fact: draftFact,
   get_goals: getGoals,

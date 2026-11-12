@@ -38,7 +38,7 @@ another version.
 - "Put everything from Glovo under Groceries": Ten moves all records of a merchant (up to 50)
   to another category with one card. In build 81.
 - Ten changes a goal (name, target, deadline) and a debt (due date, note, settled) with a card
-  that shows what it is and what it becomes. Needs the server with prompt 2026-11-12.8. After
+  that shows what it is and what it becomes. Needs the server with prompt 2026-11-12.9. After
   build 81.
 - Ten knows the terms of loans and deposits: the rate, the monthly payment and its day, the
   payments left, the interest accrued on a deposit. Needs the server with prompt 2026-11-12.7

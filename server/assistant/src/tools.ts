@@ -82,7 +82,7 @@ const readTools: Tool[] = [
   {
     name: "get_accounts",
     description:
-      "All accounts with their current balance, currency and kind (regular, deposit, loan), each balance in the base currency too (balance_base), plus the total in the base currency.",
+      "All accounts with their current balance, currency and kind (regular, deposit, loan), each balance in the base currency too (balance_base), plus the total in the base currency. Show the total as a metric block (path total_base); never write it in the text, not even rounded.",
     input_schema: object({}),
   },
   {
@@ -120,7 +120,7 @@ const readTools: Tool[] = [
   {
     name: "forecast_balance",
     description:
-      "Projects the balance from today to a date: daily series, known obligations (loan payments, subscriptions, recurring payments) and, after keeping an optional cushion, the free amount and the daily allowance. Optional extra changes simulate 'what if I set aside 50 000 on the 1st'.",
+      "Projects the balance from today to a date: daily series, known obligations (loan payments, subscriptions, recurring payments) and, after keeping an optional cushion, the free amount and the daily allowance. Optional extra changes simulate 'what if I set aside 50 000 on the 1st'. Show the free amount, the daily allowance and how they change as metric blocks from this result; never write these figures in the text.",
     input_schema: object(
       {
         until: date,
@@ -140,7 +140,7 @@ const readTools: Tool[] = [
   {
     name: "simulate_loan",
     description:
-      "Loan what-if, computed on the phone: what a loan costs from today (monthly payment, months left, total interest) and, when a scenario is given, the same after refinancing at a new rate or term with one-off fees, with an extra payment every month, or with an early repayment now. Returns the net interest saved (after fees), the change in the monthly payment, months saved and the months it takes the lower payment to pay back the fees. Pass account_id for a loan from <app_context>, or principal, rate_percent and months_left for a loan the user describes. Leave the scenario fields out to see the loan as it runs.",
+      "Loan what-if, computed on the phone: what a loan costs from today (monthly payment, months left, total interest) and, when a scenario is given, the same after refinancing at a new rate or term with one-off fees, with an extra payment every month, or with an early repayment now. Returns the net interest saved (after fees), the change in the monthly payment, months saved and the months it takes the lower payment to pay back the fees. Pass account_id for a loan from <app_context>, or principal, rate_percent and months_left for a loan the user describes. Leave the scenario fields out to see the loan as it runs. Show what you cite (the saving, the payment, the interest) as metric blocks from this result; never write these figures in the text.",
     input_schema: object({
       account_id: { type: "string", description: "Loan account id from <app_context>" },
       principal: { type: "number", description: "Loan not in the app: what is left to repay" },
@@ -157,7 +157,7 @@ const readTools: Tool[] = [
   {
     name: "project_savings",
     description:
-      "Compound growth of regular saving or investing: a starting amount, a monthly contribution and an annual return over a number of years. Returns the final amount, what was put in, the growth, the final amount in today's money when inflation is given, and a yearly series for a chart (path series). The return is an assumption (the user's, or one you state as an example), never a forecast.",
+      "Compound growth of regular saving or investing: a starting amount, a monthly contribution and an annual return over a number of years. Returns the final amount, what was put in, the growth, the final amount in today's money when inflation is given, and a yearly series for a chart (path series). The return is an assumption (the user's, or one you state as an example), never a forecast. Show the final amount, what was put in and the growth as metric blocks from this result; never write them, or sums you work out from the inputs, in the text.",
     input_schema: object(
       {
         monthly: { type: "number", description: "Put in at the end of every month" },

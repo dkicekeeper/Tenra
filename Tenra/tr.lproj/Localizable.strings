@@ -1823,6 +1823,7 @@
 "assistant.draft.deleted" = "Silindi";
 "assistant.draft.deletes" = "Bu kayıtlar silinecek.";
 "assistant.draft.restored" = "Geri alındı. Her şey eskisi gibi.";
+"assistant.draft.recordsCount" = "Kayıt: %lld";
 "assistant.voice.send" = "Ten’e sor";
 "assistant.voice.again" = "Yeniden söyle";
 "assistant.attach.scan" = "Fiş tara";

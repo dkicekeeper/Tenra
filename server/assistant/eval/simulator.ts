@@ -373,6 +373,31 @@ function draftTransactionDelete(input: Input) {
   return { draft_id: `draft_${++draftSeq}`, count: items.length, items, skipped, saved: false };
 }
 
+function draftRecategorize(input: Input) {
+  const needle = (str(input, "merchant", true) ?? "").trim().toLowerCase();
+  if (needle.length < 2) throw new ToolInputError("merchant must be at least two characters of the merchant's name.");
+  const reference = (str(input, "category", true) ?? "").trim();
+  const target = CATEGORIES.find((c) => c.id === reference || c.name.toLowerCase() === reference.toLowerCase());
+  if (!target) throw new ToolInputError(`Unknown category ${reference}. Use a category id from <app_context>.`);
+  const from = dateArg(input, "from") ?? "0000-00-00";
+  const to = dateArg(input, "to") ?? TODAY;
+  const special = new Set(ACCOUNTS.filter((a) => a.kind !== "regular").map((a) => a.id));
+  const found = TRANSACTIONS.filter(
+    (t) => t.type === target.type && t.categoryId !== target.id && t.date >= from && t.date <= to && !special.has(t.accountId) && t.merchant.toLowerCase().includes(needle),
+  );
+  if (found.length === 0) throw new ToolInputError(`No ${target.type} records with ${needle} outside ${target.name} in that period. Check the merchant's spelling with search_transactions.`);
+  if (found.length > 50) throw new ToolInputError(`${found.length} records match: at most 50 in one draft. Narrow the period with from and to (for example one month at a time).`);
+  return {
+    draft_id: `draft_${++draftSeq}`,
+    count: found.length,
+    category_id: target.id,
+    category: target.name,
+    from_categories: [...new Set(found.map((t) => categoryName(t.categoryId)))].sort(),
+    first: recordSummary(found[0]!),
+    saved: false,
+  };
+}
+
 // As FinanceToolkit.draftRecurring does: a category is required (a subscription takes an
 // expense one), next_date is today or later and within a year.
 function draftRecurring(input: Input) {
@@ -980,6 +1005,7 @@ const HANDLERS: Record<string, (input: Input) => unknown> = {
   draft_budget: draftBudget,
   draft_transaction_edit: draftTransactionEdit,
   draft_transaction_delete: draftTransactionDelete,
+  draft_recategorize: draftRecategorize,
   draft_recurring: draftRecurring,
   draft_fact: draftFact,
   get_goals: getGoals,

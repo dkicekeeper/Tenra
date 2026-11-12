@@ -1823,6 +1823,7 @@
 "assistant.draft.deleted" = "Gelöscht";
 "assistant.draft.deletes" = "Diese Einträge werden gelöscht.";
 "assistant.draft.restored" = "Rückgängig gemacht. Alles ist wie zuvor.";
+"assistant.draft.recordsCount" = "Einträge: %lld";
 "assistant.voice.send" = "Ten fragen";
 "assistant.voice.again" = "Noch mal sagen";
 "assistant.attach.scan" = "Beleg scannen";

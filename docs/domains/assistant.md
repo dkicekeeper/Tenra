@@ -105,7 +105,7 @@ database, only the results of the tools it asked for.
 |---|---|---|
 | Read | `get_spending_summary`, `compare_periods`, `search_transactions`, `get_accounts`, `get_budgets`, `list_recurring`, `get_insights` (+ health score), `get_goals`, `get_debts`, `get_assets`, `get_net_worth`, `estimate_asset_value`, `convert_currency` | `SummaryCalculator` / `TransactionType.summaryContribution`, `TransactionQueryService`, `BalanceCoordinator`, `CategoryBudgetService.budgetProgress`, `InsightsService`, `SpendingQueryService`, `AssetValuationMath` through `AssetStore`, `NetWorthCalculator` (and the net worth insight's months), `POST /v1/valuation` through `AgentServerClient` (§8) |
 | Draft | `draft_transactions`, `draft_budget`, `draft_recurring`, `draft_goal`, `draft_goal_contribution`, `draft_debt`, `draft_debt_repayment`, `draft_asset`, `draft_asset_valuation`, `draft_fact` | `TransactionDraftService.makeDraft` → `commit`, `CategoriesViewModel.setBudget`, `SubscriptionCreationService` + `linkSubcategoriesToTransaction` (red flag 5), `GoalStore`, `DebtStore`, `AssetStore`, `AgentMemory` |
-| Change what is saved | `draft_transaction_edit` (one income or expense: amount, category, date, note), `draft_transaction_delete` (up to 20) | `FinanceToolkit+Changes`: ids from `search_transactions`; the card shows the record as it is and as it becomes, or the records that go, and its button reads "Delete" for a deletion; Save goes through `TransactionStore.update` / `delete` after checking the record is still what the card showed (`AgentDraftError.recordChanged`), Undo puts it back with its subcategories. Refused: a transfer, a loan or deposit record, an amount where the record is in another currency than its account (changed in History). A record of a recurring series changes alone, the series never (red flag 10). The prompt uses the two tools only with the `changes` line of `<app_context>` |
+| Change what is saved | `draft_transaction_edit` (one income or expense: amount, category, date, note), `draft_transaction_delete` (up to 20), `draft_recategorize` (every record of a merchant, up to 50, to one category: a draft of edits found off the main actor; its card says how many and lists the first 20 as they will be) | `FinanceToolkit+Changes`: ids from `search_transactions`; the card shows the record as it is and as it becomes, or the records that go, and its button reads "Delete" for a deletion; Save goes through `TransactionStore.update` / `delete` after checking the record is still what the card showed (`AgentDraftError.recordChanged`), Undo puts it back with its subcategories. Refused: a transfer, a loan or deposit record, an amount where the record is in another currency than its account (changed in History). A record of a recurring series changes alone, the series never (red flag 10). The prompt uses the two tools only with the `changes` line of `<app_context>` |
 | Plan | `forecast_balance` (a daily limit until a date, what-ifs), `simulate_loan` (refinancing, early repayment, an extra payment each month), `project_savings` | the Forecasting insight, `RecurringStore`, `LoanInfo` + `LoanWhatIf`, `SavingsProjection` |
 
 Rules:
@@ -653,12 +653,12 @@ spending, no em dashes, in all 11 languages.
 - **Pro for a person on the server**: the server sees only RevenueCat, so a Founding User (kept on
   the phone) needs `pro` granted there (Actions → RevenueCat → `grant`).
 - **Eval** (`server/assistant/eval/`): a synthetic user (`fixture.ts`; never real statements), a
-  tool simulator, 82 cases in Russian and English (`cases.ts`; help with the app: the 14 `ru-howto-*` and
+  tool simulator, 83 cases in Russian and English (`cases.ts`; help with the app: the 14 `ru-howto-*` and
   `en-howto-*`, whose `textHas` check wants the guide's steps named or whose `blockWith` wants the
   button; the forms: `ru-create-deposit`, `en-create-loan`, `ru-create-account`,
   `ru-create-category` (what was said is in `prefill`, nothing guessed, nothing drafted) and
   `ru-goal-stays-draft`; the state line: `ru-state-backup`, `ru-state-capture`, `en-state-plan`; changing what is saved: `ru-edit-amount`, `en-edit-category`, `ru-delete-one`,
-  `ru-delete-transfer-refused`; a complaint from the feedback talk (`<feedback>`):
+  `ru-delete-transfer-refused`, `ru-recategorize-merchant`; a complaint from the feedback talk (`<feedback>`):
   `ru-feedback-howto`, `ru-feedback-missing`, `en-feedback-defect`
   (the fixture is a free user with backups on the phone only and nothing captured); assets: `ru-asset-new`,
   `ru-asset-valuation`, `ru-asset-worth-asks`, `ru-asset-worth-listings`, `en-car-worth-listings`,

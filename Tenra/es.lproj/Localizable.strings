@@ -1823,6 +1823,7 @@
 "assistant.draft.deleted" = "Eliminado";
 "assistant.draft.deletes" = "Estos registros se eliminarán.";
 "assistant.draft.restored" = "Deshecho. Todo está como antes.";
+"assistant.draft.recordsCount" = "Registros: %lld";
 "assistant.voice.send" = "Preguntar a Ten";
 "assistant.voice.again" = "Decirlo otra vez";
 "assistant.attach.scan" = "Escanear un recibo";

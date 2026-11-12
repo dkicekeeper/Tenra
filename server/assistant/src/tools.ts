@@ -323,6 +323,18 @@ const draftTools: Tool[] = [
     }),
   },
   {
+    name: "draft_recategorize",
+    description:
+      "Prepares moving every saved income or expense of one merchant to another category, as one draft for the user to confirm (at most 50 records; narrow the period for more). Nothing changes until they confirm on the card, which lists the records. merchant is text from the merchant's name as records carry it (check with search_transactions when unsure); category is the target category id or name; from and to bound the period, null for all time. Returns draft_id, count, the categories the records leave and the first record.",
+    strict: true,
+    input_schema: strictObject({
+      merchant: { type: "string" },
+      category: { type: "string", description: "Target category id or name" },
+      from: nullable(date),
+      to: nullable(date),
+    }),
+  },
+  {
     name: "draft_fact",
     description:
       "Prepares a fact about the user's money to remember across chats (payday, the main account, a goal they save for, money they owe or are owed), or a change to or the removal of a fact you remember. Nothing is kept until the user taps Save on the confirm block. replaces is the id of a remembered fact from <app_context> to change or forget; text is the fact as one short sentence in the user's language, or null together with replaces to forget it.",

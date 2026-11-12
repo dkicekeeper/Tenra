@@ -468,8 +468,18 @@ private struct AssistantDraftCard: View {
         let store = coordinator.transactionStore
         let state = book.states[draft.id] ?? .pending
         AssistantCard {
-            ForEach(Array(draft.operations.enumerated()), id: \.offset) { index, operation in
-                if case .transactionEdit(let change) = operation {
+            if movesMany {
+                // Many records to one category: how many, then each as it will be.
+                InlineStatusText(
+                    message: String(format: String(localized: "assistant.draft.recordsCount"), draft.operations.count),
+                    type: .info
+                )
+                .padding(.vertical, AppSpacing.md)
+            }
+            ForEach(Array(draft.operations.enumerated().prefix(Self.listLimit)), id: \.offset) { index, operation in
+                if case .transactionEdit(let change) = operation, movesMany {
+                    transactionRow(change.after, store: store)
+                } else if case .transactionEdit(let change) = operation {
                     // What is there now, then what it becomes.
                     InlineStatusText(message: String(localized: "assistant.draft.budgetWas"), type: .info)
                         .padding(.vertical, AppSpacing.md)
@@ -576,6 +586,14 @@ private struct AssistantDraftCard: View {
             editError = AgentDraftEditor.message(for: issue)
             HapticManager.error()
         }
+    }
+
+    /// The most operations the card lists; a larger draft says how many it holds.
+    private static let listLimit = 20
+
+    /// Several edits in one draft (draft_recategorize): listed as they will be, with a count.
+    private var movesMany: Bool {
+        draft.operations.count > 1 && draft.operations.allSatisfy { if case .transactionEdit = $0 { true } else { false } }
     }
 
     /// The draft deletes records: its button says so.

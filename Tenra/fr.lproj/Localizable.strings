@@ -1823,6 +1823,7 @@
 "assistant.draft.deleted" = "Supprimé";
 "assistant.draft.deletes" = "Ces opérations seront supprimées.";
 "assistant.draft.restored" = "Annulé. Tout est comme avant.";
+"assistant.draft.recordsCount" = "Opérations : %lld";
 "assistant.voice.send" = "Demander à Ten";
 "assistant.voice.again" = "Redire";
 "assistant.attach.scan" = "Scanner un ticket";

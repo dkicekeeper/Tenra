@@ -1823,6 +1823,7 @@
 "assistant.draft.deleted" = "Deleted";
 "assistant.draft.deletes" = "These records will be deleted.";
 "assistant.draft.restored" = "Undone. Everything is as it was.";
+"assistant.draft.recordsCount" = "Records: %lld";
 "assistant.voice.send" = "Ask Ten";
 "assistant.voice.again" = "Say it again";
 "assistant.attach.scan" = "Scan a receipt";

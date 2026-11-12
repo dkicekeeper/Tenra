@@ -1823,6 +1823,7 @@
 "assistant.draft.deleted" = "Жойылды";
 "assistant.draft.deletes" = "Бұл жазбалар жойылады.";
 "assistant.draft.restored" = "Болдырылмады. Бәрі бұрынғыдай.";
+"assistant.draft.recordsCount" = "Жазбалар: %lld";
 "assistant.voice.send" = "Тэннен сұрау";
 "assistant.voice.again" = "Қайта айту";
 "assistant.attach.scan" = "Чекті сканерлеу";

@@ -68,7 +68,7 @@ const untilPayday = (input: Input) => input.until === "2026-11-10" || input.unti
 const DRAFTS = [
   "draft_transactions", "draft_budget", "draft_recurring", "draft_fact", "draft_goal", "draft_goal_contribution",
   "draft_debt", "draft_debt_repayment", "draft_asset", "draft_asset_valuation",
-  "draft_transaction_edit", "draft_transaction_delete",
+  "draft_transaction_edit", "draft_transaction_delete", "draft_recategorize",
 ];
 
 export const CASES: EvalCase[] = [
@@ -767,6 +767,21 @@ export const CASES: EvalCase[] = [
     checks: [
       { kind: "toolArgs", tool: "draft_transaction_edit", match: (i) => i.category != null && i.amount == null, label: "only the category changes" },
       { kind: "block", type: "confirm" },
+    ],
+  },
+  {
+    id: "ru-recategorize-merchant",
+    locale: "ru",
+    prompt: "Перенеси все октябрьские траты в Coffee Boom в категорию «Продукты»",
+    checks: [
+      {
+        kind: "toolArgs",
+        tool: "draft_recategorize",
+        match: (i) => mentions(i.merchant, "coffee") && (i.category === "cat_groceries" || mentions(i.category, "продукты")) && /^2026-10/.test(String(i.from ?? "")),
+        label: "Coffee Boom in October moved to Groceries",
+      },
+      { kind: "block", type: "confirm" },
+      { kind: "notCalled", tools: ["draft_transactions", "draft_transaction_delete"] },
     ],
   },
   {

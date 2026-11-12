@@ -123,4 +123,38 @@ struct AgentChangeTests {
         ])
         #expect(tooMany.error?.contains("At most 20") == true)
     }
+
+    @Test func recategorizeMovesAMerchantsRecordsInOneDraft() async throws {
+        let (toolkit, book, store) = Self.make()
+        store.transactions.append(
+            Transaction(id: "t_glovo2", date: "2026-09-12", description: "GLOVO KZ", amount: 3_100, currency: "KZT", type: .expense, category: "Кафе", accountId: "acc_kaspi")
+        )
+        let output = await toolkit.execute(name: "draft_recategorize", input: [
+            "merchant": "glovo", "category": "cat_food", "from": .null, "to": .null,
+        ])
+        let value = try #require(output.value, "\(output.error ?? "")")
+        #expect(value["count"] == 2)
+        #expect(value["category"] == "Продукты")
+        let draft = try #require(book.drafts["draft_1"])
+        #expect(draft.operations.count == 2)
+        for operation in draft.operations {
+            guard case .transactionEdit(let edit) = operation else {
+                Issue.record("expected edits")
+                return
+            }
+            #expect(edit.before.category == "Кафе")
+            #expect(edit.after.category == "Продукты")
+            #expect(edit.after.amount == edit.before.amount)
+        }
+
+        // A period narrows it; nothing there is said so.
+        let september = await toolkit.execute(name: "draft_recategorize", input: [
+            "merchant": "glovo", "category": "cat_food", "from": "2026-09-01", "to": "2026-09-30",
+        ])
+        #expect(september.value?["count"] == 1)
+        let none = await toolkit.execute(name: "draft_recategorize", input: [
+            "merchant": "netflix", "category": "cat_food", "from": .null, "to": .null,
+        ])
+        #expect(none.error?.contains("No expense records") == true)
+    }
 }

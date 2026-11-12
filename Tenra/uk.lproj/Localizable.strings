@@ -1823,6 +1823,7 @@
 "assistant.draft.deleted" = "Видалено";
 "assistant.draft.deletes" = "Ці записи буде видалено.";
 "assistant.draft.restored" = "Скасовано. Усе як було.";
+"assistant.draft.recordsCount" = "Записів: %lld";
 "assistant.voice.send" = "Запитати Тена";
 "assistant.voice.again" = "Сказати знову";
 "assistant.attach.scan" = "Сканувати чек";

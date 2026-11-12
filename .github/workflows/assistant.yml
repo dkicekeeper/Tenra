@@ -29,7 +29,7 @@ on:
       action:
         description: "What to run"
         type: choice
-        options: [test, deploy, eval, eval-valuation]
+        options: [test, deploy, feedback-check, eval, eval-valuation]
         default: test
       models:
         description: "eval, eval-valuation: comma-separated model ids (the valuation eval is usually claude-haiku-5-5,claude-sonnet-5-5)"
@@ -107,6 +107,67 @@ jobs:
           fi
           printf '%s' "$TELEGRAM_BOT_TOKEN" | npx wrangler secret put TELEGRAM_BOT_TOKEN
           printf '%s' "$TELEGRAM_CHAT_ID" | npx wrangler secret put TELEGRAM_CHAT_ID
+
+  # Why does feedback not reach Telegram? Says how many messages the server holds and when the
+  # last came (never their text: these logs are public), and sends a test line to the owner's
+  # chat, printing Telegram's status and reason.
+  feedback-check:
+    if: github.event_name == 'workflow_dispatch' && inputs.action == 'feedback-check'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: server/assistant/package-lock.json
+      - run: npm ci
+      - name: Messages kept on the server
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          npx wrangler kv key list --binding QUOTA --prefix "feedback:" --remote > "$RUNNER_TEMP/keys.json"
+          python3 - "$RUNNER_TEMP/keys.json" <<'PY'
+          import json, sys
+          names = sorted(k["name"] for k in json.load(open(sys.argv[1])))
+          print("messages kept:", len(names))
+          for name in names[-5:]:
+              print("  at", name.split(":", 1)[1].rsplit(":", 1)[0])
+          PY
+      - name: A test line to the owner's Telegram chat
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          if [ -z "$TELEGRAM_BOT_TOKEN" ] || [ -z "$TELEGRAM_CHAT_ID" ]; then
+            echo "::error::TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID repository secret is empty."
+            exit 1
+          fi
+          python3 - <<'PY'
+          import json, os, re, sys, urllib.error, urllib.request
+          token, chat = os.environ["TELEGRAM_BOT_TOKEN"].strip(), os.environ["TELEGRAM_CHAT_ID"].strip()
+          print("token looks like a bot token:", bool(re.fullmatch(r"\d+:[\w-]{30,}", token)))
+          print("chat id is a number:", bool(re.fullmatch(r"-?\d+", chat)), "| starts with @:", chat.startswith("@"))
+          print("secrets have stray spaces or newlines:",
+                token != os.environ["TELEGRAM_BOT_TOKEN"] or chat != os.environ["TELEGRAM_CHAT_ID"])
+          def call(method, payload=None):
+              request = urllib.request.Request(
+                  f"https://api.telegram.org/bot{token}/{method}",
+                  data=json.dumps(payload).encode() if payload else None,
+                  headers={"content-type": "application/json"})
+              try:
+                  with urllib.request.urlopen(request, timeout=20) as response:
+                      return response.status, json.load(response)
+              except urllib.error.HTTPError as error:
+                  return error.code, json.load(error)
+          status, body = call("getMe")
+          print("getMe:", status, body.get("description", "ok"))
+          status, body = call("sendMessage", {"chat_id": chat, "text": "Tenra: проверка канала обратной связи."})
+          print("sendMessage:", status, body.get("description", "ok"))
+          sys.exit(0 if status == 200 else 1)
+          PY
 
   eval:
     if: github.event_name == 'workflow_dispatch' && inputs.action == 'eval'

@@ -21,7 +21,7 @@ another version.
   how to), it answers with a button that opens the form with what was said already filled in
   (the bank, the amount, the rate, the term), and with buttons to the lists of Finances, a
   goal, a debt, Settings, the backups and the Wallet guide. After build 77; needs the server
-  with prompt 2026-11-12.1.
+  with prompt 2026-11-12.2.
 - A gate's paywall can come from its own RevenueCat placement (the identifier is the gate's
   `paywall_source`, [promotion-plan.md](promotion-plan.md) §2): no visible change until
   placements are set up in the dashboard.

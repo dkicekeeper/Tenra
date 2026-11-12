@@ -1825,6 +1825,8 @@
 "assistant.draft.restored" = "Deshecho. Todo está como antes.";
 "assistant.draft.recordsCount" = "Registros: %lld";
 "assistant.draft.debtSettles" = "Se marcará como saldada";
+"assistant.draft.pauses" = "Se pausará: sin cargos hasta que la reanudes";
+"assistant.draft.resumes" = "Se reanudará";
 "assistant.voice.send" = "Preguntar a Ten";
 "assistant.voice.again" = "Decirlo otra vez";
 "assistant.attach.scan" = "Escanear un recibo";

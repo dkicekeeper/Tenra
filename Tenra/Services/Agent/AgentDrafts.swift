@@ -57,6 +57,8 @@ enum AgentDraftOperation: Equatable {
     case goalChange(before: SavingsGoal, after: SavingsGoal)
     /// A debt with a new due date or note, or settled.
     case debtChange(before: PersonalDebt, after: PersonalDebt)
+    /// A subscription to pause or resume; the series as it is, for the card.
+    case subscriptionState(series: RecurringSeries, pause: Bool)
 }
 
 /// A subscription or a regular payment, as the series it will become (it starts on its next
@@ -113,6 +115,8 @@ enum AgentSavedRecord: Equatable {
     case goalChanged(before: SavingsGoal)
     /// A debt that was changed: what it was.
     case debtChanged(before: PersonalDebt)
+    /// A subscription that was paused (true) or resumed (false).
+    case subscriptionState(seriesId: String, paused: Bool)
 }
 
 enum AgentDraftError: Error {
@@ -269,6 +273,16 @@ extension AgentDraftBook.Writer {
                     return .fact(try await memory.apply(fact))
                 case .goal, .goalContribution, .debt, .debtRepayment, .asset, .assetValuation, .goalChange, .debtChange:
                     return try await Self.savePlan(operation, goals: goals, debts: debts, assets: assets, isPro: isPro)
+                case .subscriptionState(let series, let pause):
+                    // Still there, and still in the state the card showed.
+                    guard let current = store.recurringSeries.first(where: { $0.id == series.id }),
+                          (current.subscriptionStatus == .paused) != pause else { throw AgentDraftError.recordChanged }
+                    if pause {
+                        try await store.pauseSubscription(id: series.id)
+                    } else {
+                        try await store.resumeSubscription(id: series.id)
+                    }
+                    return .subscriptionState(seriesId: series.id, paused: pause)
                 case .transactionEdit(let edit):
                     // The card showed what was there: it must still be there.
                     guard store.transactionById[edit.before.id] == edit.before else { throw AgentDraftError.recordChanged }
@@ -313,6 +327,13 @@ extension AgentDraftBook.Writer {
                     await memory.revert(change)
                 case .goal, .goalContribution, .debt, .debtRepayment, .asset, .assetValuation, .goalChanged, .debtChanged:
                     await Self.undoPlan(record, goals: goals, debts: debts, assets: assets)
+                case .subscriptionState(let seriesId, let paused):
+                    guard store.recurringSeries.contains(where: { $0.id == seriesId }) else { return }
+                    if paused {
+                        try await store.resumeSubscription(id: seriesId)
+                    } else {
+                        try await store.pauseSubscription(id: seriesId)
+                    }
                 case .transactionEdited(let before, let subcategoryIds):
                     guard store.transactionById[before.id] != nil else { return }
                     try await store.update(before)

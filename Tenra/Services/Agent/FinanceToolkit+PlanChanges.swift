@@ -150,3 +150,57 @@ extension FinanceToolkit {
         }
     }
 }
+
+// MARK: - Subscriptions
+
+extension FinanceToolkit {
+    private struct SubscriptionStateInput: Decodable {
+        let subscription: String
+        let action: String
+    }
+
+    /// `draft_subscription_state`: a subscription paused (no charges until it is resumed) or
+    /// resumed, as a draft. Its amount, date and cancellation stay on its own screen, where the
+    /// app asks what to do with the charges already recorded.
+    func draftSubscriptionState(_ input: JSONValue) throws -> AgentToolOutput {
+        guard let drafts else { return .failure(Self.notYet("draft_subscription_state")) }
+        let args = try input.decoded(as: SubscriptionStateInput.self)
+        guard args.action == "pause" || args.action == "resume" else {
+            throw FinanceToolError(message: "action must be pause or resume.")
+        }
+        let reference = args.subscription.trimmingCharacters(in: .whitespacesAndNewlines)
+        let subscriptions = store.recurringSeries.filter { $0.isSubscription && $0.subscriptionStatus != .archived }
+        let series: RecurringSeries
+        if let byId = subscriptions.first(where: { $0.id == reference }) {
+            series = byId
+        } else {
+            let named = subscriptions.filter { $0.description.lowercased() == reference.lowercased() }
+            guard let first = named.first else {
+                throw FinanceToolError(message: "Unknown subscription \(reference). Use an id from list_recurring.")
+            }
+            guard named.count == 1 else {
+                throw FinanceToolError(message: "Several subscriptions are called \(reference) (\(named.map(\.id).joined(separator: ", "))). Use the id from list_recurring.")
+            }
+            series = first
+        }
+        let paused = series.subscriptionStatus == .paused
+        let pause = args.action == "pause"
+        guard pause != paused else {
+            throw FinanceToolError(message: pause ? "\(series.description) is already paused." : "\(series.description) is not paused.")
+        }
+        let id = drafts.add([.subscriptionState(series: series, pause: pause)])
+        return .success([
+            "draft_id": .string(id),
+            "subscription_id": .string(series.id),
+            "name": .string(series.description),
+            "action": .string(args.action),
+            "saved": false,
+        ])
+    }
+
+    /// What a pause or a resume will do (FinanceToolkit.describe).
+    func describeSubscriptionState(_ operation: AgentDraftOperation) -> JSONValue {
+        guard case .subscriptionState(let series, let pause) = operation else { return .null }
+        return ["type": .string(pause ? "subscription_pause" : "subscription_resume"), "subscription_id": .string(series.id), "name": .string(series.description)]
+    }
+}

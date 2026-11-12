@@ -489,6 +489,13 @@ private struct AssistantDraftCard: View {
                     transactionRow(change.after, store: store)
                 } else if case .transactionDelete(let transaction) = operation {
                     transactionRow(transaction, store: store)
+                } else if case .subscriptionState(let series, let pause) = operation {
+                    recurringRow(series)
+                    InlineStatusText(
+                        message: pause ? String(localized: "assistant.draft.pauses") : String(localized: "assistant.draft.resumes"),
+                        type: .info
+                    )
+                    .padding(.vertical, AppSpacing.md)
                 } else if case .goalChange(let before, let after) = operation {
                     InlineStatusText(message: String(localized: "assistant.draft.budgetWas"), type: .info)
                         .padding(.vertical, AppSpacing.md)
@@ -624,7 +631,7 @@ private struct AssistantDraftCard: View {
     private var changesSaved: Bool {
         draft.operations.contains { operation in
             switch operation {
-            case .transactionEdit, .transactionDelete, .goalChange, .debtChange: true
+            case .transactionEdit, .transactionDelete, .goalChange, .debtChange, .subscriptionState: true
             default: false
             }
         }
@@ -847,7 +854,7 @@ private struct AssistantDraftCard: View {
     private static func preview(_ operation: AgentDraftOperation, id: String) -> Transaction? {
         switch operation {
         case .budget, .recurring, .fact, .goal, .goalContribution, .debt, .debtRepayment, .asset, .assetValuation,
-             .transactionEdit, .transactionDelete, .goalChange, .debtChange:
+             .transactionEdit, .transactionDelete, .goalChange, .debtChange, .subscriptionState:
             return nil
         case .single(let draft):
             return Transaction(

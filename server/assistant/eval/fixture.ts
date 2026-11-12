@@ -268,7 +268,7 @@ export function appContext(locale: "ru" | "en"): string {
     `assets: ${assets}`,
     "valuation: listings",
     "screens: accounts, deposits, loans, goals, goal, debts, debt, settings, backups, wallet_guide, create (account, deposit, loan, category)",
-    "changes: transactions (edit, delete, recategorize), goals, debts",
+    "changes: transactions (edit, delete, recategorize), goals, debts, subscriptions (pause, resume)",
     "reads: loans, deposits",
     // AgentContextBuilder's state line: a free user, backups on this phone only, nothing captured.
     `state: plan free; regular accounts ${ACCOUNTS.filter((a) => a.kind === "regular").length} of 3 free; auto_capture off; backups automatic on, icloud off, last 2026-10-25; spending_reminder off; budgets ${BUDGETS.length}`,

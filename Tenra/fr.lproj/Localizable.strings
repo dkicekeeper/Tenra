@@ -1825,6 +1825,8 @@
 "assistant.draft.restored" = "Annulé. Tout est comme avant.";
 "assistant.draft.recordsCount" = "Opérations : %lld";
 "assistant.draft.debtSettles" = "Sera marquée comme réglée";
+"assistant.draft.pauses" = "Sera mis en pause : aucun prélèvement jusqu’à la reprise";
+"assistant.draft.resumes" = "Sera repris";
 "assistant.voice.send" = "Demander à Ten";
 "assistant.voice.again" = "Redire";
 "assistant.attach.scan" = "Scanner un ticket";

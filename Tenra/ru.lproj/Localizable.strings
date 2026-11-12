@@ -1825,6 +1825,8 @@
 "assistant.draft.restored" = "Отменено. Всё как было.";
 "assistant.draft.recordsCount" = "Записей: %lld";
 "assistant.draft.debtSettles" = "Будет отмечен закрытым";
+"assistant.draft.pauses" = "Встанет на паузу: списаний не будет, пока не возобновите";
+"assistant.draft.resumes" = "Будет возобновлена";
 "assistant.voice.send" = "Спросить Тэна";
 "assistant.voice.again" = "Сказать заново";
 "assistant.attach.scan" = "Сканировать чек";

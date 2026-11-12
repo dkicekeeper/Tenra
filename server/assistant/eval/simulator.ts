@@ -612,6 +612,17 @@ function goalStatus(g: (typeof GOALS)[number], extra = 0) {
   return { saved, left, reached, months, monthly: months ? round(left / months) : null, overdue: !!g.deadline && !reached && months === null };
 }
 
+function draftSubscriptionState(input: Input) {
+  const action = str(input, "action", true);
+  if (action !== "pause" && action !== "resume") throw new ToolInputError("action must be pause or resume.");
+  const reference = (str(input, "subscription", true) ?? "").trim().toLowerCase();
+  const series = RECURRING.find((r) => r.kind === "subscription" && (r.id === reference || r.name.toLowerCase() === reference));
+  if (!series) throw new ToolInputError(`Unknown subscription ${reference}. Use an id from list_recurring.`);
+  if (action === "resume" && series.active) throw new ToolInputError(`${series.name} is not paused.`);
+  if (action === "pause" && !series.active) throw new ToolInputError(`${series.name} is already paused.`);
+  return { draft_id: `draft_${++draftSeq}`, subscription_id: series.id, name: series.name, action, saved: false };
+}
+
 // As FinanceToolkit+PlanChanges does.
 function draftGoalChange(input: Input) {
   const reference = (str(input, "goal", true) ?? "").trim().toLowerCase();
@@ -1085,6 +1096,7 @@ const HANDLERS: Record<string, (input: Input) => unknown> = {
   draft_transaction_edit: draftTransactionEdit,
   draft_transaction_delete: draftTransactionDelete,
   draft_recategorize: draftRecategorize,
+  draft_subscription_state: draftSubscriptionState,
   draft_goal_change: draftGoalChange,
   draft_debt_change: draftDebtChange,
   get_loans: getLoans,

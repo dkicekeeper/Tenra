@@ -124,6 +124,36 @@ struct AgentChangeTests {
         #expect(tooMany.error?.contains("At most 20") == true)
     }
 
+    @Test func aSubscriptionPausesOnlyWhileItRuns() async throws {
+        let defaults = UserDefaults(suiteName: "tests.\(UUID().uuidString)")!
+        let repo = UserDefaultsRepository(userDefaults: defaults)
+        let recurring = RecurringStore(repository: repo)
+        let store = TransactionStore(repository: repo, balanceCoordinator: BalanceCoordinator(repository: repo), recurringStore: recurring)
+        recurring.load(series: [
+            RecurringSeries(
+                id: "rec_spotify", amount: 2_990, currency: "KZT", category: "Подписки", description: "Spotify",
+                accountId: "acc_kaspi", frequency: .monthly, startDate: "2026-09-14", kind: .subscription, status: .active
+            ),
+        ], occurrences: [])
+        let book = AgentDraftBook(writer: AgentDraftBook.Writer(save: { _ in .series("unused") }, undo: { _ in }))
+        let toolkit = FinanceToolkit(store: store, drafts: book, learned: VoiceLearningStore(defaults: defaults), now: { Self.now })
+
+        let output = await toolkit.execute(name: "draft_subscription_state", input: ["subscription": "spotify", "action": "pause"])
+        let value = try #require(output.value, "\(output.error ?? "")")
+        #expect(value["subscription_id"] == "rec_spotify")
+        guard case .subscriptionState(let series, let pause)? = book.drafts["draft_1"]?.operations.first else {
+            Issue.record("expected a pause")
+            return
+        }
+        #expect(pause)
+        #expect(series.id == "rec_spotify")
+
+        let resume = await toolkit.execute(name: "draft_subscription_state", input: ["subscription": "rec_spotify", "action": "resume"])
+        #expect(resume.error?.contains("not paused") == true)
+        let unknown = await toolkit.execute(name: "draft_subscription_state", input: ["subscription": "Hulu", "action": "pause"])
+        #expect(unknown.error?.contains("Unknown subscription") == true)
+    }
+
     @Test func loansAndDepositsAreListedEvenWhenThereAreNone() async throws {
         let (toolkit, _, store) = Self.make()
         _ = store

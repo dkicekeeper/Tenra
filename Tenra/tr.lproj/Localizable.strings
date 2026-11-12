@@ -1825,6 +1825,8 @@
 "assistant.draft.restored" = "Geri alındı. Her şey eskisi gibi.";
 "assistant.draft.recordsCount" = "Kayıt: %lld";
 "assistant.draft.debtSettles" = "Kapatıldı olarak işaretlenecek";
+"assistant.draft.pauses" = "Duraklatılacak: sürdürene kadar ödeme alınmaz";
+"assistant.draft.resumes" = "Sürdürülecek";
 "assistant.voice.send" = "Ten’e sor";
 "assistant.voice.again" = "Yeniden söyle";
 "assistant.attach.scan" = "Fiş tara";

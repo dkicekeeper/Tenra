@@ -1825,6 +1825,8 @@
 "assistant.draft.restored" = "Undone. Everything is as it was.";
 "assistant.draft.recordsCount" = "Records: %lld";
 "assistant.draft.debtSettles" = "It will be marked as settled";
+"assistant.draft.pauses" = "It will be paused: no charges until you resume it";
+"assistant.draft.resumes" = "It will be resumed";
 "assistant.voice.send" = "Ask Ten";
 "assistant.voice.again" = "Say it again";
 "assistant.attach.scan" = "Scan a receipt";

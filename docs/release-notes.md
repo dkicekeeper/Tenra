@@ -40,6 +40,8 @@ another version.
 - Ten changes a goal (name, target, deadline) and a debt (due date, note, settled) with a card
   that shows what it is and what it becomes. Needs the server with prompt 2026-11-12.9. After
   build 81.
+- "Put Spotify on hold": Ten pauses or resumes a subscription with a card. Needs the server
+  with prompt 2026-11-12.11. After build 82.
 - Ten knows the terms of loans and deposits: the rate, the monthly payment and its day, the
   payments left, the interest accrued on a deposit. Needs the server with prompt 2026-11-12.7
   (deployed 2026-11-12). In build 81.

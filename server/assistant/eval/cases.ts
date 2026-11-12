@@ -69,6 +69,7 @@ const DRAFTS = [
   "draft_transactions", "draft_budget", "draft_recurring", "draft_fact", "draft_goal", "draft_goal_contribution",
   "draft_debt", "draft_debt_repayment", "draft_asset", "draft_asset_valuation",
   "draft_transaction_edit", "draft_transaction_delete", "draft_recategorize", "draft_goal_change", "draft_debt_change",
+  "draft_subscription_state",
 ];
 
 export const CASES: EvalCase[] = [
@@ -767,6 +768,25 @@ export const CASES: EvalCase[] = [
     checks: [
       { kind: "toolArgs", tool: "draft_transaction_edit", match: (i) => i.category != null && i.amount == null, label: "only the category changes" },
       { kind: "block", type: "confirm" },
+    ],
+  },
+  {
+    id: "ru-subscription-pause",
+    locale: "ru",
+    prompt: "Поставь Spotify на паузу, пока не пользуюсь",
+    checks: [
+      { kind: "toolArgs", tool: "draft_subscription_state", match: (i) => i.action === "pause" && (i.subscription === "rec_spotify" || mentions(i.subscription, "spotify")), label: "Spotify paused" },
+      { kind: "block", type: "confirm" },
+      { kind: "notCalled", tools: ["draft_recurring", "draft_transactions"] },
+    ],
+  },
+  {
+    id: "ru-subscription-amount-on-screen",
+    locale: "ru",
+    prompt: "Netflix подорожал, теперь 5 990 в месяц. Поменяй сумму подписки",
+    checks: [
+      { kind: "notCalled", tools: DRAFTS },
+      { kind: "blockWith", type: "open", match: (b) => b.destination === "subscriptions", label: "opens the subscriptions" },
     ],
   },
   {

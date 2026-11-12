@@ -1825,6 +1825,8 @@
 "assistant.draft.restored" = "Болдырылмады. Бәрі бұрынғыдай.";
 "assistant.draft.recordsCount" = "Жазбалар: %lld";
 "assistant.draft.debtSettles" = "Жабылған деп белгіленеді";
+"assistant.draft.pauses" = "Кідіртіледі: жалғастырғанша есептен шығарылмайды";
+"assistant.draft.resumes" = "Жалғастырылады";
 "assistant.voice.send" = "Тэннен сұрау";
 "assistant.voice.again" = "Қайта айту";
 "assistant.attach.scan" = "Чекті сканерлеу";

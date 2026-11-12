@@ -350,6 +350,18 @@ const draftTools: Tool[] = [
     ),
   },
   {
+    name: "draft_subscription_state",
+    description:
+      "Prepares pausing a subscription (no charges are recorded until it is resumed) or resuming a paused one, for the user to confirm on the card. subscription is an id from list_recurring or the subscription's name. Its amount, its date and cancelling it are done on the subscription's own screen. Returns draft_id.",
+    input_schema: object(
+      {
+        subscription: { type: "string" },
+        action: { type: "string", enum: ["pause", "resume"] },
+      },
+      ["subscription", "action"],
+    ),
+  },
+  {
     name: "draft_goal_change",
     description:
       "Prepares a change to a savings goal the user already has, for them to confirm: a new name, target or deadline. Nothing changes until they confirm on the card, which shows the goal as it is and as it becomes. goal is a goal id from <app_context> or its name; give only what changes. Returns draft_id, before, after, what is left and, with a deadline, the new monthly amount.",

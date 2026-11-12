@@ -1825,6 +1825,8 @@
 "assistant.draft.restored" = "Rückgängig gemacht. Alles ist wie zuvor.";
 "assistant.draft.recordsCount" = "Einträge: %lld";
 "assistant.draft.debtSettles" = "Wird als beglichen markiert";
+"assistant.draft.pauses" = "Wird pausiert: keine Abbuchungen, bis Sie es fortsetzen";
+"assistant.draft.resumes" = "Wird fortgesetzt";
 "assistant.voice.send" = "Ten fragen";
 "assistant.voice.again" = "Noch mal sagen";
 "assistant.attach.scan" = "Beleg scannen";

@@ -7,8 +7,8 @@ its notes and checklist: [archive/release-notes-1.8.2.md](archive/release-notes-
 **Status 2026-11-12:** the changes below are in `main` (Tenra#160, Tenra#161, then Ten's forms,
 state line, help with complaints, the entries and editing and deleting records, at f3900c7),
 TestFlight build
-80 is processed (from the cloud, `main` at f3900c7), the server with `POST /v1/feedback` and
-prompt 2026-11-12.5 is deployed and the owner's Telegram chat is linked (`telegram-link`, a test line arrived 12.11), the What's New blocks for the 13 storefronts and en-GB are not
+81 is processed (from the cloud, `main` at 1401e23), the server with `POST /v1/feedback` and
+prompt 2026-11-12.7 is deployed and the owner's Telegram chat is linked (`telegram-link`, a test line arrived 12.11), the What's New blocks for the 13 storefronts and en-GB are not
 written, the phone checks are not done.
 
 When the blocks are written: one `## <locale>` heading per storefront (en-US, ru, en-GB, de-DE,
@@ -36,13 +36,13 @@ another version.
   that go), saved or deleted with one tap and undone with another. Transfers and loan or deposit
   records stay in History. Needs the server with prompt 2026-11-12.5 (deployed 2026-11-12). In build 80.
 - "Put everything from Glovo under Groceries": Ten moves all records of a merchant (up to 50)
-  to another category with one card. After build 80.
+  to another category with one card. In build 81.
 - Ten changes a goal (name, target, deadline) and a debt (due date, note, settled) with a card
   that shows what it is and what it becomes. Needs the server with prompt 2026-11-12.8. After
   build 81.
 - Ten knows the terms of loans and deposits: the rate, the monthly payment and its day, the
-  payments left, the interest accrued on a deposit. Needs the server with prompt 2026-11-12.7.
-  After build 80.
+  payments left, the interest accrued on a deposit. Needs the server with prompt 2026-11-12.7
+  (deployed 2026-11-12). In build 81.
 - Settings › Assistant has "Ask Ten about the app", and Ten's home puts first the "how to"
   questions for what the person has not set up yet (automatic capture, a first budget, a backup
   in iCloud). After build 79.
@@ -135,6 +135,10 @@ mid-answer.
 12. Settings › Assistant, "Спросить Тэна о приложении" opens Ten with three how-to questions;
     Ten's home starts with the questions for what is not set up (automatic capture, a first
     budget, a backup in iCloud).
+13. Build 81: "Перенеси всё из Glovo в Продукты" shows one card with the number of records and
+    the records as they will be; "Сохранить" moves them, "Отмена" puts them back. "Какая ставка
+    по кредиту и сколько платежей осталось?" and "Сколько процентов набежало по депозиту?" are
+    answered with the app's own figures.
 
 **On the phone, left from the versions already in the store** (not marked done before 1.8.2 went
 out; the store build is the one to check):
@@ -161,7 +165,7 @@ out; the store build is the one to check):
 
 ## Submission checklist
 
-1. **CI green**, then a TestFlight build (done: build 80 from f3900c7, 2026-11-12; CI green on
+1. **CI green**, then a TestFlight build (done: build 81 from 1401e23, 2026-11-12; CI green on
    that commit).
 2. **The phone checks above.**
 3. **What's New** in this file, then `prepare-version --version 1.8.3 --build <N>`.

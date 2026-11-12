@@ -1892,6 +1892,10 @@
 "assistant.howto.import" = "은행 거래 내역을 불러오려면?";
 "assistant.howto.backup" = "내 데이터는 백업되어 있나요?";
 "assistant.howto.budget" = "첫 예산 정하는 것을 도와줘";
+"assistant.home.topics" = "주제";
+"assistant.home.topic.money" = "지출";
+"assistant.home.topic.plans" = "계획";
+"assistant.home.topic.app" = "앱";
 "common.retry" = "다시 시도";
 /* DesignKit 8.9.0: RelativeTime, Formatting.relativeTime */
 "time.justNow" = "방금";

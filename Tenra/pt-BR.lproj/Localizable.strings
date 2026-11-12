@@ -1892,6 +1892,10 @@
 "assistant.howto.import" = "Como carrego um extrato bancário?";
 "assistant.howto.backup" = "Meus dados têm backup?";
 "assistant.howto.budget" = "Me ajude com meu primeiro orçamento";
+"assistant.home.topics" = "Temas";
+"assistant.home.topic.money" = "Dinheiro";
+"assistant.home.topic.plans" = "Planos";
+"assistant.home.topic.app" = "O app";
 "common.retry" = "Tentar de novo";
 /* DesignKit 8.9.0: RelativeTime, Formatting.relativeTime */
 "time.justNow" = "Agora mesmo";

@@ -1892,6 +1892,10 @@
 "assistant.howto.import" = "銀行の明細を読み込むには？";
 "assistant.howto.backup" = "データはバックアップされていますか？";
 "assistant.howto.budget" = "最初の予算を決めるのを手伝って";
+"assistant.home.topics" = "トピック";
+"assistant.home.topic.money" = "お金";
+"assistant.home.topic.plans" = "計画";
+"assistant.home.topic.app" = "アプリ";
 "common.retry" = "再試行";
 /* DesignKit 8.9.0: RelativeTime, Formatting.relativeTime */
 "time.justNow" = "たった今";

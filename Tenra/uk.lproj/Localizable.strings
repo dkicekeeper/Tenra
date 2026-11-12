@@ -1892,6 +1892,10 @@
 "assistant.howto.import" = "Як завантажити виписку з банку?";
 "assistant.howto.backup" = "Мої дані збережено в копії?";
 "assistant.howto.budget" = "Допоможи поставити перший бюджет";
+"assistant.home.topics" = "Теми";
+"assistant.home.topic.money" = "Витрати";
+"assistant.home.topic.plans" = "Плани";
+"assistant.home.topic.app" = "Застосунок";
 "common.retry" = "Повторити";
 /* DesignKit 8.9.0: RelativeTime, Formatting.relativeTime */
 "time.justNow" = "Щойно";

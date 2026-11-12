@@ -7,8 +7,8 @@ its notes and checklist: [archive/release-notes-1.8.2.md](archive/release-notes-
 **Status 2026-11-12:** the changes below are in `main` (Tenra#160, Tenra#161, then Ten's forms,
 state line, help with complaints, the entries and editing and deleting records, at f3900c7),
 TestFlight build
-82 is processed (from the cloud, `main` at 9127145), the server with `POST /v1/feedback` and
-prompt 2026-11-12.9 is deployed and the owner's Telegram chat is linked (`telegram-link`, a test line arrived 12.11), the What's New blocks for the 13 storefronts and en-GB are not
+83 is processed (from the cloud, `main` at 37e7365), the server with `POST /v1/feedback` and
+prompt 2026-11-12.11 is deployed and the owner's Telegram chat is linked (`telegram-link`, a test line arrived 12.11), the What's New blocks for the 13 storefronts and en-GB are not
 written, the phone checks are not done.
 
 When the blocks are written: one `## <locale>` heading per storefront (en-US, ru, en-GB, de-DE,
@@ -45,6 +45,9 @@ another version.
 - Ten knows the terms of loans and deposits: the rate, the monthly payment and its day, the
   payments left, the interest accrued on a deposit. Needs the server with prompt 2026-11-12.7
   (deployed 2026-11-12). In build 81.
+- Ten's home is rearranged: Ten is smaller, its own messages show there as on Home, the
+  ready-made questions come by topic (money, plans, the app) and the latest chats sit higher.
+  After build 83.
 - Settings › Assistant has "Ask Ten about the app", and Ten's home puts first the "how to"
   questions for what the person has not set up yet (automatic capture, a first budget, a backup
   in iCloud). After build 79.

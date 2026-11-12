@@ -1892,6 +1892,10 @@
 "assistant.howto.import" = "Comment charger un relevé bancaire ?";
 "assistant.howto.backup" = "Mes données sont-elles sauvegardées ?";
 "assistant.howto.budget" = "Aide-moi à fixer mon premier budget";
+"assistant.home.topics" = "Sujets";
+"assistant.home.topic.money" = "Argent";
+"assistant.home.topic.plans" = "Projets";
+"assistant.home.topic.app" = "L’app";
 "common.retry" = "Réessayer";
 /* DesignKit 8.9.0: RelativeTime, Formatting.relativeTime */
 "time.justNow" = "À l’instant";

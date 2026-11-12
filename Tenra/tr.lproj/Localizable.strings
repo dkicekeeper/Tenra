@@ -1892,6 +1892,10 @@
 "assistant.howto.import" = "Banka ekstresini nasıl yüklerim?";
 "assistant.howto.backup" = "Verilerim yedekleniyor mu?";
 "assistant.howto.budget" = "İlk bütçemi koymama yardım et";
+"assistant.home.topics" = "Konular";
+"assistant.home.topic.money" = "Para";
+"assistant.home.topic.plans" = "Planlar";
+"assistant.home.topic.app" = "Uygulama";
 "common.retry" = "Tekrar dene";
 /* DesignKit 8.9.0: RelativeTime, Formatting.relativeTime */
 "time.justNow" = "Az önce";

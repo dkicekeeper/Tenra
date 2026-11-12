@@ -73,6 +73,8 @@ mid-answer.
    question after a moment; your answer shows "Спасибо! Передал разработчику…", the Home message
    leaves, and the message arrives in Telegram; after "Нравится" Apple's rating prompt may follow;
    with no network Ten says "Не получилось отправить" and the next message is tried again. The
+   rating survey ("Нравится ли вам Tenra?") must not come up over the talk (build 77 showed it
+   while the answer was being typed), and Apple's prompt comes only after Ten's thanks. The
    rating survey's "not really" opens the chat with "Что именно не понравилось…" at once.
    **App Privacy** in App Store Connect: updated by the founder on 2026-11-11 for a message to
    the developer (user content for app functionality, not linked to the person, no tracking).

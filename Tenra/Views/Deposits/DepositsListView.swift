@@ -15,6 +15,10 @@ struct DepositsListView: View {
     let accountsViewModel: AccountsViewModel
     let depositsViewModel: DepositsViewModel
     let transactionsViewModel: TransactionsViewModel
+    /// Set when Ten's "create" button opened this list (AssistantRoute.create): the form for a
+    /// new one opens once, through the list's own add path and its Pro gate, with these fields.
+    var adding: AgentFormPrefill? = nil
+    @State private var startedAdding = false
     @Environment(TransactionStore.self) private var transactionStore
     @Environment(AppCoordinator.self) private var appCoordinator
     @Environment(PremiumManager.self) private var premium
@@ -140,6 +144,14 @@ struct DepositsListView: View {
             onAdd: addDeposit,
             onDeleteSelected: { showingBulkDeleteDialog = true }
         )
+        .task {
+            // Ten's button: straight into the form, once.
+            guard adding != nil, !startedAdding else { return }
+            startedAdding = true
+            // After the push that brought this list, or the sheet is dropped.
+            try? await Task.sleep(for: .milliseconds(450))
+            addDeposit()
+        }
         .paywallSheet(isPresented: $showingPaywall, source: .depositAdd) {
             // After unlocking Pro, continue straight into the add-deposit flow.
             showingAddDeposit = true
@@ -163,7 +175,8 @@ struct DepositsListView: View {
                     accountsViewModel.addDepositAccount(account)
                     Task { await reconcileDeposits() }
                     showingAddDeposit = false
-                }
+                },
+                prefill: adding
             )
         }
         .sheet(item: $editingDeposit) { deposit in

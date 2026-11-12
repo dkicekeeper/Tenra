@@ -114,6 +114,9 @@ nonisolated enum AgentContextBuilder {
             "assets: \(assets.isEmpty ? "none" : assets)",
             // This version runs estimate_asset_value (the server offers it while it is on).
             "valuation: listings",
+            // What this version's `open` blocks reach (plan-ten-agent 4.2): the lists of
+            // Finances, goals and debts by id, Settings, and the forms for a new one.
+            "screens: accounts, deposits, loans, goals, goal, debts, debt, settings, backups, wallet_guide, create (account, deposit, loan, category)",
         ]
         // Without facts the line is left out, as before there was a memory.
         if !facts.isEmpty { lines.append("facts you remember about the user: \(facts)") }

@@ -15,6 +15,8 @@ struct CategoryEditView: View {
     let type: TransactionType
     let onSave: (CustomCategory) -> Void
     let onCancel: () -> Void
+    /// What the person told Ten about a new category: its name and, for expenses, a budget.
+    var prefill: AgentFormPrefill? = nil
 
     @State private var name: String = ""
     @State private var selectedIconSource: IconSource? = .sfSymbol("banknote.fill")
@@ -119,6 +121,11 @@ struct CategoryEditView: View {
                 }
                 selectedPeriod = category.budgetPeriod
                 resetDay = category.budgetResetDay
+            } else if let prefill {
+                name = prefill.name ?? ""
+                if type == .expense, let amount = prefill.amount {
+                    budgetAmount = String(NSDecimalNumber(decimal: amount).intValue)
+                }
             }
         }
     }

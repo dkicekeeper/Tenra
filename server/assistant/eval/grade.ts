@@ -1,7 +1,7 @@
 // Grades one assistant turn. Universal checks run on every case; each case adds its own.
 // Every check is mechanical: the numbers the user sees must resolve from tool results.
 
-import { ACCOUNTS, ASSETS, CATEGORIES } from "./fixture";
+import { ACCOUNTS, ASSETS, CATEGORIES, DEBTS, GOALS } from "./fixture";
 
 export interface ToolCall {
   id: string;
@@ -116,9 +116,14 @@ const BLOCK_FIELDS: Record<string, Record<string, (v: unknown) => boolean>> = {
   insight: { source: STRING, insight_id: STRING },
   confirm: { draft_id: STRING },
   open: {
-    destination: oneOf(["category", "account", "analytics", "history", "budgets", "subscriptions", "assets", "asset"]),
+    destination: oneOf([
+      "category", "account", "analytics", "history", "budgets", "subscriptions", "assets", "asset",
+      "accounts", "deposits", "loans", "goals", "goal", "debts", "debt", "settings", "backups", "wallet_guide", "create",
+    ]),
     target_id: OPTIONAL_STRING,
     label: STRING,
+    kind: (v) => v === undefined || v === null || ["account", "deposit", "loan", "category"].includes(v as string),
+    prefill: (v) => v === undefined || v === null || (typeof v === "object" && !Array.isArray(v)),
   },
 };
 
@@ -165,9 +170,16 @@ export function universalChecks(record: RunRecord, locale: "ru" | "en", prompt =
     if (block.type === "open") {
       // The app opens nothing for an id it does not know.
       const id = block.target_id;
-      const known =
-        block.destination === "account" ? ACCOUNTS.map((a) => a.id) : block.destination === "asset" ? ASSETS.map((a) => a.id) : CATEGORIES.map((c) => c.id);
-      const needsId = block.destination === "account" || block.destination === "category" || block.destination === "asset";
+      const byDestination: Record<string, string[]> = {
+        account: ACCOUNTS.map((a) => a.id),
+        asset: ASSETS.map((a) => a.id),
+        goal: GOALS.map((g) => g.id),
+        debt: DEBTS.map((d) => d.id),
+      };
+      const known = byDestination[String(block.destination)] ?? CATEGORIES.map((c) => c.id);
+      const needsId = ["account", "category", "asset", "goal", "debt"].includes(String(block.destination));
+      // The app's decoder wants a kind for a form, and shows nothing without one.
+      if (block.destination === "create" && typeof block.kind !== "string") broken.push("open: create without kind");
       if (needsId && typeof id !== "string") broken.push(`open: ${String(block.destination)} without target_id`);
       else if (typeof id === "string" && (needsId || block.destination === "history") && !known.includes(id)) broken.push(`open: unknown ${String(block.destination)} ${id}`);
     }

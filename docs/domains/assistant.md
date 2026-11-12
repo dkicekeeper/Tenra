@@ -192,8 +192,23 @@ enum AgentBlock {                // AgentReply.swift; source = a tool result's r
   ordinary), History (filtered by category when an id is given), Analytics, budgets,
   subscriptions, the assets list (its cards open an asset in the same stack) or an asset by id.
   An id that does not exist shows an empty state, never another screen. A destination the app
-  version does not know decodes as unsupported and is left out (`LenientBlock`). Goals and debts
-  have no button.
+  version does not know decodes as unsupported and is left out (`LenientBlock`).
+- **The further screens** (the `screens` line of `<app_context>`, §8; the prompt uses them only
+  when the line lists them): the lists of Finances (`accounts`, `deposits`, `loans`, `goals`,
+  `debts`), a goal or a debt by id, `settings`, `backups` and `wallet_guide`. A reply may then
+  carry two buttons.
+- **A form for a new one** (`destination: "create"`, decoded as `AgentBlock.create`): `kind` is
+  `account`, `deposit`, `loan` or `category`, the four Ten has no draft tool for, and `prefill`
+  (`AgentFormPrefill`: name, amount, currency, bank, `rate_percent`, `term_months`, `day`,
+  `income`) is what the person already said, never a guess; a value out of range is left out.
+  The button pushes the thing's own list with `adding:` set, and the list opens its form once
+  through its own add path (`DepositsListView`, `LoansListView`, `AccountsManagementView`,
+  `CategoriesManagementView`): the Pro gate, the paywall that resumes into the form and the
+  save are the list's, so there is no second way to write. The form (`prefill:` on
+  `DepositEditView`, `LoanEditView`, `AccountEditView`, `CategoryEditView`) starts with those
+  fields; a category's amount is its budget. A form is not a draft: no `confirm` block, and
+  what Ten can draft stays a draft. A new form kind needs its list's `adding:`, its form's
+  `prefill:`, the schema's `kind` (`tools.ts`), the `screens` line and the eval fixture.
 
 ## 5. Threads and memory
 
@@ -392,7 +407,9 @@ The app runs the agent loop, because the tools run on the phone: one server call
   prompt follows both when present, older apps send neither),
   accounts and categories with ids, the held assets with ids (always a line, "none" when empty: it
   tells the prompt this app version has assets, and an older one, with no line, gets no asset
-  tools), `valuation: listings` (this version runs `estimate_asset_value`), the facts, the goals
+  tools), `valuation: listings` (this version runs `estimate_asset_value`), `screens` (the `open`
+  destinations this version adds to the first eight, and the form kinds of `create`; an app
+  without the line gets none of them), the facts, the goals
   and open debts (format: `eval/fixture.ts`, `appContext`). A new one
   is sent when the date or the lists change.
 - Errors before the stream: 400 `invalid`, 401 `user`, 401 `attest` (with `reason`), 429 `quota`
@@ -615,8 +632,11 @@ spending, no em dashes, in all 11 languages.
 - **Pro for a person on the server**: the server sees only RevenueCat, so a Founding User (kept on
   the phone) needs `pro` granted there (Actions → RevenueCat → `grant`).
 - **Eval** (`server/assistant/eval/`): a synthetic user (`fixture.ts`; never real statements), a
-  tool simulator, 66 cases in Russian and English (`cases.ts`; help with the app: the 14 `ru-howto-*` and
-  `en-howto-*`, whose `textHas` check wants the guide's steps named; assets: `ru-asset-new`,
+  tool simulator, 72 cases in Russian and English (`cases.ts`; help with the app: the 14 `ru-howto-*` and
+  `en-howto-*`, whose `textHas` check wants the guide's steps named or whose `blockWith` wants the
+  button; the forms: `ru-create-deposit`, `en-create-loan`, `ru-create-account`,
+  `ru-create-category` (what was said is in `prefill`, nothing guessed, nothing drafted) and
+  `ru-goal-stays-draft`; assets: `ru-asset-new`,
   `ru-asset-valuation`, `ru-asset-worth-asks`, `ru-asset-worth-listings`, `en-car-worth-listings`,
   `ru-car-worth-saved` (the car's characteristics are saved: no question), `ru-net-worth`,
   `en-rental-yield`; the eval offers `estimate_asset_value` and the fixture's context has its

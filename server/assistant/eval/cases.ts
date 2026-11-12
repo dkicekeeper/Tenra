@@ -55,6 +55,10 @@ const spend = (period: { from: string; to: string }, categories?: string[]) =>
 const items = (input: Input) => (Array.isArray(input.items) ? (input.items as Input[]) : []);
 const hasAmount = (input: Input, amount: number) => items(input).some((i) => Number(i.amount) === amount);
 const mentions = (value: unknown, ...needles: string[]) => needles.some((n) => String(value ?? "").toLowerCase().includes(n));
+const prefill = (block: object): Input => {
+  const value = (block as Input).prefill;
+  return value && typeof value === "object" ? (value as Input) : {};
+};
 const untilPayday = (input: Input) => input.until === "2026-11-10" || input.until === "2026-11-09";
 
 const DRAFTS = [
@@ -586,8 +590,61 @@ export const CASES: EvalCase[] = [
     prompt: "Не понял, как создать депозит. Где это?",
     checks: [
       { kind: "notCalled", tools: DRAFTS },
-      { kind: "textHas", groups: [["финанс"], ["депозит"], ["+", "плюс"]], label: "Finances, Deposits, +" },
+      { kind: "blockWith", type: "open", match: (b) => b.destination === "create" && b.kind === "deposit", label: "the deposit form" },
     ],
+  },
+  // The forms for a new one (open with destination "create"): what the user said goes into
+  // prefill, nothing is drafted, and nothing they did not say is guessed.
+  {
+    id: "ru-create-deposit",
+    locale: "ru",
+    prompt: "Хочу завести депозит в Halyk на 2 000 000 под 14,5%",
+    checks: [
+      { kind: "notCalled", tools: DRAFTS },
+      {
+        kind: "blockWith",
+        type: "open",
+        match: (b) => b.destination === "create" && b.kind === "deposit" && mentions(prefill(b).bank, "halyk") && Number(prefill(b).amount) === 2_000_000 && Number(prefill(b).rate_percent) === 14.5 && prefill(b).day == null,
+        label: "the deposit form with the bank, the amount and the rate, no guessed day",
+      },
+    ],
+  },
+  {
+    id: "en-create-loan",
+    locale: "en",
+    prompt: "Add my car loan from Kaspi: 5,000,000 at 18% for 36 months",
+    checks: [
+      { kind: "notCalled", tools: DRAFTS },
+      {
+        kind: "blockWith",
+        type: "open",
+        match: (b) => b.destination === "create" && b.kind === "loan" && Number(prefill(b).amount) === 5_000_000 && Number(prefill(b).rate_percent) === 18 && Number(prefill(b).term_months) === 36,
+        label: "the loan form with the amount, the rate and the term",
+      },
+    ],
+  },
+  {
+    id: "ru-create-account",
+    locale: "ru",
+    prompt: "Добавь новый счёт Freedom в долларах",
+    checks: [
+      { kind: "blockWith", type: "open", match: (b) => b.destination === "create" && b.kind === "account" && prefill(b).currency === "USD" && mentions(prefill(b).name, "freedom"), label: "the account form in USD" },
+    ],
+  },
+  {
+    id: "ru-create-category",
+    locale: "ru",
+    prompt: "Создай категорию расходов «Питомцы»",
+    checks: [
+      { kind: "notCalled", tools: DRAFTS },
+      { kind: "blockWith", type: "open", match: (b) => b.destination === "create" && b.kind === "category" && mentions(prefill(b).name, "питомц"), label: "the category form with its name" },
+    ],
+  },
+  {
+    id: "ru-goal-stays-draft",
+    locale: "ru",
+    prompt: "Хочу накопить 1 500 000 на отпуск к июлю",
+    checks: [{ kind: "called", anyOf: ["draft_goal"] }, { kind: "block", type: "confirm" }],
   },
   {
     id: "ru-howto-expense",
@@ -632,7 +689,10 @@ export const CASES: EvalCase[] = [
     id: "ru-howto-new-phone",
     locale: "ru",
     prompt: "Купил новый айфон. Как перенести туда все данные?",
-    checks: [{ kind: "textHas", groups: [["icloud"], ["копи"], ["восстанов"]], label: "an iCloud backup, restore on the first screen" }],
+    checks: [
+      { kind: "textHas", groups: [["icloud", "копи"], ["восстанов"]], label: "a backup, restore on the new phone" },
+      { kind: "blockWith", type: "open", match: (b) => b.destination === "backups" || b.destination === "settings", label: "opens the backups" },
+    ],
   },
   {
     id: "en-howto-hide-amounts",
@@ -671,7 +731,7 @@ export const CASES: EvalCase[] = [
     id: "en-howto-wallet",
     locale: "en",
     prompt: "How do I make Apple Pay payments log themselves?",
-    checks: [{ kind: "textHas", groups: [["settings", "home"], ["shortcuts", "automation"]], label: "the Wallet automation guide" }],
+    checks: [{ kind: "blockWith", type: "open", match: (b) => b.destination === "wallet_guide", label: "opens the Wallet guide" }],
   },
   {
     id: "ru-howto-subscriptions",

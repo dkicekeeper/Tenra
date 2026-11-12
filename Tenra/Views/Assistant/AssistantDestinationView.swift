@@ -22,6 +22,18 @@ enum AssistantRoute: Hashable {
     case subscriptions
     case assets
     case asset(String)
+    case accounts
+    case deposits
+    case loans
+    case goals
+    case goal(String)
+    case debts
+    case debt(String)
+    case settings
+    case backups
+    case walletGuide
+    /// The list a new one belongs to, with its form open and prefilled.
+    case create(AgentCreateKind, AgentFormPrefill)
 
     /// Nil for an account, a category or an asset without an id: such a block leads nowhere.
     init?(destination: AgentDestination, targetId: String?) {
@@ -41,6 +53,20 @@ enum AssistantRoute: Hashable {
         case .asset:
             guard let id else { return nil }
             self = .asset(id)
+        case .accounts: self = .accounts
+        case .deposits: self = .deposits
+        case .loans: self = .loans
+        case .goals: self = .goals
+        case .goal:
+            guard let id else { return nil }
+            self = .goal(id)
+        case .debts: self = .debts
+        case .debt:
+            guard let id else { return nil }
+            self = .debt(id)
+        case .settings: self = .settings
+        case .backups: self = .backups
+        case .walletGuide: self = .walletGuide
         }
     }
 
@@ -53,6 +79,15 @@ enum AssistantRoute: Hashable {
         case .budgets: "gauge.with.dots.needle.50percent"
         case .subscriptions: "repeat"
         case .assets, .asset: "house"
+        case .accounts: "creditcard"
+        case .deposits: "banknote"
+        case .loans: "building.columns"
+        case .goals, .goal: "target"
+        case .debts, .debt: "person.2"
+        case .settings: "gearshape"
+        case .backups: "icloud"
+        case .walletGuide: "wallet.pass"
+        case .create: "plus.circle"
         }
     }
 }
@@ -126,7 +161,105 @@ struct AssistantDestinationView: View {
         case .asset(let id):
             // An id that matches nothing: the screen's own "not found".
             AssetDetailView(assetStore: coordinator.assetStore, assetId: id)
+        case .accounts:
+            accountsList(adding: nil)
+        case .deposits:
+            depositsList(adding: nil)
+        case .loans:
+            loansList(adding: nil)
+        case .goals:
+            // Its cards push FinancesDestination, which only Finances' own stack handles.
+            GoalsListView(goalStore: coordinator.goalStore)
+                .navigationDestination(for: FinancesDestination.self) { destination in
+                    if case .goalDetail(let goalId) = destination {
+                        GoalDetailView(goalStore: coordinator.goalStore, goalId: goalId)
+                            .environment(timeFilterManager)
+                    }
+                }
+        case .goal(let id):
+            if coordinator.goalStore.goals.contains(where: { $0.id == id }) {
+                GoalDetailView(goalStore: coordinator.goalStore, goalId: id)
+            } else {
+                missing
+            }
+        case .debts:
+            DebtsListView(debtStore: coordinator.debtStore)
+                .navigationDestination(for: FinancesDestination.self) { destination in
+                    if case .debtDetail(let debtId) = destination {
+                        DebtDetailView(debtStore: coordinator.debtStore, debtId: debtId)
+                            .environment(timeFilterManager)
+                    }
+                }
+        case .debt(let id):
+            if coordinator.debtStore.debts.contains(where: { $0.id == id }) {
+                DebtDetailView(debtStore: coordinator.debtStore, debtId: id)
+            } else {
+                missing
+            }
+        case .settings:
+            SettingsView(
+                settingsViewModel: coordinator.settingsViewModel,
+                transactionsViewModel: coordinator.transactionsViewModel,
+                accountsViewModel: coordinator.accountsViewModel,
+                categoriesViewModel: coordinator.categoriesViewModel,
+                transactionStore: store,
+                depositsViewModel: coordinator.depositsViewModel,
+                loansViewModel: coordinator.loansViewModel,
+                cloudSyncViewModel: coordinator.cloudSyncViewModel
+            )
+        case .backups:
+            CloudBackupsView(
+                cloudSyncViewModel: coordinator.cloudSyncViewModel,
+                transactionCount: coordinator.transactionsViewModel.allTransactions.count,
+                accountCount: coordinator.accountsViewModel.accounts.count,
+                categoryCount: coordinator.categoriesViewModel.customCategories.count
+            )
+        case .walletGuide:
+            WalletSetupGuideView()
+        case .create(let kind, let prefill):
+            switch kind {
+            case .account: accountsList(adding: prefill)
+            case .deposit: depositsList(adding: prefill)
+            case .loan: loansList(adding: prefill)
+            case .category:
+                CategoriesManagementView(
+                    categoriesViewModel: coordinator.categoriesViewModel,
+                    transactionsViewModel: coordinator.transactionsViewModel,
+                    adding: prefill
+                )
+            }
         }
+    }
+
+    // The lists as Finances builds them; with `adding`, the list opens its own form for a new
+    // one (its Pro gate first), so a thing made from Ten's button is saved the list's way.
+
+    private func accountsList(adding prefill: AgentFormPrefill?) -> some View {
+        AccountsManagementView(
+            accountsViewModel: coordinator.accountsViewModel,
+            depositsViewModel: coordinator.depositsViewModel,
+            loansViewModel: coordinator.loansViewModel,
+            transactionsViewModel: coordinator.transactionsViewModel,
+            adding: prefill
+        )
+    }
+
+    private func depositsList(adding prefill: AgentFormPrefill?) -> some View {
+        DepositsListView(
+            accountsViewModel: coordinator.accountsViewModel,
+            depositsViewModel: coordinator.depositsViewModel,
+            transactionsViewModel: coordinator.transactionsViewModel,
+            adding: prefill
+        )
+    }
+
+    private func loansList(adding prefill: AgentFormPrefill?) -> some View {
+        LoansListView(
+            loansViewModel: coordinator.loansViewModel,
+            transactionsViewModel: coordinator.transactionsViewModel,
+            balanceCoordinator: coordinator.balanceCoordinator,
+            adding: prefill
+        )
     }
 
     /// The account's detail screen by its kind, as the accounts list opens it.

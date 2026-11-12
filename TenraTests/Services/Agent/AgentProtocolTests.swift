@@ -83,6 +83,42 @@ struct AgentProtocolTests {
         #expect(reply.suggestions == ["Сравни с сентябрём"])
     }
 
+    // plan-ten-agent 4.2: Ten's buttons to the lists, to a goal or a debt, to Settings, and
+    // to the form for a new one with what the person already said.
+    @Test func anOpenBlockReachesTheNewScreensAndTheForms() throws {
+        let raw = """
+        {"blocks":[
+          {"type":"open","destination":"goal","target_id":"goal_car","label":"Открыть цель","kind":null,"prefill":null},
+          {"type":"open","destination":"wallet_guide","target_id":null,"label":"Настроить"},
+          {"type":"open","destination":"create","target_id":null,"label":"Создать депозит","kind":"deposit",
+           "prefill":{"name":null,"amount":2000000,"currency":"kzt","bank":" Halyk ","rate_percent":14.5,"term_months":null,"day":40,"income":null}},
+          {"type":"open","destination":"create","target_id":null,"label":"Создать счёт","kind":"account","prefill":null},
+          {"type":"open","destination":"create","target_id":null,"label":"Создать","kind":"spaceship"},
+          {"type":"open","destination":"create","target_id":null,"label":"Создать"},
+          {"type":"open","destination":"teleport","target_id":null,"label":"Открыть"}
+        ],"mood":"idle","suggestions":[]}
+        """
+        let reply = try JSONDecoder().decode(AgentReply.self, from: Data(raw.utf8))
+        #expect(reply.blocks[0] == .open(destination: .goal, targetId: "goal_car", label: "Открыть цель"))
+        #expect(reply.blocks[1] == .open(destination: .walletGuide, targetId: nil, label: "Настроить"))
+        // A currency is upper-cased, a name trimmed, a day outside the month left out.
+        let deposit = AgentFormPrefill(amount: 2_000_000, currency: "KZT", bank: "Halyk", ratePercent: Decimal(string: "14.5"))
+        #expect(reply.blocks[2] == .create(kind: .deposit, prefill: deposit, label: "Создать депозит"))
+        #expect(reply.blocks[3] == .create(kind: .account, prefill: AgentFormPrefill(), label: "Создать счёт"))
+        // A form the app does not have, or none named, and a screen it does not know: nothing.
+        #expect(reply.blocks[4] == .unsupported(type: "open"))
+        #expect(reply.blocks[5] == .unsupported(type: "open"))
+        #expect(reply.blocks[6] == .unsupported(type: "open"))
+    }
+
+    @Test func aRouteNeedsAnIdForOneGoalOrDebt() {
+        #expect(AssistantRoute(destination: .goal, targetId: nil) == nil)
+        #expect(AssistantRoute(destination: .debt, targetId: "") == nil)
+        #expect(AssistantRoute(destination: .goal, targetId: "goal_car") == .goal("goal_car"))
+        #expect(AssistantRoute(destination: .deposits, targetId: nil) == .deposits)
+        #expect(AssistantRoute(destination: .backups, targetId: "ignored") == .backups)
+    }
+
     @Test func aMalformedBlockShowsNothingAndTheRestStays() throws {
         let raw = """
         {"blocks":[

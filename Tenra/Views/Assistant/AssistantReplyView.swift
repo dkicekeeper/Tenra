@@ -61,6 +61,8 @@ private struct AssistantBlockView: View {
             if let route = AssistantRoute(destination: destination, targetId: targetId) {
                 AssistantOpenLink(route: route, label: label)
             }
+        case .create(let kind, let prefill, let label):
+            AssistantOpenLink(route: .create(kind, prefill), label: label)
         case .confirm(let draftId):
             if let drafts, let draft = drafts.drafts[draftId] {
                 AssistantDraftCard(book: drafts, draft: draft)

@@ -14,6 +14,8 @@ struct DepositEditView: View {
     /// Optional toolbar action — when set (editing an existing deposit), shows a
     /// "Link interest payments" button that closes this sheet and opens the link view.
     var onLinkPayments: (() -> Void)? = nil
+    /// What the person told Ten about a new deposit: its fields start with it.
+    var prefill: AgentFormPrefill? = nil
 
     @Environment(\.dismiss) private var dismiss
 
@@ -138,6 +140,14 @@ struct DepositEditView: View {
                 interestRateText = ""
                 interestPostingDay = 1
                 capitalizationEnabled = true
+                if let prefill {
+                    name = prefill.name ?? ""
+                    bankName = prefill.bank ?? ""
+                    if let code = prefill.currency { currency = code }
+                    if let amount = prefill.amount { principalBalanceText = AmountInputFormatting.bindingString(for: amount) }
+                    if let rate = prefill.ratePercent { interestRateText = AmountInputFormatting.bindingString(for: rate) }
+                    if let day = prefill.day { interestPostingDay = day }
+                }
             }
         }
     }

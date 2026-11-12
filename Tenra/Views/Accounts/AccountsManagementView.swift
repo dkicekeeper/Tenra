@@ -13,6 +13,10 @@ struct AccountsManagementView: View {
     let depositsViewModel: DepositsViewModel
     let loansViewModel: LoansViewModel
     let transactionsViewModel: TransactionsViewModel
+    /// Set when Ten's "create" button opened this list (AssistantRoute.create): the form for a
+    /// new one opens once, through the list's own add path and its Pro gate, with these fields.
+    var adding: AgentFormPrefill? = nil
+    @State private var startedAdding = false
     @Environment(TransactionStore.self) private var transactionStore
     @Environment(AppCoordinator.self) private var appCoordinator
     @Environment(PremiumManager.self) private var premium
@@ -188,6 +192,14 @@ struct AccountsManagementView: View {
             }
             .navigationTransition(.zoom(sourceID: account.id, in: accountNamespace))
         }
+        .task {
+            // Ten's button: straight into the form, once.
+            guard adding != nil, !startedAdding else { return }
+            startedAdding = true
+            // After the push that brought this list, or the sheet is dropped.
+            try? await Task.sleep(for: .milliseconds(450))
+            addAccount()
+        }
         .paywallSheet(isPresented: $showingPaywall, source: .accountAdd) {
             // After unlocking Pro, resume the flow the paywall interrupted.
             if let account = pendingConvertAccount {
@@ -212,7 +224,8 @@ struct AccountsManagementView: View {
                         showingAddAccount = false
                     }
                 },
-                onCancel: { showingAddAccount = false }
+                onCancel: { showingAddAccount = false },
+                prefill: adding
             )
         }
         .sheet(item: $editingAccount) { account in

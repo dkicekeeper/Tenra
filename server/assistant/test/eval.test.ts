@@ -114,6 +114,10 @@ describe("grader", () => {
     expect(refs(open({ destination: "asset", target_id: "asset_flat" }))).toBe(true);
     expect(refs(open({ destination: "asset", target_id: null }))).toBe(false);
     expect(refs(open({ destination: "assets", target_id: null }))).toBe(true);
+    expect(refs(open({ destination: "goal", target_id: null }))).toBe(false);
+    expect(refs(open({ destination: "goal", target_id: "goal_made_up" }))).toBe(false);
+    expect(refs(open({ destination: "create", target_id: null, kind: "deposit", prefill: { bank: "Halyk" } }))).toBe(true);
+    expect(refs(open({ destination: "create", target_id: null }))).toBe(false);
     const openCase = CASES.find((c) => c.id === "ru-open-category")!;
     expect(caseCheck(open({ destination: "category", target_id: "cat_cafe" }), openCase.checks[0]!).pass).toBe(true);
     expect(caseCheck(open({ destination: "analytics", target_id: null }), openCase.checks[0]!).pass).toBe(false);

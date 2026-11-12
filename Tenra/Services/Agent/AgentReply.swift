@@ -44,6 +44,76 @@ nonisolated enum AgentDestination: String, Sendable, Equatable, Decodable {
     /// The assets list, and one asset by its id (plan-assets-roadmap 1.4). A version without
     /// them reads the block as unsupported and leaves it out.
     case assets, asset
+    /// The lists of Finances and what the person keeps there by id (plan-ten-agent 4.2).
+    case accounts, deposits, loans, goals, goal, debts, debt
+    /// Settings, its backups screen and the guide to the Wallet automation.
+    case settings, backups
+    case walletGuide = "wallet_guide"
+}
+
+/// What an `open` block with the destination "create" starts: the app's own form for a new
+/// one, over its list, which keeps the form's checks, the Pro gate and the one way to save.
+/// Only what Ten has no draft tool for.
+nonisolated enum AgentCreateKind: String, Sendable, Equatable, Decodable {
+    case account, deposit, loan, category
+}
+
+/// What the person already said about the new thing, put into the form's fields before they
+/// see it. Every field is optional and a mistyped one is left out: the form then starts empty
+/// there. Amounts are the person's own words, as in a draft, never the model's figures.
+nonisolated struct AgentFormPrefill: Sendable, Hashable, Decodable {
+    var name: String?
+    /// An account's balance, a deposit's or a loan's amount, a category's budget.
+    var amount: Decimal?
+    var currency: String?
+    var bank: String?
+    /// A deposit's or a loan's yearly rate.
+    var ratePercent: Decimal?
+    /// A loan's term.
+    var termMonths: Int?
+    /// The day of the month interest is posted or the payment is due.
+    var day: Int?
+    /// A category of income rather than of expenses.
+    var income: Bool?
+
+    private enum CodingKeys: String, CodingKey {
+        case name, amount, currency, bank, day, income
+        case ratePercent = "rate_percent"
+        case termMonths = "term_months"
+    }
+
+    init(
+        name: String? = nil, amount: Decimal? = nil, currency: String? = nil, bank: String? = nil,
+        ratePercent: Decimal? = nil, termMonths: Int? = nil, day: Int? = nil, income: Bool? = nil
+    ) {
+        self.name = name
+        self.amount = amount
+        self.currency = currency
+        self.bank = bank
+        self.ratePercent = ratePercent
+        self.termMonths = termMonths
+        self.day = day
+        self.income = income
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        func text(_ key: CodingKeys) -> String? {
+            let value = (try? c.decodeIfPresent(String.self, forKey: key))?.trimmingCharacters(in: .whitespacesAndNewlines)
+            return value.flatMap { $0.isEmpty ? nil : String($0.prefix(80)) }
+        }
+        func positive(_ key: CodingKeys) -> Decimal? {
+            (try? c.decodeIfPresent(Decimal.self, forKey: key)).flatMap { $0 > 0 ? $0 : nil }
+        }
+        name = text(.name)
+        amount = positive(.amount)
+        currency = text(.currency).map { $0.uppercased() }.flatMap { $0.count == 3 ? $0 : nil }
+        bank = text(.bank)
+        ratePercent = positive(.ratePercent).flatMap { $0 <= 1000 ? $0 : nil }
+        termMonths = (try? c.decodeIfPresent(Int.self, forKey: .termMonths)).flatMap { (1...600).contains($0) ? $0 : nil }
+        day = (try? c.decodeIfPresent(Int.self, forKey: .day)).flatMap { (1...31).contains($0) ? $0 : nil }
+        income = try? c.decodeIfPresent(Bool.self, forKey: .income)
+    }
 }
 
 nonisolated enum AgentBlock: Sendable, Equatable, Decodable {
@@ -57,10 +127,12 @@ nonisolated enum AgentBlock: Sendable, Equatable, Decodable {
     case insight(source: String, insightId: String)
     case confirm(draftId: String)
     case open(destination: AgentDestination, targetId: String?, label: String)
+    /// An `open` block whose destination is "create": the form for a new one, prefilled.
+    case create(kind: AgentCreateKind, prefill: AgentFormPrefill, label: String)
     case unsupported(type: String)
 
     private enum CodingKeys: String, CodingKey {
-        case type, text, label, source, path, kind, title, destination
+        case type, text, label, source, path, kind, title, destination, prefill
         case trendPath = "trend_path"
         case categoryIds = "category_ids"
         case insightId = "insight_id"
@@ -100,6 +172,12 @@ nonisolated enum AgentBlock: Sendable, Equatable, Decodable {
             self = .insight(source: try c.decode(String.self, forKey: .source), insightId: try c.decode(String.self, forKey: .insightId))
         case "confirm":
             self = .confirm(draftId: try c.decode(String.self, forKey: .draftId))
+        case "open" where (try? c.decode(String.self, forKey: .destination)) == "create":
+            self = .create(
+                kind: try c.decode(AgentCreateKind.self, forKey: .kind),
+                prefill: (try? c.decodeIfPresent(AgentFormPrefill.self, forKey: .prefill)) ?? AgentFormPrefill(),
+                label: try c.decode(String.self, forKey: .label)
+            )
         case "open":
             self = .open(
                 destination: try c.decode(AgentDestination.self, forKey: .destination),

@@ -13,6 +13,8 @@ struct LoanEditView: View {
     let loansViewModel: LoansViewModel
     let account: Account?
     let onSave: (Account) -> Void
+    /// What the person told Ten about a new loan: its fields start with it.
+    var prefill: AgentFormPrefill? = nil
 
     @Environment(\.dismiss) private var dismiss
     @Environment(AppCoordinator.self) private var appCoordinator
@@ -233,6 +235,15 @@ struct LoanEditView: View {
                 termMonthsText = ""
                 paymentDay = 1
                 startDate = Date()
+                if let prefill {
+                    name = prefill.name ?? ""
+                    bankName = prefill.bank ?? ""
+                    if let code = prefill.currency { currency = code }
+                    if let amount = prefill.amount { principalAmountText = AmountInputFormatting.bindingString(for: amount) }
+                    if let rate = prefill.ratePercent { interestRateText = AmountInputFormatting.bindingString(for: rate) }
+                    if let months = prefill.termMonths { termMonthsText = "\(months)" }
+                    if let day = prefill.day { paymentDay = day }
+                }
             }
         }
     }

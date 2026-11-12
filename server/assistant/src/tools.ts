@@ -458,9 +458,29 @@ const renderReply: Tool = {
             draft_id: { type: "string", description: "A draft_id a draft tool returned to you; never a draft from <draft_status>, whose card is already in the chat" },
           }),
           block("open", {
-            destination: { type: "string", enum: ["category", "account", "analytics", "history", "budgets", "subscriptions", "assets", "asset"] },
+            destination: {
+              type: "string",
+              enum: [
+                "category", "account", "analytics", "history", "budgets", "subscriptions", "assets", "asset",
+                "accounts", "deposits", "loans", "goals", "goal", "debts", "debt", "settings", "backups", "wallet_guide", "create",
+              ],
+              description: "The first eight always work. The rest only when <app_context> has a screens line that lists them.",
+            },
             target_id: nullable({ type: "string" }),
             label: { type: "string" },
+            kind: nullable({ type: "string", enum: ["account", "deposit", "loan", "category"], description: "Only with destination create: what the form is for" }),
+            prefill: nullable(
+              object({
+                name: nullable({ type: "string" }),
+                amount: nullable({ type: "number", description: "As the user said it: an account's balance, a deposit's or a loan's amount, a new category's budget" }),
+                currency: nullable({ type: "string", description: "ISO code" }),
+                bank: nullable({ type: "string" }),
+                rate_percent: nullable({ type: "number", description: "Yearly rate of a deposit or a loan" }),
+                term_months: nullable({ type: "integer", description: "A loan's term" }),
+                day: nullable({ type: "integer", description: "Day of the month: a deposit's interest, a loan's payment" }),
+                income: nullable({ type: "boolean", description: "A category of income, not of expenses" }),
+              }),
+            ),
           }),
         ],
       },

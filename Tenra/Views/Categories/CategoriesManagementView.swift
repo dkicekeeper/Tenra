@@ -13,6 +13,10 @@ private let logger = Logger(subsystem: "Tenra", category: "CategoriesManagementV
 struct CategoriesManagementView: View {
     let categoriesViewModel: CategoriesViewModel
     let transactionsViewModel: TransactionsViewModel
+    /// Set when Ten's "create" button opened this list (AssistantRoute.create): the form for a
+    /// new one opens once, through the list's own add path and the type it names, with these fields.
+    var adding: AgentFormPrefill? = nil
+    @State private var startedAdding = false
     @Environment(\.dismiss) var dismiss
     @Environment(TransactionStore.self) private var transactionStore
     @Environment(AppCoordinator.self) private var appCoordinator
@@ -208,6 +212,15 @@ struct CategoriesManagementView: View {
             )
             .navigationTransition(.zoom(sourceID: category.id, in: categoryNamespace))
         }
+        .task {
+            // Ten's button: straight into the form, once.
+            guard adding != nil, !startedAdding else { return }
+            startedAdding = true
+            // After the push that brought this list, or the sheet is dropped.
+            try? await Task.sleep(for: .milliseconds(450))
+            if adding?.income == true { selectedType = .income }
+            showingAddCategory = true
+        }
         .sheet(isPresented: $showingAddCategory) {
             CategoryEditView(
                 categoriesViewModel: categoriesViewModel,
@@ -220,7 +233,8 @@ struct CategoriesManagementView: View {
                     transactionsViewModel.invalidateCaches()
                     showingAddCategory = false
                 },
-                onCancel: { showingAddCategory = false }
+                onCancel: { showingAddCategory = false },
+                prefill: adding
             )
             .presentationDetents([.large])
             .presentationDragIndicator(.visible)

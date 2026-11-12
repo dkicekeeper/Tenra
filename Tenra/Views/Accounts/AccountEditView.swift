@@ -17,6 +17,8 @@ struct AccountEditView: View {
     /// Optional toolbar action — when set (edit mode), shows a "Convert to deposit"
     /// button. Caller closes this sheet and opens `DepositEditView` in conversion mode.
     var onConvertToDeposit: (() -> Void)? = nil
+    /// What the person told Ten about a new account: its fields start with it.
+    var prefill: AgentFormPrefill? = nil
 
     @State private var name: String = ""
     @State private var balanceText: String = ""
@@ -106,6 +108,11 @@ struct AccountEditView: View {
                 currency = transactionsViewModel.appSettings.baseCurrency
                 selectedIconSource = nil
                 balanceText = ""
+                if let prefill {
+                    name = prefill.name ?? ""
+                    if let code = prefill.currency { currency = code }
+                    if let amount = prefill.amount { balanceText = AmountInputFormatting.bindingString(for: amount) }
+                }
             }
         }
     }

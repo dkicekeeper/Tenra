@@ -13,6 +13,10 @@ struct LoansListView: View {
     let loansViewModel: LoansViewModel
     let transactionsViewModel: TransactionsViewModel
     let balanceCoordinator: BalanceCoordinator
+    /// Set when Ten's "create" button opened this list (AssistantRoute.create): the form for a
+    /// new one opens once, through the list's own add path and its Pro gate, with these fields.
+    var adding: AgentFormPrefill? = nil
+    @State private var startedAdding = false
     @Environment(AppCoordinator.self) private var appCoordinator
     @Environment(TransactionStore.self) private var transactionStore
     @Environment(PremiumManager.self) private var premium
@@ -199,6 +203,14 @@ struct LoansListView: View {
         } message: {
             Text(String(localized: "loan.deleteMessage", defaultValue: "Payments made on this loan are real expenses on your bank accounts. You can keep them in history, or delete them along with the loan."))
         }
+        .task {
+            // Ten's button: straight into the form, once.
+            guard adding != nil, !startedAdding else { return }
+            startedAdding = true
+            // After the push that brought this list, or the sheet is dropped.
+            try? await Task.sleep(for: .milliseconds(450))
+            addLoan()
+        }
         .paywallSheet(isPresented: $showingPaywall, source: .loanAdd) {
             // After unlocking Pro, continue straight into the add-loan flow.
             showingAddLoan = true
@@ -210,7 +222,8 @@ struct LoansListView: View {
                 onSave: { newAccount in
                     loansViewModel.addLoanAccount(newAccount)
                     showingAddLoan = false
-                }
+                },
+                prefill: adding
             )
         }
         .sheet(isPresented: $showingPayAll) {

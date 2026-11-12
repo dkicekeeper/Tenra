@@ -17,6 +17,11 @@ another version.
 
 ## In this version (main since 2026-11-10)
 
+- Ten opens the app's own forms: asked to add an account, a deposit, a loan or a category (or
+  how to), it answers with a button that opens the form with what was said already filled in
+  (the bank, the amount, the rate, the term), and with buttons to the lists of Finances, a
+  goal, a debt, Settings, the backups and the Wallet guide. After build 77; needs the server
+  with prompt 2026-11-12.1.
 - A gate's paywall can come from its own RevenueCat placement (the identifier is the gate's
   `paywall_source`, [promotion-plan.md](promotion-plan.md) §2): no visible change until
   placements are set up in the dashboard.

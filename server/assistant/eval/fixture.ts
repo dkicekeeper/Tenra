@@ -267,6 +267,7 @@ export function appContext(locale: "ru" | "en"): string {
     `income categories: ${income}`,
     `assets: ${assets}`,
     "valuation: listings",
+    "screens: accounts, deposits, loans, goals, goal, debts, debt, settings, backups, wallet_guide, create (account, deposit, loan, category)",
     `facts you remember about the user: ${facts}`,
     `savings goals: ${goals}`,
     `open debts: ${debts}`,

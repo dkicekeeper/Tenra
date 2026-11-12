@@ -50,6 +50,9 @@ final class AssistantViewModel {
         var now: () -> Date = Date.init
         /// Whether the cloud answers in this country (RU and BY: no), learned from the server.
         var region = AssistantRegion()
+        /// The person agreed to the cloud mode: a complaint from the feedback talk then goes on
+        /// to the model by itself (`helpWithFeedback`).
+        var cloudConsent: () -> Bool = { UserDefaults.standard.bool(forKey: AssistantMetrics.consentKey) }
 
         static let unlimited = Access(isPro: { true }, loadUsage: { AssistantUsage() }, saveUsage: { _ in })
     }
@@ -137,6 +140,11 @@ final class AssistantViewModel {
     private(set) var openingQuestions: [String] = []
     /// Where the short talk about Tenra itself stands (`startFeedback`); nil in an ordinary chat.
     private(set) var feedbackStep: FeedbackStep?
+    /// A complaint that went to the owner while the cloud was not allowed: "Help me with it"
+    /// stands over the field and asks for the consent.
+    private(set) var feedbackHelpOffer: FeedbackHelp?
+    /// Ten has answered a complaint: "That helped" and "Still not solved" stand over the field.
+    private(set) var feedbackFollowUp: FeedbackHelp?
     /// The latest kept threads but the open one, for the history (at most `recentLimit`).
     private(set) var recentThreads: [AgentThreadSummary] = []
     /// The free allowance; nil with Pro.
@@ -181,6 +189,8 @@ final class AssistantViewModel {
     @ObservationIgnored private var feedbackTransport: AgentFeedbackTransport?
     @ObservationIgnored private var feedbackSource: AgentFeedbackMessage.Source = .notice
     @ObservationIgnored private var feedbackSent: ((AgentFeedbackMessage.Mood?) -> Void)?
+    /// The complaint the turn in flight helps with: that turn spends no free answer.
+    @ObservationIgnored private var feedbackHelping: FeedbackHelp?
 
     init(
         conversation: AgentConversation,
@@ -297,6 +307,9 @@ final class AssistantViewModel {
         feedbackStep = nil
         feedbackTransport = nil
         feedbackSent = nil
+        feedbackHelpOffer = nil
+        feedbackFollowUp = nil
+        feedbackHelping = nil
         failedEntryId = nil
         streamingReply = []
         drafts?.clear()
@@ -404,7 +417,9 @@ final class AssistantViewModel {
         // Where the cloud does not answer (RU, BY) every suggestion would be a question.
         // The feedback talk's two answers are not questions to the cloud: they show everywhere.
         if feedbackStep == .mood { return phase == .idle ? [Self.feedbackLike, Self.feedbackDislike] : [] }
+        if feedbackFollowUp != nil { return phase == .idle ? [Self.feedbackHelped, Self.feedbackNotHelped] : [] }
         guard phase == .idle, !access.region.isOutOfRegion(now: access.now()) else { return [] }
+        if feedbackHelpOffer != nil { return [Self.feedbackHelp] }
         if entries.isEmpty { return openingQuestions }
         switch entries.last?.content {
         case .reply(let reply, _)?: return reply.suggestions
@@ -428,6 +443,25 @@ final class AssistantViewModel {
 
     static var feedbackLike: String { String(localized: "feedback.chat.like") }
     static var feedbackDislike: String { String(localized: "feedback.chat.dislike") }
+    static var feedbackHelp: String { String(localized: "feedback.chat.help") }
+    static var feedbackHelped: String { String(localized: "feedback.chat.helped") }
+    static var feedbackNotHelped: String { String(localized: "feedback.chat.notHelped") }
+
+    /// A complaint Ten may help with once it is with the owner (plan-ten-agent 4.3).
+    struct FeedbackHelp: Equatable {
+        var text: String
+        var mood: AgentFeedbackMessage.Mood?
+    }
+
+    /// The complaint for the model: a `<feedback>` block before the question.
+    static func feedbackNote(_ help: FeedbackHelp) -> String {
+        let fields: [String: JSONValue] = [
+            "mood": help.mood.map { JSONValue.string($0.rawValue) } ?? .null,
+            "sent_to_developer": .bool(true),
+            "text": .string(help.text),
+        ]
+        return "<feedback>\n\(JSONValue.object(fields).jsonString())\n</feedback>"
+    }
     /// A pause before Ten's next line, as someone typing an answer.
     static var feedbackPause: Duration = .milliseconds(700)
 
@@ -461,7 +495,8 @@ final class AssistantViewModel {
     }
 
     private func answerFeedback(_ text: String, step: FeedbackStep) async {
-        entries.append(Entry(id: UUID(), content: .question(text)))
+        let entry = Entry(id: UUID(), content: .question(text))
+        entries.append(entry)
         switch step {
         case .mood where text == Self.feedbackLike:
             await pauseThenSay(String(localized: "feedback.chat.askGood"), mood: .happy, next: .details(.good))
@@ -469,9 +504,9 @@ final class AssistantViewModel {
             await pauseThenSay(String(localized: "feedback.chat.askBad"), mood: .sad, next: .details(.bad))
         case .mood:
             // Typed instead of a chip: the words are the answer.
-            await sendFeedback(text, mood: nil)
+            await sendFeedback(text, mood: nil, entry: entry.id)
         case .details(let mood):
-            await sendFeedback(text, mood: mood)
+            await sendFeedback(text, mood: mood, entry: entry.id)
         }
     }
 
@@ -483,7 +518,7 @@ final class AssistantViewModel {
         say(text, mood: mood)
     }
 
-    private func sendFeedback(_ text: String, mood: AgentFeedbackMessage.Mood?) async {
+    private func sendFeedback(_ text: String, mood: AgentFeedbackMessage.Mood?, entry: UUID) async {
         guard let transport = feedbackTransport else {
             say(String(localized: "feedback.chat.failed"), mood: .sad)
             return
@@ -494,15 +529,52 @@ final class AssistantViewModel {
             phase = .idle
             // The talk is over; what is typed next is an ordinary message to Ten.
             feedbackStep = nil
+            // Kind words end here. A complaint Ten then tries to settle itself: at once when
+            // the cloud is allowed, else behind a chip that asks for the consent. Where the
+            // cloud does not answer (RU, BY) the thanks are all, as before.
+            let canHelp = mood != .good && !access.region.isOutOfRegion(now: access.now())
+            let helpsNow = canHelp && access.cloudConsent()
             // After a complaint Ten stays sorry; after kind words it is glad.
-            say(String(localized: "feedback.chat.thanks"), mood: mood == .bad ? .sad : .love)
+            if helpsNow {
+                say(String(localized: "feedback.chat.thanksLooking"), mood: .sad)
+            } else {
+                say(String(localized: "feedback.chat.thanks"), mood: mood == .bad ? .sad : .love)
+            }
             feedbackSent?(mood)
             feedbackSent = nil
+            let help = FeedbackHelp(text: text, mood: mood)
+            if helpsNow {
+                await helpWithFeedback(help, question: text, entry: entry)
+            } else if canHelp {
+                feedbackHelpOffer = help
+            }
         } catch {
             phase = .idle
             // The same question stands: the next message is tried again.
             feedbackStep = .details(mood)
             say(String(localized: "feedback.chat.failed"), mood: .sad)
+        }
+    }
+
+    /// The complaint goes to the model with a `<feedback>` block; the turn spends no free
+    /// answer. `entry` is the bubble a failure is marked on (and retried from).
+    private func helpWithFeedback(_ help: FeedbackHelp, question: String, entry: UUID) async {
+        unsentNotes.append(Self.feedbackNote(help))
+        feedbackHelping = help
+        await ask(question, entry: entry)
+    }
+
+    /// "That helped" or "Still not solved": the owner hears which (the same words again, with
+    /// `resolved`), and Ten answers either way.
+    private func answerFollowUp(_ help: FeedbackHelp, helped: Bool) async {
+        entries.append(Entry(id: UUID(), content: .question(helped ? Self.feedbackHelped : Self.feedbackNotHelped)))
+        _ = try? await feedbackTransport?.feedback(
+            AgentFeedbackMessage(text: help.text, mood: help.mood, source: feedbackSource, resolved: helped)
+        )
+        if helped {
+            say(String(localized: "feedback.chat.helpedReply"), mood: .happy)
+        } else {
+            say(String(localized: "feedback.chat.notHelpedReply"), mood: .sad)
         }
     }
 
@@ -563,6 +635,28 @@ final class AssistantViewModel {
         if let step = feedbackStep {
             await answerFeedback(text, step: step)
             return true
+        }
+        // After Ten's help with a complaint: one of the two chips closes it; anything else is
+        // an ordinary message.
+        if let followUp = feedbackFollowUp {
+            feedbackFollowUp = nil
+            if text == Self.feedbackHelped || text == Self.feedbackNotHelped {
+                await answerFollowUp(followUp, helped: text == Self.feedbackHelped)
+                return true
+            }
+        }
+        // "Help me with it" under the thanks: the complaint goes to the model once the cloud
+        // is allowed (false sends the caller to the consent, which sends the chip again).
+        if let offer = feedbackHelpOffer {
+            if text == Self.feedbackHelp {
+                guard cloudAllowed else { return false }
+                feedbackHelpOffer = nil
+                let entry = Entry(id: UUID(), content: .question(text))
+                entries.append(entry)
+                await helpWithFeedback(offer, question: text, entry: entry.id)
+                return true
+            }
+            feedbackHelpOffer = nil
         }
         if phoneMayAnswer, let operations = await draftOnPhone(text, spoken: spoken, cloudAllowed: cloudAllowed), let drafts {
             dropFailedQuestion()
@@ -718,7 +812,8 @@ final class AssistantViewModel {
             return
         }
         refreshAllowance()
-        if let allowance, allowance.isExhausted {
+        // Help with a complaint spends no free answer, and is given with none left.
+        if feedbackHelping == nil, let allowance, allowance.isExhausted {
             phase = .failed(.freeLimit)
             return
         }
@@ -758,7 +853,10 @@ final class AssistantViewModel {
             sentContext = current
             if let status { reportedDrafts = status.states }
             unsentNotes.removeFirst(min(attached.count, unsentNotes.count))
-            if !access.isPro() {
+            if let helped = feedbackHelping {
+                feedbackHelping = nil
+                feedbackFollowUp = helped
+            } else if !access.isPro() {
                 access.saveUsage(AssistantAllowance.recording(access.loadUsage(), now: access.now()))
                 refreshAllowance()
             }

@@ -52,6 +52,8 @@ nonisolated struct AgentFeedbackMessage: Sendable, Equatable {
     var text: String
     var mood: Mood?
     var source: Source
+    /// Sent again after Ten tried to help with the complaint: whether the person says it helped.
+    var resolved: Bool? = nil
 }
 
 /// The body of `POST /v1/feedback`: the words, and the versions that tell the owner where a
@@ -61,6 +63,7 @@ nonisolated struct AgentFeedbackRequest: Sendable, Encodable {
     let text: String
     let mood: String?
     let source: String
+    let resolved: Bool?
     let app: String
     let os: String
     let locale: String
@@ -194,6 +197,7 @@ nonisolated final class AgentServerClient: AgentTransport, AgentValuationTranspo
             text: message.text,
             mood: message.mood?.rawValue,
             source: message.source.rawValue,
+            resolved: message.resolved,
             app: AgentFeedbackRequest.appVersion,
             os: AgentFeedbackRequest.systemVersion,
             locale: AgentFeedbackRequest.appLanguage,

@@ -282,9 +282,19 @@ message leaves when the next opens (`Subjects.feedbackRound`). Its button is "Wr
 `AssistantView.start`): a new chat where Ten asks, with two chips over the field ("I like it",
 "Not really"); the chip becomes the person's message, Ten answers after a short pause with the
 next question (what else to add, or what went wrong and how to fix it), and the person's words go
-to `POST /v1/feedback` (§8). The talk is scripted on the phone: no model reads it, so it waits for
+to `POST /v1/feedback` (§8). The talk is scripted on the phone: it waits for
 no consent, spends no answer, works where turns are refused, and its lines are not kept with the
-threads. While it runs the field's placeholder asks for an answer (`feedback.chat.placeholder`),
+threads. **A complaint Ten then tries to settle** (`helpWithFeedback`; "Not really" or words typed
+instead of a chip, never after "I like it"): once the words are with the owner, and where the
+cloud answers, they go to the model as a `<feedback>` block (`feedbackNote`: mood, text) with the
+complaint as the question. With the cloud allowed (`Access.cloudConsent`) that happens at once
+(Ten says `feedback.chat.thanksLooking`); without it the chip "Help me with it" stands under the
+thanks and leads to the consent screen, and declining leaves the thanks as the end. The help turn
+spends no free answer on the phone and is given with none left (the server counts it as any
+turn). After Ten's reply two chips stand over the field, "That helped" and "Still not solved":
+either sends the same words again with `resolved` (§8), so the owner sees whether the problem
+is still there, and Ten answers with a line of its own; anything typed instead is an ordinary
+message. While it runs the field's placeholder asks for an answer (`feedback.chat.placeholder`),
 and after "Not really" Ten is sad (`AgentMood.sad`, set on the phone only) through its question
 and its thanks. Ten's lines are gender-neutral in every language (no "glad", no "he reads").
 Words typed instead of a chip are the answer (no mood). A failed send keeps the question
@@ -441,8 +451,9 @@ The app runs the agent loop, because the tools run on the phone: one server call
 
 What a person wrote to Ten about the app (`src/feedback.ts`, the app's `AgentFeedbackTransport`).
 The one place where the server keeps words, because they are written to be read. Body:
-`{"protocol": 1, "text", "mood"?: "good"|"bad", "source"?: "notice"|"survey"|"settings", "app",
-"os", "locale", "user"?}`, signed by App Attest like a turn. No model is called, so neither
+`{"protocol": 1, "text", "mood"?: "good"|"bad", "source"?: "notice"|"survey"|"settings",
+"resolved"?: bool (a follow-up after Ten's help: the same text, and whether it helped; Telegram
+shows "Ten helped" or "Ten did not help"), "app", "os", "locale", "user"?}`, signed by App Attest like a turn. No model is called, so neither
 `ASSISTANT_ENABLED` nor `BLOCKED_COUNTRIES` applies, and the App Attest routes are open the same
 way (an install in Russia registers its key to send feedback; its turns still answer 451).
 Limits: 16 KB, a text of 2 000 characters, 5 messages a day per App Attest key (429 `quota`).
@@ -545,9 +556,10 @@ spending, no em dashes, in all 11 languages.
   Settings → Assistant: switched on there, the same consent screen asks first
   (`SettingsAssistantSection.cloudToggle`), switched off it turns the cloud off at once. The App Privacy label lists what Ten sends (published 2026-10-18).
 - **Feedback is the person's own message to the owner**: Ten says where it goes when it asks
-  ("I will pass it on to the developer"); it carries no id, no records and no chat, and never
-  reaches Anthropic (§8).
-  The privacy policy has its line (2026-11-11). The server's "logs no content" holds for turns
+  ("I will pass it on to the developer"); it carries no id, no records and no chat. `POST
+  /v1/feedback` itself never reaches Anthropic (§8); a complaint goes on to the model, as a
+  question to Ten, only with the cloud allowed (owner's decision A1, 2026-11-12).
+  The privacy policy has its line (2026-11-12). The server's "logs no content" holds for turns
   and valuations; feedback is stored by design.
 - **Minimisation**: the cloud gets tool results, never the database; files and photos never leave
   the phone (§7). A record drafted on the phone before the person agreed to the cloud is never
@@ -636,11 +648,12 @@ spending, no em dashes, in all 11 languages.
 - **Pro for a person on the server**: the server sees only RevenueCat, so a Founding User (kept on
   the phone) needs `pro` granted there (Actions → RevenueCat → `grant`).
 - **Eval** (`server/assistant/eval/`): a synthetic user (`fixture.ts`; never real statements), a
-  tool simulator, 75 cases in Russian and English (`cases.ts`; help with the app: the 14 `ru-howto-*` and
+  tool simulator, 78 cases in Russian and English (`cases.ts`; help with the app: the 14 `ru-howto-*` and
   `en-howto-*`, whose `textHas` check wants the guide's steps named or whose `blockWith` wants the
   button; the forms: `ru-create-deposit`, `en-create-loan`, `ru-create-account`,
   `ru-create-category` (what was said is in `prefill`, nothing guessed, nothing drafted) and
-  `ru-goal-stays-draft`; the state line: `ru-state-backup`, `ru-state-capture`, `en-state-plan`
+  `ru-goal-stays-draft`; the state line: `ru-state-backup`, `ru-state-capture`, `en-state-plan`; a complaint from the feedback talk (`<feedback>`):
+  `ru-feedback-howto`, `ru-feedback-missing`, `en-feedback-defect`
   (the fixture is a free user with backups on the phone only and nothing captured); assets: `ru-asset-new`,
   `ru-asset-valuation`, `ru-asset-worth-asks`, `ru-asset-worth-listings`, `en-car-worth-listings`,
   `ru-car-worth-saved` (the car's characteristics are saved: no question), `ru-net-worth`,

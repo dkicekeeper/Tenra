@@ -2390,5 +2390,11 @@
 "feedback.chat.askGood" = "Harika! Başka ne isterdin? Ne eklenmeli ya da iyileştirilmeli?";
 "feedback.chat.askBad" = "Çok yazık. Tam olarak ne hoşuna gitmedi ve nasıl düzeltebiliriz?";
 "feedback.chat.thanks" = "Teşekkürler! Mesajın geliştiriciye ulaştı. Her mesaj okunuyor.";
+"feedback.chat.thanksLooking" = "Teşekkürler, mesajınız geliştiricide. Şimdi burada ne yapılabileceğine bakıyorum.";
+"feedback.chat.help" = "Bunda yardım et";
+"feedback.chat.helped" = "Yardımcı oldu";
+"feedback.chat.notHelped" = "Hâlâ çözülmedi";
+"feedback.chat.helpedReply" = "Güzel. Başka bir şey olursa buradayım.";
+"feedback.chat.notHelpedReply" = "Anlaşıldı. Geliştirici sorunun hâlâ çözülmediğini bilecek.";
 "feedback.chat.failed" = "Gönderilemedi. Bağlantını kontrol edip tekrar yaz.";
 "feedback.chat.placeholder" = "Yanıtını yaz…";

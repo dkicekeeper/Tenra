@@ -2390,5 +2390,11 @@
 "feedback.chat.askGood" = "Super ! Que souhaiteriez-vous de plus ? Que faut-il ajouter ou améliorer ?";
 "feedback.chat.askBad" = "Dommage. Qu’est-ce qui ne vous a pas plu, et comment pourrions-nous le corriger ?";
 "feedback.chat.thanks" = "Merci ! Votre message est chez le développeur. Chaque message est lu.";
+"feedback.chat.thanksLooking" = "Merci, le développeur a votre message. Je regarde tout de suite ce qui peut se faire ici.";
+"feedback.chat.help" = "Aide-moi avec ça";
+"feedback.chat.helped" = "Ça a aidé";
+"feedback.chat.notHelped" = "Toujours pas résolu";
+"feedback.chat.helpedReply" = "Tant mieux. Je reste là si besoin.";
+"feedback.chat.notHelpedReply" = "Compris. Le développeur saura que ce n’est pas encore résolu.";
 "feedback.chat.failed" = "Envoi impossible. Vérifiez votre connexion et écrivez à nouveau.";
 "feedback.chat.placeholder" = "Écrivez votre réponse…";

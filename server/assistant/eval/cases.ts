@@ -10,6 +10,10 @@ export interface EvalCase {
   checks: Check[];
 }
 
+// What the app sends with a complaint from the feedback talk, once it is with the owner
+// (AssistantViewModel.feedbackNote).
+const feedbackNote = (text: string) => ["<feedback>", JSON.stringify({ mood: "bad", sent_to_developer: true, text }), "</feedback>"].join("\n");
+
 // What the app sends after a statement attached in the chat (AgentAttachmentSummary.modelText):
 // figures only, nothing saved yet. Its amounts are not the user's words: the reply must not echo them.
 const STATEMENT_ATTACHMENT = [
@@ -732,6 +736,36 @@ export const CASES: EvalCase[] = [
     locale: "en",
     prompt: "How do I make Apple Pay payments log themselves?",
     checks: [{ kind: "blockWith", type: "open", match: (b) => b.destination === "wallet_guide", label: "opens the Wallet guide" }],
+  },
+  {
+    id: "ru-feedback-howto",
+    locale: "ru",
+    notes: [feedbackNote("Не понял, как завести депозит, всё перерыл")],
+    prompt: "Не понял, как завести депозит, всё перерыл",
+    checks: [
+      { kind: "notCalled", tools: DRAFTS },
+      { kind: "blockWith", type: "open", match: (b) => b.destination === "create" && b.kind === "deposit", label: "the deposit form" },
+    ],
+  },
+  {
+    id: "ru-feedback-missing",
+    locale: "ru",
+    notes: [feedbackNote("Нет синхронизации с банком, приходится всё вводить руками")],
+    prompt: "Помоги разобраться",
+    checks: [
+      { kind: "notCalled", tools: DRAFTS },
+      { kind: "textHas", groups: [["apple pay", "выписк", "уведомлен", "автозапис"], ["разработчик"]], label: "the nearest thing, and that the request is with the developer" },
+    ],
+  },
+  {
+    id: "en-feedback-defect",
+    locale: "en",
+    notes: [feedbackNote("The app crashed twice when I opened Analytics")],
+    prompt: "The app crashed twice when I opened Analytics",
+    checks: [
+      { kind: "notCalled", tools: DRAFTS },
+      { kind: "textHas", groups: [["developer"]], label: "says the developer has it" },
+    ],
   },
   {
     id: "ru-state-backup",

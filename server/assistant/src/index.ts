@@ -230,6 +230,7 @@ async function feedback(request: Request, env: Env, ctx: ExecutionContext, confi
     text: body.text,
     mood: body.mood,
     source: body.source,
+    resolved: body.resolved,
     app: body.app,
     os: body.os,
     locale: body.locale,

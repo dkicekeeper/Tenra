@@ -2390,5 +2390,11 @@
 "feedback.chat.askGood" = "Чудово! А чого ще хотілося б? Що додати чи покращити?";
 "feedback.chat.askBad" = "Шкода це чути. Що саме не сподобалося і як це виправити?";
 "feedback.chat.thanks" = "Дякую! Повідомлення у розробника. Кожне повідомлення читають.";
+"feedback.chat.thanksLooking" = "Дякую, повідомлення в розробника. Зараз подивлюся, чим можу допомогти просто тут.";
+"feedback.chat.help" = "Допоможи розібратися";
+"feedback.chat.helped" = "Допомогло";
+"feedback.chat.notHelped" = "Не допомогло";
+"feedback.chat.helpedReply" = "Чудово. Якщо що, я поруч.";
+"feedback.chat.notHelpedReply" = "Зрозуміло. Розробник дізнається, що питання лишилося.";
 "feedback.chat.failed" = "Не вдалося надіслати. Перевірте інтернет і напишіть ще раз.";
 "feedback.chat.placeholder" = "Напишіть відповідь…";

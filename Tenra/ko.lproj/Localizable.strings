@@ -2390,5 +2390,11 @@
 "feedback.chat.askGood" = "다행이에요! 더 바라는 점이 있나요? 추가하거나 개선할 점을 알려 주세요.";
 "feedback.chat.askBad" = "아쉽네요. 정확히 어떤 점이 불편했나요? 어떻게 고치면 좋을까요?";
 "feedback.chat.thanks" = "감사합니다! 메시지가 개발자에게 전달됐어요. 모든 메시지를 읽고 있어요.";
+"feedback.chat.thanksLooking" = "감사합니다. 메시지는 개발자에게 전달되었습니다. 지금 여기서 할 수 있는 일을 살펴볼게요.";
+"feedback.chat.help" = "해결을 도와줘";
+"feedback.chat.helped" = "도움이 됐어요";
+"feedback.chat.notHelped" = "아직 해결되지 않았어요";
+"feedback.chat.helpedReply" = "다행이에요. 다른 일이 생기면 여기 있을게요.";
+"feedback.chat.notHelpedReply" = "알겠습니다. 아직 해결되지 않았다고 개발자에게 전할게요.";
 "feedback.chat.failed" = "보내지 못했어요. 연결을 확인하고 다시 써 주세요.";
 "feedback.chat.placeholder" = "답변을 입력하세요…";

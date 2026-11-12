@@ -15,8 +15,8 @@
 //
 //  Ten shows what is going on: thinking while it runs tools, answering while it writes, the
 //  reply's mood after, confused or sad when a question could not be answered; its reactions
-//  play their haptics (DesignKit 5.3.0). Until the first word of a reply it "types"
-//  (TypingIndicator). The reply's text streams in as the model writes it
+//  play their haptics (DesignKit 5.3.0). Until the first word of a reply the step it is on
+//  shimmers under the thread (no typing dots: owner's decision, 2026-11-12). The reply's text streams in as the model writes it
 //  (AssistantStreamingReply) and can be selected and copied. A question sent here enters as a
 //  message does (`.messageBubble`); the history the chat opened with does not move.
 //
@@ -249,12 +249,9 @@ struct AssistantChatView: View {
         if model.isWorking, !model.streamingReply.isEmpty {
             AssistantStreamingReply(texts: model.streamingReply)
         } else if case .working(let step) = model.phase {
-            // Ten "types" until the reply's first word, over the step it is on.
-            VStack(alignment: .leading, spacing: AppSpacing.sm) {
-                TypingIndicator()
-                workingRow(step.title)
-            }
-            .transition(.opacity)
+            // Until the reply's first word: the step Ten is on, shimmering.
+            workingRow(step.title)
+                .transition(.opacity)
         } else if readingAttachment {
             workingRow(String(localized: "assistant.attachment.reading"))
                 .transition(.opacity)

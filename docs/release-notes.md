@@ -21,10 +21,15 @@ another version.
   how to), it answers with a button that opens the form with what was said already filled in
   (the bank, the amount, the rate, the term), and with buttons to the lists of Finances, a
   goal, a debt, Settings, the backups and the Wallet guide. After build 77; needs the server
-  with prompt 2026-11-12.3.
+  with prompt 2026-11-12.3 (deployed 2026-11-12).
 - Ten knows how the app is set up for the person (the plan, the free accounts used, automatic
   capture, backups, the spending reminder, budgets), so its help is about them: "the weekly
   backup is on, but the copies stay on this phone". After build 78; same server.
+- Ten helps with a complaint: after "Not really" in the feedback talk, once the words are with
+  the developer, Ten tries to settle the problem itself (opens the form, checks the data, names
+  the nearest thing Tenra has), then asks whether it helped. With cloud answers off it offers to
+  help first. Needs the server with prompt 2026-11-12.4.
+- Ten's chat: the three typing dots are gone; while Ten works, the step it is on shimmers.
 - Converting an account to a deposit from the account's own screen asks for Tenra Pro, as the
   accounts list already did.
 - A gate's paywall can come from its own RevenueCat placement (the identifier is the gate's

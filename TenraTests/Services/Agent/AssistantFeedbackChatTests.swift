@@ -27,9 +27,29 @@ struct AssistantFeedbackChatTests {
         }
     }
 
-    private func makeModel(_ transport: ScriptedTransport = ScriptedTransport([])) -> AssistantViewModel {
+    private func makeModel(_ transport: ScriptedTransport = ScriptedTransport([]), cloudConsent: Bool = false) -> AssistantViewModel {
         AssistantViewModel.feedbackPause = .zero
-        return AssistantViewModel(conversation: AgentConversation(transport: transport, toolkit: FakeToolkit()), context: { "" })
+        var access = AssistantViewModel.Access.unlimited
+        access.cloudConsent = { cloudConsent }
+        return AssistantViewModel(
+            conversation: AgentConversation(transport: transport, toolkit: FakeToolkit()),
+            context: { "" },
+            access: access
+        )
+    }
+
+    /// One reply of the model: a line of text.
+    private static let helpReply: [[AgentStreamEvent]] = [[AgentScript.done([
+        AgentScript.toolUse("toolu_1", "render_reply", [
+            "blocks": [["type": "text", "text": "Откройте форму депозита"]],
+            "mood": "idle",
+            "suggestions": .array([]),
+        ]),
+    ])]]
+
+    private func sentToModel(_ transport: ScriptedTransport) -> String {
+        guard let call = transport.calls.first, let data = try? JSONEncoder().encode(call) else { return "" }
+        return String(decoding: data, as: UTF8.self)
     }
 
     private func lastLine(_ model: AssistantViewModel) -> String? {
@@ -122,6 +142,70 @@ struct AssistantFeedbackChatTests {
         await model.send("The app is slow")
         #expect(outbox.sent.count == 1)
         #expect(sent)
+    }
+
+    // MARK: - Ten helps with a complaint (plan-ten-agent 4.3)
+
+    @Test func withTheCloudAllowedTenHelpsAtOnce() async {
+        let outbox = Outbox()
+        let transport = ScriptedTransport(Self.helpReply)
+        let model = makeModel(transport, cloudConsent: true)
+        model.startFeedback(source: .notice, transport: outbox)
+        await model.send(AssistantViewModel.feedbackDislike)
+
+        await model.send("I cannot find where deposits are")
+        // The owner has the words, and the model got them in a <feedback> block.
+        #expect(outbox.sent == [AgentFeedbackMessage(text: "I cannot find where deposits are", mood: .bad, source: .notice)])
+        #expect(transport.calls.count == 1)
+        #expect(sentToModel(transport).contains("<feedback>"))
+        #expect(model.phase == .idle)
+        #expect(lastLine(model) == "Откройте форму депозита")
+        #expect(model.suggestions == [AssistantViewModel.feedbackHelped, AssistantViewModel.feedbackNotHelped])
+
+        await model.send(AssistantViewModel.feedbackNotHelped)
+        #expect(outbox.sent.last == AgentFeedbackMessage(text: "I cannot find where deposits are", mood: .bad, source: .notice, resolved: false))
+        #expect(lastLine(model) == String(localized: "feedback.chat.notHelpedReply"))
+        #expect(model.suggestions.isEmpty)
+        // The chip went to the owner, not to the model.
+        #expect(transport.calls.count == 1)
+    }
+
+    @Test func withoutTheCloudTenOffersHelpAndWaitsForTheConsent() async {
+        let outbox = Outbox()
+        let transport = ScriptedTransport(Self.helpReply)
+        let model = makeModel(transport)
+        model.startFeedback(source: .notice, transport: outbox)
+        await model.send(AssistantViewModel.feedbackDislike)
+
+        await model.send("I cannot find where deposits are")
+        #expect(lastLine(model) == String(localized: "feedback.chat.thanks"))
+        #expect(model.suggestions == [AssistantViewModel.feedbackHelp])
+        #expect(transport.calls.isEmpty)
+
+        // Not allowed yet: nothing goes, the caller shows the consent and sends the chip again.
+        #expect(await model.send(AssistantViewModel.feedbackHelp, cloudAllowed: false) == false)
+        #expect(transport.calls.isEmpty)
+        #expect(model.suggestions == [AssistantViewModel.feedbackHelp])
+
+        #expect(await model.send(AssistantViewModel.feedbackHelp, cloudAllowed: true))
+        #expect(transport.calls.count == 1)
+        #expect(sentToModel(transport).contains("I cannot find where deposits are"))
+        #expect(model.suggestions == [AssistantViewModel.feedbackHelped, AssistantViewModel.feedbackNotHelped])
+
+        await model.send(AssistantViewModel.feedbackHelped)
+        #expect(outbox.sent.last?.resolved == true)
+        #expect(lastLine(model) == String(localized: "feedback.chat.helpedReply"))
+    }
+
+    @Test func kindWordsEndWithTheThanks() async {
+        let transport = ScriptedTransport(Self.helpReply)
+        let model = makeModel(transport, cloudConsent: true)
+        model.startFeedback(source: .notice, transport: Outbox())
+        await model.send(AssistantViewModel.feedbackLike)
+        await model.send("A widget with the balance")
+        #expect(lastLine(model) == String(localized: "feedback.chat.thanks"))
+        #expect(model.suggestions.isEmpty)
+        #expect(transport.calls.isEmpty)
     }
 
     @Test func aNewChatEndsTheTalk() async {

@@ -30,7 +30,11 @@ const stored = (kv: MemoryKV) => [...kv.store.entries()].filter(([key]) => key.s
 describe("feedback request", () => {
   it("keeps the words and the short facts, and drops what it does not know", () => {
     const parsed = parseFeedbackRequest(payload({ text: "  Нравится  ", mood: "good", source: "notice", app: "1.8.3 (77)", os: "27.0", locale: "ru-KZ", extra: 1 }));
-    expect(parsed).toEqual({ text: "Нравится", mood: "good", source: "notice", app: "1.8.3 (77)", os: "27.0", locale: "ru-KZ", user: undefined });
+    expect(parsed).toEqual({ text: "Нравится", mood: "good", source: "notice", resolved: undefined, app: "1.8.3 (77)", os: "27.0", locale: "ru-KZ", user: undefined });
+    // A follow-up after Ten's help says whether it settled the complaint.
+    expect(parseFeedbackRequest(payload({ text: "Не нашёл депозит", mood: "bad", resolved: true })).resolved).toBe(true);
+    expect(parseFeedbackRequest(payload({ resolved: "yes" })).resolved).toBeUndefined();
+    expect(telegramText({ at: "2026-11-12T10:00:00Z", text: "Не нашёл депозит", mood: "bad", resolved: false })).toMatch(/^❌ Ten did not help: Не нашёл депозит/);
     const odd = parseFeedbackRequest(payload({ mood: "meh", source: "elsewhere", app: "<script>", os: "x", locale: "!!" }));
     expect(odd).toMatchObject({ mood: undefined, source: undefined, app: undefined, os: undefined, locale: undefined });
   });

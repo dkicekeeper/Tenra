@@ -26,6 +26,8 @@ export interface FeedbackRequest {
   text: string;
   mood?: Mood;
   source?: string;
+  /** Sent again after Ten tried to help with it: whether the person says it helped. */
+  resolved?: boolean;
   /** The app's version, the system's, and the app's language, as short plain strings. */
   app?: string;
   os?: string;
@@ -39,6 +41,7 @@ export interface FeedbackRecord {
   text: string;
   mood?: Mood;
   source?: string;
+  resolved?: boolean;
   app?: string;
   os?: string;
   locale?: string;
@@ -68,6 +71,7 @@ export function parseFeedbackRequest(raw: string): FeedbackRequest {
     text,
     mood: body.mood === "good" || body.mood === "bad" ? body.mood : undefined,
     source: typeof body.source === "string" && SOURCES.has(body.source) ? body.source : undefined,
+    resolved: typeof body.resolved === "boolean" ? body.resolved : undefined,
     app: short(body.app, /^[0-9][0-9A-Za-z.() ]{0,23}$/),
     os: short(body.os, /^[0-9][0-9.]{0,11}$/),
     locale: short(body.locale, /^[A-Za-z]{2,3}([-_][A-Za-z0-9]{2,8}){0,2}$/),
@@ -95,7 +99,9 @@ export async function storeFeedback(kv: KVLike, record: FeedbackRecord): Promise
 
 /** The message as the owner reads it in Telegram: the words first, then where they came from. */
 export function telegramText(record: FeedbackRecord): string {
-  const mood = record.mood === "good" ? "👍" : record.mood === "bad" ? "👎" : "💬";
+  // A follow-up carries the same words again, with whether Ten's help settled it.
+  const mood =
+    record.resolved === true ? "✅ Ten helped:" : record.resolved === false ? "❌ Ten did not help:" : record.mood === "good" ? "👍" : record.mood === "bad" ? "👎" : "💬";
   const facts = [
     record.app && `Tenra ${record.app}`,
     record.os && `iOS ${record.os}`,

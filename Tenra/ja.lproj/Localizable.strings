@@ -2390,5 +2390,11 @@
 "feedback.chat.askGood" = "うれしいです！ほかに欲しい機能はありますか？追加や改善してほしい点を教えてください。";
 "feedback.chat.askBad" = "残念です。具体的に何が良くなかったですか？どうすれば直せるでしょうか？";
 "feedback.chat.thanks" = "ありがとうございます！メッセージは開発者に届きました。すべてのメッセージが読まれています。";
+"feedback.chat.thanksLooking" = "ありがとうございます。メッセージは開発者に届きました。今ここでできることを確認します。";
+"feedback.chat.help" = "解決を手伝って";
+"feedback.chat.helped" = "解決した";
+"feedback.chat.notHelped" = "まだ解決していない";
+"feedback.chat.helpedReply" = "よかったです。ほかにも何かあれば、ここにいます。";
+"feedback.chat.notHelpedReply" = "わかりました。まだ解決していないことを開発者に伝えます。";
 "feedback.chat.failed" = "送信できませんでした。接続を確認して、もう一度書いてください。";
 "feedback.chat.placeholder" = "回答を入力…";

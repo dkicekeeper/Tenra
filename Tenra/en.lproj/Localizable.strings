@@ -2390,5 +2390,11 @@
 "feedback.chat.askGood" = "Great! What else would you like? What should be added or made better?";
 "feedback.chat.askBad" = "That is a pity. What exactly went wrong, and how could we fix it?";
 "feedback.chat.thanks" = "Thank you! Your message is with the developer. Every message gets read.";
+"feedback.chat.thanksLooking" = "Thank you, the developer has your message. Let me see what I can do about it right now.";
+"feedback.chat.help" = "Help me with it";
+"feedback.chat.helped" = "That helped";
+"feedback.chat.notHelped" = "Still not solved";
+"feedback.chat.helpedReply" = "Good to hear. I am here if anything else comes up.";
+"feedback.chat.notHelpedReply" = "Understood. The developer will know it is still not solved.";
 "feedback.chat.failed" = "The message did not go. Check your connection and write again.";
 "feedback.chat.placeholder" = "Write your answer…";

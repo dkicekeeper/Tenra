@@ -8,8 +8,13 @@ name: Assistant server
 # Repository secrets used by the manual jobs:
 #   CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID  deploy
 #   ANTHROPIC_API_KEY, REVENUECAT_SECRET_KEY     uploaded to the Worker on deploy
-#   TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID         optional, uploaded on deploy: feedback messages
-#                                                (POST /v1/feedback) also go to that chat
+#   TELEGRAM_BOT_TOKEN                           optional, uploaded on deploy: feedback messages
+#                                                (POST /v1/feedback) also go to the owner's chat
+#                                                with that bot. The chat is linked once: write
+#                                                anything to the bot, then run "telegram-link"
+#                                                (it stores the chat's id on the Worker).
+#   TELEGRAM_CHAT_ID                             optional: a numeric chat id, uploaded on deploy
+#                                                in place of the linked one
 #   ANTHROPIC_EVAL_API_KEY                       eval, eval-valuation: a key of the separate
 #                                                "Tenra eval" workspace in the Anthropic Console,
 #                                                with its own spend limit, so an eval never spends
@@ -29,7 +34,7 @@ on:
       action:
         description: "What to run"
         type: choice
-        options: [test, deploy, feedback-check, eval, eval-valuation]
+        options: [test, deploy, feedback-check, telegram-link, eval, eval-valuation]
         default: test
       models:
         description: "eval, eval-valuation: comma-separated model ids (the valuation eval is usually claude-haiku-5-5,claude-sonnet-5-5)"
@@ -101,12 +106,18 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
-          if [ -z "$TELEGRAM_BOT_TOKEN" ] || [ -z "$TELEGRAM_CHAT_ID" ]; then
-            echo "No TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID repository secrets: feedback stays in KV only."
+          if [ -z "$TELEGRAM_BOT_TOKEN" ]; then
+            echo "No TELEGRAM_BOT_TOKEN repository secret: feedback stays in KV only."
             exit 0
           fi
           printf '%s' "$TELEGRAM_BOT_TOKEN" | npx wrangler secret put TELEGRAM_BOT_TOKEN
-          printf '%s' "$TELEGRAM_CHAT_ID" | npx wrangler secret put TELEGRAM_CHAT_ID
+          # Only a numeric id is a chat the bot can write to (a bot's own @name is not). Anything
+          # else keeps the chat that "telegram-link" stored on the Worker.
+          if printf '%s' "$TELEGRAM_CHAT_ID" | grep -Eq '^-?[0-9]+$'; then
+            printf '%s' "$TELEGRAM_CHAT_ID" | npx wrangler secret put TELEGRAM_CHAT_ID
+          else
+            echo "TELEGRAM_CHAT_ID is not a numeric id: the linked chat stays."
+          fi
 
   # Why does feedback not reach Telegram? Says how many messages the server holds and when the
   # last came (never their text: these logs are public), and sends a test line to the owner's
@@ -168,6 +179,58 @@ jobs:
           print("sendMessage:", status, body.get("description", "ok"))
           sys.exit(0 if status == 200 else 1)
           PY
+
+  # Links the owner's chat to the feedback bot: takes the private chat that wrote to the bot last
+  # (within Telegram's 24 hours), sends it a test line and stores its id as the Worker's
+  # TELEGRAM_CHAT_ID. The id is never printed: these logs are public.
+  telegram-link:
+    if: github.event_name == 'workflow_dispatch' && inputs.action == 'telegram-link'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: server/assistant/package-lock.json
+      - run: npm ci
+      - name: Find the chat, test it, store it on the Worker
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        run: |
+          python3 - > "$RUNNER_TEMP/chat" <<'PY'
+          import json, os, sys, urllib.error, urllib.request
+          token = os.environ["TELEGRAM_BOT_TOKEN"].strip()
+          def call(method, payload=None):
+              request = urllib.request.Request(
+                  f"https://api.telegram.org/bot{token}/{method}",
+                  data=json.dumps(payload).encode() if payload else None,
+                  headers={"content-type": "application/json"})
+              try:
+                  with urllib.request.urlopen(request, timeout=20) as response:
+                      return response.status, json.load(response)
+              except urllib.error.HTTPError as error:
+                  return error.code, json.load(error)
+          status, body = call("getUpdates")
+          if status != 200:
+              sys.exit(f"getUpdates: {status} {body.get('description')}")
+          chats = [u["message"]["chat"] for u in body["result"]
+                   if u.get("message", {}).get("chat", {}).get("type") == "private"]
+          print(f"updates: {len(body['result'])}, private chats: {len({c['id'] for c in chats})}", file=sys.stderr)
+          if not chats:
+              sys.exit("Nobody wrote to the bot in the last 24 hours: open the bot, press Start, write a word, run again.")
+          chat = chats[-1]["id"]
+          status, body = call("sendMessage", {"chat_id": chat, "text": "Tenra: этот чат получает обратную связь из приложения."})
+          print("sendMessage:", status, body.get("description", "ok"), file=sys.stderr)
+          if status != 200:
+              sys.exit(1)
+          print(chat, end="")
+          PY
+          npx wrangler secret put TELEGRAM_CHAT_ID < "$RUNNER_TEMP/chat"
+          rm "$RUNNER_TEMP/chat"
 
   eval:
     if: github.event_name == 'workflow_dispatch' && inputs.action == 'eval'

@@ -429,7 +429,10 @@ The record is kept in KV under `feedback:<ISO time>:<id>` for a year: the text, 
 versions, language, the request's country and Pro or free (looked up by the signed `user`, which
 is not stored; RevenueCat down drops only that field). With the secrets `TELEGRAM_BOT_TOKEN` and
 `TELEGRAM_CHAT_ID` set, the message also goes to that chat (`notifyOwner`; a failure logs the
-status only). Reading without Telegram: `npx wrangler kv key list --binding QUOTA --prefix
+status only). The chat id is a number, never the bot's `@name`. It is linked without typing it:
+write anything to the bot, then run Actions → Assistant server → `telegram-link`, which finds
+the chat, sends it a test line and stores its id on the Worker. `feedback-check` says how many
+messages the server keeps and what Telegram answers to a test line. Reading without Telegram: `npx wrangler kv key list --binding QUOTA --prefix
 feedback:` and `kv key get`, never through Actions (its logs are public).
 
 ### Valuation from listings (`POST /v1/valuation`)

@@ -7,8 +7,8 @@ its notes and checklist: [archive/release-notes-1.8.2.md](archive/release-notes-
 **Status 2026-11-12:** the changes below are in `main` (Tenra#160, Tenra#161, then Ten's forms,
 state line, help with complaints, the entries and editing and deleting records, at f3900c7),
 TestFlight build
-81 is processed (from the cloud, `main` at 1401e23), the server with `POST /v1/feedback` and
-prompt 2026-11-12.7 is deployed and the owner's Telegram chat is linked (`telegram-link`, a test line arrived 12.11), the What's New blocks for the 13 storefronts and en-GB are not
+82 is processed (from the cloud, `main` at 9127145), the server with `POST /v1/feedback` and
+prompt 2026-11-12.9 is deployed and the owner's Telegram chat is linked (`telegram-link`, a test line arrived 12.11), the What's New blocks for the 13 storefronts and en-GB are not
 written, the phone checks are not done.
 
 When the blocks are written: one `## <locale>` heading per storefront (en-US, ru, en-GB, de-DE,
@@ -38,8 +38,7 @@ another version.
 - "Put everything from Glovo under Groceries": Ten moves all records of a merchant (up to 50)
   to another category with one card. In build 81.
 - Ten changes a goal (name, target, deadline) and a debt (due date, note, settled) with a card
-  that shows what it is and what it becomes. Needs the server with prompt 2026-11-12.9. After
-  build 81.
+  that shows what it is and what it becomes. In build 82.
 - "Put Spotify on hold": Ten pauses or resumes a subscription with a card. Needs the server
   with prompt 2026-11-12.11. After build 82.
 - Ten knows the terms of loans and deposits: the rate, the monthly payment and its day, the
@@ -167,8 +166,8 @@ out; the store build is the one to check):
 
 ## Submission checklist
 
-1. **CI green**, then a TestFlight build (done: build 81 from 1401e23, 2026-11-12; CI green on
-   that commit).
+1. **CI green**, then a TestFlight build (done: build 82 from 9127145, 2026-11-12; CI green on
+   fab588d, the last commit that touched the app).
 2. **The phone checks above.**
 3. **What's New** in this file, then `prepare-version --version 1.8.3 --build <N>`.
 4. **One submission**: `asc.py prepare-review --version 1.8.3`; the founder sends it, or

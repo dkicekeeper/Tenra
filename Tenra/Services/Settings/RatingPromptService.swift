@@ -18,6 +18,9 @@
 //    BEFORE the native StoreKit prompt, so only satisfied users reach the rating UI.
 //  • The native prompt itself goes through Apple's official `AppStore.requestReview(in:)`,
 //    which Apple throttles to at most 3×/365 days regardless of how often we call it.
+//  • The survey stays away while Ten's "How do you like Tenra?" waits on Home, and for the
+//    version in which the person opened Ten's feedback talk (docs/domains/assistant.md §6): the
+//    talk asks the same question and ends in the native prompt for someone who likes Tenra.
 //  • The survey is presented only when no other sheet is on screen (most saves happen
 //    inside a modal) and at most once per version — shown counts as asked, even if the
 //    user swipes it away.
@@ -117,6 +120,9 @@ final class RatingPromptService {
         guard OnboardingState.isCompleted else { return false }
         // Already prompted on this version — don't ask again.
         guard defaults.string(forKey: Key.lastPromptedVersion) != appVersion else { return false }
+        // Ten is already asking the same on Home (FeedbackAsk): one question, not two. Its talk
+        // leads someone who likes Tenra to Apple's prompt.
+        guard !AssistantInbox.shared.unread.contains(where: { $0.kind == .feedback }) else { return false }
         let days = (defaults.object(forKey: Key.installDate) as? Date)
             .map { Date().timeIntervalSince($0) / 86_400 } ?? 0
         return Self.meetsThresholds(

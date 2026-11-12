@@ -376,12 +376,19 @@ struct AssistantView: View {
         let started = model.startFeedback(source: source, transport: transport) { mood in
             AssistantInbox.shared.markRead(notice.id)
             if mood == .good, source != .survey {
-                RatingPromptService.shared.requestNativeReview()
+                // Once Ten's thanks have been read, not over them.
+                Task {
+                    try? await Task.sleep(for: .seconds(2))
+                    RatingPromptService.shared.requestNativeReview()
+                }
             }
         }
         if started {
             topicQuestions = []
             draft = ""
+            // The talk asks what the rating survey asks: the survey's sheet must not come up
+            // over it while the person is typing, nor again on this version.
+            RatingPromptService.shared.markPromptedThisVersion()
         }
         showChat()
     }

@@ -274,7 +274,10 @@ and after "Not really" Ten is sad (`AgentMood.sad`, set on the phone only) throu
 and its thanks. Ten's lines are gender-neutral in every language (no "glad", no "he reads").
 Words typed instead of a chip are the answer (no mood). A failed send keeps the question
 open and Ten says so. Once sent, Ten thanks, the Home message is marked read, and "I like it" asks
-Apple for the rating prompt (`RatingPromptService.requestNativeReview`); what is typed next is an
+Apple for the rating prompt two seconds after the thanks
+(`RatingPromptService.requestNativeReview`). The rating survey never comes up over the talk:
+opening the talk counts as this version's survey (`markPromptedThisVersion`), and the survey is
+not eligible while the feedback message waits unread on Home (`RatingPromptService.isEligible`); what is typed next is an
 ordinary message. The rating survey's "not really" opens the same talk with the first question
 skipped (source `survey`, `AssistantNotices.feedbackAfterSurvey`) where it used to open an
 e-mail; the e-mail stays as the fallback without a server or App Attest
@@ -426,7 +429,10 @@ The record is kept in KV under `feedback:<ISO time>:<id>` for a year: the text, 
 versions, language, the request's country and Pro or free (looked up by the signed `user`, which
 is not stored; RevenueCat down drops only that field). With the secrets `TELEGRAM_BOT_TOKEN` and
 `TELEGRAM_CHAT_ID` set, the message also goes to that chat (`notifyOwner`; a failure logs the
-status only). Reading without Telegram: `npx wrangler kv key list --binding QUOTA --prefix
+status only). The chat id is a number, never the bot's `@name`. It is linked without typing it:
+write anything to the bot, then run Actions → Assistant server → `telegram-link`, which finds
+the chat, sends it a test line and stores its id on the Worker. `feedback-check` says how many
+messages the server keeps and what Telegram answers to a test line. Reading without Telegram: `npx wrangler kv key list --binding QUOTA --prefix
 feedback:` and `kv key get`, never through Actions (its logs are public).
 
 ### Valuation from listings (`POST /v1/valuation`)

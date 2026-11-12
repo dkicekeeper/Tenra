@@ -5,9 +5,10 @@ kept for the update the featuring nomination promises in the last week of Decemb
 [plan-growth.md](plan-growth.md) stage 4). 1.8.2 is in the store since 2026-11-10/11 (build 76;
 its notes and checklist: [archive/release-notes-1.8.2.md](archive/release-notes-1.8.2.md)).
 **Status 2026-11-12:** the changes below are in `main` (Tenra#160, Tenra#161, then Ten's forms,
-state line and help with complaints, at aa80b93), TestFlight build
-79 is processed (from the cloud, `main` at aa80b93), the server with `POST /v1/feedback` and
-prompt 2026-11-12.4 is deployed and the owner's Telegram chat is linked (`telegram-link`, a test line arrived 12.11), the What's New blocks for the 13 storefronts and en-GB are not
+state line, help with complaints, the entries and editing and deleting records, at f3900c7),
+TestFlight build
+80 is processed (from the cloud, `main` at f3900c7), the server with `POST /v1/feedback` and
+prompt 2026-11-12.5 is deployed and the owner's Telegram chat is linked (`telegram-link`, a test line arrived 12.11), the What's New blocks for the 13 storefronts and en-GB are not
 written, the phone checks are not done.
 
 When the blocks are written: one `## <locale>` heading per storefront (en-US, ru, en-GB, de-DE,
@@ -33,7 +34,7 @@ another version.
 - Ten changes what is saved: "the freelance income on the 24th was 170 000, fix it" or "delete
   the Steam purchase" gets a card with the record as it is and as it becomes (or the records
   that go), saved or deleted with one tap and undone with another. Transfers and loan or deposit
-  records stay in History. Needs the server with prompt 2026-11-12.5. After build 79.
+  records stay in History. Needs the server with prompt 2026-11-12.5 (deployed 2026-11-12). In build 80.
 - Settings › Assistant has "Ask Ten about the app", and Ten's home puts first the "how to"
   questions for what the person has not set up yet (automatic capture, a first budget, a backup
   in iCloud). After build 79.
@@ -116,6 +117,14 @@ mid-answer.
    or "Ten did not help". The help spends no free answer. With cloud answers off: the thanks,
    then the chip "Помоги разобраться", which opens the consent screen and goes on after "Turn
    on". After "Нравится" nothing changes.
+11. Ten changes what is saved (build 80): "Вчерашний кофе был на 1 800, исправь" finds the
+    record and shows a card with "Было" and "Станет"; "Сохранить" changes it in History, "Отмена"
+    puts it back. "Удали вчерашний кофе" shows the record and "Удалить"; "Отмена" returns it
+    with its subcategory. A transfer or a loan payment is refused with a button to History.
+    Balances of the account move with the change and back with the undo.
+12. Settings › Assistant, "Спросить Тэна о приложении" opens Ten with three how-to questions;
+    Ten's home starts with the questions for what is not set up (automatic capture, a first
+    budget, a backup in iCloud).
 10. "Convert to deposit" in an account's "…" menu as a free person opens the paywall; after a
     purchase the conversion form opens.
 
@@ -144,7 +153,7 @@ out; the store build is the one to check):
 
 ## Submission checklist
 
-1. **CI green**, then a TestFlight build (done: build 79 from aa80b93, 2026-11-12; CI green on
+1. **CI green**, then a TestFlight build (done: build 80 from f3900c7, 2026-11-12; CI green on
    that commit).
 2. **The phone checks above.**
 3. **What's New** in this file, then `prepare-version --version 1.8.3 --build <N>`.

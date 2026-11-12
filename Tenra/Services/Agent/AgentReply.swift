@@ -173,8 +173,16 @@ nonisolated enum AgentBlock: Sendable, Equatable, Decodable {
         case "confirm":
             self = .confirm(draftId: try c.decode(String.self, forKey: .draftId))
         case "open" where (try? c.decode(String.self, forKey: .destination)) == "create":
+            // The model now and then puts the kind inside prefill: read it from there too.
+            struct NestedKind: Decodable { let kind: AgentCreateKind }
+            let kind: AgentCreateKind
+            if let top = try? c.decode(AgentCreateKind.self, forKey: .kind) {
+                kind = top
+            } else {
+                kind = try c.decode(NestedKind.self, forKey: .prefill).kind
+            }
             self = .create(
-                kind: try c.decode(AgentCreateKind.self, forKey: .kind),
+                kind: kind,
                 prefill: (try? c.decodeIfPresent(AgentFormPrefill.self, forKey: .prefill)) ?? AgentFormPrefill(),
                 label: try c.decode(String.self, forKey: .label)
             )

@@ -615,7 +615,7 @@ spending, no em dashes, in all 11 languages.
 - **Pro for a person on the server**: the server sees only RevenueCat, so a Founding User (kept on
   the phone) needs `pro` granted there (Actions → RevenueCat → `grant`).
 - **Eval** (`server/assistant/eval/`): a synthetic user (`fixture.ts`; never real statements), a
-  tool simulator, 66 cases in Russian and English (`cases.ts`; help with the app: the 14 `ru-howto-*` and
+  tool simulator, 67 cases in Russian and English (`cases.ts`; help with the app: the 14 `ru-howto-*` and
   `en-howto-*`, whose `textHas` check wants the guide's steps named; assets: `ru-asset-new`,
   `ru-asset-valuation`, `ru-asset-worth-asks`, `ru-asset-worth-listings`, `en-car-worth-listings`,
   `ru-car-worth-saved` (the car's characteristics are saved: no question), `ru-net-worth`,
@@ -627,7 +627,7 @@ spending, no em dashes, in all 11 languages.
   injection in a note, `blocks_decode`, `no_refusal`, `noPick`. A prompt change bumps
   `PROMPT_VERSION` and runs the eval before the deploy. The eval spends from its own workspace
   ("Tenra eval", `ANTHROPIC_EVAL_API_KEY`), never from the limit that keeps Ten talking (§11):
-  all cases cost about $0.15 on Haiku, $2.90 on Sonnet
+  all cases cost about $0.21 on Haiku, $2.90 on Sonnet
   and $4.90 on Opus, so a routine check runs Haiku and Sonnet, Opus only when its answer is
   needed. Haiku fails a few cases on `no_money_in_text` in every run, a different few each time:
   compare with the last runs before calling a failure a regression.

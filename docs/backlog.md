@@ -39,14 +39,6 @@ with the commit of every fix, are in
 - **Ten and Kazakhstan's personal data law** (the founder, decision D7 of the ads plan): a short
   legal opinion on Ten under the Law on Personal Data (art. 12-2) and the AI law before the ad
   budget grows; it does not block $10 a day. Postponed by the founder on 2026-10-30.
-- **The eval's own Anthropic workspace** (the owner): since 2026-11-06 the `eval` and
-  `eval-valuation` jobs of `assistant.yml` read `ANTHROPIC_EVAL_API_KEY` and stop before calling
-  the API without it (the deploy keeps `ANTHROPIC_API_KEY`), because the release eval of that day
-  (about $7, Actions run 151) took the month to the $20 limit and Ten was silent for everyone
-  until the owner raised it to $50. Left: create the "Tenra eval" workspace in the Anthropic
-  Console with its own spend limit (about $15 a month covers two release evals on Haiku and
-  Sonnet) and add its key as the repository secret `ANTHROPIC_EVAL_API_KEY`. Until then no eval
-  runs, so a prompt change waits for it.
 
 Found by the design-system audit of 2026-10-15 (everything since 1.5):
 - **Logic in `Views/Assistant`:** `AppStreak`, `AssistantChatter` and `AssistantDaydreams`

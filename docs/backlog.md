@@ -11,10 +11,6 @@ with the commit of every fix, are in
 
 ## Open
 
-- **"Convert to deposit" without Pro.** The account screen's "…" menu converts an account to a
-  deposit with no Pro check (`AccountDetailView`), while the same action from the account's edit
-  sheet opens the paywall (`AccountsManagementView`). Found 2026-11-11 while writing Ten's guide.
-
 - **Assistant attachments after a relaunch.** A receipt or statement attached in the chat lives
   in memory: after a relaunch its card is gone from the kept thread (drafts too, by design).
   Plan §3.8 keeps the file in the app's container with the thread; only worth it if people come

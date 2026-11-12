@@ -21,6 +21,7 @@ struct AccountDetailView: View {
     @State private var showingAddTransaction = false
     @State private var showingTransfer = false
     @State private var convertingAccount: Account?
+    @State private var showingPaywall = false
     @State private var cachedTransactions: [Transaction] = []
     @State private var aggregates = AccountAggregates(totalTransactions: 0, totalIncome: 0, totalExpense: 0)
     @State private var accountsById: [String: Account] = [:]
@@ -28,6 +29,7 @@ struct AccountDetailView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(TimeFilterManager.self) private var timeFilterManager
     @Environment(AppCoordinator.self) private var appCoordinator
+    @Environment(PremiumManager.self) private var premium
 
     private let logger = Logger(subsystem: "Tenra", category: "AccountDetailView")
 
@@ -189,6 +191,13 @@ struct AccountDetailView: View {
                 }
             )
         }
+        // Deposits are Pro: the same gate as the convert action of the accounts list
+        // (AccountsManagementView). After unlocking, the conversion form opens.
+        .paywallSheet(isPresented: $showingPaywall, source: .depositAdd) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                convertingAccount = liveAccount
+            }
+        }
         // The same choice as the accounts list (AccountsManagementView): keep the account's
         // transactions in history, or delete them with it.
         .alert(String(localized: "account.deleteTitle"), isPresented: $showingDeleteConfirm) {
@@ -280,7 +289,11 @@ struct AccountDetailView: View {
         if !liveAccount.isDeposit && !liveAccount.isLoan {
             Button {
                 HapticManager.light()
-                convertingAccount = liveAccount
+                if premium.isPro {
+                    convertingAccount = liveAccount
+                } else {
+                    showingPaywall = true
+                }
             } label: {
                 Label(
                     String(localized: "account.convertToDeposit", defaultValue: "Convert to Deposit"),
@@ -319,5 +332,6 @@ struct AccountDetailView: View {
         .environment(coordinator)
         .environment(coordinator.transactionStore)
         .environment(timeFilterManager)
+        .environment(PremiumManager.shared)
     }
 }

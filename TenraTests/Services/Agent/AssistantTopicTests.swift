@@ -35,7 +35,7 @@ struct AssistantTopicTests {
         case .subscription(let value): name = value
         case .category(let value, _): name = value
         case .insight(let value): name = value
-        case .history, .allowance: name = ""
+        case .history, .allowance, .app: name = ""
         case .goal(let value): name = value
         case .debt(let value, _): name = value
         case .asset(let value): name = value
@@ -72,5 +72,15 @@ struct AssistantTopicTests {
 
     @Test func expenseAndIncomeCategoriesAskDifferently() {
         #expect(AssistantTopic.category(name: "X", isIncome: false).questions != AssistantTopic.category(name: "X", isIncome: true).questions)
+    }
+
+    /// What the person has not set up yet comes first on Ten's home, two at most.
+    @Test func setupQuestionsFollowWhatIsMissing() {
+        let all = AssistantSetupQuestions.questions(capturing: false, budgets: 0, iCloudBackups: false)
+        #expect(all == [String(localized: "assistant.howto.capture"), String(localized: "assistant.howto.budget")])
+        #expect(AssistantSetupQuestions.questions(capturing: true, budgets: 2, iCloudBackups: false)
+            == [String(localized: "assistant.howto.backup")])
+        #expect(AssistantSetupQuestions.questions(capturing: true, budgets: 1, iCloudBackups: true).isEmpty)
+        #expect(AssistantTopic.app.questions.count == 3)
     }
 }

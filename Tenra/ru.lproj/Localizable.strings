@@ -1878,6 +1878,11 @@
 "assistant.preset.allowance" = "Сколько можно тратить в день до зарплаты?";
 "assistant.preset.save" = "Где я могу сэкономить?";
 "assistant.preset.invest" = "С чего начать инвестировать?";
+"settings.assistant.ask" = "Спросить Тэна о приложении";
+"assistant.howto.capture" = "Как сделать, чтобы покупки записывались сами?";
+"assistant.howto.import" = "Как загрузить выписку из банка?";
+"assistant.howto.backup" = "Мои данные сохранены в копии?";
+"assistant.howto.budget" = "Помоги поставить первый бюджет";
 "common.retry" = "Повторить";
 /* DesignKit 8.9.0: RelativeTime, Formatting.relativeTime */
 "time.justNow" = "Только что";

@@ -1878,6 +1878,11 @@
 "assistant.preset.allowance" = "給料日まで1日いくら使える？";
 "assistant.preset.save" = "どこで節約できる？";
 "assistant.preset.invest" = "投資は何から始めればいい？";
+"settings.assistant.ask" = "アプリについてテンに聞く";
+"assistant.howto.capture" = "買い物を自動で記録するには？";
+"assistant.howto.import" = "銀行の明細を読み込むには？";
+"assistant.howto.backup" = "データはバックアップされていますか？";
+"assistant.howto.budget" = "最初の予算を決めるのを手伝って";
 "common.retry" = "再試行";
 /* DesignKit 8.9.0: RelativeTime, Formatting.relativeTime */
 "time.justNow" = "たった今";

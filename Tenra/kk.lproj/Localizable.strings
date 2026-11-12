@@ -1878,6 +1878,11 @@
 "assistant.preset.allowance" = "Жалақыға дейін күніне қанша жұмсай аламын?";
 "assistant.preset.save" = "Қай жерден үнемдей аламын?";
 "assistant.preset.invest" = "Инвестициялауды неден бастаймын?";
+"settings.assistant.ask" = "Тэннен қолданба туралы сұрау";
+"assistant.howto.capture" = "Сатып алулар өзі жазылатындай қалай жасаймын?";
+"assistant.howto.import" = "Банк үзіндісін қалай жүктеймін?";
+"assistant.howto.backup" = "Деректерім көшірмеде сақталған ба?";
+"assistant.howto.budget" = "Алғашқы бюджетті қоюға көмектес";
 "common.retry" = "Қайталау";
 /* DesignKit 8.9.0: RelativeTime, Formatting.relativeTime */
 "time.justNow" = "Жаңа ғана";

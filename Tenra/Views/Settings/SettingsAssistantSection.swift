@@ -6,7 +6,9 @@
 //  consent the chat asks for before the first question; turned on here, the same consent screen
 //  asks first, App Review 5.1.2(i); turned off, the chat asks again), "Ten chats"
 //  (the lines it says, AssistantChatter; turned off, it still gestures) and "What Ten knows
-//  about me", the facts it remembers (AssistantMemoryView). Ten's wardrobe opens from the
+//  about me", the facts it remembers (AssistantMemoryView). Where the cloud answers, the first
+//  row is "Ask Ten about the app": a new chat with questions on how to do things in Tenra
+//  (AssistantTopic.app). Ten's wardrobe opens from the
 //  assistant's home (a hanger at the top right).
 //
 
@@ -17,6 +19,8 @@ struct SettingsAssistantSection: View {
     @AppStorage(AssistantChatter.enabledKey) private var chatterOn = true
     @State private var memory = AgentMemory.shared
     @State private var showingConsent = false
+    @Environment(AppCoordinator.self) private var coordinator
+    @AppStorage(AssistantRegion.outOfRegionKey) private var outOfRegionAt: Double = 0
 
     /// Off at once; on only through the consent screen, whose "Turn on" stores the consent.
     private var cloudToggle: Binding<Bool> {
@@ -31,6 +35,16 @@ struct SettingsAssistantSection: View {
     var body: some View {
         if AssistantAvailability.isAvailable {
             FormSection(header: String(localized: "settings.assistant.header"), footer: String(localized: "settings.assistant.footer")) {
+                if !AssistantRegion.isOutOfRegion(markedAt: outOfRegionAt, now: Date()) {
+                    UniversalRow(
+                        String(localized: "settings.assistant.ask"),
+                        icon: "questionmark.bubble",
+                        accessory: .action {
+                            HapticManager.light()
+                            coordinator.ask(about: .app)
+                        }
+                    )
+                }
                 UniversalRow(
                     String(localized: "settings.assistant.cloud"),
                     icon: "cloud",
@@ -60,4 +74,5 @@ struct SettingsAssistantSection: View {
             SettingsAssistantSection()
         }
     }
+    .environment(AppCoordinator())
 }

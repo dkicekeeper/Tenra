@@ -43,6 +43,8 @@ enum AssistantTopic: Equatable, Sendable {
     case asset(name: String)
     /// "For today" (its insight screen, InsightDetailView).
     case allowance
+    /// Help with Tenra itself (Settings › Assistant, "Ask Ten about the app").
+    case app
 
     /// Ready-made questions about it, in the app's language.
     var questions: [String] {
@@ -106,7 +108,26 @@ enum AssistantTopic: Equatable, Sendable {
                 String(localized: "assistant.topic.allowance.enough"),
                 String(localized: "assistant.topic.allowance.save"),
             ]
+        case .app:
+            return [
+                String(localized: "assistant.howto.capture"),
+                String(localized: "assistant.howto.import"),
+                String(localized: "assistant.howto.backup"),
+            ]
         }
+    }
+}
+
+/// The ready-made "how to" questions for what this person has not set up yet, at most two, in
+/// the order they matter: entries that record themselves, a first budget, a backup that survives
+/// the phone (plan-ten-agent 4.5). Decided on the phone from the app's own state, no model.
+enum AssistantSetupQuestions {
+    static func questions(capturing: Bool, budgets: Int, iCloudBackups: Bool) -> [String] {
+        var questions: [String] = []
+        if !capturing { questions.append(String(localized: "assistant.howto.capture")) }
+        if budgets == 0 { questions.append(String(localized: "assistant.howto.budget")) }
+        if !iCloudBackups { questions.append(String(localized: "assistant.howto.backup")) }
+        return Array(questions.prefix(2))
     }
 }
 

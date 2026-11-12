@@ -1878,6 +1878,11 @@
 "assistant.preset.allowance" = "How much can I spend a day until payday?";
 "assistant.preset.save" = "Where can I save?";
 "assistant.preset.invest" = "How do I start investing?";
+"settings.assistant.ask" = "Ask Ten about the app";
+"assistant.howto.capture" = "How do I make purchases log themselves?";
+"assistant.howto.import" = "How do I load a bank statement?";
+"assistant.howto.backup" = "Is my data backed up?";
+"assistant.howto.budget" = "Help me set my first budget";
 "common.retry" = "Retry";
 /* DesignKit 8.9.0: RelativeTime, Formatting.relativeTime */
 "time.justNow" = "Just now";

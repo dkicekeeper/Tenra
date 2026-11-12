@@ -29,7 +29,10 @@ the device has App Attest. There the action tab ("+") is Ten (`CreatureTabLabel`
 assistant is that tab's page (`AssistantTab`); elsewhere (Simulator, Mac, no App Attest) "+" stays
 "Voice | Import". iOS 26+.
 
-**Entry points** (`AssistantEntryPoints`): the tab; "Ask Ten" first in the "…" menu of an
+**Entry points** (`AssistantEntryPoints`): the tab; "Ask Ten about the app" in Settings ›
+Assistant (`AssistantTopic.app`: how-to questions); on Ten's home the first ready-made questions
+are the "how to" for what the person has not set up yet, two at most (`AssistantSetupQuestions`:
+automatic capture, a first budget, a backup in iCloud; decided on the phone); "Ask Ten" first in the "…" menu of an
 account, deposit, loan, subscription, category, goal, debt and asset, and as a button with Ten's
 glyph in an insight, History and For today on Analytics: the tab opens a **new chat** (the open
 one stays kept) with two or three questions about that object over the field

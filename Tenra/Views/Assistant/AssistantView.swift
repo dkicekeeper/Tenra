@@ -232,7 +232,7 @@ struct AssistantView: View {
             }
             .multilineTextAlignment(.center)
             if !AssistantRegion.isOutOfRegion(markedAt: outOfRegionAt, now: Date()) {
-                SuggestionChips(topicQuestions.isEmpty ? Self.presets : topicQuestions, systemImage: "sparkles", layout: .wrap) {
+                SuggestionChips(topicQuestions.isEmpty ? presets : topicQuestions, systemImage: "sparkles", layout: .wrap) {
                     start(.question($0, spoken: false))
                 }
                 .accessibilityElement(children: .contain)
@@ -441,12 +441,23 @@ struct AssistantView: View {
         }
     }
 
-    private static var presets: [String] {
+    /// The ready-made questions: first what this person has not set up yet ("how to", at most
+    /// two, AssistantSetupQuestions), then the questions about money, seven in all as before.
+    private var presets: [String] {
         #if DEBUG
         // The screenshot capture taps the demo's questions in order (ScreenshotDemoTransport).
         if ScreenshotDemoMode.isActive { return ScreenshotDemoReply.current().questions }
         #endif
-        return [
+        let setup = AssistantSetupQuestions.questions(
+            capturing: WalletCaptureStore.shared.hasEverCaptured,
+            budgets: coordinator.transactionStore.categories.filter { ($0.budgetAmount ?? 0) > 0 }.count,
+            iCloudBackups: coordinator.cloudSyncViewModel.iCloudEnabled
+        )
+        return Array((setup + Self.moneyPresets).prefix(Self.moneyPresets.count))
+    }
+
+    private static var moneyPresets: [String] {
+        [
             String(localized: "assistant.preset.month"),
             String(localized: "assistant.preset.allowance"),
             String(localized: "assistant.preset.compare"),

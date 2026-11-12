@@ -1878,6 +1878,11 @@
 "assistant.preset.allowance" = "Quanto posso spendere al giorno fino allo stipendio?";
 "assistant.preset.save" = "Dove posso risparmiare?";
 "assistant.preset.invest" = "Come inizio a investire?";
+"settings.assistant.ask" = "Chiedi a Ten dell’app";
+"assistant.howto.capture" = "Come faccio a registrare gli acquisti da soli?";
+"assistant.howto.import" = "Come carico un estratto conto?";
+"assistant.howto.backup" = "I miei dati hanno un backup?";
+"assistant.howto.budget" = "Aiutami con il primo budget";
 "common.retry" = "Riprova";
 /* DesignKit 8.9.0: RelativeTime, Formatting.relativeTime */
 "time.justNow" = "Proprio ora";

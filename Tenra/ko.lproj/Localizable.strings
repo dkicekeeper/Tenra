@@ -1878,6 +1878,11 @@
 "assistant.preset.allowance" = "월급날까지 하루에 얼마 쓸 수 있을까?";
 "assistant.preset.save" = "어디서 아낄 수 있을까?";
 "assistant.preset.invest" = "투자는 어떻게 시작하면 돼?";
+"settings.assistant.ask" = "앱에 대해 텐에게 묻기";
+"assistant.howto.capture" = "결제가 자동으로 기록되게 하려면?";
+"assistant.howto.import" = "은행 거래 내역을 불러오려면?";
+"assistant.howto.backup" = "내 데이터는 백업되어 있나요?";
+"assistant.howto.budget" = "첫 예산 정하는 것을 도와줘";
 "common.retry" = "다시 시도";
 /* DesignKit 8.9.0: RelativeTime, Formatting.relativeTime */
 "time.justNow" = "방금";

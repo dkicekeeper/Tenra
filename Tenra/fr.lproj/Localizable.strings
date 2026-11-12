@@ -1878,6 +1878,11 @@
 "assistant.preset.allowance" = "Combien puis-je dépenser par jour jusqu’à la paie ?";
 "assistant.preset.save" = "Où puis-je économiser ?";
 "assistant.preset.invest" = "Comment commencer à investir ?";
+"settings.assistant.ask" = "Demander à Ten à propos de l’app";
+"assistant.howto.capture" = "Comment enregistrer mes achats automatiquement ?";
+"assistant.howto.import" = "Comment charger un relevé bancaire ?";
+"assistant.howto.backup" = "Mes données sont-elles sauvegardées ?";
+"assistant.howto.budget" = "Aide-moi à fixer mon premier budget";
 "common.retry" = "Réessayer";
 /* DesignKit 8.9.0: RelativeTime, Formatting.relativeTime */
 "time.justNow" = "À l’instant";

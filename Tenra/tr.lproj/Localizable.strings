@@ -1878,6 +1878,11 @@
 "assistant.preset.allowance" = "Maaşa kadar günde ne kadar harcayabilirim?";
 "assistant.preset.save" = "Nerede tasarruf edebilirim?";
 "assistant.preset.invest" = "Yatırıma nasıl başlarım?";
+"settings.assistant.ask" = "Ten’e uygulamayı sor";
+"assistant.howto.capture" = "Alışverişler kendiliğinden nasıl kaydedilir?";
+"assistant.howto.import" = "Banka ekstresini nasıl yüklerim?";
+"assistant.howto.backup" = "Verilerim yedekleniyor mu?";
+"assistant.howto.budget" = "İlk bütçemi koymama yardım et";
 "common.retry" = "Tekrar dene";
 /* DesignKit 8.9.0: RelativeTime, Formatting.relativeTime */
 "time.justNow" = "Az önce";

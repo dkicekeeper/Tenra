@@ -7,8 +7,8 @@ its notes and checklist: [archive/release-notes-1.8.2.md](archive/release-notes-
 **Status 2026-11-12:** the changes below are in `main` (Tenra#160, Tenra#161, then Ten's forms,
 state line, help with complaints, the entries and editing and deleting records, at f3900c7),
 TestFlight build
-83 is processed (from the cloud, `main` at 37e7365), the server with `POST /v1/feedback` and
-prompt 2026-11-12.11 is deployed and the owner's Telegram chat is linked (`telegram-link`, a test line arrived 12.11), the What's New blocks for the 13 storefronts and en-GB are not
+84 is processed (from the cloud, `main` at cb701dc), the server with `POST /v1/feedback` and
+prompt 2026-11-12.12 is deployed and the owner's Telegram chat is linked (`telegram-link`, a test line arrived 12.11), the What's New blocks for the 13 storefronts and en-GB are not
 written, the phone checks are not done.
 
 When the blocks are written: one `## <locale>` heading per storefront (en-US, ru, en-GB, de-DE,
@@ -41,13 +41,13 @@ another version.
   that shows what it is and what it becomes. In build 82.
 - "Put Spotify on hold": Ten pauses or resumes a subscription with a card. In build 83.
 - "I paid the loan today": Ten's button opens the loan with its payment form already open.
-  Needs the server with prompt 2026-11-12.12. After build 83.
+  In build 84.
 - Ten knows the terms of loans and deposits: the rate, the monthly payment and its day, the
   payments left, the interest accrued on a deposit. Needs the server with prompt 2026-11-12.7
   (deployed 2026-11-12). In build 81.
 - Ten's home is rearranged: Ten is smaller, its own messages show there as on Home, the
   ready-made questions come by topic (money, plans, the app) and the latest chats sit higher.
-  After build 83.
+  In build 84.
 - Settings › Assistant has "Ask Ten about the app", and Ten's home puts first the "how to"
   questions for what the person has not set up yet (automatic capture, a first budget, a backup
   in iCloud). After build 79.
@@ -145,6 +145,13 @@ mid-answer.
     по кредиту и сколько платежей осталось?" and "Сколько процентов набежало по депозиту?" are
     answered with the app's own figures.
 
+14. Build 84, Ten's home: Ten is smaller; a message Ten wrote shows under the greeting and
+    "Разобрать" starts its chat; the switch "Траты / Планы / Приложение" changes the questions,
+    and "Приложение" starts with what is not set up; the latest chats follow; nothing is cut
+    off on a small phone and in the largest text size. "Поставь Spotify на паузу" (build 83)
+    shows the subscription and "Встанет на паузу"; "Отмена" resumes it. "Сегодня заплатил по
+    кредиту" gives a button that opens the loan with its payment form already open.
+
 **On the phone, left from the versions already in the store** (not marked done before 1.8.2 went
 out; the store build is the one to check):
 
@@ -170,8 +177,8 @@ out; the store build is the one to check):
 
 ## Submission checklist
 
-1. **CI green**, then a TestFlight build (done: build 82 from 9127145, 2026-11-12; CI green on
-   fab588d, the last commit that touched the app).
+1. **CI green**, then a TestFlight build (done: build 84 from cb701dc, 2026-11-12; CI green on
+   that commit).
 2. **The phone checks above.**
 3. **What's New** in this file, then `prepare-version --version 1.8.3 --build <N>`.
 4. **One submission**: `asc.py prepare-review --version 1.8.3`; the founder sends it, or

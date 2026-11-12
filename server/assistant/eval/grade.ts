@@ -82,6 +82,8 @@ const MONEY_SCALE = /(?<![\p{L}\d])\d[\d.,]*\s?(?:млн|млрд|million|billio
 const BIG_NUMBER = /(?<![\p{L}\d.,])(?:\d{1,3}(?:[\s  ,]\d{3})+|\d{4,})(?!\d)/u;
 // A big number with a unit after it is a characteristic, not money: mileage, an area, an engine.
 const UNIT_AFTER = /^[\s  ]?(?:км|km|м²|м2|m²|m2|sq|кв\.?|сот|ares?|см|мм|кг|kg|cc|hp|л\.с|miles?|миль)(?!\p{L})/iu;
+// An amount the user typed with a scale word: "600 тысяч", "1,5 млн", "2 million", "300k".
+const TYPED_SCALE = /(\d[\d\s\u00a0\u202f]*(?:[.,]\d+)?)\s?(тыс(?:яч[аи]?|\.)?|thousand|k|млн|миллион(?:а|ов)?|million|mln|млрд|миллиард(?:а|ов)?|billion|bn)(?!\p{L})/giu;
 // A bare year ("к марту 2027") is a date, not an amount; with a currency MONEY_IN_TEXT still catches it.
 const YEAR = /^(?:19|20)\d{2}$/;
 // JS \b is ASCII-only even with /u: Cyrillic words are bounded with \p{L} lookarounds.
@@ -189,6 +191,13 @@ export function universalChecks(record: RunRecord, locale: "ru" | "en", prompt =
   const text = textOf(record);
   const digits = (value: string) => value.replace(/\D/g, "");
   const typed = new Set((prompt.match(/\d[\d\s\u00a0\u202f.,]*\d|\d/g) ?? []).map(digits));
+  // "600 тысяч" typed and "600 000" in the reply are one amount: the user's, written out in full.
+  for (const m of prompt.matchAll(TYPED_SCALE)) {
+    const word = m[2] ?? "";
+    const value = Number((m[1] ?? "").replace(/[\s\u00a0\u202f]/g, "").replace(",", "."));
+    const scale = /^(?:тыс|thousand|k)/i.test(word) ? 1e3 : /^(?:млрд|миллиард|billion|bn)/i.test(word) ? 1e9 : 1e6;
+    if (Number.isFinite(value)) typed.add(String(Math.round(value * scale)));
+  }
   const all = (pattern: RegExp) => [...text.matchAll(new RegExp(pattern.source, "giu"))];
   const big = all(BIG_NUMBER).filter((m) => !YEAR.test(m[0]) && !UNIT_AFTER.test(text.slice((m.index ?? 0) + m[0].length)));
   const found = [...all(MONEY_IN_TEXT), ...all(MONEY_PREFIX), ...all(MONEY_SCALE), ...big].map((m) => m[0]);

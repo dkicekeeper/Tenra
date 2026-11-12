@@ -82,6 +82,11 @@ describe("grader", () => {
     expect(echoed.find((c) => c.name === "no_money_in_text")?.pass).toBe(true);
     const money = universalChecks(record(`Вы потратили ${cafeTotal} ₸ на кафе.`), "ru", "Сколько я потратил на кафе?");
     expect(money.find((c) => c.name === "no_money_in_text")?.pass).toBe(false);
+    // The user's amount with a scale word, written out in full, is still the user's amount.
+    const scaled = (text: string, prompt: string) => universalChecks(record(text), "ru", prompt).find((c) => c.name === "no_money_in_text")?.pass;
+    expect(scaled("Цель на 600 000 ₸ готова.", "Хочу накопить 600 тысяч на ноутбук")).toBe(true);
+    expect(scaled("Цель на 1 500 000 ₸ готова.", "Хочу накопить 1,5 млн на машину")).toBe(true);
+    expect(scaled("Это 100 000 ₸ в месяц.", "Хочу накопить 600 тысяч на ноутбук")).toBe(false);
     const year = universalChecks(record("Цель на ноутбук к марту 2027 идёт по плану."), "ru", "Успеваю к цели?");
     expect(year.find((c) => c.name === "no_money_in_text")?.pass).toBe(true);
     const yearAmount = universalChecks(record("Осталось 2027 ₸."), "ru", "Сколько осталось?");

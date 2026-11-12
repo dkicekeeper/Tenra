@@ -171,6 +171,38 @@ struct PlanToolsTests {
         #expect(nowhere.error != nil)
     }
 
+    @Test func aGoalAndADebtChangeAndUndoPutsThemBack() async throws {
+        let setup = Self.make()
+        await setup.goals.add(SavingsGoal(id: "g_trip", name: "Отпуск", targetAmount: 600_000, currency: "KZT", deadline: Self.day("2027-07-01")))
+        let goalOutput = await setup.toolkit.execute(name: "draft_goal_change", input: ["goal": "g_trip", "deadline": "2027-09-01", "target": 700_000])
+        let goalResult = try #require(goalOutput.value, "\(goalOutput.error ?? "")")
+        #expect(goalResult.value(atPath: "before.deadline") == "2027-07-01")
+        #expect(goalResult.value(atPath: "after.deadline") == "2027-09-01")
+        #expect(goalResult.value(atPath: "after.target") == 700_000)
+        // Nothing changes before Save.
+        #expect(setup.goals.goal(id: "g_trip")?.targetAmount == 600_000)
+        await setup.book.save("draft_1")
+        #expect(setup.goals.goal(id: "g_trip")?.targetAmount == 700_000)
+        #expect(setup.goals.goal(id: "g_trip")?.deadline == Self.day("2027-09-01"))
+        await setup.book.undo("draft_1")
+        #expect(setup.goals.goal(id: "g_trip")?.targetAmount == 600_000)
+        #expect(setup.goals.goal(id: "g_trip")?.deadline == Self.day("2027-07-01"))
+
+        let same = await setup.toolkit.execute(name: "draft_goal_change", input: ["goal": "Отпуск"])
+        #expect(same.error?.contains("Nothing changes") == true)
+
+        await setup.debts.add(PersonalDebt(id: "d_askhat", direction: .owedToMe, person: "Асхат", amount: 50_000, currency: "KZT", date: Self.day("2026-10-01")))
+        let debtOutput = await setup.toolkit.execute(name: "draft_debt_change", input: ["debt": "Асхат", "settle": true])
+        let debtResult = try #require(debtOutput.value, "\(debtOutput.error ?? "")")
+        #expect(debtResult.value(atPath: "after.settled") == true)
+        #expect(setup.debts.debt(id: "d_askhat")?.isSettled == false)
+        let draftId = try #require(debtResult["draft_id"]?.stringValue)
+        await setup.book.save(draftId)
+        #expect(setup.debts.debt(id: "d_askhat")?.isSettled == true)
+        await setup.book.undo(draftId)
+        #expect(setup.debts.debt(id: "d_askhat")?.isSettled == false)
+    }
+
     @Test func aGoalWithAnAccountTakesATransferNotAContribution() async throws {
         let setup = Self.make()
         await setup.goals.add(SavingsGoal(id: "g_car", name: "Машина", targetAmount: 1_000_000, currency: "KZT", linkedAccountId: "acc_deposit"))

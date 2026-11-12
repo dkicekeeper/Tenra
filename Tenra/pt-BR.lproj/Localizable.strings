@@ -1824,6 +1824,7 @@
 "assistant.draft.deletes" = "Estes registros serão excluídos.";
 "assistant.draft.restored" = "Desfeito. Tudo está como antes.";
 "assistant.draft.recordsCount" = "Registros: %lld";
+"assistant.draft.debtSettles" = "Será marcada como quitada";
 "assistant.voice.send" = "Perguntar ao Ten";
 "assistant.voice.again" = "Falar de novo";
 "assistant.attach.scan" = "Escanear recibo";

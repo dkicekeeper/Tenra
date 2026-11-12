@@ -1824,6 +1824,7 @@
 "assistant.draft.deletes" = "Queste operazioni verranno eliminate.";
 "assistant.draft.restored" = "Annullato. Tutto è come prima.";
 "assistant.draft.recordsCount" = "Operazioni: %lld";
+"assistant.draft.debtSettles" = "Sarà segnato come saldato";
 "assistant.voice.send" = "Chiedi a Ten";
 "assistant.voice.again" = "Ridillo";
 "assistant.attach.scan" = "Scansiona uno scontrino";

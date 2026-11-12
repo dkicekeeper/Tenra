@@ -1824,6 +1824,7 @@
 "assistant.draft.deletes" = "Diese Einträge werden gelöscht.";
 "assistant.draft.restored" = "Rückgängig gemacht. Alles ist wie zuvor.";
 "assistant.draft.recordsCount" = "Einträge: %lld";
+"assistant.draft.debtSettles" = "Wird als beglichen markiert";
 "assistant.voice.send" = "Ten fragen";
 "assistant.voice.again" = "Noch mal sagen";
 "assistant.attach.scan" = "Beleg scannen";

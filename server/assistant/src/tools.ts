@@ -350,6 +350,34 @@ const draftTools: Tool[] = [
     ),
   },
   {
+    name: "draft_goal_change",
+    description:
+      "Prepares a change to a savings goal the user already has, for them to confirm: a new name, target or deadline. Nothing changes until they confirm on the card, which shows the goal as it is and as it becomes. goal is a goal id from <app_context> or its name; give only what changes. Returns draft_id, before, after, what is left and, with a deadline, the new monthly amount.",
+    input_schema: object(
+      {
+        goal: { type: "string" },
+        name: { type: "string" },
+        target: { type: "number" },
+        deadline: date,
+      },
+      ["goal"],
+    ),
+  },
+  {
+    name: "draft_debt_change",
+    description:
+      "Prepares a change to an open personal debt, for the user to confirm: a new due date or note, or settle true to mark it settled (returned outside the app, or forgiven). Money coming back is draft_debt_repayment, not this. debt is a debt id from <app_context> or the person's name; give only what changes. Returns draft_id, before and after.",
+    input_schema: object(
+      {
+        debt: { type: "string" },
+        due_date: date,
+        settle: { type: "boolean" },
+        note: { type: "string" },
+      },
+      ["debt"],
+    ),
+  },
+  {
     name: "draft_fact",
     description:
       "Prepares a fact about the user's money to remember across chats (payday, the main account, a goal they save for, money they owe or are owed), or a change to or the removal of a fact you remember. Nothing is kept until the user taps Save on the confirm block. replaces is the id of a remembered fact from <app_context> to change or forget; text is the fact as one short sentence in the user's language, or null together with replaces to forget it.",

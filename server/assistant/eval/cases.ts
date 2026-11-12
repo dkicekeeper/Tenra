@@ -68,7 +68,7 @@ const untilPayday = (input: Input) => input.until === "2026-11-10" || input.unti
 const DRAFTS = [
   "draft_transactions", "draft_budget", "draft_recurring", "draft_fact", "draft_goal", "draft_goal_contribution",
   "draft_debt", "draft_debt_repayment", "draft_asset", "draft_asset_valuation",
-  "draft_transaction_edit", "draft_transaction_delete", "draft_recategorize",
+  "draft_transaction_edit", "draft_transaction_delete", "draft_recategorize", "draft_goal_change", "draft_debt_change",
 ];
 
 export const CASES: EvalCase[] = [
@@ -767,6 +767,26 @@ export const CASES: EvalCase[] = [
     checks: [
       { kind: "toolArgs", tool: "draft_transaction_edit", match: (i) => i.category != null && i.amount == null, label: "only the category changes" },
       { kind: "block", type: "confirm" },
+    ],
+  },
+  {
+    id: "ru-goal-move-deadline",
+    locale: "ru",
+    prompt: "Перенеси цель на отпуск на сентябрь следующего года",
+    checks: [
+      { kind: "toolArgs", tool: "draft_goal_change", match: (i) => i.goal === "goal_trip" && /^2027-09/.test(String(i.deadline ?? "")) && i.target == null, label: "the trip goal moved to September 2027" },
+      { kind: "block", type: "confirm" },
+      { kind: "notCalled", tools: ["draft_goal", "draft_goal_contribution"] },
+    ],
+  },
+  {
+    id: "ru-debt-extend",
+    locale: "ru",
+    prompt: "Асхат попросил подождать с долгом до конца декабря",
+    checks: [
+      { kind: "toolArgs", tool: "draft_debt_change", match: (i) => i.debt === "debt_askhat" && /^2026-12/.test(String(i.due_date ?? "")) && i.settle !== true, label: "Askhat's debt due at the end of December" },
+      { kind: "block", type: "confirm" },
+      { kind: "notCalled", tools: ["draft_debt", "draft_debt_repayment"] },
     ],
   },
   {

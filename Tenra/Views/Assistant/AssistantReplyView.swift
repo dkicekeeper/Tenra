@@ -489,6 +489,25 @@ private struct AssistantDraftCard: View {
                     transactionRow(change.after, store: store)
                 } else if case .transactionDelete(let transaction) = operation {
                     transactionRow(transaction, store: store)
+                } else if case .goalChange(let before, let after) = operation {
+                    InlineStatusText(message: String(localized: "assistant.draft.budgetWas"), type: .info)
+                        .padding(.vertical, AppSpacing.md)
+                    goalRow(before, store: store)
+                    InlineStatusText(message: String(localized: "assistant.draft.becomes"), type: .info)
+                        .padding(.vertical, AppSpacing.md)
+                    goalRow(after, store: store)
+                } else if case .debtChange(let before, let after) = operation {
+                    InlineStatusText(message: String(localized: "assistant.draft.budgetWas"), type: .info)
+                        .padding(.vertical, AppSpacing.md)
+                    debtRow(before)
+                    InlineStatusText(
+                        message: after.isSettled && !before.isSettled
+                            ? String(localized: "assistant.draft.debtSettles")
+                            : String(localized: "assistant.draft.becomes"),
+                        type: .info
+                    )
+                    .padding(.vertical, AppSpacing.md)
+                    debtRow(after)
                 } else if let preview = Self.preview(operation, id: "\(draft.id)-\(index)") {
                     let row = transactionRow(preview, store: store)
                     if case .single(let single) = operation, state == .pending || state == .failed {
@@ -605,7 +624,7 @@ private struct AssistantDraftCard: View {
     private var changesSaved: Bool {
         draft.operations.contains { operation in
             switch operation {
-            case .transactionEdit, .transactionDelete: true
+            case .transactionEdit, .transactionDelete, .goalChange, .debtChange: true
             default: false
             }
         }
@@ -828,7 +847,7 @@ private struct AssistantDraftCard: View {
     private static func preview(_ operation: AgentDraftOperation, id: String) -> Transaction? {
         switch operation {
         case .budget, .recurring, .fact, .goal, .goalContribution, .debt, .debtRepayment, .asset, .assetValuation,
-             .transactionEdit, .transactionDelete:
+             .transactionEdit, .transactionDelete, .goalChange, .debtChange:
             return nil
         case .single(let draft):
             return Transaction(

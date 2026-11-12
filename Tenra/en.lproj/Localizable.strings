@@ -1824,6 +1824,7 @@
 "assistant.draft.deletes" = "These records will be deleted.";
 "assistant.draft.restored" = "Undone. Everything is as it was.";
 "assistant.draft.recordsCount" = "Records: %lld";
+"assistant.draft.debtSettles" = "It will be marked as settled";
 "assistant.voice.send" = "Ask Ten";
 "assistant.voice.again" = "Say it again";
 "assistant.attach.scan" = "Scan a receipt";

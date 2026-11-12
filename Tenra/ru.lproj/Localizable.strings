@@ -1824,6 +1824,7 @@
 "assistant.draft.deletes" = "Эти записи будут удалены.";
 "assistant.draft.restored" = "Отменено. Всё как было.";
 "assistant.draft.recordsCount" = "Записей: %lld";
+"assistant.draft.debtSettles" = "Будет отмечен закрытым";
 "assistant.voice.send" = "Спросить Тэна";
 "assistant.voice.again" = "Сказать заново";
 "assistant.attach.scan" = "Сканировать чек";

@@ -53,6 +53,10 @@ enum AgentDraftOperation: Equatable {
     case transactionEdit(AgentTransactionEdit)
     /// A saved income or expense to delete.
     case transactionDelete(Transaction)
+    /// A goal with a new name, target or deadline (FinanceToolkit+PlanChanges).
+    case goalChange(before: SavingsGoal, after: SavingsGoal)
+    /// A debt with a new due date or note, or settled.
+    case debtChange(before: PersonalDebt, after: PersonalDebt)
 }
 
 /// A subscription or a regular payment, as the series it will become (it starts on its next
@@ -105,6 +109,10 @@ enum AgentSavedRecord: Equatable {
     case transactionEdited(before: Transaction, subcategoryIds: [String])
     /// A record that was deleted, and the subcategories it had.
     case transactionDeleted(Transaction, subcategoryIds: [String])
+    /// A goal that was changed: what it was.
+    case goalChanged(before: SavingsGoal)
+    /// A debt that was changed: what it was.
+    case debtChanged(before: PersonalDebt)
 }
 
 enum AgentDraftError: Error {
@@ -259,7 +267,7 @@ extension AgentDraftBook.Writer {
                     return .series(recurring.series.id)
                 case .fact(let fact):
                     return .fact(try await memory.apply(fact))
-                case .goal, .goalContribution, .debt, .debtRepayment, .asset, .assetValuation:
+                case .goal, .goalContribution, .debt, .debtRepayment, .asset, .assetValuation, .goalChange, .debtChange:
                     return try await Self.savePlan(operation, goals: goals, debts: debts, assets: assets, isPro: isPro)
                 case .transactionEdit(let edit):
                     // The card showed what was there: it must still be there.
@@ -303,7 +311,7 @@ extension AgentDraftBook.Writer {
                     try await store.deleteSeries(id: id, deleteTransactions: true)
                 case .fact(let change):
                     await memory.revert(change)
-                case .goal, .goalContribution, .debt, .debtRepayment, .asset, .assetValuation:
+                case .goal, .goalContribution, .debt, .debtRepayment, .asset, .assetValuation, .goalChanged, .debtChanged:
                     await Self.undoPlan(record, goals: goals, debts: debts, assets: assets)
                 case .transactionEdited(let before, let subcategoryIds):
                     guard store.transactionById[before.id] != nil else { return }
@@ -373,6 +381,16 @@ extension AgentDraftBook.Writer {
             guard let assets, assets.asset(id: assetId) != nil else { throw AgentDraftError.planGone }
             await assets.addValuation(valuation, to: assetId)
             return .assetValuation(assetId: assetId, valuationId: valuation.id)
+        case .goalChange(let before, let after):
+            // The card showed what was there: it must still be there.
+            guard let goals, goals.goal(id: before.id) == before else { throw AgentDraftError.recordChanged }
+            await goals.update(after)
+            _ = await goals.refreshReached(goalId: after.id)
+            return .goalChanged(before: before)
+        case .debtChange(let before, let after):
+            guard let debts, debts.debt(id: before.id) == before else { throw AgentDraftError.recordChanged }
+            await debts.update(after)
+            return .debtChanged(before: before)
         default:
             throw AgentDraftError.planGone
         }
@@ -393,6 +411,11 @@ extension AgentDraftBook.Writer {
             await assets?.delete(id: id)
         case .assetValuation(let assetId, let valuationId):
             await assets?.deleteValuation(id: valuationId, from: assetId)
+        case .goalChanged(let before):
+            await goals?.update(before)
+            _ = await goals?.refreshReached(goalId: before.id)
+        case .debtChanged(let before):
+            await debts?.update(before)
         default:
             break
         }

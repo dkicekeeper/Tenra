@@ -1824,6 +1824,7 @@
 "assistant.draft.deletes" = "Ces opérations seront supprimées.";
 "assistant.draft.restored" = "Annulé. Tout est comme avant.";
 "assistant.draft.recordsCount" = "Opérations : %lld";
+"assistant.draft.debtSettles" = "Sera marquée comme réglée";
 "assistant.voice.send" = "Demander à Ten";
 "assistant.voice.again" = "Redire";
 "assistant.attach.scan" = "Scanner un ticket";

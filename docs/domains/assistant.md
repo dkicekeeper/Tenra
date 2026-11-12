@@ -106,6 +106,7 @@ database, only the results of the tools it asked for.
 | Read | `get_spending_summary`, `compare_periods`, `search_transactions`, `get_accounts`, `get_budgets`, `list_recurring`, `get_insights` (+ health score), `get_goals`, `get_debts`, `get_assets`, `get_net_worth`, `estimate_asset_value`, `convert_currency` | `SummaryCalculator` / `TransactionType.summaryContribution`, `TransactionQueryService`, `BalanceCoordinator`, `CategoryBudgetService.budgetProgress`, `InsightsService`, `SpendingQueryService`, `AssetValuationMath` through `AssetStore`, `NetWorthCalculator` (and the net worth insight's months), `POST /v1/valuation` through `AgentServerClient` (§8) |
 | Draft | `draft_transactions`, `draft_budget`, `draft_recurring`, `draft_goal`, `draft_goal_contribution`, `draft_debt`, `draft_debt_repayment`, `draft_asset`, `draft_asset_valuation`, `draft_fact` | `TransactionDraftService.makeDraft` → `commit`, `CategoriesViewModel.setBudget`, `SubscriptionCreationService` + `linkSubcategoriesToTransaction` (red flag 5), `GoalStore`, `DebtStore`, `AssetStore`, `AgentMemory` |
 | Loans and deposits (read) | `get_loans` (what is left, rate, monthly payment and its day, term, payments made and left, interest paid), `get_deposits` (balance, rate, capitalization, posting day, interest accrued since the last posting) | `FinanceToolkit+Accounts`: `LoanInfo`, `DepositInfo`, read only (red flags 2 and 8); the prompt uses them only with the `reads` line of `<app_context>` |
+| Change a goal or a debt | `draft_goal_change` (name, target, deadline), `draft_debt_change` (due date, note, settle) | `FinanceToolkit+PlanChanges`; Save through `GoalStore.update` / `DebtStore.update` in `Writer.savePlan` after checking the goal or debt is still what the card showed, Undo puts the previous one back; the prompt uses them only when the `changes` line names goals and debts |
 | Change what is saved | `draft_transaction_edit` (one income or expense: amount, category, date, note), `draft_transaction_delete` (up to 20), `draft_recategorize` (every record of a merchant, up to 50, to one category: a draft of edits found off the main actor; its card says how many and lists the first 20 as they will be) | `FinanceToolkit+Changes`: ids from `search_transactions`; the card shows the record as it is and as it becomes, or the records that go, and its button reads "Delete" for a deletion; Save goes through `TransactionStore.update` / `delete` after checking the record is still what the card showed (`AgentDraftError.recordChanged`), Undo puts it back with its subcategories. Refused: a transfer, a loan or deposit record, an amount where the record is in another currency than its account (changed in History). A record of a recurring series changes alone, the series never (red flag 10). The prompt uses the two tools only with the `changes` line of `<app_context>` |
 | Plan | `forecast_balance` (a daily limit until a date, what-ifs), `simulate_loan` (refinancing, early repayment, an extra payment each month), `project_savings` | the Forecasting insight, `RecurringStore`, `LoanInfo` + `LoanWhatIf`, `SavingsProjection` |
 
@@ -424,7 +425,7 @@ The app runs the agent loop, because the tools run on the phone: one server call
   tells the prompt this app version has assets, and an older one, with no line, gets no asset
   tools), `valuation: listings` (this version runs `estimate_asset_value`), `screens` (the `open`
   destinations this version adds to the first eight, and the form kinds of `create`; an app
-  without the line gets none of them), `changes: transactions (edit, delete, recategorize)` (what this version changes in what is
+  without the line gets none of them), `changes: transactions (edit, delete, recategorize), goals, debts` (what this version changes in what is
   saved; an app without the line, or without the word, is told to do it in History), `reads:
   loans, deposits` (it runs `get_loans` and `get_deposits`), `state` (how the app is set up for this person:
   `plan free|pro; regular accounts N of M free; auto_capture on|off; backups automatic on|off,
@@ -655,12 +656,12 @@ spending, no em dashes, in all 11 languages.
 - **Pro for a person on the server**: the server sees only RevenueCat, so a Founding User (kept on
   the phone) needs `pro` granted there (Actions → RevenueCat → `grant`).
 - **Eval** (`server/assistant/eval/`): a synthetic user (`fixture.ts`; never real statements), a
-  tool simulator, 85 cases in Russian and English (`cases.ts`; help with the app: the 14 `ru-howto-*` and
+  tool simulator, 87 cases in Russian and English (`cases.ts`; help with the app: the 14 `ru-howto-*` and
   `en-howto-*`, whose `textHas` check wants the guide's steps named or whose `blockWith` wants the
   button; the forms: `ru-create-deposit`, `en-create-loan`, `ru-create-account`,
   `ru-create-category` (what was said is in `prefill`, nothing guessed, nothing drafted) and
   `ru-goal-stays-draft`; the state line: `ru-state-backup`, `ru-state-capture`, `en-state-plan`; changing what is saved: `ru-edit-amount`, `en-edit-category`, `ru-delete-one`,
-  `ru-delete-transfer-refused`, `ru-recategorize-merchant`; loan and deposit terms:
+  `ru-delete-transfer-refused`, `ru-recategorize-merchant`; a goal or a debt changed: `ru-goal-move-deadline`, `ru-debt-extend`; loan and deposit terms:
   `ru-loan-terms`, `ru-deposit-interest`; a complaint from the feedback talk (`<feedback>`):
   `ru-feedback-howto`, `ru-feedback-missing`, `en-feedback-defect`
   (the fixture is a free user with backups on the phone only and nothing captured); assets: `ru-asset-new`,

@@ -1824,6 +1824,7 @@
 "assistant.draft.deletes" = "이 기록들이 삭제됩니다.";
 "assistant.draft.restored" = "취소했습니다. 모두 이전과 같습니다.";
 "assistant.draft.recordsCount" = "기록: %lld건";
+"assistant.draft.debtSettles" = "정산 완료로 표시됩니다";
 "assistant.voice.send" = "텐에게 묻기";
 "assistant.voice.again" = "다시 말하기";
 "assistant.attach.scan" = "영수증 스캔";

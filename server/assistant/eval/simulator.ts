@@ -612,6 +612,62 @@ function goalStatus(g: (typeof GOALS)[number], extra = 0) {
   return { saved, left, reached, months, monthly: months ? round(left / months) : null, overdue: !!g.deadline && !reached && months === null };
 }
 
+// As FinanceToolkit+PlanChanges does.
+function draftGoalChange(input: Input) {
+  const reference = (str(input, "goal", true) ?? "").trim().toLowerCase();
+  const goal = GOALS.find((g) => g.id === reference || g.name.ru.toLowerCase() === reference || g.name.en.toLowerCase() === reference);
+  if (!goal) throw new ToolInputError(`Unknown goal ${reference}. Use a goal id from <app_context>.`);
+  const after = { ...goal };
+  const target = optionalNumber(input, "target");
+  if (target !== undefined) {
+    if (!(target > 0)) throw new ToolInputError("target must be positive.");
+    after.target = target;
+  }
+  const deadline = dateArg(input, "deadline");
+  if (deadline) {
+    if (deadline < TODAY) throw new ToolInputError("deadline cannot be in the past.");
+    after.deadline = deadline;
+  }
+  const name = str(input, "name")?.trim();
+  const newName = name && name !== goal.name[caseLocale] ? name : null;
+  if (after.target === goal.target && after.deadline === goal.deadline && !newName) {
+    throw new ToolInputError("Nothing changes: give a new name, target or deadline.");
+  }
+  const status = goalStatus(after);
+  const summary = (g: typeof goal, n: string) => ({ name: n, target: g.target, deadline: g.deadline });
+  return {
+    draft_id: `draft_${++draftSeq}`,
+    goal_id: goal.id,
+    currency: goal.currency,
+    before: summary(goal, goal.name[caseLocale]),
+    after: summary(after, newName ?? goal.name[caseLocale]),
+    left: round(status.left),
+    monthly: status.monthly,
+    saved: false,
+  };
+}
+
+function draftDebtChange(input: Input) {
+  const reference = (str(input, "debt", true) ?? "").trim().toLowerCase();
+  const debt = DEBTS.find((d) => d.id === reference || d.person.ru.toLowerCase() === reference || d.person.en.toLowerCase() === reference);
+  if (!debt) throw new ToolInputError(`No open debt ${reference}. Use a debt id from <app_context>.`);
+  const due = dateArg(input, "due_date");
+  if (due && due < TODAY) throw new ToolInputError("due_date cannot be in the past.");
+  const settle = input.settle === true;
+  const note = str(input, "note")?.trim();
+  if (!due && !settle && !note) throw new ToolInputError("Nothing changes: give a new due_date or note, or settle true.");
+  const left = debt.amount - debt.repaid;
+  return {
+    draft_id: `draft_${++draftSeq}`,
+    debt_id: debt.id,
+    person: debt.person[caseLocale],
+    currency: debt.currency,
+    before: { due_date: debt.dueDate, note: null, settled: false, left },
+    after: { due_date: due ?? debt.dueDate, note: note ?? null, settled: settle, left },
+    saved: false,
+  };
+}
+
 function getGoals() {
   const goals = GOALS.map((g) => {
     const s = goalStatus(g);
@@ -1029,6 +1085,8 @@ const HANDLERS: Record<string, (input: Input) => unknown> = {
   draft_transaction_edit: draftTransactionEdit,
   draft_transaction_delete: draftTransactionDelete,
   draft_recategorize: draftRecategorize,
+  draft_goal_change: draftGoalChange,
+  draft_debt_change: draftDebtChange,
   get_loans: getLoans,
   get_deposits: getDeposits,
   draft_recurring: draftRecurring,

@@ -117,6 +117,8 @@ mid-answer.
    or "Ten did not help". The help spends no free answer. With cloud answers off: the thanks,
    then the chip "Помоги разобраться", which opens the consent screen and goes on after "Turn
    on". After "Нравится" nothing changes.
+10. "Convert to deposit" in an account's "…" menu as a free person opens the paywall; after a
+    purchase the conversion form opens.
 11. Ten changes what is saved (build 80): "Вчерашний кофе был на 1 800, исправь" finds the
     record and shows a card with "Было" and "Станет"; "Сохранить" changes it in History, "Отмена"
     puts it back. "Удали вчерашний кофе" shows the record and "Удалить"; "Отмена" returns it
@@ -125,8 +127,6 @@ mid-answer.
 12. Settings › Assistant, "Спросить Тэна о приложении" opens Ten with three how-to questions;
     Ten's home starts with the questions for what is not set up (automatic capture, a first
     budget, a backup in iCloud).
-10. "Convert to deposit" in an account's "…" menu as a free person opens the paywall; after a
-    purchase the conversion form opens.
 
 **On the phone, left from the versions already in the store** (not marked done before 1.8.2 went
 out; the store build is the one to check):

@@ -36,7 +36,10 @@ another version.
   that go), saved or deleted with one tap and undone with another. Transfers and loan or deposit
   records stay in History. Needs the server with prompt 2026-11-12.5 (deployed 2026-11-12). In build 80.
 - "Put everything from Glovo under Groceries": Ten moves all records of a merchant (up to 50)
-  to another category with one card. Needs the server with prompt 2026-11-12.6. After build 80.
+  to another category with one card. After build 80.
+- Ten knows the terms of loans and deposits: the rate, the monthly payment and its day, the
+  payments left, the interest accrued on a deposit. Needs the server with prompt 2026-11-12.7.
+  After build 80.
 - Settings › Assistant has "Ask Ten about the app", and Ten's home puts first the "how to"
   questions for what the person has not set up yet (automatic capture, a first budget, a backup
   in iCloud). After build 79.

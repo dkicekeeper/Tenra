@@ -770,6 +770,24 @@ export const CASES: EvalCase[] = [
     ],
   },
   {
+    id: "ru-loan-terms",
+    locale: "ru",
+    prompt: "Какая ставка по моему кредиту и сколько платежей осталось?",
+    checks: [
+      { kind: "called", anyOf: ["get_loans"] },
+      { kind: "notCalled", tools: DRAFTS },
+    ],
+  },
+  {
+    id: "ru-deposit-interest",
+    locale: "ru",
+    prompt: "Сколько процентов уже набежало по депозиту?",
+    checks: [
+      { kind: "called", anyOf: ["get_deposits"] },
+      { kind: "cardFrom", tool: "get_deposits", label: "the accrued interest from get_deposits" },
+    ],
+  },
+  {
     id: "ru-recategorize-merchant",
     locale: "ru",
     prompt: "Перенеси все октябрьские траты в Coffee Boom в категорию «Продукты»",

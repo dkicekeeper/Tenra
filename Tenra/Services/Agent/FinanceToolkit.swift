@@ -115,6 +115,8 @@ final class FinanceToolkit: AgentToolExecuting {
             case "draft_transaction_edit": return try draftTransactionEdit(input)
             case "draft_transaction_delete": return try draftTransactionDelete(input)
             case "draft_recategorize": return try await draftRecategorize(input)
+            case "get_loans": return .success(loansResult())
+            case "get_deposits": return .success(depositsResult())
             case "get_goals": return try await goalsResult()
             case "get_debts": return try await debtsResult()
             case "draft_goal": return try await draftGoal(input)

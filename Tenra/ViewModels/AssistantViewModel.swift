@@ -908,7 +908,7 @@ enum AssistantStep: Equatable {
         case "get_spending_summary": self = .spending
         case "compare_periods": self = .comparing
         case "search_transactions": self = .searching
-        case "get_accounts": self = .accounts
+        case "get_accounts", "get_loans", "get_deposits": self = .accounts
         case "get_budgets": self = .budgets
         case "list_recurring": self = .recurring
         case "get_insights": self = .insights

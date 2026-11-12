@@ -177,6 +177,18 @@ const readTools: Tool[] = [
     input_schema: object({}),
   },
   {
+    name: "get_loans",
+    description:
+      "The user's loans and installment plans with their terms: what is left to repay, the original amount, the yearly rate, the monthly payment and its day, the term, payments made and left, the end date, the last payment and the interest paid so far. Use it for questions about a loan's terms; simulate_loan works out refinancing and early repayment.",
+    input_schema: object({}),
+  },
+  {
+    name: "get_deposits",
+    description:
+      "The user's deposits with their terms: the balance, the yearly rate, whether interest is added to the deposit (capitalization), the day interest is posted, the interest accrued since the last posting and the start date.",
+    input_schema: object({}),
+  },
+  {
     name: "get_debts",
     description:
       "Personal debts between the user and people they know (not bank loans): open ones both ways (owed_to_me, i_owe) with amount, repaid, remaining (and remaining_base in the base currency), date, due date and overdue, the latest settled ones, and the open totals each way in the base currency.",

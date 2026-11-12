@@ -373,6 +373,29 @@ function draftTransactionDelete(input: Input) {
   return { draft_id: `draft_${++draftSeq}`, count: items.length, items, skipped, saved: false };
 }
 
+// As FinanceToolkit+Accounts does: the terms of the loan and the deposit of the fixture.
+function getLoans() {
+  const account = ACCOUNTS.find((a) => a.id === LOAN_TERMS.accountId)!;
+  const remaining = Math.abs(round(balanceOf(account.id)));
+  return {
+    loans: [{
+      id: account.id, name: account.name, bank: "Halyk", currency: account.currency, remaining, original: 1_200_000,
+      rate_percent: LOAN_TERMS.ratePercent, monthly_payment: LOAN_TERMS.monthlyPayment, payment_day: 15, term_months: 24,
+      payments_made: 3, payments_left: 21, start_date: "2026-07-15", end_date: "2028-07-15", last_payment_date: "2026-10-15", interest_paid: 62_400,
+    }],
+  };
+}
+
+function getDeposits() {
+  const account = ACCOUNTS.find((a) => a.kind === "deposit")!;
+  return {
+    deposits: [{
+      id: account.id, name: account.name, bank: "Halyk", currency: account.currency, balance: round(balanceOf(account.id)),
+      rate_percent: 14, capitalization: true, interest_posting_day: 1, accrued_interest: 9_850, start_date: "2026-01-10",
+    }],
+  };
+}
+
 function draftRecategorize(input: Input) {
   const needle = (str(input, "merchant", true) ?? "").trim().toLowerCase();
   if (needle.length < 2) throw new ToolInputError("merchant must be at least two characters of the merchant's name.");
@@ -1006,6 +1029,8 @@ const HANDLERS: Record<string, (input: Input) => unknown> = {
   draft_transaction_edit: draftTransactionEdit,
   draft_transaction_delete: draftTransactionDelete,
   draft_recategorize: draftRecategorize,
+  get_loans: getLoans,
+  get_deposits: getDeposits,
   draft_recurring: draftRecurring,
   draft_fact: draftFact,
   get_goals: getGoals,

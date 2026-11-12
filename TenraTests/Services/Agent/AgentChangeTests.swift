@@ -124,6 +124,17 @@ struct AgentChangeTests {
         #expect(tooMany.error?.contains("At most 20") == true)
     }
 
+    @Test func loansAndDepositsAreListedEvenWhenThereAreNone() async throws {
+        let (toolkit, _, store) = Self.make()
+        _ = store
+        let loansOutput = await toolkit.execute(name: "get_loans", input: [:])
+        let loans = try #require(loansOutput.value)
+        #expect(loans["loans"] == .array([]))
+        let depositsOutput = await toolkit.execute(name: "get_deposits", input: [:])
+        let deposits = try #require(depositsOutput.value)
+        #expect(deposits["deposits"] == .array([]))
+    }
+
     @Test func recategorizeMovesAMerchantsRecordsInOneDraft() async throws {
         let (toolkit, book, store) = Self.make()
         store.transactions.append(

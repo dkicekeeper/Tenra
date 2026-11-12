@@ -154,9 +154,11 @@ nonisolated enum AgentContextBuilder {
                 "budgets \(state.budgets)",
             ].joined(separator: "; "))
         }
-        // What this version changes in what is already saved (plan-ten-agent stage 2): the
-        // prompt uses draft_transaction_edit and draft_transaction_delete only with this line.
-        lines.append("changes: transactions (edit, delete)")
+        // What this version changes in what is already saved (plan-ten-agent stage 2), and the
+        // terms it reads: the prompt uses draft_transaction_edit, draft_transaction_delete,
+        // draft_recategorize, get_loans and get_deposits only when these lines name them.
+        lines.append("changes: transactions (edit, delete, recategorize)")
+        lines.append("reads: loans, deposits")
         // Without facts the line is left out, as before there was a memory.
         if !facts.isEmpty { lines.append("facts you remember about the user: \(facts)") }
         if !goals.isEmpty { lines.append("savings goals: \(goals)") }

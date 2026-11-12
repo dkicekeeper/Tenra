@@ -120,7 +120,7 @@ const BLOCK_FIELDS: Record<string, Record<string, (v: unknown) => boolean>> = {
   open: {
     destination: oneOf([
       "category", "account", "analytics", "history", "budgets", "subscriptions", "assets", "asset",
-      "accounts", "deposits", "loans", "goals", "goal", "debts", "debt", "settings", "backups", "wallet_guide", "create",
+      "accounts", "deposits", "loans", "goals", "goal", "debts", "debt", "settings", "backups", "wallet_guide", "loan_payment", "create",
     ]),
     target_id: OPTIONAL_STRING,
     label: STRING,
@@ -174,12 +174,13 @@ export function universalChecks(record: RunRecord, locale: "ru" | "en", prompt =
       const id = block.target_id;
       const byDestination: Record<string, string[]> = {
         account: ACCOUNTS.map((a) => a.id),
+        loan_payment: ACCOUNTS.filter((a) => a.kind === "loan").map((a) => a.id),
         asset: ASSETS.map((a) => a.id),
         goal: GOALS.map((g) => g.id),
         debt: DEBTS.map((d) => d.id),
       };
       const known = byDestination[String(block.destination)] ?? CATEGORIES.map((c) => c.id);
-      const needsId = ["account", "category", "asset", "goal", "debt"].includes(String(block.destination));
+      const needsId = ["account", "category", "asset", "goal", "debt", "loan_payment"].includes(String(block.destination));
       // The app's decoder wants a kind for a form, and shows nothing without one.
       if (block.destination === "create" && typeof block.kind !== "string") broken.push("open: create without kind");
       if (needsId && typeof id !== "string") broken.push(`open: ${String(block.destination)} without target_id`);

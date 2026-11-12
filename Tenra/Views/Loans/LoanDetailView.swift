@@ -17,6 +17,10 @@ struct LoanDetailView: View {
     @Environment(TransactionStore.self) private var transactionStore
     @Environment(AppCoordinator.self) private var appCoordinator
     let accountId: String
+    /// Set when Ten's "loan_payment" button opened this screen (AssistantRoute.loanPayment):
+    /// the payment form opens once, as "Make Payment" opens it.
+    var paying = false
+    @State private var startedPaying = false
 
     @State private var showingEditView = false
     @State private var showingPayment = false
@@ -345,6 +349,14 @@ struct LoanDetailView: View {
                     showingEditView = false
                 }
             )
+        }
+        .task {
+            // Ten's button: straight into the payment form, once. A closed loan takes no more.
+            guard paying, !startedPaying, !account.isPaidOffLoan else { return }
+            startedPaying = true
+            // After the push that brought this screen, or the sheet is dropped.
+            try? await Task.sleep(for: .milliseconds(450))
+            showingPayment = true
         }
         .sheet(isPresented: $showingPayment) {
             if let loanInfo = account.loanInfo {

@@ -136,7 +136,7 @@ nonisolated enum AgentContextBuilder {
             "valuation: listings",
             // What this version's `open` blocks reach (plan-ten-agent 4.2): the lists of
             // Finances, goals and debts by id, Settings, and the forms for a new one.
-            "screens: accounts, deposits, loans, goals, goal, debts, debt, settings, backups, wallet_guide, create (account, deposit, loan, category)",
+            "screens: accounts, deposits, loans, goals, goal, debts, debt, settings, backups, wallet_guide, loan_payment, create (account, deposit, loan, category)",
         ]
         if let state = snapshot.state {
             let regular = snapshot.accounts.filter { $0.kind == "regular" }.count

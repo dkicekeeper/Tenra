@@ -551,7 +551,7 @@ const renderReply: Tool = {
               type: "string",
               enum: [
                 "category", "account", "analytics", "history", "budgets", "subscriptions", "assets", "asset",
-                "accounts", "deposits", "loans", "goals", "goal", "debts", "debt", "settings", "backups", "wallet_guide", "create",
+                "accounts", "deposits", "loans", "goals", "goal", "debts", "debt", "settings", "backups", "wallet_guide", "loan_payment", "create",
               ],
               description: "The first eight always work. The rest only when <app_context> has a screens line that lists them.",
             },

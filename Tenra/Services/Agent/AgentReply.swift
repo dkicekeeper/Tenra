@@ -49,6 +49,9 @@ nonisolated enum AgentDestination: String, Sendable, Equatable, Decodable {
     /// Settings, its backups screen and the guide to the Wallet automation.
     case settings, backups
     case walletGuide = "wallet_guide"
+    /// A loan by its account id, with its payment form open (plan-ten-agent stage 2): the
+    /// payment is made on the loan's own screen, where its principal and schedule are kept.
+    case loanPayment = "loan_payment"
 }
 
 /// What an `open` block with the destination "create" starts: the app's own form for a new

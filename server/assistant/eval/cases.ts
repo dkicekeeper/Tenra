@@ -688,7 +688,16 @@ export const CASES: EvalCase[] = [
     prompt: "Как внести платёж по моему кредиту в приложении?",
     checks: [
       { kind: "notCalled", tools: ["draft_transactions"] },
-      { kind: "textHas", groups: [["кредит"], ["платёж", "платеж"]], label: "the loan's screen, Make payment" },
+      { kind: "blockWith", type: "open", match: (b) => b.destination === "loan_payment" && b.target_id === "acc_loan", label: "opens the loan's payment form" },
+    ],
+  },
+  {
+    id: "ru-loan-paid-today",
+    locale: "ru",
+    prompt: "Сегодня внёс платёж по кредиту, запиши",
+    checks: [
+      { kind: "notCalled", tools: DRAFTS },
+      { kind: "blockWith", type: "open", match: (b) => b.destination === "loan_payment" && b.target_id === "acc_loan", label: "opens the loan's payment form" },
     ],
   },
   {

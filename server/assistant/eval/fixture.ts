@@ -267,7 +267,7 @@ export function appContext(locale: "ru" | "en"): string {
     `income categories: ${income}`,
     `assets: ${assets}`,
     "valuation: listings",
-    "screens: accounts, deposits, loans, goals, goal, debts, debt, settings, backups, wallet_guide, create (account, deposit, loan, category)",
+    "screens: accounts, deposits, loans, goals, goal, debts, debt, settings, backups, wallet_guide, loan_payment, create (account, deposit, loan, category)",
     "changes: transactions (edit, delete, recategorize), goals, debts, subscriptions (pause, resume)",
     "reads: loans, deposits",
     // AgentContextBuilder's state line: a free user, backups on this phone only, nothing captured.

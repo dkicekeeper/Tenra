@@ -200,6 +200,9 @@ enum AgentBlock {                // AgentReply.swift; source = a tool result's r
   subscriptions, the assets list (its cards open an asset in the same stack) or an asset by id.
   An id that does not exist shows an empty state, never another screen. A destination the app
   version does not know decodes as unsupported and is left out (`LenientBlock`).
+- **A loan payment** is the open destination `loan_payment` (`AssistantRoute.loanPayment`): the
+  loan's own screen with its payment form opened once (`LoanDetailView(paying:)`), so the
+  principal, the schedule and the paying account's conversion stay with `LoansViewModel`.
 - **The further screens** (the `screens` line of `<app_context>`, §8; the prompt uses them only
   when the line lists them): the lists of Finances (`accounts`, `deposits`, `loans`, `goals`,
   `debts`), a goal or a debt by id, `settings`, `backups` and `wallet_guide`. A reply may then
@@ -658,12 +661,12 @@ spending, no em dashes, in all 11 languages.
 - **Pro for a person on the server**: the server sees only RevenueCat, so a Founding User (kept on
   the phone) needs `pro` granted there (Actions → RevenueCat → `grant`).
 - **Eval** (`server/assistant/eval/`): a synthetic user (`fixture.ts`; never real statements), a
-  tool simulator, 89 cases in Russian and English (`cases.ts`; help with the app: the 14 `ru-howto-*` and
+  tool simulator, 90 cases in Russian and English (`cases.ts`; help with the app: the 14 `ru-howto-*` and
   `en-howto-*`, whose `textHas` check wants the guide's steps named or whose `blockWith` wants the
   button; the forms: `ru-create-deposit`, `en-create-loan`, `ru-create-account`,
   `ru-create-category` (what was said is in `prefill`, nothing guessed, nothing drafted) and
   `ru-goal-stays-draft`; the state line: `ru-state-backup`, `ru-state-capture`, `en-state-plan`; changing what is saved: `ru-edit-amount`, `en-edit-category`, `ru-delete-one`,
-  `ru-delete-transfer-refused`, `ru-recategorize-merchant`; a subscription: `ru-subscription-pause`, `ru-subscription-amount-on-screen`; a goal or a debt changed: `ru-goal-move-deadline`, `ru-debt-extend`; loan and deposit terms:
+  `ru-delete-transfer-refused`, `ru-recategorize-merchant`; a loan payment: `ru-howto-loan-payment`, `ru-loan-paid-today` (the button to the payment form, never a draft); a subscription: `ru-subscription-pause`, `ru-subscription-amount-on-screen`; a goal or a debt changed: `ru-goal-move-deadline`, `ru-debt-extend`; loan and deposit terms:
   `ru-loan-terms`, `ru-deposit-interest`; a complaint from the feedback talk (`<feedback>`):
   `ru-feedback-howto`, `ru-feedback-missing`, `en-feedback-defect`
   (the fixture is a free user with backups on the phone only and nothing captured); assets: `ru-asset-new`,

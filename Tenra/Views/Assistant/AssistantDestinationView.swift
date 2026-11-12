@@ -32,6 +32,8 @@ enum AssistantRoute: Hashable {
     case settings
     case backups
     case walletGuide
+    /// A loan's screen with its payment form open.
+    case loanPayment(String)
     /// The list a new one belongs to, with its form open and prefilled.
     case create(AgentCreateKind, AgentFormPrefill)
 
@@ -67,6 +69,9 @@ enum AssistantRoute: Hashable {
         case .settings: self = .settings
         case .backups: self = .backups
         case .walletGuide: self = .walletGuide
+        case .loanPayment:
+            guard let id else { return nil }
+            self = .loanPayment(id)
         }
     }
 
@@ -81,7 +86,7 @@ enum AssistantRoute: Hashable {
         case .assets, .asset: "house"
         case .accounts: "creditcard"
         case .deposits: "banknote"
-        case .loans: "building.columns"
+        case .loans, .loanPayment: "building.columns"
         case .goals, .goal: "target"
         case .debts, .debt: "person.2"
         case .settings: "gearshape"
@@ -167,6 +172,18 @@ struct AssistantDestinationView: View {
             depositsList(adding: nil)
         case .loans:
             loansList(adding: nil)
+        case .loanPayment(let id):
+            if let account = store.accounts.first(where: { $0.id == id }), account.isLoan {
+                LoanDetailView(
+                    loansViewModel: coordinator.loansViewModel,
+                    transactionsViewModel: coordinator.transactionsViewModel,
+                    balanceCoordinator: coordinator.balanceCoordinator,
+                    accountId: account.id,
+                    paying: true
+                )
+            } else {
+                missing
+            }
         case .goals:
             // Its cards push FinancesDestination, which only Finances' own stack handles.
             GoalsListView(goalStore: coordinator.goalStore)

@@ -39,8 +39,9 @@ another version.
   to another category with one card. In build 81.
 - Ten changes a goal (name, target, deadline) and a debt (due date, note, settled) with a card
   that shows what it is and what it becomes. In build 82.
-- "Put Spotify on hold": Ten pauses or resumes a subscription with a card. Needs the server
-  with prompt 2026-11-12.11. After build 82.
+- "Put Spotify on hold": Ten pauses or resumes a subscription with a card. In build 83.
+- "I paid the loan today": Ten's button opens the loan with its payment form already open.
+  Needs the server with prompt 2026-11-12.12. After build 83.
 - Ten knows the terms of loans and deposits: the rate, the monthly payment and its day, the
   payments left, the interest accrued on a deposit. Needs the server with prompt 2026-11-12.7
   (deployed 2026-11-12). In build 81.

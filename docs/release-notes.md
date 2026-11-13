@@ -7,8 +7,8 @@ its notes and checklist: [archive/release-notes-1.8.2.md](archive/release-notes-
 **Status 2026-11-12:** the changes below are in `main` (Tenra#160, Tenra#161, then Ten's forms,
 state line, help with complaints, the entries and editing and deleting records, at f3900c7),
 TestFlight build
-86 is processed (from the cloud, `main` at 9708fca; 85 failed at signing and was never uploaded), the server with `POST /v1/feedback` and
-prompt 2026-11-12.12 is deployed and the owner's Telegram chat is linked (`telegram-link`, a test line arrived 12.11), the What's New blocks for the 13 storefronts and en-GB are written (2026-11-13), the phone checks are not done.
+87 is processed (from the cloud, `main` at 87ba234; 85 failed at signing and was never uploaded) and selected for version 1.8.3 in App Store Connect (created 2026-11-13 with the What's New below and the App Review notes), the server with `POST /v1/feedback` and
+prompt 2026-11-13.1 is deployed and the owner's Telegram chat is linked (`telegram-link`, a test line arrived 12.11), the What's New blocks for the 13 storefronts and en-GB are written (2026-11-13), the phone checks are not done.
 
 When the blocks are written: one `## <locale>` heading per storefront (en-US, ru, en-GB, de-DE,
 es-ES, es-MX, fr-FR, fr-CA, tr, pt-BR, it, uk, ja, ko), which `prepare-version` (Actions → App
@@ -171,10 +171,9 @@ Tenra의 새로운 기능:
   payments left, the interest accrued on a deposit. Needs the server with prompt 2026-11-12.7
   (deployed 2026-11-12). In build 81.
 - "Find my subscriptions in the history": Ten looks through the last year for payments that
-  repeat like a subscription and offers to add them. Needs the server with prompt 2026-11-13.1.
-  Not in a build yet.
+  repeat like a subscription and offers to add them. In build 87.
 - Ten's messages get a one-tap button: "Pause" on a subscription charged tomorrow, "Mark
-  settled" on a debt due tomorrow; the draft opens in Ten's chat to confirm (DesignKit 8.11.0). After build 86.
+  settled" on a debt due tomorrow; the draft opens in Ten's chat to confirm (DesignKit 8.11.0). In build 87.
 - Ten's home is one thing at a time: Ten, large, with the message it wrote first (or its
   greeting) under it; three chips over the field, "Record", "Ask" and "How to"; the chats behind
   a button at the top. In build 86 (build 84 had an earlier, busier arrangement).
@@ -286,6 +285,13 @@ mid-answer.
     shows the subscription and "Встанет на паузу"; "Отмена" resumes it. "Сегодня заплатил по
     кредиту" gives a button that opens the loan with its payment form already open.
 
+15. Build 87: a message about a subscription charged tomorrow has "Пауза" next to "Разобрать",
+    one about a debt due tomorrow "Долг закрыт"; a tap opens Ten's chat with the draft's card,
+    "Сохранить" does it and "Отмена" takes it back. "Найди в истории платежи, похожие на
+    подписки" names what repeats and offers to add it. As a free person, each gate (a 4th
+    account, a deposit, a loan, a debt, an asset, voice, a statement, Ten past its allowance)
+    opens the paywall with its own headline.
+
 **On the phone, left from the versions already in the store** (not marked done before 1.8.2 went
 out; the store build is the one to check):
 
@@ -311,12 +317,13 @@ out; the store build is the one to check):
 
 ## Submission checklist
 
-1. **CI green**, then a TestFlight build (done: build 86 from 9708fca, 2026-11-13; CI green on
-   225edd2, the last commit that touched the app).
+1. **CI green**, then a TestFlight build (done: build 87 from 87ba234, 2026-11-13; CI green on
+   that code).
 2. **The phone checks above.**
-3. **What's New** in this file (written 2026-11-13), then `prepare-version --version 1.8.3 --build <N>`.
+3. **What's New** in this file (written 2026-11-13), then `prepare-version --version 1.8.3 --build <N>`
+   (done 2026-11-13: version created, 14 locales updated, build 87 selected).
 4. **App Review notes**, in English, set from this block by
-   `asc.py review-notes --version 1.8.3 --apply`:
+   `asc.py review-notes --version 1.8.3 --apply` (done 2026-11-13):
 
 ```
 New in 1.8.3, the assistant (Ten, the middle tab). It answers through Claude by Anthropic only after the person turns cloud answers on in the consent screen shown before the first question (Settings > Assistant has the same switch and screen). Ten can now prepare changes to the person's own records: correct or delete a transaction, move a merchant's transactions to another category, change a savings goal or a personal debt, pause a subscription. Nothing is changed until the person taps Save or Delete on the card Ten shows, and Undo puts it back. To try it: on Home add two expenses, open Ten, allow cloud answers and type "delete my last expense"; a card lists the record with a Delete button. Asked how to do something ("how do I add a deposit?"), Ten answers with a button that opens the app's own form or screen. Ten's message "How do you like Tenra?" on Home opens a short talk whose answer goes to the developer; when cloud answers are on and the answer says something is wrong, Ten then tries to help with it (the privacy policy says so).

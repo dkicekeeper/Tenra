@@ -31,9 +31,13 @@ assistant is that tab's page (`AssistantTab`); elsewhere (Simulator, Mac, no App
 
 **Entry points** (`AssistantEntryPoints`): the tab; "Ask Ten about the app" in Settings ›
 Assistant (`AssistantTopic.app`: how-to questions). **Ten's home** (`AssistantView`, owner's
-choice 2026-11-13: one thing on the screen): Ten at 220 pt with its greeting, and under it either
-the message Ten wrote first (`AssistantNoticesSection`, the same card as on Home) or one line on
-what Ten does. Over the field one row of chips (the composer bar's `suggestions`): "Record"
+choice 2026-11-13: one thing on the screen): Ten at 220 pt with its greeting and one line on what it does,
+and under them one card, the first that applies: the message Ten wrote first
+(`AssistantNoticesSection`, the same card as on Home), else the insight that matters most now
+(`insightCard`: a problem before good news, written as a notice with id `home:<insight id>` and
+never posted to the inbox; "Go through it" starts a chat about it, ✕ gives way to the next until
+the screen is left; the screen asks for the insights when Analytics has not computed them yet),
+else `AutoCaptureSetupCard` while no payment has recorded itself (its button asks Ten how). Over the field one row of chips (the composer bar's `suggestions`): "Record"
 focuses the field, "Ask" and "How to" open their questions in the same row with "Back" first
 (`HomeMode`; "How to" starts with what the person has not set up yet, two at most,
 `AssistantSetupQuestions`: automatic capture, a first budget, a backup in iCloud; decided on the
@@ -235,7 +239,7 @@ enum AgentBlock {                // AgentReply.swift; source = a tool result's r
   database, and a backup takes only `Tenra.sqlite`. Threads from before 1.6 (27) are plain JSON and
   still read. A thread is written after each reply; the last one reopens with the assistant, its
   questions and answers replayed from the conversation (`AssistantViewModel.entries(replaying:)`);
-  anything started from the assistant's home begins a new one; 20 are kept. Drafts do not come
+  anything started from the assistant's home begins a new one; 100 are kept. Drafts do not come
   back after a relaunch (their cards are empty). A long history drops its oldest questions whole
   (`trimIfNeeded`: at most 60 messages and 128 KB; the server takes 80 and 256 KB) and the context
   is sent again. "Delete all data" and a restore reset the open thread and Ten's Home notices

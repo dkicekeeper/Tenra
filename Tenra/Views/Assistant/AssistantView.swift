@@ -3,8 +3,9 @@
 //  Tenra
 //
 //  The assistant's home, the action tab's page (docs/domains/assistant.md §1, §9): Ten in the
-//  middle of the screen, large, with one thing under it: a message Ten wrote first (the same
-//  card as on Home), or its greeting. Over the field one row of chips: "Record", "Ask" and
+//  middle of the screen, large, with its greeting and one card under it: a message Ten wrote
+//  first (the same card as on Home), else the insight that matters most now, else the way to
+//  automatic capture. Over the field one row of chips: "Record", "Ask" and
 //  "How to", the last two opening their ready-made questions in the same row. The latest
 //  chats are a page of their own, behind the button at the top (owner's choice, 2026-11-13:
 //  variant A of the canvas with the card of B). Whatever goes from here
@@ -53,6 +54,8 @@ struct AssistantView: View {
     @State private var attachmentError: String?
     /// Questions about the screen the assistant was opened from.
     @State private var topicQuestions: [String] = []
+    /// The home's own cards the person hid on this visit (an insight's, the capture card).
+    @State private var hiddenCards: Set<String> = []
     /// The questions open in the row over the field; nil shows the three chips.
     @State private var homeMode: HomeMode?
     @State private var showingPaywall = false
@@ -251,18 +254,45 @@ struct AssistantView: View {
                     try? await Task.sleep(for: AssistantMetrics.greetingDelay)
                     greet()
                 }
+                // The card under the greeting reads the insights, which are computed when
+                // Analytics shows: here too, when this screen comes first.
+                .task {
+                    if coordinator.insightsViewModel.insights.isEmpty {
+                        coordinator.insightsViewModel.refreshInsights()
+                    }
+                }
             Text(String(localized: "assistant.greeting.title"))
                 .font(AppTypography.h3)
                 .foregroundStyle(AppColors.Text.primary)
-            // One thing under Ten: what it wrote first (its card, "Go through it" starts the
-            // chat), else what it does.
+            Text(String(localized: "assistant.greeting.message"))
+                .font(AppTypography.bodySmall)
+                .foregroundStyle(AppColors.Text.secondary)
+                .multilineTextAlignment(.center)
+            // One card under the greeting, always when there is anything to say: what Ten wrote
+            // first (its card, "Go through it" starts the chat), else the insight that matters
+            // most now, else the way to entries that record themselves.
             if hasNotice {
                 AssistantNoticesSection()
-            } else {
-                Text(String(localized: "assistant.greeting.message"))
-                    .font(AppTypography.bodySmall)
-                    .foregroundStyle(AppColors.Text.secondary)
-                    .multilineTextAlignment(.center)
+            } else if let notice = insightCard {
+                AssistantNoticeCard(
+                    notice: notice,
+                    onAsk: {
+                        HapticManager.light()
+                        start(.notice(notice))
+                    },
+                    onHide: { hiddenCards.insert(notice.id) }
+                )
+                .id(notice.id)
+                .transition(.opacity)
+            } else if showsCaptureCard {
+                AutoCaptureSetupCard(
+                    onSetUp: {
+                        HapticManager.light()
+                        start(.question(String(localized: "assistant.howto.capture"), spoken: false))
+                    },
+                    onHide: { hiddenCards.insert(Self.captureCardID) }
+                )
+                .transition(.opacity)
             }
             if showsDemoQuestions {
                 SuggestionChips(presets, systemImage: "sparkles", layout: .wrap) {
@@ -273,6 +303,37 @@ struct AssistantView: View {
             }
         }
         .frame(maxWidth: .infinity)
+    }
+
+    private static let captureCardID = "home:capture"
+
+    /// The insight that matters most now, written as a message of Ten's: the card the home shows
+    /// when Ten wrote nothing first. Problems come before good news; one the person hid on this
+    /// visit gives way to the next. Never posted to the inbox.
+    private var insightCard: AssistantNotice? {
+        guard AssistantAvailability.isAvailable,
+              !AssistantRegion.isOutOfRegion(markedAt: outOfRegionAt, now: Date()) else { return nil }
+        let rank: [InsightSeverity: Int] = [.critical: 0, .warning: 1, .positive: 2, .neutral: 3]
+        let insight = coordinator.insightsViewModel.insights
+            .filter { !hiddenCards.contains("home:\($0.id)") }
+            .min { (rank[$0.severity] ?? 4, $0.id) < (rank[$1.severity] ?? 4, $1.id) }
+        guard let insight else { return nil }
+        return AssistantNotice(
+            id: "home:\(insight.id)",
+            kind: .signal,
+            title: insight.title,
+            body: InsightSignalService.notificationBody(for: insight),
+            hiddenBody: InsightSignalService.hiddenNotificationBody(for: insight),
+            mood: insight.severity == .positive ? .happy : insight.severity == .neutral ? .idle : .concerned,
+            question: String(format: String(localized: "assistant.notice.ask"), insight.title),
+            insightId: insight.id,
+            createdAt: Date()
+        )
+    }
+
+    /// Nothing to say about the money yet, and no payment has recorded itself: the way there.
+    private var showsCaptureCard: Bool {
+        !WalletCaptureStore.shared.hasEverCaptured && !hiddenCards.contains(Self.captureCardID)
     }
 
     /// A message Ten wrote waits unread (what AssistantNoticesSection shows).

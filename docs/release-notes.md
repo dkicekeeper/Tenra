@@ -294,6 +294,11 @@ mid-answer.
     account, a deposit, a loan, a debt, an asset, voice, a statement, Ten past its allowance)
     opens the paywall with its own headline.
 
+16. Build 88: Ten's home always has a card under the greeting: "Тэн пишет" with the insight that
+    matters most (a problem first) when no message waits, "Разобрать" starts a chat about it, ✕
+    shows the next one; on an empty install the automatic capture card. The chats page has no
+    section title under the navigation one and lists every kept chat, not six.
+
 **On the phone, left from the versions already in the store** (not marked done before 1.8.2 went
 out; the store build is the one to check):
 

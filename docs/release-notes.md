@@ -8,8 +8,9 @@ its notes and checklist: [archive/release-notes-1.8.2.md](archive/release-notes-
 cloud) is processed and selected for version 1.8.3 in App Store Connect with the What's New below
 and the App Review notes; builds 86 to 89 came before it the same day (85 failed at signing and
 was never uploaded). The server with `POST /v1/feedback` and prompt 2026-11-13.11 is deployed
-(eval on Haiku at low effort: 100 of 104), the owner's Telegram chat is linked. The phone checks
-are not done; the version is not submitted.
+(eval on Haiku at low effort: 100 of 104), the owner's Telegram chat is linked. The version was
+submitted for review on 2026-11-13 on the founder's word (`prepare-review --submit`, build 90);
+the phone checks below were left to the founder.
 
 When the blocks are written: one `## <locale>` heading per storefront (en-US, ru, en-GB, de-DE,
 es-ES, es-MX, fr-FR, fr-CA, tr, pt-BR, it, uk, ja, ko), which `prepare-version` (Actions → App

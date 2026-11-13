@@ -53,6 +53,16 @@ extension FinanceToolkit {
         }.value
     }
 
+    /// `find_duplicates`: incomes and expenses that look recorded twice
+    /// (FinanceToolkitCompute.duplicates), swept off the main actor.
+    func duplicates() async -> JSONValue {
+        let snapshot = makeSnapshot()
+        let sweepCalendar = calendar
+        return await Task.detached(priority: .userInitiated) {
+            FinanceToolkitCompute.duplicates(snapshot, calendar: sweepCalendar)
+        }.value
+    }
+
     /// `get_deposits`: every deposit account with its terms and its balance.
     func depositsResult() -> JSONValue {
         let balances = store.balanceCoordinator.balances

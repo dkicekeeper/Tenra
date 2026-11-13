@@ -309,6 +309,7 @@ mid-answer.
     and "Отмена" the old one; "Слей X в Y" shows both categories with the number of records,
     after "Сохранить" X is gone and its records are in Y (History, Analytics, the budget of Y),
     "Отмена" brings X back with its records; deleting a category with records is refused.
+    "Найди дубли" names the pairs recorded twice and offers to delete the extra one of each.
 
 **On the phone, left from the versions already in the store** (not marked done before 1.8.2 went
 out; the store build is the one to check):

@@ -58,8 +58,9 @@ struct AgentCategoryTests {
         #expect(value.value(atPath: "categories.0.top_merchants.0.name") == "Glovo")
         #expect(value.value(atPath: "categories.0.top_merchants.0.records") == 2)
         #expect(value.value(atPath: "categories.1.id") == "cat_food")
-        #expect(value.value(atPath: "categories.2.id") == "cat_gifts")
-        #expect(value.value(atPath: "categories.2.unused") == true)
+        // Nothing in either: by name, Зарплата before Подарки.
+        #expect(value.value(atPath: "categories.3.id") == "cat_gifts")
+        #expect(value.value(atPath: "categories.3.unused") == true)
         #expect(value.value(atPath: "without_category.records") == 0)
     }
 

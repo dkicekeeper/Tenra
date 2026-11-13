@@ -850,6 +850,15 @@ export const CASES: EvalCase[] = [
     ],
   },
   {
+    id: "ru-find-duplicates",
+    locale: "ru",
+    prompt: "Проверь, нет ли у меня записей, внесённых дважды",
+    checks: [
+      { kind: "called", anyOf: ["find_duplicates"] },
+      { kind: "notCalled", tools: ["draft_transactions", "draft_recategorize", "draft_category_change"] },
+    ],
+  },
+  {
     id: "ru-category-audit",
     locale: "ru",
     prompt: "Посмотри на мои категории: что бы ты в них поменял?",

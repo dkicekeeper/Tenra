@@ -183,6 +183,12 @@ const readTools: Tool[] = [
     input_schema: object({}),
   },
   {
+    name: "find_duplicates",
+    description:
+      "Looks through the last twelve months for incomes and expenses that look recorded twice: the same day, type, amount and currency on the same account (what a statement imported over payments that recorded themselves leaves behind). Returns up to 20 groups, newest first, each with date, amount, currency, same_merchant (every record has the same name: almost surely one payment twice) and its records (transaction_id, merchant, category, account, recurring), and count_total. Two real payments of the same amount on one day are possible: the user decides. Offer draft_transaction_delete for the extra record of each group they confirm, keeping the one with the better name and category.",
+    input_schema: object({}),
+  },
+  {
     name: "get_category_audit",
     description:
       "How the user's categories and subcategories are used over the last twelve months, for tidying them up. Per expense and income category: records, their total in the base currency and share_percent of its type, last_date, unused (no record ever), idle (none in these twelve months), has_budget, top_merchants (up to 5 with their record counts), its subcategories with their record counts and without_subcategory (records tagged with none, when the category has subcategories); apart, without_category: records whose category no longer exists. Categories come largest first.",

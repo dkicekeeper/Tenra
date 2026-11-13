@@ -123,6 +123,7 @@ final class FinanceToolkit: AgentToolExecuting {
             case "draft_goal_change": return try await draftGoalChange(input)
             case "draft_debt_change": return try await draftDebtChange(input)
             case "find_recurring_candidates": return .success(await recurringCandidates())
+            case "find_duplicates": return .success(await duplicates())
             case "get_category_audit": return .success(await categoryAudit())
             case "draft_category_change": return try draftCategoryChange(input)
             case "get_review_queue": return .success(reviewQueueResult())

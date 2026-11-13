@@ -388,6 +388,22 @@ function findRecurringCandidates() {
   };
 }
 
+// As FinanceToolkitCompute.duplicates does: the same day, type, amount, currency and account.
+function findDuplicates() {
+  const from = `${Number(TODAY.slice(0, 4)) - 1}${TODAY.slice(4)}`;
+  const groups: Record<string, typeof TRANSACTIONS> = {};
+  for (const t of TRANSACTIONS) {
+    if ((t.type !== "expense" && t.type !== "income") || t.date < from || t.date > TODAY) continue;
+    (groups[`${t.date}|${t.type}|${t.currency}|${Math.round(t.amount * 100)}|${t.accountId}`] ??= []).push(t);
+  }
+  const found = Object.values(groups).filter((g) => g.length > 1).map((g) => ({
+    date: g[0]!.date, type: g[0]!.type, amount: g[0]!.amount, currency: g[0]!.currency,
+    same_merchant: new Set(g.map((t) => t.merchant.trim().toLowerCase())).size === 1,
+    records: g.map((t) => ({ transaction_id: t.id, merchant: t.merchant, category: categoryName(t.categoryId), account: accountName(t.accountId), recurring: false })),
+  })).sort((a, b) => b.date.localeCompare(a.date));
+  return { from, to: TODAY, groups: found.slice(0, 20), count_total: found.length };
+}
+
 // As FinanceToolkitCompute.categoryAudit does, on the fixture: the last twelve months by category.
 function getCategoryAudit() {
   const from = `${Number(TODAY.slice(0, 4)) - 1}${TODAY.slice(4)}`;
@@ -1209,6 +1225,7 @@ const HANDLERS: Record<string, (input: Input) => unknown> = {
   find_recurring_candidates: findRecurringCandidates,
   get_review_queue: getReviewQueue,
   get_category_audit: getCategoryAudit,
+  find_duplicates: findDuplicates,
   draft_category_change: draftCategoryChange,
   draft_review_confirm: draftReviewConfirm,
   get_loans: getLoans,

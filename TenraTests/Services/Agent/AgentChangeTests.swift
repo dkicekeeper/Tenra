@@ -51,6 +51,23 @@ struct AgentChangeTests {
         return (toolkit, book, store)
     }
 
+    @Test func duplicatesAreTheSameDayAmountAndAccount() async throws {
+        let (toolkit, _, store) = Self.make()
+        store.transactions += [
+            // The same payment twice: once by itself, once from a statement.
+            Transaction(id: "t_glovo_2", date: "2026-10-27", description: "GLOVO ALMATY", amount: 4_200, currency: "KZT", type: .expense, category: "Продукты", accountId: "acc_kaspi"),
+            // The same day and amount on another account: not a pair.
+            Transaction(id: "t_other", date: "2026-10-26", description: "Coffee Boom", amount: 1_500, currency: "KZT", type: .expense, category: "Кафе", accountId: "acc_halyk"),
+        ]
+        let output = await toolkit.execute(name: "find_duplicates", input: [:])
+        let value = try #require(output.value, "\(output.error ?? "")")
+        #expect(value["count_total"] == 1)
+        #expect(value.value(atPath: "groups.0.date") == "2026-10-27")
+        #expect(value.value(atPath: "groups.0.same_merchant") == false)
+        #expect(value.value(atPath: "groups.0.records.0.transaction_id") == "t_glovo")
+        #expect(value.value(atPath: "groups.0.records.1.transaction_id") == "t_glovo_2")
+    }
+
     @Test func anEditKeepsWhatWasAndDraftsWhatBecomes() async throws {
         let (toolkit, book, store) = Self.make()
         _ = store

@@ -8,14 +8,139 @@ its notes and checklist: [archive/release-notes-1.8.2.md](archive/release-notes-
 state line, help with complaints, the entries and editing and deleting records, at f3900c7),
 TestFlight build
 86 is processed (from the cloud, `main` at 9708fca; 85 failed at signing and was never uploaded), the server with `POST /v1/feedback` and
-prompt 2026-11-12.12 is deployed and the owner's Telegram chat is linked (`telegram-link`, a test line arrived 12.11), the What's New blocks for the 13 storefronts and en-GB are not
-written, the phone checks are not done.
+prompt 2026-11-12.12 is deployed and the owner's Telegram chat is linked (`telegram-link`, a test line arrived 12.11), the What's New blocks for the 13 storefronts and en-GB are written (2026-11-13), the phone checks are not done.
 
 When the blocks are written: one `## <locale>` heading per storefront (en-US, ru, en-GB, de-DE,
 es-ES, es-MX, fr-FR, fr-CA, tr, pt-BR, it, uk, ja, ko), which `prepare-version` (Actions → App
 Store Connect, [asc.md](asc.md)) pastes into App Store Connect; en-GB (search in Kazakhstan)
 carries ru's text. No em dashes (user rule). `prepare-version` refuses notes whose title names
 another version.
+
+## en-US
+
+```
+What's new in Tenra:
+• Ten now does things for you: opens the form for a new deposit, loan, account or category with what you said already filled in, corrects or deletes an operation, moves a merchant's operations to another category, changes a goal or a debt, pauses a subscription. You confirm each change on a card and can undo it.
+• Ten knows the app: ask how to do something and get a button to the right screen. It finds payments in your history that look like subscriptions and tells you the terms of your loans and deposits.
+• Something not working? Tell Ten what went wrong and it will try to fix it right away. Ten's home screen is simpler too.
+```
+
+## ru
+
+```
+Что нового в Tenra:
+• Тэн теперь делает сам: открывает форму нового депозита, кредита, счёта или категории с уже заполненными полями, исправляет и удаляет операции, переносит операции продавца в другую категорию, меняет цель или долг, ставит подписку на паузу. Каждое изменение вы подтверждаете на карточке и можете отменить.
+• Тэн знает приложение: спросите, как что-то сделать, и получите кнопку на нужный экран. Он находит в истории платежи, похожие на подписки, и рассказывает условия ваших кредитов и депозитов.
+• Что-то не получается? Напишите Тэну, что пошло не так, и он попробует решить это сразу. Главный экран Тэна стал проще.
+```
+
+## en-GB
+
+```
+Что нового в Tenra:
+• Тэн теперь делает сам: открывает форму нового депозита, кредита, счёта или категории с уже заполненными полями, исправляет и удаляет операции, переносит операции продавца в другую категорию, меняет цель или долг, ставит подписку на паузу. Каждое изменение вы подтверждаете на карточке и можете отменить.
+• Тэн знает приложение: спросите, как что-то сделать, и получите кнопку на нужный экран. Он находит в истории платежи, похожие на подписки, и рассказывает условия ваших кредитов и депозитов.
+• Что-то не получается? Напишите Тэну, что пошло не так, и он попробует решить это сразу. Главный экран Тэна стал проще.
+```
+
+## de-DE
+
+```
+Neu in Tenra:
+• Ten erledigt jetzt Dinge für Sie: öffnet das Formular für eine neue Einlage, einen Kredit, ein Konto oder eine Kategorie mit bereits ausgefüllten Angaben, korrigiert oder löscht eine Buchung, verschiebt die Buchungen eines Händlers in eine andere Kategorie, ändert ein Sparziel oder eine Schuld, pausiert ein Abo. Jede Änderung bestätigen Sie auf einer Karte und können sie rückgängig machen.
+• Ten kennt die App: Fragen Sie, wie etwas geht, und Sie bekommen eine Taste zum richtigen Bildschirm. Ten findet in Ihrem Verlauf Zahlungen, die wie Abos aussehen, und nennt die Konditionen Ihrer Kredite und Einlagen.
+• Etwas klappt nicht? Schreiben Sie Ten, was schiefgelaufen ist, und Ten versucht, es sofort zu lösen. Tens Startbildschirm ist außerdem einfacher geworden.
+```
+
+## es-ES
+
+```
+Novedades en Tenra:
+• Ten ahora hace cosas por ti: abre el formulario de un nuevo depósito, préstamo, cuenta o categoría con lo que dijiste ya rellenado, corrige o elimina una operación, mueve las operaciones de un comercio a otra categoría, cambia un objetivo o una deuda y pausa una suscripción. Confirmas cada cambio en una tarjeta y puedes deshacerlo.
+• Ten conoce la app: pregunta cómo hacer algo y recibe un botón a la pantalla correcta. Encuentra en tu historial pagos que parecen suscripciones y te dice las condiciones de tus préstamos y depósitos.
+• ¿Algo no funciona? Cuéntale a Ten qué ha fallado e intentará resolverlo al momento. La pantalla de inicio de Ten también es más sencilla.
+```
+
+## es-MX
+
+```
+Novedades en Tenra:
+• Ten ahora hace cosas por ti: abre el formulario de un nuevo depósito, préstamo, cuenta o categoría con lo que dijiste ya llenado, corrige o elimina una operación, mueve las operaciones de un comercio a otra categoría, cambia una meta o una deuda y pausa una suscripción. Confirmas cada cambio en una tarjeta y puedes deshacerlo.
+• Ten conoce la app: pregunta cómo hacer algo y recibe un botón a la pantalla correcta. Encuentra en tu historial pagos que parecen suscripciones y te dice las condiciones de tus préstamos y depósitos.
+• ¿Algo no funciona? Cuéntale a Ten qué salió mal e intentará resolverlo al momento. La pantalla de inicio de Ten también es más sencilla.
+```
+
+## fr-FR
+
+```
+Nouveautés de Tenra :
+• Ten agit désormais pour vous : il ouvre le formulaire d’un nouveau dépôt, prêt, compte ou d’une nouvelle catégorie avec ce que vous avez dit déjà rempli, corrige ou supprime une opération, déplace les opérations d’un commerçant vers une autre catégorie, modifie un objectif ou une dette, met un abonnement en pause. Vous confirmez chaque changement sur une carte et pouvez l’annuler.
+• Ten connaît l’app : demandez comment faire quelque chose et recevez un bouton vers le bon écran. Il trouve dans votre historique les paiements qui ressemblent à des abonnements et vous donne les conditions de vos prêts et dépôts.
+• Quelque chose ne marche pas ? Dites à Ten ce qui ne va pas et il essaiera de le résoudre tout de suite. L’écran d’accueil de Ten est aussi plus simple.
+```
+
+## fr-CA
+
+```
+Nouveautés de Tenra :
+• Ten agit désormais pour vous : il ouvre le formulaire d’un nouveau dépôt, prêt, compte ou d’une nouvelle catégorie avec ce que vous avez dit déjà rempli, corrige ou supprime une opération, déplace les opérations d’un commerçant vers une autre catégorie, modifie un objectif ou une dette, met un abonnement en pause. Vous confirmez chaque changement sur une carte et pouvez l’annuler.
+• Ten connaît l’app : demandez comment faire quelque chose et recevez un bouton vers le bon écran. Il trouve dans votre historique les paiements qui ressemblent à des abonnements et vous donne les conditions de vos prêts et dépôts.
+• Quelque chose ne fonctionne pas? Dites à Ten ce qui ne va pas et il essaiera de le régler tout de suite. L’écran d’accueil de Ten est aussi plus simple.
+```
+
+## tr
+
+```
+Tenra'daki yenilikler:
+• Ten artık sizin yerinize yapıyor: yeni bir mevduat, kredi, hesap veya kategori formunu söyledikleriniz doldurulmuş olarak açar, bir işlemi düzeltir veya siler, bir satıcının işlemlerini başka bir kategoriye taşır, bir hedefi veya borcu değiştirir, bir aboneliği duraklatır. Her değişikliği bir kartta onaylarsınız ve geri alabilirsiniz.
+• Ten uygulamayı biliyor: bir şeyin nasıl yapıldığını sorun, doğru ekrana giden bir düğme alın. Geçmişinizde aboneliğe benzeyen ödemeleri bulur ve kredi ile mevduatlarınızın koşullarını söyler.
+• Bir şey mi çalışmıyor? Ten'e neyin ters gittiğini yazın, hemen çözmeye çalışsın. Ten'in ana ekranı da sadeleşti.
+```
+
+## pt-BR
+
+```
+Novidades no Tenra:
+• O Ten agora faz por você: abre o formulário de um novo depósito, empréstimo, conta ou categoria com o que você disse já preenchido, corrige ou exclui uma operação, move as operações de um estabelecimento para outra categoria, altera uma meta ou uma dívida e pausa uma assinatura. Você confirma cada mudança em um cartão e pode desfazer.
+• O Ten conhece o app: pergunte como fazer algo e receba um botão para a tela certa. Ele encontra no seu histórico pagamentos que parecem assinaturas e informa as condições dos seus empréstimos e depósitos.
+• Algo não funciona? Conte ao Ten o que deu errado e ele tentará resolver na hora. A tela inicial do Ten também ficou mais simples.
+```
+
+## it
+
+```
+Novità in Tenra:
+• Ten ora fa le cose per te: apre il modulo di un nuovo deposito, prestito, conto o categoria con ciò che hai detto già compilato, corregge o elimina un'operazione, sposta le operazioni di un esercente in un'altra categoria, modifica un obiettivo o un debito, mette in pausa un abbonamento. Confermi ogni modifica su una scheda e puoi annullarla.
+• Ten conosce l'app: chiedi come fare qualcosa e ricevi un pulsante per la schermata giusta. Trova nella cronologia i pagamenti che sembrano abbonamenti e ti dice le condizioni dei tuoi prestiti e depositi.
+• Qualcosa non funziona? Scrivi a Ten cosa è andato storto e proverà a risolverlo subito. Anche la schermata iniziale di Ten è più semplice.
+```
+
+## uk
+
+```
+Що нового в Tenra:
+• Тен тепер робить сам: відкриває форму нового депозиту, кредиту, рахунку чи категорії з уже заповненими полями, виправляє і видаляє операції, переносить операції продавця в іншу категорію, змінює ціль або борг, ставить підписку на паузу. Кожну зміну ви підтверджуєте на картці й можете скасувати.
+• Тен знає застосунок: запитайте, як щось зробити, і отримайте кнопку на потрібний екран. Він знаходить в історії платежі, схожі на підписки, і розповідає умови ваших кредитів і депозитів.
+• Щось не виходить? Напишіть Тену, що пішло не так, і він спробує вирішити це одразу. Головний екран Тена став простішим.
+```
+
+## ja
+
+```
+Tenraの新機能:
+• テンが代わりに操作します。新しい預金、ローン、口座、カテゴリのフォームを、話した内容が入力された状態で開きます。取引の修正と削除、店舗の取引を別のカテゴリへまとめて移動、目標や貸し借りの変更、サブスクリプションの一時停止もできます。変更はカードで確認してから保存され、取り消せます。
+• テンはアプリの使い方を知っています。やり方をたずねると、その画面へのボタンが届きます。履歴からサブスクリプションらしい支払いを見つけ、ローンや預金の条件も答えます。
+• うまくいかないときは、何が起きたかをテンに伝えてください。その場で解決を試みます。テンのホーム画面もすっきりしました。
+```
+
+## ko
+
+```
+Tenra의 새로운 기능:
+• 텐이 대신 처리합니다. 새 예금, 대출, 계좌, 카테고리 양식을 말씀하신 내용이 채워진 상태로 열고, 거래를 수정하거나 삭제하고, 한 가맹점의 거래를 다른 카테고리로 옮기고, 목표나 빚을 변경하고, 구독을 일시 중지합니다. 모든 변경은 카드에서 확인한 뒤 저장되며 되돌릴 수 있습니다.
+• 텐은 앱 사용법을 압니다. 방법을 물으면 해당 화면으로 가는 버튼을 드립니다. 내역에서 구독처럼 보이는 결제를 찾아 주고 대출과 예금의 조건도 알려 줍니다.
+• 잘 안 되는 것이 있나요? 무엇이 문제인지 텐에게 알려 주시면 바로 해결을 시도합니다. 텐의 홈 화면도 더 단순해졌습니다.
+```
 
 ## In this version (main since 2026-11-10)
 

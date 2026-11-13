@@ -53,6 +53,34 @@ extension FinanceToolkit {
         }.value
     }
 
+    /// `get_subscription_audit`: every subscription with its real charges
+    /// (FinanceToolkitCompute.subscriptionAudit), swept off the main actor.
+    func subscriptionAudit() async -> JSONValue {
+        let snapshot = makeSnapshot()
+        let subscriptions = store.recurringSeries.filter(\.isSubscription).map { series in
+            let days: Int = switch series.frequency {
+            case .daily: 1
+            case .weekly: 7
+            case .monthly: 31
+            case .quarterly: 92
+            case .yearly: 366
+            }
+            return FinanceToolkitCompute.AuditSubscription(
+                id: series.id,
+                name: series.description.isEmpty ? series.category : series.description,
+                amount: NSDecimalNumber(decimal: series.amount).doubleValue,
+                currency: series.currency,
+                frequency: series.frequency.rawValue,
+                intervalDays: days,
+                isActive: series.isActive,
+                startDate: series.startDate
+            )
+        }
+        return await Task.detached(priority: .userInitiated) {
+            FinanceToolkitCompute.subscriptionAudit(snapshot, subscriptions: subscriptions)
+        }.value
+    }
+
     private struct BalanceInput: Decodable {
         let account: String
         let balance: Double

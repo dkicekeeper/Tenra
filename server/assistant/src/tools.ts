@@ -183,6 +183,12 @@ const readTools: Tool[] = [
     input_schema: object({}),
   },
   {
+    name: "get_subscription_audit",
+    description:
+      "Each subscription with its real charges, for looking them over: amount, currency, frequency, active, charges_total, last_charge, days_since_last_charge, recent_charges (up to 4, newest first), price_change_percent (between the last two charges, null when it did not change), missed (an active subscription with no charge for an interval and a half: probably cancelled or forgotten) and same_name_as (other subscriptions with the same name: probably entered twice). Read only: pausing is draft_subscription_state, the amount and cancelling are on the subscription's screen.",
+    input_schema: object({}),
+  },
+  {
     name: "suggest_budgets",
     description:
       "What each expense category took in each of the last three whole months, in the base currency, next to the monthly budget it has: months (month, spent), average, highest, limit (null without a monthly budget), months_over (how many of the three went over the limit) and other_period (it has a weekly or yearly budget: leave it). Largest first. Use it to offer budgets that follow what is really spent; the limits themselves go through draft_budget.",

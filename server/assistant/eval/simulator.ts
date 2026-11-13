@@ -388,6 +388,21 @@ function findRecurringCandidates() {
   };
 }
 
+// As FinanceToolkitCompute.subscriptionAudit does: the fixture's subscriptions with their charges.
+function getSubscriptionAudit() {
+  const subscriptions = RECURRING.filter((r) => r.kind === "subscription").map((r) => {
+    const own = TRANSACTIONS.filter((t) => t.merchant === r.name && t.date <= TODAY).sort((a, b) => b.date.localeCompare(a.date));
+    const last = own[0];
+    return {
+      id: r.id, name: r.name, amount: r.amount, currency: r.currency, frequency: "monthly", active: r.active,
+      charges_total: own.length, last_charge: last?.date ?? null, days_since_last_charge: last ? daysBetween(last.date, TODAY) : null,
+      recent_charges: own.slice(0, 4).map((t) => ({ date: t.date, amount: t.amount })), price_change_percent: null,
+      missed: r.active && (!last || daysBetween(last.date, TODAY) > 46), same_name_as: [],
+    };
+  });
+  return { today: TODAY, subscriptions };
+}
+
 // As FinanceToolkitCompute.budgetSuggestions does: the three whole months before this one.
 function suggestBudgets() {
   const year = Number(TODAY.slice(0, 4));
@@ -1273,6 +1288,7 @@ const HANDLERS: Record<string, (input: Input) => unknown> = {
   get_category_audit: getCategoryAudit,
   find_duplicates: findDuplicates,
   suggest_budgets: suggestBudgets,
+  get_subscription_audit: getSubscriptionAudit,
   draft_category_change: draftCategoryChange,
   draft_subcategory: draftSubcategory,
   draft_balance_correction: draftBalanceCorrection,

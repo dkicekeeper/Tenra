@@ -154,6 +154,40 @@ struct AgentChangeTests {
         #expect(tooMany.error?.contains("At most 20") == true)
     }
 
+    @Test func theSubscriptionAuditSeesAPriceRiseAndAMissedCharge() async throws {
+        let defaults = UserDefaults(suiteName: "tests.\(UUID().uuidString)")!
+        let repo = UserDefaultsRepository(userDefaults: defaults)
+        let recurring = RecurringStore(repository: repo)
+        let store = TransactionStore(repository: repo, balanceCoordinator: BalanceCoordinator(repository: repo), recurringStore: recurring)
+        recurring.load(series: [
+            RecurringSeries(
+                id: "rec_spotify", amount: 2_990, currency: "KZT", category: "Подписки", description: "Spotify",
+                accountId: "acc_kaspi", frequency: .monthly, startDate: "2026-07-14", kind: .subscription, status: .active
+            ),
+            RecurringSeries(
+                id: "rec_gym", amount: 15_000, currency: "KZT", category: "Подписки", description: "Gym",
+                accountId: "acc_kaspi", frequency: .monthly, startDate: "2026-05-01", kind: .subscription, status: .active
+            ),
+        ], occurrences: [])
+        store.transactions = [
+            Transaction(id: "c1", date: "2026-09-14", description: "Spotify", amount: 2_600, currency: "KZT", type: .expense, category: "Подписки", accountId: "acc_kaspi", recurringSeriesId: "rec_spotify"),
+            Transaction(id: "c2", date: "2026-10-14", description: "Spotify", amount: 2_990, currency: "KZT", type: .expense, category: "Подписки", accountId: "acc_kaspi", recurringSeriesId: "rec_spotify"),
+            // The gym was last charged in June.
+            Transaction(id: "c3", date: "2026-06-01", description: "Gym", amount: 15_000, currency: "KZT", type: .expense, category: "Подписки", accountId: "acc_kaspi", recurringSeriesId: "rec_gym"),
+        ]
+        let toolkit = FinanceToolkit(store: store, learned: VoiceLearningStore(defaults: defaults), now: { Self.now })
+
+        let output = await toolkit.execute(name: "get_subscription_audit", input: [:])
+        let value = try #require(output.value, "\(output.error ?? "")")
+        #expect(value.value(atPath: "subscriptions.0.id") == "rec_spotify")
+        #expect(value.value(atPath: "subscriptions.0.last_charge") == "2026-10-14")
+        #expect(value.value(atPath: "subscriptions.0.price_change_percent") == 15)
+        #expect(value.value(atPath: "subscriptions.0.missed") == false)
+        #expect(value.value(atPath: "subscriptions.1.id") == "rec_gym")
+        #expect(value.value(atPath: "subscriptions.1.missed") == true)
+        #expect(value.value(atPath: "subscriptions.1.price_change_percent") == .null)
+    }
+
     @Test func aSubscriptionPausesOnlyWhileItRuns() async throws {
         let defaults = UserDefaults(suiteName: "tests.\(UUID().uuidString)")!
         let repo = UserDefaultsRepository(userDefaults: defaults)

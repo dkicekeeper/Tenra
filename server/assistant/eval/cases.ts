@@ -850,6 +850,15 @@ export const CASES: EvalCase[] = [
     ],
   },
   {
+    id: "ru-subscription-audit",
+    locale: "ru",
+    prompt: "Проверь мои подписки: есть ли среди них лишние или подорожавшие?",
+    checks: [
+      { kind: "called", anyOf: ["get_subscription_audit"] },
+      { kind: "notCalled", tools: ["draft_transactions", "draft_transaction_delete", "draft_recurring"] },
+    ],
+  },
+  {
     id: "ru-balance-correction",
     locale: "ru",
     prompt: "На Kaspi Gold на самом деле 250 000, не знаю, откуда разница. Поправь остаток",

@@ -1826,6 +1826,7 @@
 "assistant.draft.recordsCount" = "Kayıt: %lld";
 "assistant.draft.debtSettles" = "Kapatıldı olarak işaretlenecek";
 "assistant.draft.pauses" = "Duraklatılacak: sürdürene kadar ödeme alınmaz";
+"assistant.draft.mergesInto" = "%lld kaydı aşağıdaki kategoriye geçer, bu kategori silinir";
 "assistant.draft.resumes" = "Sürdürülecek";
 "assistant.voice.send" = "Ten’e sor";
 "assistant.voice.again" = "Yeniden söyle";

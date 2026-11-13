@@ -1826,6 +1826,7 @@
 "assistant.draft.recordsCount" = "Opérations : %lld";
 "assistant.draft.debtSettles" = "Sera marquée comme réglée";
 "assistant.draft.pauses" = "Sera mis en pause : aucun prélèvement jusqu’à la reprise";
+"assistant.draft.mergesInto" = "Ses %lld opérations passent dans la catégorie ci-dessous, celle-ci est supprimée";
 "assistant.draft.resumes" = "Sera repris";
 "assistant.voice.send" = "Demander à Ten";
 "assistant.voice.again" = "Redire";

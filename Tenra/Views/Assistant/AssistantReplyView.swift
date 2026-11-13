@@ -491,6 +491,23 @@ private struct AssistantDraftCard: View {
                     transactionRow(transaction, store: store)
                 } else if case .reviewConfirm(let transaction) = operation {
                     transactionRow(transaction, store: store)
+                } else if case .categoryRename(let before, let name) = operation {
+                    InlineStatusText(message: String(localized: "assistant.draft.budgetWas"), type: .info)
+                        .padding(.vertical, AppSpacing.md)
+                    categoryRow(before.name)
+                    InlineStatusText(message: String(localized: "assistant.draft.becomes"), type: .info)
+                        .padding(.vertical, AppSpacing.md)
+                    categoryRow(name)
+                } else if case .categoryMerge(let from, let into, let records) = operation {
+                    categoryRow(from.name)
+                    InlineStatusText(
+                        message: String(format: String(localized: "assistant.draft.mergesInto"), records),
+                        type: .info
+                    )
+                    .padding(.vertical, AppSpacing.md)
+                    categoryRow(into.name)
+                } else if case .categoryDelete(let category) = operation {
+                    categoryRow(category.name)
                 } else if case .subscriptionState(let series, let pause) = operation {
                     recurringRow(series)
                     InlineStatusText(
@@ -629,6 +646,11 @@ private struct AssistantDraftCard: View {
         draft.operations.contains { if case .transactionDelete = $0 { true } else { false } }
     }
 
+    /// The draft deletes an unused category: the button says "Delete", with no records to warn about.
+    private var deletesCategory: Bool {
+        draft.operations.contains { if case .categoryDelete = $0 { true } else { false } }
+    }
+
     /// The draft confirms payments on review: its button says "Correct", as on that screen.
     private var confirmsReview: Bool {
         draft.operations.contains { if case .reviewConfirm = $0 { true } else { false } }
@@ -638,7 +660,8 @@ private struct AssistantDraftCard: View {
     private var changesSaved: Bool {
         draft.operations.contains { operation in
             switch operation {
-            case .transactionEdit, .transactionDelete, .goalChange, .debtChange, .subscriptionState, .reviewConfirm: true
+            case .transactionEdit, .transactionDelete, .goalChange, .debtChange, .subscriptionState, .reviewConfirm,
+                 .categoryRename, .categoryMerge, .categoryDelete: true
             default: false
             }
         }
@@ -664,9 +687,9 @@ private struct AssistantDraftCard: View {
         switch state {
         case .pending, .saving:
             DSButton(
-                deletes ? String(localized: "assistant.draft.delete")
+                deletes || deletesCategory ? String(localized: "assistant.draft.delete")
                     : confirmsReview ? String(localized: "walletReview.confirm") : String(localized: "assistant.draft.save"),
-                systemImage: deletes ? "trash" : "checkmark",
+                systemImage: deletes || deletesCategory ? "trash" : "checkmark",
                 fullWidth: true,
                 isLoading: state == .saving
             ) {
@@ -715,6 +738,11 @@ private struct AssistantDraftCard: View {
                 accessory: .amount(previous, currency: store.baseCurrency)
             )
         }
+    }
+
+    /// A category by its name.
+    private func categoryRow(_ name: String) -> some View {
+        ItemRow(name, leading: .symbol("square.grid.2x2"), style: .large)
     }
 
     /// The subscription or regular payment: its name, how often, the first charge, the amount.
@@ -862,7 +890,8 @@ private struct AssistantDraftCard: View {
     private static func preview(_ operation: AgentDraftOperation, id: String) -> Transaction? {
         switch operation {
         case .budget, .recurring, .fact, .goal, .goalContribution, .debt, .debtRepayment, .asset, .assetValuation,
-             .transactionEdit, .transactionDelete, .goalChange, .debtChange, .subscriptionState, .reviewConfirm:
+             .transactionEdit, .transactionDelete, .goalChange, .debtChange, .subscriptionState, .reviewConfirm,
+             .categoryRename, .categoryMerge, .categoryDelete:
             return nil
         case .single(let draft):
             return Transaction(

@@ -1826,6 +1826,7 @@
 "assistant.draft.recordsCount" = "Registros: %lld";
 "assistant.draft.debtSettles" = "Se marcará como saldada";
 "assistant.draft.pauses" = "Se pausará: sin cargos hasta que la reanudes";
+"assistant.draft.mergesInto" = "Sus %lld registros pasan a la categoría de abajo y esta se elimina";
 "assistant.draft.resumes" = "Se reanudará";
 "assistant.voice.send" = "Preguntar a Ten";
 "assistant.voice.again" = "Decirlo otra vez";

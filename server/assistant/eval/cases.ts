@@ -850,6 +850,35 @@ export const CASES: EvalCase[] = [
     ],
   },
   {
+    id: "ru-category-audit",
+    locale: "ru",
+    prompt: "Посмотри на мои категории: что бы ты в них поменял?",
+    checks: [
+      { kind: "called", anyOf: ["get_category_audit"] },
+      { kind: "notCalled", tools: ["draft_category_change", "draft_recategorize", "draft_transaction_delete"] },
+    ],
+  },
+  {
+    id: "ru-category-rename",
+    locale: "ru",
+    prompt: "Переименуй категорию «Транспорт» в «Поездки»",
+    checks: [
+      { kind: "called", anyOf: ["draft_category_change"] },
+      { kind: "block", type: "confirm" },
+      { kind: "notCalled", tools: ["draft_recategorize", "draft_transactions"] },
+    ],
+  },
+  {
+    id: "ru-category-merge",
+    locale: "ru",
+    prompt: "Объедини категорию «Транспорт» с «Жильё», пусть всё будет в «Жильё»",
+    checks: [
+      { kind: "called", anyOf: ["draft_category_change"] },
+      { kind: "block", type: "confirm" },
+      { kind: "notCalled", tools: ["draft_transaction_delete"] },
+    ],
+  },
+  {
     id: "ru-loan-terms",
     locale: "ru",
     prompt: "Какая ставка по моему кредиту и сколько платежей осталось?",

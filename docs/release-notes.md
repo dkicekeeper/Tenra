@@ -304,6 +304,12 @@ mid-answer.
     "Верно"; it empties the list and "Отмена" brings them back. "Glovo это продукты, а не кафе"
     drafts the change, and saving it takes the payment off review.
 
+18. Categories (next build): "Посмотри на мои категории, что бы ты поменял" names a few changes
+    and drafts nothing; "Переименуй X в Y" shows Было and Станет, the history shows the new name
+    and "Отмена" the old one; "Слей X в Y" shows both categories with the number of records,
+    after "Сохранить" X is gone and its records are in Y (History, Analytics, the budget of Y),
+    "Отмена" brings X back with its records; deleting a category with records is refused.
+
 **On the phone, left from the versions already in the store** (not marked done before 1.8.2 went
 out; the store build is the one to check):
 

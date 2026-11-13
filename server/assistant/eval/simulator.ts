@@ -388,6 +388,68 @@ function findRecurringCandidates() {
   };
 }
 
+// As FinanceToolkitCompute.categoryAudit does, on the fixture: the last twelve months by category.
+function getCategoryAudit() {
+  const from = `${Number(TODAY.slice(0, 4)) - 1}${TODAY.slice(4)}`;
+  const totals: Record<string, number> = {};
+  const rows = CATEGORIES.filter((c) => c.type === "expense" || c.type === "income").map((c) => {
+    const all = TRANSACTIONS.filter((t) => t.categoryId === c.id && t.type === c.type && t.date <= TODAY);
+    const recent = all.filter((t) => t.date >= from);
+    const total = round(recent.reduce((sum, t) => sum + toBase(t.amount, t.currency), 0));
+    totals[c.type] = (totals[c.type] ?? 0) + total;
+    const merchants: Record<string, number> = {};
+    for (const t of recent) if (t.merchant) merchants[t.merchant] = (merchants[t.merchant] ?? 0) + 1;
+    return {
+      c, total, records: recent.length, all: all.length,
+      last: all.map((t) => t.date).sort().pop() ?? null,
+      top: Object.entries(merchants).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).slice(0, 5).map(([name, records]) => ({ name, records })),
+    };
+  });
+  return {
+    from, to: TODAY, currency: BASE_CURRENCY,
+    categories: rows.sort((a, b) => b.total - a.total || a.c.name.localeCompare(b.c.name)).map((r) => ({
+      id: r.c.id, name: r.c.name, type: r.c.type, records: r.records, total: r.total,
+      share_percent: totals[r.c.type] ? Math.round((r.total / totals[r.c.type]!) * 1000) / 10 : 0,
+      last_date: r.last, unused: r.all === 0, idle: r.all > 0 && r.records === 0,
+      has_budget: BUDGETS.some((b) => b.categoryId === r.c.id), top_merchants: r.top, subcategories: [], without_subcategory: 0,
+    })),
+    without_category: { records: 0, total: 0 },
+  };
+}
+
+// As FinanceToolkit+Categories does.
+function draftCategoryChange(input: Input) {
+  const find = (raw: string, field: string) => {
+    const reference = raw.trim().toLowerCase();
+    const found = CATEGORIES.find((c) => c.id === reference) ?? CATEGORIES.find((c) => c.name.toLowerCase() === reference);
+    if (!found) throw new ToolInputError(`Unknown category ${raw} in ${field}. Use a category id from <app_context>.`);
+    return found;
+  };
+  const subject = find(str(input, "category", true) ?? "", "category");
+  const name = (str(input, "name") ?? "").trim();
+  const target = (str(input, "merge_into") ?? "").trim();
+  const actions = [name !== "", target !== "", input.delete === true].filter(Boolean).length;
+  if (actions !== 1) throw new ToolInputError("Give exactly one of name (rename), merge_into (fold into another category) or delete true.");
+  const records = TRANSACTIONS.filter((t) => t.categoryId === subject.id).length;
+  const budgetLost = BUDGETS.some((b) => b.categoryId === subject.id);
+  const base = { draft_id: "", category_id: subject.id, category: subject.name, records, saved: false };
+  if (name) {
+    if (name.length > 40) throw new ToolInputError("name must be 40 characters or fewer.");
+    if (name === subject.name) throw new ToolInputError("Nothing changes: the category is already called that.");
+    const twin = CATEGORIES.find((c) => c.id !== subject.id && c.type === subject.type && c.name.toLowerCase() === name.toLowerCase());
+    if (twin) throw new ToolInputError(`A category called ${twin.name} exists (${twin.id}). To join them use merge_into.`);
+    return { ...base, draft_id: `draft_${++draftSeq}`, action: "rename", name };
+  }
+  if (target) {
+    const into = find(target, "merge_into");
+    if (into.id === subject.id) throw new ToolInputError("A category cannot be merged into itself.");
+    if (into.type !== subject.type) throw new ToolInputError(`${subject.name} and ${into.name} are of different types (expense and income): they cannot be merged.`);
+    return { ...base, draft_id: `draft_${++draftSeq}`, action: "merge", into_id: into.id, into: into.name, budget_lost: budgetLost };
+  }
+  if (records > 0) throw new ToolInputError(`${subject.name} has ${records} records: it cannot be deleted here. Fold it into another category with merge_into, which keeps the records.`);
+  return { ...base, draft_id: `draft_${++draftSeq}`, action: "delete", budget_lost: budgetLost };
+}
+
 // As FinanceToolkit+Review does, on the fixture: the three latest expenses on Kaspi Gold are
 // payments Apple Pay recorded with a guessed category.
 function reviewQueue() {
@@ -1146,6 +1208,8 @@ const HANDLERS: Record<string, (input: Input) => unknown> = {
   draft_debt_change: draftDebtChange,
   find_recurring_candidates: findRecurringCandidates,
   get_review_queue: getReviewQueue,
+  get_category_audit: getCategoryAudit,
+  draft_category_change: draftCategoryChange,
   draft_review_confirm: draftReviewConfirm,
   get_loans: getLoans,
   get_deposits: getDeposits,

@@ -1141,6 +1141,72 @@ final class TransactionStore {
         mutationVersion &+= 1
     }
 
+    /// What `mergeCategory` did, for `undoCategoryMerge`.
+    struct CategoryMerge: Equatable {
+        /// The category that was folded in and deleted.
+        let removed: CustomCategory
+        let intoId: String
+        /// The transactions and the series that carried its name.
+        let transactionIds: [String]
+        let seriesIds: [String]
+    }
+
+    /// Folds one category into another of the same type: its transactions and recurring series
+    /// take the other's name and it is deleted (its budget goes with it). The name-keyed
+    /// indexes and aggregates are rebuilt whole, since two names' buckets become one. nil when
+    /// either is gone or their types differ.
+    func mergeCategory(_ fromId: String, into intoId: String) -> CategoryMerge? {
+        guard fromId != intoId, let from = categoryById[fromId], let into = categoryById[intoId],
+              from.type == into.type, from.name != into.name else { return nil }
+        let transactionIds = transactions
+            .filter { $0.category == from.name && $0.type != .internalTransfer && $0.type.categoryPickerSourceType == from.type }
+            .map(\.id)
+        // Series carry no category type: they follow only when no other category keeps the name.
+        let nameStays = categories.contains { $0.id != fromId && $0.name == from.name }
+        let seriesIds = nameStays ? [] : recurringStore.recurringSeries.filter { $0.category == from.name }.map(\.id)
+
+        deleteCategory(fromId)
+        renameCategoryInTransactions(from: from.name, to: into.name, type: from.type)
+        rebuildCategoryIndexes()
+        categoriesMutationVersion &+= 1
+        return CategoryMerge(removed: from, intoId: intoId, transactionIds: transactionIds, seriesIds: seriesIds)
+    }
+
+    /// Puts a merged category back with the transactions and series it had, where they still
+    /// carry the name they were given (one edited since stays as it is).
+    func undoCategoryMerge(_ merge: CategoryMerge) {
+        guard categoryById[merge.removed.id] == nil, let intoName = categoryById[merge.intoId]?.name else { return }
+        addCategory(merge.removed)
+        // A same-named category made meanwhile: nothing to put back into.
+        guard categoryById[merge.removed.id] != nil else { return }
+
+        let ids = Set(merge.transactionIds)
+        var movedIds: [String] = []
+        for index in transactions.indices where ids.contains(transactions[index].id) && transactions[index].category == intoName {
+            let moved = transactions[index].renamingCategory(to: merge.removed.name)
+            transactions[index] = moved
+            transactionById[moved.id] = moved
+            movedIds.append(moved.id)
+        }
+        let seriesIds = Set(merge.seriesIds)
+        var seriesChanged = false
+        for series in recurringStore.recurringSeries where seriesIds.contains(series.id) && series.category == intoName {
+            var updated = series
+            updated.category = merge.removed.name
+            recurringStore.handleSeriesUpdated(old: series, new: updated)
+            seriesChanged = true
+        }
+        if seriesChanged { recurringStore.saveSeries() }
+        if !movedIds.isEmpty {
+            noteProvisionalChange(\.transactions, changed: movedIds)
+            repository.renameTransactionsCategory(ids: movedIds, to: merge.removed.name)
+            cache.invalidateAll()
+            mutationVersion &+= 1
+        }
+        rebuildCategoryIndexes()
+        categoriesMutationVersion &+= 1
+    }
+
     /// Delete a transaction
     func delete(_ transaction: Transaction) async throws {
         guard transactionById[transaction.id] != nil else {

@@ -61,6 +61,11 @@ enum AgentDraftOperation: Equatable {
     case subscriptionState(series: RecurringSeries, pause: Bool)
     /// A captured payment on review that is right as it was guessed (FinanceToolkit+Review).
     case reviewConfirm(Transaction)
+    /// A category with a new name, folded into another one, or deleted unused
+    /// (FinanceToolkit+Categories). `records` is how many the merge moves, for the card.
+    case categoryRename(before: CustomCategory, name: String)
+    case categoryMerge(from: CustomCategory, into: CustomCategory, records: Int)
+    case categoryDelete(CustomCategory)
 }
 
 /// A subscription or a regular payment, as the series it will become (it starts on its next
@@ -121,6 +126,9 @@ enum AgentSavedRecord: Equatable {
     case subscriptionState(seriesId: String, paused: Bool)
     /// A payment confirmed; nil when it was no longer on review by the time of Save.
     case reviewConfirmed(AgentReviewUndo?)
+    case categoryRenamed(before: CustomCategory)
+    case categoryDeleted(CustomCategory, subcategoryIds: [String])
+    case categoryMerged(AgentCategoryMergeUndo)
 }
 
 enum AgentDraftError: Error {
@@ -271,6 +279,8 @@ extension AgentDraftBook.Writer {
         return Self(
             save: { operation in
                 switch operation {
+                case .categoryRename, .categoryMerge, .categoryDelete:
+                    return try Self.saveCategoryChange(operation, store: store, categoriesViewModel: categoriesViewModel)
                 case .reviewConfirm(let transaction):
                     guard let current = store.transactionById[transaction.id], current == transaction else { throw AgentDraftError.recordChanged }
                     return .reviewConfirmed(AgentReviewConfirm.confirm(current, categoriesViewModel: categoriesViewModel))
@@ -338,6 +348,8 @@ extension AgentDraftBook.Writer {
             },
             undo: { record in
                 switch record {
+                case .categoryRenamed, .categoryDeleted, .categoryMerged:
+                    Self.undoCategoryChange(record, store: store, categoriesViewModel: categoriesViewModel)
                 case .reviewConfirmed(let undo):
                     if let undo { AgentReviewConfirm.undo(undo) }
                 case .transaction(let transaction):

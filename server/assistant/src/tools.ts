@@ -183,6 +183,12 @@ const readTools: Tool[] = [
     input_schema: object({}),
   },
   {
+    name: "get_category_audit",
+    description:
+      "How the user's categories and subcategories are used over the last twelve months, for tidying them up. Per expense and income category: records, their total in the base currency and share_percent of its type, last_date, unused (no record ever), idle (none in these twelve months), has_budget, top_merchants (up to 5 with their record counts), its subcategories with their record counts and without_subcategory (records tagged with none, when the category has subcategories); apart, without_category: records whose category no longer exists. Categories come largest first.",
+    input_schema: object({}),
+  },
+  {
     name: "get_review_queue",
     description:
       "The payments on review: the ones Apple Pay and bank notifications recorded by themselves with a category or an account Tenra guessed, which the user has not looked at yet. Returns up to 30, newest first, with transaction_id, date, merchant, amount, currency, the category and account they were saved with and what was guessed (category, account), the total on review, and questions_on_screen: charges that may belong to a subscription and pairs that may be a transfer between own accounts, which are answered on the To review screen (an open block with the destination review).",
@@ -371,6 +377,20 @@ const draftTools: Tool[] = [
         action: { type: "string", enum: ["pause", "resume"] },
       },
       ["subscription", "action"],
+    ),
+  },
+  {
+    name: "draft_category_change",
+    description:
+      "Prepares one change to a category, for the user to confirm on the card: a new name (name; its records follow), folding it into another category of the same type (merge_into: its records, subscriptions and remembered merchants move there and it is deleted, its own budget goes with it), or deleting a category no record uses (delete true; one with records is refused: merge it instead). Exactly one of name, merge_into and delete. category and merge_into are category ids from <app_context> or names. One draft per category. To move only some records to another category use draft_recategorize. Returns draft_id, action, records and budget_lost.",
+    input_schema: object(
+      {
+        category: { type: "string" },
+        name: { type: "string", description: "The new name, up to 40 characters" },
+        merge_into: { type: "string", description: "The category that takes the records" },
+        delete: { type: "boolean" },
+      },
+      ["category"],
     ),
   },
   {

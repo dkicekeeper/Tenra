@@ -61,6 +61,15 @@ it in one background save (`renameTransactionsCategory(ids:to:)`). Categories ar
 transaction whose stored name matches no category fails `validate` with `categoryNotFound` when edited, and appears in the
 category filter (`CategoryFilterView`) under "Deleted" (`categoryFilter.deletedCategories`). Pinned by `CategoryRenameTests`.
 
+### Merging two categories
+
+`TransactionStore.mergeCategory(_:into:)` (the assistant's `draft_category_change`) folds one category into another of the
+same type: `deleteCategory`, then `renameCategoryInTransactions` (the old name is gone, so recurring series follow), then
+`rebuildCategoryIndexes()`, since two names' buckets and aggregates become one and re-keying would overwrite the target's.
+It returns a `CategoryMerge` (the removed category, the ids it moved); `undoCategoryMerge` re-adds the category and moves
+back the records that still carry the target's name. Subcategory links and remembered merchants are the caller's
+(`AgentDraftBook.Writer.saveCategoryChange`). Pinned by `CategoryMergeTests`.
+
 ## Aggregate buckets
 
 `CategoryAggregate` keys are 4-granularity: `daily`, `monthly`, `yearly`, `all-time` (see [Models/CategoryAggregate.swift](../../Tenra/Models/CategoryAggregate.swift)).

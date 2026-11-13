@@ -182,9 +182,11 @@ Tenra의 새로운 기능:
 - Ten's chat: the three typing dots are gone; while Ten works, the step it is on shimmers.
 - Converting an account to a deposit from the account's own screen asks for Tenra Pro, as the
   accounts list already did.
-- A gate's paywall can come from its own RevenueCat placement (the identifier is the gate's
-  `paywall_source`, [promotion-plan.md](promotion-plan.md) §2): no visible change until
-  placements are set up in the dashboard.
+- A gate's paywall comes from its own RevenueCat placement (the identifier is the gate's
+  `paywall_source`, [promotion-plan.md](promotion-plan.md) §2). Set up on 2026-11-13: loans,
+  deposits, accounts, personal debts, assets, voice, statement import and Ten each open a copy of
+  the paywall with their own headline and their feature first; onboarding, Analytics and Settings
+  keep the general one, and the app in Kazakh keeps its one paywall.
 - Settings › Assistant: turning cloud answers on shows the same consent screen as the chat's
   first question (App Review 5.1.2(i)); before, the switch turned the cloud on without it.
 - Ten in Russia and Belarus (no cloud there): the first question gets Ten's message once,

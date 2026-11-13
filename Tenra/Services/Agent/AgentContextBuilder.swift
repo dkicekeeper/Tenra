@@ -67,6 +67,8 @@ nonisolated struct AgentContextSnapshot: Sendable, Equatable {
         let freeAccountLimit: Int
         /// The Wallet or a bank notification automation has recorded a payment.
         let capturing: Bool
+        /// Captured payments with a guess nobody looked at (the To review screen).
+        var onReview = 0
         let automaticBackups: Bool
         let iCloudBackups: Bool
         /// The newest backup, made by hand or automatically.
@@ -136,7 +138,7 @@ nonisolated enum AgentContextBuilder {
             "valuation: listings",
             // What this version's `open` blocks reach (plan-ten-agent 4.2): the lists of
             // Finances, goals and debts by id, Settings, and the forms for a new one.
-            "screens: accounts, deposits, loans, goals, goal, debts, debt, settings, backups, wallet_guide, loan_payment, create (account, deposit, loan, category)",
+            "screens: accounts, deposits, loans, goals, goal, debts, debt, settings, backups, wallet_guide, loan_payment, review, create (account, deposit, loan, category)",
         ]
         if let state = snapshot.state {
             let regular = snapshot.accounts.filter { $0.kind == "regular" }.count
@@ -152,14 +154,15 @@ nonisolated enum AgentContextBuilder {
                 "backups automatic \(onOff(state.automaticBackups)), icloud \(onOff(state.iCloudBackups)), last \(last)",
                 "spending_reminder \(onOff(state.spendingReminder))",
                 "budgets \(state.budgets)",
+                "on_review \(state.onReview)",
             ].joined(separator: "; "))
         }
         // What this version changes in what is already saved (plan-ten-agent stage 2), and the
         // terms it reads: the prompt uses draft_transaction_edit, draft_transaction_delete,
         // draft_recategorize, draft_goal_change, draft_debt_change, get_loans and get_deposits
         // only when these lines name them.
-        lines.append("changes: transactions (edit, delete, recategorize), goals, debts, subscriptions (pause, resume)")
-        lines.append("reads: loans, deposits, recurring_candidates")
+        lines.append("changes: transactions (edit, delete, recategorize), goals, debts, subscriptions (pause, resume), review (confirm)")
+        lines.append("reads: loans, deposits, recurring_candidates, review_queue")
         // Without facts the line is left out, as before there was a memory.
         if !facts.isEmpty { lines.append("facts you remember about the user: \(facts)") }
         if !goals.isEmpty { lines.append("savings goals: \(goals)") }

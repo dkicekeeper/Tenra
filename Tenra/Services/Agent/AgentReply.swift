@@ -52,6 +52,8 @@ nonisolated enum AgentDestination: String, Sendable, Equatable, Decodable {
     /// A loan by its account id, with its payment form open (plan-ten-agent stage 2): the
     /// payment is made on the loan's own screen, where its principal and schedule are kept.
     case loanPayment = "loan_payment"
+    /// The To review screen: captured payments with a guessed category or account.
+    case review
 }
 
 /// What an `open` block with the destination "create" starts: the app's own form for a new

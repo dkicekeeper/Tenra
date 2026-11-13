@@ -831,6 +831,25 @@ export const CASES: EvalCase[] = [
     ],
   },
   {
+    id: "ru-review-queue",
+    locale: "ru",
+    prompt: "Разбери платежи, которые стоят на проверке",
+    checks: [
+      { kind: "called", anyOf: ["get_review_queue"] },
+      { kind: "notCalled", tools: ["draft_transactions", "draft_transaction_delete"] },
+    ],
+  },
+  {
+    id: "ru-review-confirm-all",
+    locale: "ru",
+    prompt: "На проверке всё угадано верно, подтверди все платежи",
+    checks: [
+      { kind: "called", anyOf: ["draft_review_confirm"] },
+      { kind: "block", type: "confirm" },
+      { kind: "notCalled", tools: ["draft_transaction_delete", "draft_recategorize"] },
+    ],
+  },
+  {
     id: "ru-loan-terms",
     locale: "ru",
     prompt: "Какая ставка по моему кредиту и сколько платежей осталось?",

@@ -299,6 +299,11 @@ mid-answer.
     shows the next one; on an empty install the automatic capture card. The chats page has no
     section title under the navigation one and lists every kept chat, not six.
 
+17. Payments on review (next build): with a few payments in Settings › Wallet › To review,
+    "Разбери платежи на проверке" names them and shows one card with them and the button
+    "Верно"; it empties the list and "Отмена" brings them back. "Glovo это продукты, а не кафе"
+    drafts the change, and saving it takes the payment off review.
+
 **On the phone, left from the versions already in the store** (not marked done before 1.8.2 went
 out; the store build is the one to check):
 

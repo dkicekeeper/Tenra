@@ -32,6 +32,7 @@ enum AssistantRoute: Hashable {
     case settings
     case backups
     case walletGuide
+    case review
     /// A loan's screen with its payment form open.
     case loanPayment(String)
     /// The list a new one belongs to, with its form open and prefilled.
@@ -69,6 +70,7 @@ enum AssistantRoute: Hashable {
         case .settings: self = .settings
         case .backups: self = .backups
         case .walletGuide: self = .walletGuide
+        case .review: self = .review
         case .loanPayment:
             guard let id else { return nil }
             self = .loanPayment(id)
@@ -92,6 +94,7 @@ enum AssistantRoute: Hashable {
         case .settings: "gearshape"
         case .backups: "icloud"
         case .walletGuide: "wallet.pass"
+        case .review: "checklist"
         case .create: "plus.circle"
         }
     }
@@ -233,6 +236,12 @@ struct AssistantDestinationView: View {
             )
         case .walletGuide:
             WalletSetupGuideView()
+        case .review:
+            WalletReviewView(
+                transactionsViewModel: coordinator.transactionsViewModel,
+                categoriesViewModel: coordinator.categoriesViewModel,
+                accountsViewModel: coordinator.accountsViewModel
+            )
         case .create(let kind, let prefill):
             switch kind {
             case .account: accountsList(adding: prefill)

@@ -266,6 +266,7 @@ class AppCoordinator {
                     isPro: PremiumManager.shared.isPro,
                     freeAccountLimit: PremiumConfig.freeAccountLimit,
                     capturing: WalletCaptureStore.shared.hasEverCaptured,
+                    onReview: WalletCaptureStore.shared.toReview.count,
                     automaticBackups: backups.automaticBackupsEnabled,
                     iCloudBackups: backups.iCloudEnabled,
                     lastBackup: backups.backups.map(\.date).max(),

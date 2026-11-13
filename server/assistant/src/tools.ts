@@ -183,6 +183,12 @@ const readTools: Tool[] = [
     input_schema: object({}),
   },
   {
+    name: "get_review_queue",
+    description:
+      "The payments on review: the ones Apple Pay and bank notifications recorded by themselves with a category or an account Tenra guessed, which the user has not looked at yet. Returns up to 30, newest first, with transaction_id, date, merchant, amount, currency, the category and account they were saved with and what was guessed (category, account), the total on review, and questions_on_screen: charges that may belong to a subscription and pairs that may be a transfer between own accounts, which are answered on the To review screen (an open block with the destination review).",
+    input_schema: object({}),
+  },
+  {
     name: "get_loans",
     description:
       "The user's loans and installment plans with their terms: what is left to repay, the original amount, the yearly rate, the monthly payment and its day, the term, payments made and left, the end date, the last payment and the interest paid so far. Use it for questions about a loan's terms; simulate_loan works out refinancing and early repayment.",
@@ -365,6 +371,18 @@ const draftTools: Tool[] = [
         action: { type: "string", enum: ["pause", "resume"] },
       },
       ["subscription", "action"],
+    ),
+  },
+  {
+    name: "draft_review_confirm",
+    description:
+      "Prepares confirming payments on review that are right as they were saved, for the user to confirm on one card: they leave the review list, the category is remembered for the merchant and the account for the card, so the next payment there is not a guess. Give transaction_ids from get_review_queue, or all true for every payment on review. A payment whose category is wrong is not confirmed: fix it with draft_transaction_edit, which takes it off review when saved. Returns draft_id, count and left_on_review.",
+    input_schema: object(
+      {
+        transaction_ids: { type: "array", items: { type: "string" }, description: "From get_review_queue, up to 30" },
+        all: { type: "boolean", description: "Every payment on review" },
+      },
+      [],
     ),
   },
   {
@@ -557,7 +575,7 @@ const renderReply: Tool = {
               type: "string",
               enum: [
                 "category", "account", "analytics", "history", "budgets", "subscriptions", "assets", "asset",
-                "accounts", "deposits", "loans", "goals", "goal", "debts", "debt", "settings", "backups", "wallet_guide", "loan_payment", "create",
+                "accounts", "deposits", "loans", "goals", "goal", "debts", "debt", "settings", "backups", "wallet_guide", "loan_payment", "review", "create",
               ],
               description: "The first eight always work. The rest only when <app_context> has a screens line that lists them.",
             },

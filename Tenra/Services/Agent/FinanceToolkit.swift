@@ -38,6 +38,8 @@ final class FinanceToolkit: AgentToolExecuting {
     let valuation: AgentValuationTransport?
     /// Debts and assets are Tenra Pro: `draft_debt` and `draft_asset` ask before filing one.
     let isPro: () -> Bool
+    /// The payments the Wallet and bank automations saved, with what is still on review.
+    let captures: WalletCaptureStore
     private let learned: VoiceLearningStore
     private let suggestAccount: ((String) -> String?)?
     let now: () -> Date
@@ -69,6 +71,7 @@ final class FinanceToolkit: AgentToolExecuting {
         assets: AssetStore? = nil,
         valuation: AgentValuationTransport? = nil,
         isPro: @escaping () -> Bool = { true },
+        captures: WalletCaptureStore? = nil,
         learned: VoiceLearningStore? = nil,
         suggestAccount: ((String) -> String?)? = nil,
         now: @escaping () -> Date = Date.init,
@@ -84,6 +87,7 @@ final class FinanceToolkit: AgentToolExecuting {
         self.assets = assets
         self.valuation = valuation
         self.isPro = isPro
+        self.captures = captures ?? .shared
         self.learned = learned ?? .shared
         self.suggestAccount = suggestAccount
         self.now = now
@@ -119,6 +123,8 @@ final class FinanceToolkit: AgentToolExecuting {
             case "draft_goal_change": return try await draftGoalChange(input)
             case "draft_debt_change": return try await draftDebtChange(input)
             case "find_recurring_candidates": return .success(await recurringCandidates())
+            case "get_review_queue": return .success(reviewQueueResult())
+            case "draft_review_confirm": return try draftReviewConfirm(input)
             case "get_loans": return .success(loansResult())
             case "get_deposits": return .success(depositsResult())
             case "get_goals": return try await goalsResult()
@@ -1386,6 +1392,8 @@ final class FinanceToolkit: AgentToolExecuting {
             return describePlanChange(operation)
         case .subscriptionState:
             return describeSubscriptionState(operation)
+        case .reviewConfirm:
+            return describeReview(operation)
         }
     }
 }

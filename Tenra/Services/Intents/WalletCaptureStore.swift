@@ -316,6 +316,14 @@ final class WalletCaptureStore {
         persist()
     }
 
+    /// Back on review: the assistant's confirmation was undone (AgentReviewConfirm.undo).
+    func markUnreviewed(transactionId: String) {
+        guard var capture = captures[transactionId], capture.isReviewed else { return }
+        capture.isReviewed = false
+        captures[transactionId] = capture
+        persist()
+    }
+
     /// Drops captures whose transaction no longer exists (deleted in the app).
     func removeCaptures(notIn transactionIds: Set<String>) {
         let kept = captures.filter { transactionIds.contains($0.key) }

@@ -489,6 +489,8 @@ private struct AssistantDraftCard: View {
                     transactionRow(change.after, store: store)
                 } else if case .transactionDelete(let transaction) = operation {
                     transactionRow(transaction, store: store)
+                } else if case .reviewConfirm(let transaction) = operation {
+                    transactionRow(transaction, store: store)
                 } else if case .subscriptionState(let series, let pause) = operation {
                     recurringRow(series)
                     InlineStatusText(
@@ -627,11 +629,16 @@ private struct AssistantDraftCard: View {
         draft.operations.contains { if case .transactionDelete = $0 { true } else { false } }
     }
 
+    /// The draft confirms payments on review: its button says "Correct", as on that screen.
+    private var confirmsReview: Bool {
+        draft.operations.contains { if case .reviewConfirm = $0 { true } else { false } }
+    }
+
     /// The draft changes what was saved before (an edit or a deletion): Undo puts it back.
     private var changesSaved: Bool {
         draft.operations.contains { operation in
             switch operation {
-            case .transactionEdit, .transactionDelete, .goalChange, .debtChange, .subscriptionState: true
+            case .transactionEdit, .transactionDelete, .goalChange, .debtChange, .subscriptionState, .reviewConfirm: true
             default: false
             }
         }
@@ -657,7 +664,8 @@ private struct AssistantDraftCard: View {
         switch state {
         case .pending, .saving:
             DSButton(
-                deletes ? String(localized: "assistant.draft.delete") : String(localized: "assistant.draft.save"),
+                deletes ? String(localized: "assistant.draft.delete")
+                    : confirmsReview ? String(localized: "walletReview.confirm") : String(localized: "assistant.draft.save"),
                 systemImage: deletes ? "trash" : "checkmark",
                 fullWidth: true,
                 isLoading: state == .saving
@@ -854,7 +862,7 @@ private struct AssistantDraftCard: View {
     private static func preview(_ operation: AgentDraftOperation, id: String) -> Transaction? {
         switch operation {
         case .budget, .recurring, .fact, .goal, .goalContribution, .debt, .debtRepayment, .asset, .assetValuation,
-             .transactionEdit, .transactionDelete, .goalChange, .debtChange, .subscriptionState:
+             .transactionEdit, .transactionDelete, .goalChange, .debtChange, .subscriptionState, .reviewConfirm:
             return nil
         case .single(let draft):
             return Transaction(

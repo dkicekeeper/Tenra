@@ -59,6 +59,8 @@ enum AgentDraftOperation: Equatable {
     case debtChange(before: PersonalDebt, after: PersonalDebt)
     /// A subscription to pause or resume; the series as it is, for the card.
     case subscriptionState(series: RecurringSeries, pause: Bool)
+    /// A captured payment on review that is right as it was guessed (FinanceToolkit+Review).
+    case reviewConfirm(Transaction)
 }
 
 /// A subscription or a regular payment, as the series it will become (it starts on its next
@@ -117,6 +119,8 @@ enum AgentSavedRecord: Equatable {
     case debtChanged(before: PersonalDebt)
     /// A subscription that was paused (true) or resumed (false).
     case subscriptionState(seriesId: String, paused: Bool)
+    /// A payment confirmed; nil when it was no longer on review by the time of Save.
+    case reviewConfirmed(AgentReviewUndo?)
 }
 
 enum AgentDraftError: Error {
@@ -242,6 +246,11 @@ final class AgentDraftBook {
     }
 }
 
+/// What edits of payments on review taught, kept for their Undo (AgentDraftBook.Writer.app).
+private final class ReviewUndoBox {
+    var byId: [String: AgentReviewUndo] = [:]
+}
+
 extension AgentDraftBook.Writer {
     /// Writes as the rest of the app does: the voice and Siri path for income and expenses,
     /// the store's transfer for transfers, the categories' budget call for budgets, the
@@ -257,9 +266,14 @@ extension AgentDraftBook.Writer {
         assets: AssetStore? = nil,
         isPro: @escaping () -> Bool = { true }
     ) -> Self {
-        Self(
+        // What an edit of a payment on review taught, by transaction id, for its Undo.
+        let editedReviews = ReviewUndoBox()
+        return Self(
             save: { operation in
                 switch operation {
+                case .reviewConfirm(let transaction):
+                    guard let current = store.transactionById[transaction.id], current == transaction else { throw AgentDraftError.recordChanged }
+                    return .reviewConfirmed(AgentReviewConfirm.confirm(current, categoriesViewModel: categoriesViewModel))
                 case .single(let draft):
                     return .transaction(try await TransactionDraftService.commit(draft, store: store, categoriesViewModel: categoriesViewModel))
                 case .budget(let budget):
@@ -292,6 +306,13 @@ extension AgentDraftBook.Writer {
                     if edit.after.category != edit.before.category, !subcategoryIds.isEmpty {
                         categoriesViewModel.linkSubcategoriesToTransaction(transactionId: edit.before.id, subcategoryIds: [])
                     }
+                    // A captured payment fixed here is looked at: as saving it in the edit screen.
+                    editedReviews.byId[edit.before.id] = AgentReviewConfirm.confirm(
+                        edit.after,
+                        editedFrom: edit.before,
+                        previousSubcategoryIds: Set(subcategoryIds),
+                        categoriesViewModel: categoriesViewModel
+                    )
                     return .transactionEdited(before: edit.before, subcategoryIds: subcategoryIds)
                 case .transactionDelete(let transaction):
                     guard let current = store.transactionById[transaction.id], current == transaction else { throw AgentDraftError.recordChanged }
@@ -317,6 +338,8 @@ extension AgentDraftBook.Writer {
             },
             undo: { record in
                 switch record {
+                case .reviewConfirmed(let undo):
+                    if let undo { AgentReviewConfirm.undo(undo) }
                 case .transaction(let transaction):
                     guard let current = store.transactionById[transaction.id] else { return }
                     try await store.delete(current)
@@ -337,6 +360,7 @@ extension AgentDraftBook.Writer {
                 case .transactionEdited(let before, let subcategoryIds):
                     guard store.transactionById[before.id] != nil else { return }
                     try await store.update(before)
+                    if let undo = editedReviews.byId.removeValue(forKey: before.id) { AgentReviewConfirm.undo(undo) }
                     if !subcategoryIds.isEmpty {
                         categoriesViewModel.linkSubcategoriesToTransaction(transactionId: before.id, subcategoryIds: subcategoryIds)
                     }

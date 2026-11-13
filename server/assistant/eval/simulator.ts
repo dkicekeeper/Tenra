@@ -388,6 +388,36 @@ function findRecurringCandidates() {
   };
 }
 
+// As FinanceToolkit+Review does, on the fixture: the three latest expenses on Kaspi Gold are
+// payments Apple Pay recorded with a guessed category.
+function reviewQueue() {
+  return TRANSACTIONS.filter((t) => t.type === "expense" && t.accountId === "acc_kaspi" && t.date <= TODAY)
+    .sort((a, b) => b.date.localeCompare(a.date) || a.id.localeCompare(b.id))
+    .slice(0, 3);
+}
+
+function getReviewQueue() {
+  const queue = reviewQueue();
+  return {
+    payments: queue.map((t) => ({
+      transaction_id: t.id, date: t.date, type: t.type, merchant: t.merchant, amount: t.amount, currency: t.currency,
+      category: categoryName(t.categoryId), account: accountName(t.accountId), guessed: ["category"],
+    })),
+    total: queue.length,
+    questions_on_screen: 0,
+  };
+}
+
+function draftReviewConfirm(input: Input) {
+  const queue = reviewQueue();
+  const ids = Array.isArray(input.transaction_ids) ? (input.transaction_ids as unknown[]).map(String) : [];
+  const chosen = input.all === true ? queue : queue.filter((t) => ids.includes(t.id));
+  if (input.all !== true && ids.length === 0) throw new ToolInputError("Give transaction_ids from get_review_queue, or all true.");
+  if (chosen.length === 0) throw new ToolInputError("None of these payments is on review. Read get_review_queue again.");
+  const skipped = ids.filter((id) => !queue.some((t) => t.id === id)).map((id) => ({ transaction_id: id, reason: "Not on review." }));
+  return { draft_id: `draft_${++draftSeq}`, count: chosen.length, left_on_review: queue.length - chosen.length, skipped, saved: false };
+}
+
 // As FinanceToolkit+Accounts does: the terms of the loan and the deposit of the fixture.
 function getLoans() {
   const account = ACCOUNTS.find((a) => a.id === LOAN_TERMS.accountId)!;
@@ -1115,6 +1145,8 @@ const HANDLERS: Record<string, (input: Input) => unknown> = {
   draft_goal_change: draftGoalChange,
   draft_debt_change: draftDebtChange,
   find_recurring_candidates: findRecurringCandidates,
+  get_review_queue: getReviewQueue,
+  draft_review_confirm: draftReviewConfirm,
   get_loans: getLoans,
   get_deposits: getDeposits,
   draft_recurring: draftRecurring,

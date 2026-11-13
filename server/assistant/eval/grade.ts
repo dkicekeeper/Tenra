@@ -120,7 +120,7 @@ const BLOCK_FIELDS: Record<string, Record<string, (v: unknown) => boolean>> = {
   open: {
     destination: oneOf([
       "category", "account", "analytics", "history", "budgets", "subscriptions", "assets", "asset",
-      "accounts", "deposits", "loans", "goals", "goal", "debts", "debt", "settings", "backups", "wallet_guide", "loan_payment", "create",
+      "accounts", "deposits", "loans", "goals", "goal", "debts", "debt", "settings", "backups", "wallet_guide", "loan_payment", "review", "create",
     ]),
     target_id: OPTIONAL_STRING,
     label: STRING,

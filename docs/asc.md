@@ -406,6 +406,14 @@ KZ-Discovery`; удачные запросы `add-keywords --campaign KZ-Categor
   архиве, где за ним идёт «No profiles for 'dakacom.Tenra' were found»: профили не пришли из
   того же сервиса. Повторить упавшее задание (Re-run failed jobs, тот же номер сборки); 03.11.2026
   так прошли сборки 69 и 71.
+- **«Your account has reached the maximum number of certificates»** на архиве (за ним «No
+  profiles for 'dakacom.Tenra' were found»): каждая сборка на свежем раннере создаёт сертификат
+  разработки через ключ API, а аккаунт держит их ограниченное число (13.11.2026 упёрлись после
+  шести сборок за день). Посмотреть: Actions → App Store Connect → `certificates`. Отозвать
+  сертификаты разработки, кроме самого нового: `certificates` с `args`
+  `--revoke-development --apply` (без `--apply` только список; сертификаты распространения не
+  трогает; Mac, чей сертификат разработки отозван, получит новый от Xcode). Потом повторить
+  сборку.
 - **«HTTP 401»** — неверный Key ID, Issuer ID или текст ключа, либо ключ отозван.
 - **«HTTP 403»** — у ключа нет нужной роли (продажам нужна Sales, Finance или Admin).
 - **Ошибка подписи / «Cloud signing permission error»** при сборке — у ключа в секретах роль ниже

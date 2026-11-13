@@ -21,6 +21,14 @@
                                                     text, keywords, description; creates a missing
                                                     locale from its `copyFrom`. Without --apply it
                                                     only shows what would change
+    python3 appstore/asc.py certificates [--revoke-development [--keep 1] [--apply]]
+                                                    the team's signing certificates. Every TestFlight
+                                                    run on a fresh runner has Xcode create a
+                                                    development certificate; at the account's limit
+                                                    the archive stops ("maximum number of
+                                                    certificates"). --revoke-development revokes the
+                                                    development ones but the newest --keep (never a
+                                                    distribution one); without --apply it only lists
     python3 appstore/asc.py custom-pages            custom product pages and their review state
     python3 appstore/asc.py review-submissions      the latest review submissions, their items and
                                                     states; the creative images by state
@@ -252,6 +260,39 @@ def get_all(path: str, params: dict | None = None, pages: int = 10) -> tuple[lis
             break
         response = json.loads(request(next_url))
     return data, included
+
+
+def certificates(revoke_development: bool, keep: int, apply: bool) -> None:
+    """The team's signing certificates, and optionally the development ones revoked.
+
+    Xcode's automatic signing on a fresh runner creates a development certificate through the API
+    key on every TestFlight run and nothing removes it: the account holds only a few, and at the
+    limit the archive fails with "Your account has reached the maximum number of certificates".
+    A development certificate signs nothing that ships (the export is cloud signed with the
+    distribution certificate); a Mac whose own one is revoked gets a new one from Xcode."""
+    data, _ = get_all("/v1/certificates", {"limit": 200})
+    data.sort(key=lambda c: c["attributes"].get("expirationDate") or "", reverse=True)
+    development = [c for c in data if (c["attributes"].get("certificateType") or "").endswith("DEVELOPMENT")]
+    doomed = {c["id"] for c in development[max(keep, 0):]} if revoke_development else set()
+    rows = []
+    for certificate in data:
+        attributes = certificate["attributes"]
+        action = ""
+        if certificate["id"] in doomed:
+            action = "revoked" if apply else "would be revoked"
+        rows.append([
+            attributes.get("certificateType"), attributes.get("displayName") or attributes.get("name"),
+            (attributes.get("serialNumber") or "")[-8:], utc(attributes.get("expirationDate")), action,
+        ])
+    table("Signing certificates", ["Type", "Name", "Serial (end)", "Expires (UTC)", ""], rows)
+    if not revoke_development:
+        return
+    if not apply:
+        print(f"\n{len(doomed)} development certificate(s) would be revoked; add --apply to do it.")
+        return
+    for certificate_id in doomed:
+        request(f"/v1/certificates/{certificate_id}", method="DELETE")
+    print(f"\nRevoked {len(doomed)} development certificate(s), kept {min(keep, len(development))}.")
 
 
 def app_id() -> str:
@@ -1936,6 +1977,9 @@ def main(argv: list[str]) -> None:
     def option(name: str, default=None):
         return args[args.index(name) + 1] if name in args and args.index(name) + 1 < len(args) else default
 
+    if command == "certificates":
+        certificates("--revoke-development" in args, int(option("--keep", 1)), "--apply" in args)
+        return
     if command == "sales":
         sales(int(option("--days", 7)))
         return

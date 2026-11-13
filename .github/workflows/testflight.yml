@@ -39,7 +39,28 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # Every run's archive has Xcode create a development certificate for its fresh runner, and
+  # nothing removes it: at the account's limit the archive stops ("maximum number of
+  # certificates", 2026-11-13 after six builds in a day). The ones earlier runs left go first.
+  # Only those named "Created via API"; a person's own and the distribution ones stay.
+  signing-room:
+    name: Remove earlier runs' development certificates
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Revoke the certificates earlier runners created
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
+        run: |
+          python3 -m venv "$RUNNER_TEMP/ascenv"
+          "$RUNNER_TEMP/ascenv/bin/pip" install --quiet pyjwt cryptography
+          "$RUNNER_TEMP/ascenv/bin/python" appstore/asc.py certificates --revoke-development --apply
+
   upload:
+    needs: signing-room
     runs-on: xcode-27
     timeout-minutes: 60
     outputs:

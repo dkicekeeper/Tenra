@@ -27,8 +27,10 @@
                                                     development certificate; at the account's limit
                                                     the archive stops ("maximum number of
                                                     certificates"). --revoke-development revokes the
-                                                    development ones but the newest --keep (never a
-                                                    distribution one); without --apply it only lists
+                                                    development ones the API key created ("Created
+                                                    via API") but the newest --keep, never a person's
+                                                    own or a distribution one; without --apply it
+                                                    only lists
     python3 appstore/asc.py custom-pages            custom product pages and their review state
     python3 appstore/asc.py review-submissions      the latest review submissions, their items and
                                                     states; the creative images by state
@@ -269,10 +271,15 @@ def certificates(revoke_development: bool, keep: int, apply: bool) -> None:
     key on every TestFlight run and nothing removes it: the account holds only a few, and at the
     limit the archive fails with "Your account has reached the maximum number of certificates".
     A development certificate signs nothing that ships (the export is cloud signed with the
-    distribution certificate); a Mac whose own one is revoked gets a new one from Xcode."""
+    distribution certificate). Only the ones named "Created via API" are revoked."""
     data, _ = get_all("/v1/certificates", {"limit": 200})
     data.sort(key=lambda c: c["attributes"].get("expirationDate") or "", reverse=True)
-    development = [c for c in data if (c["attributes"].get("certificateType") or "").endswith("DEVELOPMENT")]
+    # Only the ones a runner made: a person's own (their name) stay, their Mac signs with them.
+    development = [
+        c for c in data
+        if (c["attributes"].get("certificateType") or "").endswith("DEVELOPMENT")
+        and (c["attributes"].get("displayName") or c["attributes"].get("name")) == "Created via API"
+    ]
     doomed = {c["id"] for c in development[max(keep, 0):]} if revoke_development else set()
     rows = []
     for certificate in data:
@@ -1978,7 +1985,7 @@ def main(argv: list[str]) -> None:
         return args[args.index(name) + 1] if name in args and args.index(name) + 1 < len(args) else default
 
     if command == "certificates":
-        certificates("--revoke-development" in args, int(option("--keep", 1)), "--apply" in args)
+        certificates("--revoke-development" in args, int(option("--keep", 0)), "--apply" in args)
         return
     if command == "sales":
         sales(int(option("--days", 7)))

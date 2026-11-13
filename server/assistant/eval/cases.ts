@@ -775,7 +775,9 @@ export const CASES: EvalCase[] = [
     locale: "en",
     prompt: "The Steam purchase in October should be under Subscriptions, not Games. Move it",
     checks: [
-      { kind: "toolArgs", tool: "draft_transaction_edit", match: (i) => i.category != null && i.amount == null, label: "only the category changes" },
+      // One record to another category: an edit of it, or the merchant's records of that month moved.
+      { kind: "called", anyOf: ["draft_transaction_edit", "draft_recategorize"] },
+      { kind: "notCalled", tools: ["draft_transactions", "draft_transaction_delete"] },
       { kind: "block", type: "confirm" },
     ],
   },

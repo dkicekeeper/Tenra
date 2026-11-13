@@ -850,6 +850,15 @@ export const CASES: EvalCase[] = [
     ],
   },
   {
+    id: "ru-suggest-budgets",
+    locale: "ru",
+    prompt: "Подбери мне лимиты по категориям исходя из того, сколько я реально трачу",
+    checks: [
+      { kind: "called", anyOf: ["suggest_budgets"] },
+      { kind: "notCalled", tools: ["draft_transactions", "draft_category_change", "draft_transaction_delete"] },
+    ],
+  },
+  {
     id: "ru-find-duplicates",
     locale: "ru",
     prompt: "Проверь, нет ли у меня записей, внесённых дважды",

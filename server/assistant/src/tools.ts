@@ -183,6 +183,12 @@ const readTools: Tool[] = [
     input_schema: object({}),
   },
   {
+    name: "suggest_budgets",
+    description:
+      "What each expense category took in each of the last three whole months, in the base currency, next to the monthly budget it has: months (month, spent), average, highest, limit (null without a monthly budget), months_over (how many of the three went over the limit) and other_period (it has a weekly or yearly budget: leave it). Largest first. Use it to offer budgets that follow what is really spent; the limits themselves go through draft_budget.",
+    input_schema: object({}),
+  },
+  {
     name: "find_duplicates",
     description:
       "Looks through the last twelve months for incomes and expenses that look recorded twice: the same day, type, amount and currency on the same account (what a statement imported over payments that recorded themselves leaves behind). Returns up to 20 groups, newest first, each with date, amount, currency, same_merchant (every record has the same name: almost surely one payment twice) and its records (transaction_id, merchant, category, account, recurring), and count_total. Two real payments of the same amount on one day are possible: the user decides. Offer draft_transaction_delete for the extra record of each group they confirm, keeping the one with the better name and category.",

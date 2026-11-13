@@ -310,6 +310,7 @@ mid-answer.
     after "Сохранить" X is gone and its records are in Y (History, Analytics, the budget of Y),
     "Отмена" brings X back with its records; deleting a category with records is refused.
     "Найди дубли" names the pairs recorded twice and offers to delete the extra one of each.
+    "Подбери мне лимиты" offers up to three budgets, each on its own card.
 
 **On the phone, left from the versions already in the store** (not marked done before 1.8.2 went
 out; the store build is the one to check):

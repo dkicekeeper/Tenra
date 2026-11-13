@@ -388,6 +388,23 @@ function findRecurringCandidates() {
   };
 }
 
+// As FinanceToolkitCompute.budgetSuggestions does: the three whole months before this one.
+function suggestBudgets() {
+  const year = Number(TODAY.slice(0, 4));
+  const month = Number(TODAY.slice(5, 7));
+  const months = [3, 2, 1].map((back) => new Date(Date.UTC(year, month - 1 - back, 1)).toISOString().slice(0, 7));
+  const rows = CATEGORIES.filter((c) => c.type === "expense").map((c) => {
+    const byMonth = months.map((m) => round(TRANSACTIONS.filter((t) => t.type === "expense" && t.categoryId === c.id && t.date.slice(0, 7) === m).reduce((n, t) => n + toBase(t.amount, t.currency), 0)));
+    const limit = BUDGETS.find((b) => b.categoryId === c.id)?.limit ?? null;
+    const average = round(byMonth.reduce((n, v) => n + v, 0) / months.length);
+    return {
+      category_id: c.id, category: c.name, months: months.map((m, i) => ({ month: m, spent: byMonth[i] })), average, highest: Math.max(...byMonth),
+      limit, months_over: limit === null ? null : byMonth.filter((v) => v > limit).length, other_period: false,
+    };
+  }).filter((r) => r.average > 0 || r.limit !== null).sort((a, b) => b.average - a.average);
+  return { currency: BASE_CURRENCY, from: `${months[0]}-01`, months_counted: months.length, categories: rows };
+}
+
 // As FinanceToolkitCompute.duplicates does: the same day, type, amount, currency and account.
 function findDuplicates() {
   const from = `${Number(TODAY.slice(0, 4)) - 1}${TODAY.slice(4)}`;
@@ -1226,6 +1243,7 @@ const HANDLERS: Record<string, (input: Input) => unknown> = {
   get_review_queue: getReviewQueue,
   get_category_audit: getCategoryAudit,
   find_duplicates: findDuplicates,
+  suggest_budgets: suggestBudgets,
   draft_category_change: draftCategoryChange,
   draft_review_confirm: draftReviewConfirm,
   get_loans: getLoans,

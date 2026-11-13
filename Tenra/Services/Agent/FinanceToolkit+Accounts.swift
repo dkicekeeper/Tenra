@@ -53,6 +53,25 @@ extension FinanceToolkit {
         }.value
     }
 
+    /// `suggest_budgets`: the last three whole months per expense category next to its monthly
+    /// budget (FinanceToolkitCompute.budgetSuggestions), swept off the main actor.
+    func budgetSuggestions() async -> JSONValue {
+        let snapshot = makeSnapshot()
+        let categories = store.categories.filter { $0.type == .expense }.map { category in
+            let amount = category.budgetAmount.flatMap { $0 > 0 ? $0 : nil }
+            return FinanceToolkitCompute.BudgetCategory(
+                id: category.id,
+                name: category.name,
+                monthlyLimit: category.budgetPeriod == .monthly ? amount : nil,
+                hasOtherPeriod: amount != nil && category.budgetPeriod != .monthly
+            )
+        }
+        let sweepCalendar = calendar
+        return await Task.detached(priority: .userInitiated) {
+            FinanceToolkitCompute.budgetSuggestions(snapshot, categories: categories, calendar: sweepCalendar)
+        }.value
+    }
+
     /// `find_duplicates`: incomes and expenses that look recorded twice
     /// (FinanceToolkitCompute.duplicates), swept off the main actor.
     func duplicates() async -> JSONValue {

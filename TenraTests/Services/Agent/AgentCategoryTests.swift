@@ -64,6 +64,26 @@ struct AgentCategoryTests {
         #expect(value.value(atPath: "without_category.records") == 0)
     }
 
+    @Test func budgetSuggestionsCountTheLastThreeWholeMonths() async throws {
+        let (toolkit, _, store) = Self.make()
+        store.categories[0].budgetAmount = 5_000
+        store.transactions += [
+            Transaction(id: "t_sep", date: "2026-09-10", description: "Glovo", amount: 9_000, currency: "KZT", type: .expense, category: "Кафе", accountId: "acc_kaspi"),
+            Transaction(id: "t_aug", date: "2026-08-10", description: "Glovo", amount: 3_000, currency: "KZT", type: .expense, category: "Кафе", accountId: "acc_kaspi"),
+            // Before the three months, and in the month that is not over: not counted.
+            Transaction(id: "t_jun", date: "2026-06-10", description: "Glovo", amount: 50_000, currency: "KZT", type: .expense, category: "Кафе", accountId: "acc_kaspi"),
+        ]
+        let output = await toolkit.execute(name: "suggest_budgets", input: [:])
+        let value = try #require(output.value, "\(output.error ?? "")")
+        #expect(value["from"] == "2026-07-01")
+        #expect(value.value(atPath: "categories.0.category_id") == "cat_cafe")
+        #expect(value.value(atPath: "categories.0.average") == 4_000)
+        #expect(value.value(atPath: "categories.0.highest") == 9_000)
+        #expect(value.value(atPath: "categories.0.limit") == 5_000)
+        #expect(value.value(atPath: "categories.0.months_over") == 1)
+        #expect(value.value(atPath: "categories.0.months.2.month") == "2026-09")
+    }
+
     @Test func aRenameIsDraftedAndATwinIsRefused() async throws {
         let (toolkit, book, store) = Self.make()
         _ = store

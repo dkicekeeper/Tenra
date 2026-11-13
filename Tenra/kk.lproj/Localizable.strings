@@ -1892,10 +1892,10 @@
 "assistant.howto.import" = "Банк үзіндісін қалай жүктеймін?";
 "assistant.howto.backup" = "Деректерім көшірмеде сақталған ба?";
 "assistant.howto.budget" = "Алғашқы бюджетті қоюға көмектес";
-"assistant.home.topics" = "Тақырыптар";
-"assistant.home.topic.money" = "Шығыстар";
-"assistant.home.topic.plans" = "Жоспарлар";
-"assistant.home.topic.app" = "Қолданба";
+"assistant.home.record" = "Жазу";
+"assistant.home.ask" = "Сұрау";
+"assistant.home.howTo" = "Қалай жасау";
+"assistant.home.back" = "Артқа";
 "common.retry" = "Қайталау";
 /* DesignKit 8.9.0: RelativeTime, Formatting.relativeTime */
 "time.justNow" = "Жаңа ғана";

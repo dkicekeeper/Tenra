@@ -31,11 +31,14 @@ assistant is that tab's page (`AssistantTab`); elsewhere (Simulator, Mac, no App
 
 **Entry points** (`AssistantEntryPoints`): the tab; "Ask Ten about the app" in Settings ›
 Assistant (`AssistantTopic.app`: how-to questions). **Ten's home** (`AssistantView`, owner's
-request 2026-11-12): Ten at 140 pt, the greeting, what Ten wrote first (`AssistantNoticesSection`,
-the same card as on Home), the ready-made questions by topic (a `SegmentedPicker`: money, plans,
-the app; the app's topic starts with the "how to" for what the person has not set up yet, two at
-most, `AssistantSetupQuestions`: automatic capture, a first budget, a backup in iCloud; decided on
-the phone), then the latest chats; "Ask Ten" first in the "…" menu of an
+choice 2026-11-13: one thing on the screen): Ten at 220 pt with its greeting, and under it either
+the message Ten wrote first (`AssistantNoticesSection`, the same card as on Home) or one line on
+what Ten does. Over the field one row of chips (the composer bar's `suggestions`): "Record"
+focuses the field, "Ask" and "How to" open their questions in the same row with "Back" first
+(`HomeMode`; "How to" starts with what the person has not set up yet, two at most,
+`AssistantSetupQuestions`: automatic capture, a first budget, a backup in iCloud; decided on the
+phone). The latest chats are a page of their own behind the bubble at the top right
+(`AssistantPage.chats`), shown once there is a chat; "Ask Ten" first in the "…" menu of an
 account, deposit, loan, subscription, category, goal, debt and asset, and as a button with Ten's
 glyph in an insight, History and For today on Analytics: the tab opens a **new chat** (the open
 one stays kept) with two or three questions about that object over the field

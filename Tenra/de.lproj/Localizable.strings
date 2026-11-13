@@ -1892,10 +1892,10 @@
 "assistant.howto.import" = "Wie lade ich einen Kontoauszug?";
 "assistant.howto.backup" = "Sind meine Daten gesichert?";
 "assistant.howto.budget" = "Hilf mir beim ersten Budget";
-"assistant.home.topics" = "Themen";
-"assistant.home.topic.money" = "Geld";
-"assistant.home.topic.plans" = "Pläne";
-"assistant.home.topic.app" = "Die App";
+"assistant.home.record" = "Erfassen";
+"assistant.home.ask" = "Fragen";
+"assistant.home.howTo" = "Anleitung";
+"assistant.home.back" = "Zurück";
 "common.retry" = "Erneut versuchen";
 /* DesignKit 8.9.0: RelativeTime, Formatting.relativeTime */
 "time.justNow" = "Gerade eben";

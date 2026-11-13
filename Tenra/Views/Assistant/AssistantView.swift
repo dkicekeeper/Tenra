@@ -3,8 +3,11 @@
 //  Tenra
 //
 //  The assistant's home, the action tab's page (docs/domains/assistant.md §1, §9): Ten in the
-//  greeting, what Ten wrote first (the same messages as on Home), ready-made questions by
-//  topic (money, plans, the app), the latest chats and the field. Whatever goes from here
+//  middle of the screen, large, with one thing under it: a message Ten wrote first (the same
+//  card as on Home), or its greeting. Over the field one row of chips: "Record", "Ask" and
+//  "How to", the last two opening their ready-made questions in the same row. The latest
+//  chats are a page of their own, behind the button at the top (owner's choice, 2026-11-13:
+//  variant A of the canvas with the card of B). Whatever goes from here
 //  starts a new chat, pushed as a page of its own (AssistantChatView): a question, a voice
 //  message, an attachment, "Go through it" on a message Ten wrote on Home
 //  (AssistantNoticesSection), a file opened in Tenra. "Ask Ten" on another screen
@@ -31,6 +34,8 @@ enum AssistantPage: Hashable {
     case chat
     /// What Ten wears (AssistantWardrobeView), from the hanger at the top right.
     case wardrobe
+    /// The latest chats, from the bubble at the top right.
+    case chats
 }
 
 struct AssistantView: View {
@@ -48,8 +53,8 @@ struct AssistantView: View {
     @State private var attachmentError: String?
     /// Questions about the screen the assistant was opened from.
     @State private var topicQuestions: [String] = []
-    /// The topic of the ready-made questions on show.
-    @State private var homeTopic: HomeTopic = .money
+    /// The questions open in the row over the field; nil shows the three chips.
+    @State private var homeMode: HomeMode?
     @State private var showingPaywall = false
     @State private var showingConsent = false
     /// What waits for the cloud consent.
@@ -72,17 +77,12 @@ struct AssistantView: View {
     @State private var tapLineTurn = 0
     @State private var lastTapLine = Date.distantPast
 
-    /// The ready-made questions come by topic: what was spent, what to plan, how to use Tenra.
-    enum HomeTopic: CaseIterable, Hashable {
-        case money, plans, app
-
-        var label: String {
-            switch self {
-            case .money: String(localized: "assistant.home.topic.money")
-            case .plans: String(localized: "assistant.home.topic.plans")
-            case .app: String(localized: "assistant.home.topic.app")
-            }
-        }
+    /// What the chips over the field open.
+    enum HomeMode: Equatable {
+        /// Questions about the person's money and plans.
+        case ask
+        /// How to do things in Tenra, starting with what is not set up yet.
+        case howTo
     }
 
     /// What starts a new chat and needs the cloud.
@@ -119,12 +119,23 @@ struct AssistantView: View {
                     },
                     onVoice: { showingVoice = true },
                     onPaywall: { showingPaywall = true },
-                    onSend: { start(.question(draft, spoken: false)) }
+                    onSend: { start(.question(draft, spoken: false)) },
+                    suggestions: homeChips,
+                    onSuggestion: { tappedChip($0) }
                 )
             }
             .navigationTitle(String(localized: "tab.assistant"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                // The latest chats, once there is one.
+                if !chats.isEmpty {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        NavigationLink(value: AssistantPage.chats) {
+                            Label(String(localized: "assistant.recent"), systemImage: "bubble.left.and.text.bubble.right")
+                                .labelStyle(.iconOnly)
+                        }
+                    }
+                }
                 // Ten's wardrobe: what it wears and what is still to open.
                 ToolbarItem(placement: .topBarTrailing) {
                     NavigationLink(value: AssistantPage.wardrobe) {
@@ -137,6 +148,7 @@ struct AssistantView: View {
                 switch page {
                 case .chat: AssistantChatView(model: model)
                 case .wardrobe: AssistantWardrobeView()
+                case .chats: chatsPage
                 }
             }
             .navigationDestination(for: AssistantRoute.self) { route in
@@ -234,50 +246,84 @@ struct AssistantView: View {
                     try? await Task.sleep(for: AssistantMetrics.greetingDelay)
                     greet()
                 }
-            VStack(spacing: AppSpacing.sm) {
-                Text(String(localized: "assistant.greeting.title"))
-                    .font(AppTypography.h3)
-                    .foregroundStyle(AppColors.Text.primary)
+            Text(String(localized: "assistant.greeting.title"))
+                .font(AppTypography.h3)
+                .foregroundStyle(AppColors.Text.primary)
+            // One thing under Ten: what it wrote first (its card, "Go through it" starts the
+            // chat), else what it does.
+            if hasNotice {
+                AssistantNoticesSection()
+            } else {
                 Text(String(localized: "assistant.greeting.message"))
                     .font(AppTypography.bodySmall)
                     .foregroundStyle(AppColors.Text.secondary)
-                // Voice and import moved here from "+": say where they are.
-                Text(String(localized: "assistant.greeting.tools"))
-                    .font(AppTypography.caption)
-                    .foregroundStyle(AppColors.Text.tertiary)
+                    .multilineTextAlignment(.center)
             }
-            .multilineTextAlignment(.center)
-            // What Ten wrote first, here as on Home: "Go through it" starts its chat.
-            AssistantNoticesSection()
-            if !AssistantRegion.isOutOfRegion(markedAt: outOfRegionAt, now: Date()) {
-                questions
-            }
-            if !chats.isEmpty {
-                recentChats
+            if showsDemoQuestions {
+                SuggestionChips(presets, systemImage: "sparkles", layout: .wrap) {
+                    start(.question($0, spoken: false))
+                }
+                .accessibilityElement(children: .contain)
+                .accessibilityIdentifier("assistant.presets")
             }
         }
         .frame(maxWidth: .infinity)
     }
 
-    /// The ready-made questions: a topic switch, then that topic's questions. Questions about
-    /// the screen Ten was asked from ("Ask Ten") take their place while they stand.
-    private var questions: some View {
-        VStack(alignment: .leading, spacing: AppSpacing.md) {
-            if topicQuestions.isEmpty, !showsDemoQuestions {
-                SegmentedPicker(
-                    title: String(localized: "assistant.home.topics"),
-                    selection: $homeTopic,
-                    options: HomeTopic.allCases.map { (label: $0.label, value: $0) }
-                )
-            }
-            SuggestionChips(topicQuestions.isEmpty ? presets : topicQuestions, systemImage: "sparkles", layout: .wrap) {
-                start(.question($0, spoken: false))
-            }
-            .accessibilityElement(children: .contain)
-            .accessibilityIdentifier("assistant.presets")
+    /// A message Ten wrote waits unread (what AssistantNoticesSection shows).
+    private var hasNotice: Bool {
+        guard AssistantAvailability.isAvailable else { return false }
+        let subjects = coordinator.assistantNoticeSubjects
+        return AssistantInbox.shared.unread.contains { subjects?.contains($0) ?? true }
+    }
+
+    /// The row over the field: questions about the screen Ten was asked from, else the three
+    /// chips, else the questions one of them opened (the first chip goes back). Where the cloud
+    /// does not answer there are no questions to offer.
+    private var homeChips: [String] {
+        if showsDemoQuestions { return [] }
+        if !topicQuestions.isEmpty { return topicQuestions }
+        guard !AssistantRegion.isOutOfRegion(markedAt: outOfRegionAt, now: Date()) else { return [] }
+        switch homeMode {
+        case nil:
+            return [Self.chipRecord, Self.chipAsk, Self.chipHowTo]
+        case .ask?:
+            return [Self.chipBack] + Self.moneyQuestions
+        case .howTo?:
+            return [Self.chipBack] + howToQuestions
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .animation(AppAnimation.smooth, value: homeTopic)
+    }
+
+    private func tappedChip(_ chip: String) {
+        if !topicQuestions.isEmpty {
+            start(.question(chip, spoken: false))
+            return
+        }
+        switch chip {
+        case Self.chipRecord: composerFocused = true
+        case Self.chipAsk: homeMode = .ask
+        case Self.chipHowTo: homeMode = .howTo
+        case Self.chipBack: homeMode = nil
+        default:
+            homeMode = nil
+            start(.question(chip, spoken: false))
+        }
+    }
+
+    private static var chipRecord: String { String(localized: "assistant.home.record") }
+    private static var chipAsk: String { String(localized: "assistant.home.ask") }
+    private static var chipHowTo: String { String(localized: "assistant.home.howTo") }
+    private static var chipBack: String { String(localized: "assistant.home.back") }
+
+    /// The latest chats as a page of their own.
+    private var chatsPage: some View {
+        ScrollView {
+            recentChats
+                .screenPadding()
+                .padding(.vertical, AppSpacing.lg)
+        }
+        .navigationTitle(String(localized: "assistant.recent"))
+        .navigationBarTitleDisplayMode(.inline)
     }
 
     /// The screenshot capture's own questions stand in for the topics (ScreenshotDemoTransport).
@@ -485,42 +531,43 @@ struct AssistantView: View {
         }
     }
 
-    /// The questions of the topic on show. The app's topic starts with what this person has
-    /// not set up yet ("how to", at most two, AssistantSetupQuestions).
+    /// The screenshot capture's questions, tapped in order (ScreenshotDemoTransport).
     private var presets: [String] {
         #if DEBUG
-        // The screenshot capture taps the demo's questions in order (ScreenshotDemoTransport).
         if ScreenshotDemoMode.isActive { return ScreenshotDemoReply.current().questions }
         #endif
-        switch homeTopic {
-        case .money:
-            return [
-                String(localized: "assistant.preset.month"),
-                String(localized: "assistant.preset.compare"),
-                String(localized: "assistant.preset.budgets"),
-                String(localized: "assistant.preset.subscriptions"),
-            ]
-        case .plans:
-            return [
-                String(localized: "assistant.preset.allowance"),
-                String(localized: "assistant.preset.save"),
-                String(localized: "assistant.preset.invest"),
-            ]
-        case .app:
-            let setup = AssistantSetupQuestions.questions(
-                capturing: WalletCaptureStore.shared.hasEverCaptured,
-                budgets: coordinator.transactionStore.categories.filter { ($0.budgetAmount ?? 0) > 0 }.count,
-                iCloudBackups: coordinator.cloudSyncViewModel.iCloudEnabled
-            )
-            let howTo = AssistantTopic.app.questions.filter { !setup.contains($0) }
-            return Array((setup + howTo).prefix(4))
-        }
+        return []
+    }
+
+    /// Questions about the person's money and plans ("Ask").
+    private static var moneyQuestions: [String] {
+        [
+            String(localized: "assistant.preset.month"),
+            String(localized: "assistant.preset.allowance"),
+            String(localized: "assistant.preset.compare"),
+            String(localized: "assistant.preset.budgets"),
+            String(localized: "assistant.preset.subscriptions"),
+            String(localized: "assistant.preset.save"),
+            String(localized: "assistant.preset.invest"),
+        ]
+    }
+
+    /// How to do things in Tenra ("How to"), starting with what this person has not set up yet
+    /// (at most two, AssistantSetupQuestions).
+    private var howToQuestions: [String] {
+        let setup = AssistantSetupQuestions.questions(
+            capturing: WalletCaptureStore.shared.hasEverCaptured,
+            budgets: coordinator.transactionStore.categories.filter { ($0.budgetAmount ?? 0) > 0 }.count,
+            iCloudBackups: coordinator.cloudSyncViewModel.iCloudEnabled
+        )
+        let howTo = AssistantTopic.app.questions.filter { !setup.contains($0) }
+        return Array((setup + howTo).prefix(4))
     }
 }
 
 enum AssistantMetrics {
-    /// The greeting's mascot: small enough that the questions and the chats start above the fold.
-    static let heroMascot: CGFloat = 140
+    /// The greeting's mascot: Ten is the screen.
+    static let heroMascot: CGFloat = 220
     /// The room over the greeting's mascot for its words (DesignKit 4.10): a line of two rises
     /// about this far over Ten's square.
     static let speechRoom: CGFloat = 48

@@ -45,9 +45,9 @@ another version.
 - Ten knows the terms of loans and deposits: the rate, the monthly payment and its day, the
   payments left, the interest accrued on a deposit. Needs the server with prompt 2026-11-12.7
   (deployed 2026-11-12). In build 81.
-- Ten's home is rearranged: Ten is smaller, its own messages show there as on Home, the
-  ready-made questions come by topic (money, plans, the app) and the latest chats sit higher.
-  In build 84.
+- Ten's home is one thing at a time: Ten, large, with the message it wrote first (or its
+  greeting) under it; three chips over the field, "Record", "Ask" and "How to"; the chats behind
+  a button at the top. After build 84 (build 84 had an earlier, busier arrangement).
 - Settings › Assistant has "Ask Ten about the app", and Ten's home puts first the "how to"
   questions for what the person has not set up yet (automatic capture, a first budget, a backup
   in iCloud). After build 79.
@@ -145,10 +145,12 @@ mid-answer.
     по кредиту и сколько платежей осталось?" and "Сколько процентов набежало по депозиту?" are
     answered with the app's own figures.
 
-14. Build 84, Ten's home: Ten is smaller; a message Ten wrote shows under the greeting and
-    "Разобрать" starts its chat; the switch "Траты / Планы / Приложение" changes the questions,
-    and "Приложение" starts with what is not set up; the latest chats follow; nothing is cut
-    off on a small phone and in the largest text size. "Поставь Spotify на паузу" (build 83)
+14. Ten's home (the build after 84): Ten is large; under it the card "Тэн пишет" when a message
+    waits ("Разобрать" starts its chat), else one line of greeting; over the field the chips
+    "Записать" (the keyboard comes up), "Спросить" and "Как сделать" (their questions replace the
+    chips, "Назад" brings the three back, a question starts a chat); the bubble at the top right
+    opens the chats, a long press deletes one; nothing is cut off on a small phone and in the
+    largest text size. "Поставь Spotify на паузу" (build 83)
     shows the subscription and "Встанет на паузу"; "Отмена" resumes it. "Сегодня заплатил по
     кредиту" gives a button that opens the loan with its payment form already open.
 

@@ -4,11 +4,12 @@ Version 1.8.3 in the project since 2026-11-11 (the founder's call: a small updat
 kept for the update the featuring nomination promises in the last week of December,
 [plan-growth.md](plan-growth.md) stage 4). 1.8.2 is in the store since 2026-11-10/11 (build 76;
 its notes and checklist: [archive/release-notes-1.8.2.md](archive/release-notes-1.8.2.md)).
-**Status 2026-11-12:** the changes below are in `main` (Tenra#160, Tenra#161, then Ten's forms,
-state line, help with complaints, the entries and editing and deleting records, at f3900c7),
-TestFlight build
-87 is processed (from the cloud, `main` at 87ba234; 85 failed at signing and was never uploaded) and selected for version 1.8.3 in App Store Connect (created 2026-11-13 with the What's New below and the App Review notes), the server with `POST /v1/feedback` and
-prompt 2026-11-13.1 is deployed and the owner's Telegram chat is linked (`telegram-link`, a test line arrived 12.11), the What's New blocks for the 13 storefronts and en-GB are written (2026-11-13), the phone checks are not done.
+**Status 2026-11-13:** everything below is in `main` (fa3bf62). TestFlight build 90 (from the
+cloud) is processed and selected for version 1.8.3 in App Store Connect with the What's New below
+and the App Review notes; builds 86 to 89 came before it the same day (85 failed at signing and
+was never uploaded). The server with `POST /v1/feedback` and prompt 2026-11-13.11 is deployed
+(eval on Haiku at low effort: 100 of 104), the owner's Telegram chat is linked. The phone checks
+are not done; the version is not submitted.
 
 When the blocks are written: one `## <locale>` heading per storefront (en-US, ru, en-GB, de-DE,
 es-ES, es-MX, fr-FR, fr-CA, tr, pt-BR, it, uk, ja, ko), which `prepare-version` (Actions → App
@@ -325,7 +326,7 @@ mid-answer.
     "Отмена" brings X back with its records; deleting a category with records is refused.
     "Найди дубли" names the pairs recorded twice and offers to delete the extra one of each.
     "Подбери мне лимиты" offers up to three budgets, each on its own card.
-    Next build: "Сделай в Кафе подкатегорию Доставка для Glovo" shows the category and how
+    Build 90: "Сделай в Кафе подкатегорию Доставка для Glovo" shows the category and how
     many records get the subcategory; after "Сохранить" they carry it, "Отмена" takes it off.
     "На карте на самом деле 250 000, поправь остаток" shows Было and Станет; after "Сохранить"
     the account shows it and the history is unchanged, "Отмена" puts the old balance back.

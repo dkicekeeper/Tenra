@@ -53,6 +53,53 @@ extension FinanceToolkit {
         }.value
     }
 
+    private struct BalanceInput: Decodable {
+        let account: String
+        let balance: Double
+    }
+
+    /// `draft_balance_correction`: an everyday account set to the balance the bank shows. The
+    /// starting balance takes the difference (AccountsViewModel.updateAccount), so no income
+    /// or expense is made up.
+    func draftBalanceCorrection(_ input: JSONValue) throws -> AgentToolOutput {
+        guard let drafts else { return .failure(Self.notYet("draft_balance_correction")) }
+        let args = try input.decoded(as: BalanceInput.self)
+        let reference = args.account.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let account = store.accounts.first(where: { $0.id == reference })
+            ?? store.accounts.first(where: { $0.name.lowercased() == reference.lowercased() }) else {
+            throw FinanceToolError(message: "Unknown account \(reference). Use an account id from <app_context>.")
+        }
+        guard !account.isLoan, !account.isDeposit else {
+            throw FinanceToolError(message: "\(account.name) is a loan or a deposit: its balance follows its terms and is changed on its own screen. Offer an open block to the account.")
+        }
+        guard args.balance.isFinite else { throw FinanceToolError(message: "balance must be a number.") }
+        let current = FinanceToolkitCompute.round2(store.balanceCoordinator.balances[account.id] ?? account.balance)
+        let target = FinanceToolkitCompute.round2(args.balance)
+        guard abs(target - current) >= 0.01 else {
+            throw FinanceToolError(message: "\(account.name) already shows this balance.")
+        }
+        let id = drafts.add([.balanceCorrection(account: account, from: current, to: target)])
+        return .success([
+            "draft_id": .string(id),
+            "account_id": .string(account.id),
+            "account": .string(account.name),
+            "currency": .string(account.currency),
+            "before": .number(current),
+            "after": .number(target),
+            "difference": .number(FinanceToolkitCompute.round2(target - current)),
+            "saved": false,
+        ])
+    }
+
+    /// What a balance draft will do (FinanceToolkit.describe).
+    func describeBalanceCorrection(_ operation: AgentDraftOperation) -> JSONValue {
+        guard case .balanceCorrection(let account, let from, let to) = operation else { return .null }
+        return [
+            "type": "balance_correction", "account_id": .string(account.id), "account": .string(account.name),
+            "currency": .string(account.currency), "before": .number(from), "after": .number(to),
+        ]
+    }
+
     /// `suggest_budgets`: the last three whole months per expense category next to its monthly
     /// budget (FinanceToolkitCompute.budgetSuggestions), swept off the main actor.
     func budgetSuggestions() async -> JSONValue {

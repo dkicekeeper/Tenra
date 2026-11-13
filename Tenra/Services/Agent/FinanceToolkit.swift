@@ -123,6 +123,7 @@ final class FinanceToolkit: AgentToolExecuting {
             case "draft_goal_change": return try await draftGoalChange(input)
             case "draft_debt_change": return try await draftDebtChange(input)
             case "find_recurring_candidates": return .success(await recurringCandidates())
+            case "draft_balance_correction": return try draftBalanceCorrection(input)
             case "suggest_budgets": return .success(await budgetSuggestions())
             case "find_duplicates": return .success(await duplicates())
             case "get_category_audit": return .success(await categoryAudit())
@@ -1401,6 +1402,8 @@ final class FinanceToolkit: AgentToolExecuting {
             return describeReview(operation)
         case .categoryRename, .categoryMerge, .categoryDelete, .subcategoryTag:
             return describeCategoryChange(operation)
+        case .balanceCorrection:
+            return describeBalanceCorrection(operation)
         }
     }
 }

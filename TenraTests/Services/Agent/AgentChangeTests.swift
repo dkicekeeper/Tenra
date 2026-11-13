@@ -51,6 +51,19 @@ struct AgentChangeTests {
         return (toolkit, book, store)
     }
 
+    @Test func aBalanceCorrectionKeepsWhatTheAccountShowed() async throws {
+        let (toolkit, book, store) = Self.make()
+        let output = await toolkit.execute(name: "draft_balance_correction", input: ["account": "Halyk", "balance": 48_500])
+        let value = try #require(output.value, "\(output.error ?? "")")
+        #expect(value["before"] == 50_000)
+        #expect(value["after"] == 48_500)
+        #expect(value["difference"] == -1_500)
+        #expect(book.drafts["draft_1"]?.operations == [.balanceCorrection(account: store.accounts[1], from: 50_000, to: 48_500)])
+
+        let same = await toolkit.execute(name: "draft_balance_correction", input: ["account": "acc_halyk", "balance": 50_000])
+        #expect(same.value == nil)
+    }
+
     @Test func duplicatesAreTheSameDayAmountAndAccount() async throws {
         let (toolkit, _, store) = Self.make()
         store.transactions += [

@@ -508,6 +508,18 @@ private struct AssistantDraftCard: View {
                     categoryRow(into.name)
                 } else if case .categoryDelete(let category) = operation {
                     categoryRow(category.name)
+                } else if case .balanceCorrection(let account, let from, let to) = operation {
+                    UniversalRow(
+                        "\(account.name) · \(String(localized: "assistant.draft.budgetWas"))",
+                        icon: "creditcard",
+                        config: .info,
+                        accessory: .amount(from, currency: account.currency)
+                    )
+                    UniversalRow(
+                        String(localized: "assistant.draft.becomes"),
+                        config: .info,
+                        accessory: .amount(to, currency: account.currency)
+                    )
                 } else if case .subcategoryTag(let category, let name, let transactionIds) = operation {
                     categoryRow(category.name)
                     InlineStatusText(
@@ -668,7 +680,7 @@ private struct AssistantDraftCard: View {
         draft.operations.contains { operation in
             switch operation {
             case .transactionEdit, .transactionDelete, .goalChange, .debtChange, .subscriptionState, .reviewConfirm,
-                 .categoryRename, .categoryMerge, .categoryDelete, .subcategoryTag: true
+                 .categoryRename, .categoryMerge, .categoryDelete, .subcategoryTag, .balanceCorrection: true
             default: false
             }
         }
@@ -898,7 +910,7 @@ private struct AssistantDraftCard: View {
         switch operation {
         case .budget, .recurring, .fact, .goal, .goalContribution, .debt, .debtRepayment, .asset, .assetValuation,
              .transactionEdit, .transactionDelete, .goalChange, .debtChange, .subscriptionState, .reviewConfirm,
-             .categoryRename, .categoryMerge, .categoryDelete, .subcategoryTag:
+             .categoryRename, .categoryMerge, .categoryDelete, .subcategoryTag, .balanceCorrection:
             return nil
         case .single(let draft):
             return Transaction(

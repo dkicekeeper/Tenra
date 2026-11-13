@@ -406,6 +406,18 @@ const draftTools: Tool[] = [
     ),
   },
   {
+    name: "draft_balance_correction",
+    description:
+      "Prepares setting an everyday account to the balance the bank shows, for the user to confirm on the card. The account's starting balance takes the difference: no income or expense is made up and the statistics do not change. Use it only after the user gives the real balance and no missing record explains the difference, or when they just want the balance set. Not for loans and deposits. account is an account id from <app_context> or its name; balance is in the account's currency. Returns draft_id, before, after and difference.",
+    input_schema: object(
+      {
+        account: { type: "string" },
+        balance: { type: "number", description: "What the account really holds" },
+      },
+      ["account", "balance"],
+    ),
+  },
+  {
     name: "draft_subcategory",
     description:
       "Prepares a subcategory inside a category, for the user to confirm on the card: it is created when the category does not have it yet, and with merchant given every record of that category whose name contains it (up to 300) is tagged with it, keeping the tags it has. category is a category id from <app_context> or a name; merchant is a name from get_category_audit's top_merchants or search_transactions. Returns draft_id, new, records and records_left.",

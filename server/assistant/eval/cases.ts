@@ -850,6 +850,16 @@ export const CASES: EvalCase[] = [
     ],
   },
   {
+    id: "ru-balance-correction",
+    locale: "ru",
+    prompt: "На Kaspi Gold на самом деле 250 000, не знаю, откуда разница. Поправь остаток",
+    checks: [
+      { kind: "called", anyOf: ["draft_balance_correction"] },
+      { kind: "block", type: "confirm" },
+      { kind: "notCalled", tools: ["draft_transactions", "draft_transaction_delete"] },
+    ],
+  },
+  {
     id: "ru-subcategory-merchant",
     locale: "ru",
     prompt: "Сделай в категории «Продукты» подкатегорию «Magnum» и отметь ей все покупки в Magnum",

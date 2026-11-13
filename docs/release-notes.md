@@ -313,6 +313,8 @@ mid-answer.
     "Подбери мне лимиты" offers up to three budgets, each on its own card.
     Next build: "Сделай в Кафе подкатегорию Доставка для Glovo" shows the category and how
     many records get the subcategory; after "Сохранить" they carry it, "Отмена" takes it off.
+    "На карте на самом деле 250 000, поправь остаток" shows Было and Станет; after "Сохранить"
+    the account shows it and the history is unchanged, "Отмена" puts the old balance back.
 
 **On the phone, left from the versions already in the store** (not marked done before 1.8.2 went
 out; the store build is the one to check):

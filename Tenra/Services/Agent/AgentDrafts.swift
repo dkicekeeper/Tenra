@@ -66,6 +66,8 @@ enum AgentDraftOperation: Equatable {
     case categoryRename(before: CustomCategory, name: String)
     case categoryMerge(from: CustomCategory, into: CustomCategory, records: Int)
     case categoryDelete(CustomCategory)
+    /// An everyday account set to the balance the bank shows (FinanceToolkit+Accounts).
+    case balanceCorrection(account: Account, from: Double, to: Double)
     /// A subcategory in a category (made when it is new), and the records tagged with it.
     case subcategoryTag(category: CustomCategory, name: String, transactionIds: [String])
 }
@@ -132,6 +134,7 @@ enum AgentSavedRecord: Equatable {
     case categoryDeleted(CustomCategory, subcategoryIds: [String])
     case categoryMerged(AgentCategoryMergeUndo)
     case subcategoryTagged(AgentSubcategoryUndo)
+    case balanceCorrected(accountId: String, previous: Double)
 }
 
 enum AgentDraftError: Error {
@@ -275,13 +278,28 @@ extension AgentDraftBook.Writer {
         goals: GoalStore? = nil,
         debts: DebtStore? = nil,
         assets: AssetStore? = nil,
+        accountsViewModel: AccountsViewModel? = nil,
         isPro: @escaping () -> Bool = { true }
     ) -> Self {
+        // The account shows `balance`: its starting balance takes the difference, as when the
+        // balance is edited on the account's screen.
+        func setBalance(_ balance: Double, of accountId: String) throws {
+            guard let accountsViewModel, var account = store.accounts.first(where: { $0.id == accountId }),
+                  !account.isLoan, !account.isDeposit else { throw AgentDraftError.recordChanged }
+            account.initialBalance = balance
+            accountsViewModel.updateAccount(account)
+        }
         // What an edit of a payment on review taught, by transaction id, for its Undo.
         let editedReviews = ReviewUndoBox()
         return Self(
             save: { operation in
                 switch operation {
+                case .balanceCorrection(let account, let from, let to):
+                    // The card showed what the account had: it must still have it.
+                    let current = store.balanceCoordinator.balances[account.id] ?? account.balance
+                    guard abs(current - from) < 0.01 else { throw AgentDraftError.recordChanged }
+                    try setBalance(to, of: account.id)
+                    return .balanceCorrected(accountId: account.id, previous: from)
                 case .categoryRename, .categoryMerge, .categoryDelete, .subcategoryTag:
                     return try Self.saveCategoryChange(operation, store: store, categoriesViewModel: categoriesViewModel)
                 case .reviewConfirm(let transaction):
@@ -351,6 +369,8 @@ extension AgentDraftBook.Writer {
             },
             undo: { record in
                 switch record {
+                case .balanceCorrected(let accountId, let previous):
+                    try? setBalance(previous, of: accountId)
                 case .categoryRenamed, .categoryDeleted, .categoryMerged, .subcategoryTagged:
                     Self.undoCategoryChange(record, store: store, categoriesViewModel: categoriesViewModel)
                 case .reviewConfirmed(let undo):

@@ -405,6 +405,19 @@ function suggestBudgets() {
   return { currency: BASE_CURRENCY, from: `${months[0]}-01`, months_counted: months.length, categories: rows };
 }
 
+// As FinanceToolkit+Accounts.draftBalanceCorrection does.
+function draftBalanceCorrection(input: Input) {
+  const reference = (str(input, "account", true) ?? "").trim().toLowerCase();
+  const account = ACCOUNTS.find((a) => a.id === reference) ?? ACCOUNTS.find((a) => a.name.toLowerCase() === reference);
+  if (!account) throw new ToolInputError(`Unknown account ${reference}. Use an account id from <app_context>.`);
+  if (account.kind !== "regular") throw new ToolInputError(`${account.name} is a loan or a deposit: its balance follows its terms and is changed on its own screen. Offer an open block to the account.`);
+  if (typeof input.balance !== "number" || !Number.isFinite(input.balance)) throw new ToolInputError("balance must be a number.");
+  const before = round(balanceOf(account.id));
+  const after = round(input.balance);
+  if (Math.abs(after - before) < 0.01) throw new ToolInputError(`${account.name} already shows this balance.`);
+  return { draft_id: `draft_${++draftSeq}`, account_id: account.id, account: account.name, currency: account.currency, before, after, difference: round(after - before), saved: false };
+}
+
 // As FinanceToolkit+Categories.draftSubcategory does; the fixture has no subcategories.
 function draftSubcategory(input: Input) {
   const reference = (str(input, "category", true) ?? "").trim().toLowerCase();
@@ -1262,6 +1275,7 @@ const HANDLERS: Record<string, (input: Input) => unknown> = {
   suggest_budgets: suggestBudgets,
   draft_category_change: draftCategoryChange,
   draft_subcategory: draftSubcategory,
+  draft_balance_correction: draftBalanceCorrection,
   draft_review_confirm: draftReviewConfirm,
   get_loans: getLoans,
   get_deposits: getDeposits,

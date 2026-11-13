@@ -237,6 +237,22 @@ final class AssistantViewModel {
         return true
     }
 
+    /// A draft the phone made from a button on a message Ten wrote ("Pause" on a charge that
+    /// comes tomorrow, AssistantNoticeAction), in a new chat: `text` stands as the person's
+    /// message and the draft's card as Ten's reply. No model is asked and no answer is spent;
+    /// nothing is written before Save. False while a reply is still coming, or without drafts.
+    @discardableResult
+    func startDraft(_ operations: [AgentDraftOperation], saying text: String) -> Bool {
+        guard let drafts, !operations.isEmpty, startChat(suggesting: []) else { return false }
+        let id = drafts.add(operations, madeOnPhoneFrom: text)
+        local.append(AgentThreadSnapshot.LocalExchange(position: conversation.messages.count, question: text, draftId: id))
+        entries.append(Entry(id: UUID(), content: .question(text)))
+        entries.append(Entry(id: UUID(), content: .reply(Self.localReply(id), results: [:])))
+        replyMood = .happy
+        Task { await persist() }
+        return true
+    }
+
     /// Opens a kept thread from the history in place of the open one, which stays kept.
     /// True when that thread is the open one now (it may have been already).
     @discardableResult

@@ -15,6 +15,10 @@ struct AssistantNoticeCard: View {
     let notice: AssistantNotice
     let onAsk: () -> Void
     let onHide: () -> Void
+    /// The one-tap action beside "Go through it" (AssistantNoticeAction), when the message has
+    /// one: its title, and what the tap does.
+    var quickTitle: String? = nil
+    var onQuick: (() -> Void)? = nil
 
     @Environment(\.amountsHidden) private var amountsHidden
 
@@ -31,6 +35,8 @@ struct AssistantNoticeCard: View {
             actionTitle: actionTitle,
             actionSystemImage: actionSystemImage,
             action: onAsk,
+            secondaryActionTitle: quickTitle,
+            secondaryAction: onQuick,
             hideLabel: String(localized: "assistant.notice.hide"),
             onHide: onHide
         ) {
@@ -148,7 +154,14 @@ struct AssistantNoticesSection: View {
                         coordinator.goThrough(notice)
                     }
                 },
-                onHide: { inbox.markRead(notice.id) }
+                onHide: { inbox.markRead(notice.id) },
+                // What the person can do about it at once: the phone drafts it, Ten's chat
+                // shows the draft to confirm.
+                quickTitle: AssistantNoticeAction.title(for: notice),
+                onQuick: AssistantNoticeAction.title(for: notice) == nil ? nil : {
+                    HapticManager.light()
+                    coordinator.act(on: notice)
+                }
             )
             .id(notice.id)
             .transition(.opacity)

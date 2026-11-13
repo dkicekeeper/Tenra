@@ -1856,6 +1856,8 @@
 "assistant.notice.title" = "텐의 메시지";
 "assistant.notice.goThrough" = "살펴보기";
 "assistant.notice.hide" = "숨기기";
+"assistant.notice.pause" = "일시 중지";
+"assistant.notice.settle" = "정산 완료로 표시";
 "assistant.notice.ask" = "이것을 살펴봐 줘: %@";
 "assistant.notice.ask.digest" = "지난주를 살펴봐 줘";
 "assistant.notice.ask.charge" = "%@ 계속 유지할 만할까?";

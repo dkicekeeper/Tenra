@@ -1856,6 +1856,8 @@
 "assistant.notice.title" = "Ten scrive";
 "assistant.notice.goThrough" = "Analizza";
 "assistant.notice.hide" = "Nascondi";
+"assistant.notice.pause" = "Metti in pausa";
+"assistant.notice.settle" = "Segna come saldato";
 "assistant.notice.ask" = "Analizza questo: %@";
 "assistant.notice.ask.digest" = "Analizza la mia settimana scorsa";
 "assistant.notice.ask.charge" = "Vale la pena tenere %@?";

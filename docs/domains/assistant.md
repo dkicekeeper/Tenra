@@ -288,6 +288,14 @@ reminder (`SpendingReminderOfferCard`, not an `AssistantNotice`) shows where the
 saved, under the turn in this chat as well as among Home's setup cards
 ([plan-spending-reminder.md](../archive/plans/plan-spending-reminder.md) §3.5); its pushes come from Ten too.
 
+**One-tap actions** (`AssistantNoticeAction`, plan-ten-agent stage 4): a message about a
+subscription charged tomorrow carries "Pause" and one about a debt due tomorrow "Mark settled",
+as the card's second action (DesignKit 8.11.0's `NoticeCard(secondaryActionTitle:)`). The phone
+makes the draft by rule (`.subscriptionState`, `.debtChange`), the assistant's tab opens it in a
+new chat as a draft made on the phone (`AssistantViewModel.startDraft`): no model, no answer
+spent, nothing written before Save, Undo after. No action when the subject is gone or already in
+that state. Pinned by `AssistantNoticeActionTests`.
+
 **Feedback** (`Kind.feedback`, `FeedbackAsk`, `Services/Feedback/`): Ten asks "How do you like
 Tenra?" so the owner hears from people (no accounts, no analytics, few ratings). Rounds are
 counted from the install day (`RatingPromptService.installDate`), nothing else is stored: round 1

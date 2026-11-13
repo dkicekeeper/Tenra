@@ -1856,6 +1856,8 @@
 "assistant.notice.title" = "テンからのお知らせ";
 "assistant.notice.goThrough" = "詳しく見る";
 "assistant.notice.hide" = "非表示";
+"assistant.notice.pause" = "一時停止";
+"assistant.notice.settle" = "精算済みにする";
 "assistant.notice.ask" = "これを詳しく：%@";
 "assistant.notice.ask.digest" = "先週を振り返って";
 "assistant.notice.ask.charge" = "%@は続ける価値がある？";

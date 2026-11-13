@@ -213,6 +213,11 @@ struct AssistantView: View {
                 topicQuestions = topic.questions
             }
         }
+        // A one-tap action on a message Ten wrote: its draft, made on the phone, in a new chat.
+        .onChange(of: coordinator.pendingNoticeAction, initial: true) { _, notice in
+            guard notice != nil, let notice = coordinator.consumePendingNoticeAction() else { return }
+            Task { await act(on: notice) }
+        }
         // "Go through it" on Home.
         .onChange(of: coordinator.pendingNotice, initial: true) { _, notice in
             guard notice != nil, let notice = coordinator.consumePendingNotice() else { return }
@@ -480,6 +485,27 @@ struct AssistantView: View {
             // over it while the person is typing, nor again on this version.
             RatingPromptService.shared.markPromptedThisVersion()
         }
+        showChat()
+    }
+
+    /// The one-tap action of a message Ten wrote: the phone drafts it and the draft's card opens
+    /// in a new chat. The message counts as read. Nothing happens when what it was about is gone
+    /// or a reply is still coming (its chat is shown instead).
+    private func act(on notice: AssistantNotice) async {
+        guard !model.isBusy else {
+            showChat()
+            return
+        }
+        await coordinator.debtStore.load()
+        guard let action = AssistantNoticeAction(
+            notice: notice,
+            series: coordinator.transactionStore.recurringSeries,
+            debts: coordinator.debtStore.debts,
+            now: Date()
+        ), model.startDraft(action.operations, saying: action.title) else { return }
+        AssistantInbox.shared.markRead(notice.id)
+        topicQuestions = []
+        draft = ""
         showChat()
     }
 

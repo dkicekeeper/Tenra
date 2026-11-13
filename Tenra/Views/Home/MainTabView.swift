@@ -342,6 +342,10 @@ struct MainTabView: View {
         .onChange(of: coordinator.pendingNotice) { _, notice in
             if notice != nil { openAssistant() }
         }
+        // A one-tap action on a message Ten wrote ("Pause"): the draft opens in Ten's chat.
+        .onChange(of: coordinator.pendingNoticeAction) { _, notice in
+            if notice != nil { openAssistant() }
+        }
         // The eye button on Home: every amount below (tabs, pushed screens, sheets) draws
         // "•••• ₸" while it is on. Outermost, so the sheets above get it too.
         .amountsHidden(coordinator.transactionsViewModel.appSettings.hidesAmounts)

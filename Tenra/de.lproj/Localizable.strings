@@ -1856,6 +1856,8 @@
 "assistant.notice.title" = "Ten schreibt";
 "assistant.notice.goThrough" = "Durchgehen";
 "assistant.notice.hide" = "Ausblenden";
+"assistant.notice.pause" = "Pausieren";
+"assistant.notice.settle" = "Als beglichen markieren";
 "assistant.notice.ask" = "Geh das durch: %@";
 "assistant.notice.ask.digest" = "Geh meine letzte Woche durch";
 "assistant.notice.ask.charge" = "Lohnt sich %@ noch?";

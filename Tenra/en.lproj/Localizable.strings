@@ -1856,6 +1856,8 @@
 "assistant.notice.title" = "Ten writes";
 "assistant.notice.goThrough" = "Go through it";
 "assistant.notice.hide" = "Hide";
+"assistant.notice.pause" = "Pause";
+"assistant.notice.settle" = "Mark settled";
 "assistant.notice.ask" = "Go through this: %@";
 "assistant.notice.ask.digest" = "Go through my last week";
 "assistant.notice.ask.charge" = "Is %@ worth keeping?";

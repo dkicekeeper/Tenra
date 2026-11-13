@@ -1856,6 +1856,8 @@
 "assistant.notice.title" = "Ten yazıyor";
 "assistant.notice.goThrough" = "İncele";
 "assistant.notice.hide" = "Gizle";
+"assistant.notice.pause" = "Duraklat";
+"assistant.notice.settle" = "Kapatıldı olarak işaretle";
 "assistant.notice.ask" = "Bunu incele: %@";
 "assistant.notice.ask.digest" = "Geçen haftamı incele";
 "assistant.notice.ask.charge" = "%@ tutmaya değer mi?";

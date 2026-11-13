@@ -92,6 +92,10 @@ class AppCoordinator {
     /// asks its question. Cleared once taken.
     private(set) var pendingNotice: AssistantNotice?
 
+    /// A message Ten wrote whose one-tap action the person chose (AssistantNoticeAction): the
+    /// assistant opens with the draft the phone made for it. Cleared once taken.
+    private(set) var pendingNoticeAction: AssistantNotice?
+
     /// What a widget or the Control Center button asked for (`tenra://add`): Home opens the
     /// add-transaction form for the category, or with none the assistant (Home where it does
     /// not run). Cleared once taken.
@@ -443,6 +447,15 @@ class AppCoordinator {
 
     func goThrough(_ notice: AssistantNotice) {
         pendingNotice = notice
+    }
+
+    func act(on notice: AssistantNotice) {
+        pendingNoticeAction = notice
+    }
+
+    func consumePendingNoticeAction() -> AssistantNotice? {
+        defer { pendingNoticeAction = nil }
+        return pendingNoticeAction
     }
 
     func consumePendingNotice() -> AssistantNotice? {

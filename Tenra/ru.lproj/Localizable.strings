@@ -1856,6 +1856,8 @@
 "assistant.notice.title" = "Тэн пишет";
 "assistant.notice.goThrough" = "Разобрать";
 "assistant.notice.hide" = "Скрыть";
+"assistant.notice.pause" = "Пауза";
+"assistant.notice.settle" = "Долг закрыт";
 "assistant.notice.ask" = "Разбери: %@";
 "assistant.notice.ask.digest" = "Разбери мою прошлую неделю";
 "assistant.notice.ask.charge" = "Стоит ли оставлять %@?";

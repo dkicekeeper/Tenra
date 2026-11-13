@@ -406,6 +406,19 @@ const draftTools: Tool[] = [
     ),
   },
   {
+    name: "draft_subcategory",
+    description:
+      "Prepares a subcategory inside a category, for the user to confirm on the card: it is created when the category does not have it yet, and with merchant given every record of that category whose name contains it (up to 300) is tagged with it, keeping the tags it has. category is a category id from <app_context> or a name; merchant is a name from get_category_audit's top_merchants or search_transactions. Returns draft_id, new, records and records_left.",
+    input_schema: object(
+      {
+        category: { type: "string" },
+        name: { type: "string", description: "The subcategory's name, up to 40 characters" },
+        merchant: { type: "string", description: "Tag this merchant's records in the category" },
+      },
+      ["category", "name"],
+    ),
+  },
+  {
     name: "draft_review_confirm",
     description:
       "Prepares confirming payments on review that are right as they were saved, for the user to confirm on one card: they leave the review list, the category is remembered for the merchant and the account for the card, so the next payment there is not a guess. Give transaction_ids from get_review_queue, or all true for every payment on review. A payment whose category is wrong is not confirmed: fix it with draft_transaction_edit, which takes it off review when saved. Returns draft_id, count and left_on_review.",

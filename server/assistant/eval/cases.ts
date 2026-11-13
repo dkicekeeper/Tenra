@@ -850,6 +850,16 @@ export const CASES: EvalCase[] = [
     ],
   },
   {
+    id: "ru-subcategory-merchant",
+    locale: "ru",
+    prompt: "Сделай в категории «Продукты» подкатегорию «Magnum» и отметь ей все покупки в Magnum",
+    checks: [
+      { kind: "called", anyOf: ["draft_subcategory"] },
+      { kind: "block", type: "confirm" },
+      { kind: "notCalled", tools: ["draft_recategorize", "draft_category_change"] },
+    ],
+  },
+  {
     id: "ru-suggest-budgets",
     locale: "ru",
     prompt: "Подбери мне лимиты по категориям исходя из того, сколько я реально трачу",

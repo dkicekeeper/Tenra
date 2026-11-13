@@ -1827,6 +1827,7 @@
 "assistant.draft.debtSettles" = "Sarà segnato come saldato";
 "assistant.draft.pauses" = "Verrà messo in pausa: nessun addebito finché non lo riprendi";
 "assistant.draft.mergesInto" = "I suoi %lld movimenti passano alla categoria qui sotto e questa viene eliminata";
+"assistant.draft.subcategory" = "Sottocategoria «%@», movimenti contrassegnati: %lld";
 "assistant.draft.resumes" = "Verrà ripreso";
 "assistant.voice.send" = "Chiedi a Ten";
 "assistant.voice.again" = "Ridillo";

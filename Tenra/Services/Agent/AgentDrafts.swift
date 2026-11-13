@@ -66,6 +66,8 @@ enum AgentDraftOperation: Equatable {
     case categoryRename(before: CustomCategory, name: String)
     case categoryMerge(from: CustomCategory, into: CustomCategory, records: Int)
     case categoryDelete(CustomCategory)
+    /// A subcategory in a category (made when it is new), and the records tagged with it.
+    case subcategoryTag(category: CustomCategory, name: String, transactionIds: [String])
 }
 
 /// A subscription or a regular payment, as the series it will become (it starts on its next
@@ -129,6 +131,7 @@ enum AgentSavedRecord: Equatable {
     case categoryRenamed(before: CustomCategory)
     case categoryDeleted(CustomCategory, subcategoryIds: [String])
     case categoryMerged(AgentCategoryMergeUndo)
+    case subcategoryTagged(AgentSubcategoryUndo)
 }
 
 enum AgentDraftError: Error {
@@ -279,7 +282,7 @@ extension AgentDraftBook.Writer {
         return Self(
             save: { operation in
                 switch operation {
-                case .categoryRename, .categoryMerge, .categoryDelete:
+                case .categoryRename, .categoryMerge, .categoryDelete, .subcategoryTag:
                     return try Self.saveCategoryChange(operation, store: store, categoriesViewModel: categoriesViewModel)
                 case .reviewConfirm(let transaction):
                     guard let current = store.transactionById[transaction.id], current == transaction else { throw AgentDraftError.recordChanged }
@@ -348,7 +351,7 @@ extension AgentDraftBook.Writer {
             },
             undo: { record in
                 switch record {
-                case .categoryRenamed, .categoryDeleted, .categoryMerged:
+                case .categoryRenamed, .categoryDeleted, .categoryMerged, .subcategoryTagged:
                     Self.undoCategoryChange(record, store: store, categoriesViewModel: categoriesViewModel)
                 case .reviewConfirmed(let undo):
                     if let undo { AgentReviewConfirm.undo(undo) }

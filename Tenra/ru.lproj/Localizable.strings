@@ -1827,6 +1827,7 @@
 "assistant.draft.debtSettles" = "Будет отмечен закрытым";
 "assistant.draft.pauses" = "Встанет на паузу: списаний не будет, пока не возобновите";
 "assistant.draft.mergesInto" = "Записей: %lld. Они перейдут в категорию ниже, а эта будет удалена";
+"assistant.draft.subcategory" = "Подкатегория «%@», записей с ней: %lld";
 "assistant.draft.resumes" = "Будет возобновлена";
 "assistant.voice.send" = "Спросить Тэна";
 "assistant.voice.again" = "Сказать заново";

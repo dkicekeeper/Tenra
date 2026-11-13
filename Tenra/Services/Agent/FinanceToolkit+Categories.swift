@@ -22,7 +22,66 @@ struct AgentCategoryMergeUndo: Equatable {
     let merchantIds: [String]
 }
 
+/// What a saved subcategory draft did, so Undo can put it back.
+struct AgentSubcategoryUndo: Equatable {
+    let subcategoryId: String
+    let categoryId: String
+    /// The subcategory did not exist before, and was not linked to the category before.
+    let created: Bool
+    let newlyLinked: Bool
+    /// The subcategories each tagged record had.
+    let previous: [String: [String]]
+}
+
 extension FinanceToolkit {
+    /// The most records one subcategory draft tags.
+    static let subcategoryTagLimit = 300
+
+    private struct SubcategoryInput: Decodable {
+        let category: String
+        let name: String
+        let merchant: String?
+    }
+
+    /// `draft_subcategory`: a subcategory in a category, and a merchant's records there tagged
+    /// with it.
+    func draftSubcategory(_ input: JSONValue) throws -> AgentToolOutput {
+        guard let drafts else { return .failure(Self.notYet("draft_subcategory")) }
+        let args = try input.decoded(as: SubcategoryInput.self)
+        let subject = try category(args.category, field: "category")
+        let name = args.name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !name.isEmpty, name.count <= 40 else { throw FinanceToolError(message: "name must be 1 to 40 characters.") }
+        let merchant = args.merchant?.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() ?? ""
+        var ids: [String] = []
+        var total = 0
+        if !merchant.isEmpty {
+            for tx in store.transactions where tx.category == subject.name && tx.type == subject.type
+                && tx.description.lowercased().contains(merchant) {
+                total += 1
+                if ids.count < Self.subcategoryTagLimit { ids.append(tx.id) }
+            }
+            guard total > 0 else {
+                throw FinanceToolError(message: "No record of \(subject.name) has \(merchant) in its name. Check the merchant with get_category_audit or search_transactions.")
+            }
+        }
+        let exists = (store.subcategoryIdsByCategoryId[subject.id] ?? [])
+            .contains { store.subcategoryById[$0]?.name.lowercased() == name.lowercased() }
+        guard !(exists && ids.isEmpty) else {
+            throw FinanceToolError(message: "\(subject.name) already has the subcategory \(name). Give a merchant to tag its records with it.")
+        }
+        let id = drafts.add([.subcategoryTag(category: subject, name: name, transactionIds: ids)])
+        return .success([
+            "draft_id": .string(id),
+            "category_id": .string(subject.id),
+            "category": .string(subject.name),
+            "subcategory": .string(name),
+            "new": .bool(!exists),
+            "records": .number(Double(ids.count)),
+            "records_left": .number(Double(total - ids.count)),
+            "saved": false,
+        ])
+    }
+
     private struct CategoryChangeInput: Decodable {
         let category: String
         let name: String?
@@ -148,6 +207,11 @@ extension FinanceToolkit {
             ]
         case .categoryDelete(let category):
             return ["type": "category_delete", "category_id": .string(category.id), "category": .string(category.name)]
+        case .subcategoryTag(let category, let name, let transactionIds):
+            return [
+                "type": "subcategory", "category_id": .string(category.id), "category": .string(category.name),
+                "subcategory": .string(name), "records": .number(Double(transactionIds.count)),
+            ]
         default:
             return .null
         }
@@ -193,6 +257,26 @@ extension AgentDraftBook.Writer {
             return .categoryMerged(AgentCategoryMergeUndo(
                 merge: merge, subcategoryIds: subcategoryIds, newlyLinkedSubcategoryIds: newlyLinked, merchantIds: merchantIds
             ))
+        case .subcategoryTag(let category, let name, let transactionIds):
+            guard store.categoryById[category.id] != nil else { throw AgentDraftError.categoryGone }
+            let existing = store.subcategories.first { $0.name.lowercased() == name.lowercased() }
+            let subcategory = existing ?? categoriesViewModel.addSubcategory(name: name)
+            let newlyLinked = !(store.subcategoryIdsByCategoryId[category.id] ?? []).contains(subcategory.id)
+            if newlyLinked { categoriesViewModel.linkSubcategoryToCategory(subcategoryId: subcategory.id, categoryId: category.id) }
+            var previous: [String: [String]] = [:]
+            var links: [String: [String]] = [:]
+            for id in transactionIds {
+                // Still there, and still in this category.
+                guard let transaction = store.transactionById[id], transaction.category == category.name else { continue }
+                let tags = categoriesViewModel.getSubcategoriesForTransaction(id).map(\.id)
+                guard !tags.contains(subcategory.id) else { continue }
+                previous[id] = tags
+                links[id] = tags + [subcategory.id]
+            }
+            if !links.isEmpty { categoriesViewModel.batchLinkSubcategoriesToTransaction(links) }
+            return .subcategoryTagged(AgentSubcategoryUndo(
+                subcategoryId: subcategory.id, categoryId: category.id, created: existing == nil, newlyLinked: newlyLinked, previous: previous
+            ))
         default:
             throw AgentDraftError.recordChanged
         }
@@ -222,6 +306,14 @@ extension AgentDraftBook.Writer {
             for id in undo.subcategoryIds { categoriesViewModel.linkSubcategoryToCategory(subcategoryId: id, categoryId: undo.merge.removed.id) }
             for id in undo.newlyLinkedSubcategoryIds { categoriesViewModel.unlinkSubcategoryFromCategory(subcategoryId: id, categoryId: undo.merge.intoId) }
             Self.point(undo.merchantIds, at: undo.merge.removed.id, in: merchants)
+        case .subcategoryTagged(let undo):
+            let current = undo.previous.filter { store.transactionById[$0.key] != nil }
+            if !current.isEmpty { categoriesViewModel.batchLinkSubcategoriesToTransaction(current) }
+            if undo.created {
+                categoriesViewModel.deleteSubcategory(undo.subcategoryId)
+            } else if undo.newlyLinked {
+                categoriesViewModel.unlinkSubcategoryFromCategory(subcategoryId: undo.subcategoryId, categoryId: undo.categoryId)
+            }
         default:
             break
         }

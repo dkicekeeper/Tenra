@@ -1827,6 +1827,7 @@
 "assistant.draft.debtSettles" = "精算済みになります";
 "assistant.draft.pauses" = "一時停止します。再開するまで請求は記録されません";
 "assistant.draft.mergesInto" = "%lld件の記録は下のカテゴリに移り、このカテゴリは削除されます";
+"assistant.draft.subcategory" = "サブカテゴリ「%@」、付ける記録: %lld件";
 "assistant.draft.resumes" = "再開します";
 "assistant.voice.send" = "テンに聞く";
 "assistant.voice.again" = "もう一度話す";

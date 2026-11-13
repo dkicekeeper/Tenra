@@ -508,6 +508,13 @@ private struct AssistantDraftCard: View {
                     categoryRow(into.name)
                 } else if case .categoryDelete(let category) = operation {
                     categoryRow(category.name)
+                } else if case .subcategoryTag(let category, let name, let transactionIds) = operation {
+                    categoryRow(category.name)
+                    InlineStatusText(
+                        message: String(format: String(localized: "assistant.draft.subcategory"), name, transactionIds.count),
+                        type: .info
+                    )
+                    .padding(.vertical, AppSpacing.md)
                 } else if case .subscriptionState(let series, let pause) = operation {
                     recurringRow(series)
                     InlineStatusText(
@@ -661,7 +668,7 @@ private struct AssistantDraftCard: View {
         draft.operations.contains { operation in
             switch operation {
             case .transactionEdit, .transactionDelete, .goalChange, .debtChange, .subscriptionState, .reviewConfirm,
-                 .categoryRename, .categoryMerge, .categoryDelete: true
+                 .categoryRename, .categoryMerge, .categoryDelete, .subcategoryTag: true
             default: false
             }
         }
@@ -891,7 +898,7 @@ private struct AssistantDraftCard: View {
         switch operation {
         case .budget, .recurring, .fact, .goal, .goalContribution, .debt, .debtRepayment, .asset, .assetValuation,
              .transactionEdit, .transactionDelete, .goalChange, .debtChange, .subscriptionState, .reviewConfirm,
-             .categoryRename, .categoryMerge, .categoryDelete:
+             .categoryRename, .categoryMerge, .categoryDelete, .subcategoryTag:
             return nil
         case .single(let draft):
             return Transaction(

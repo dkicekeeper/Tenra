@@ -123,6 +123,21 @@ struct AgentCategoryTests {
         #expect(mixed.value == nil)
     }
 
+    @Test func aSubcategoryDraftTagsTheMerchantsRecords() async throws {
+        let (toolkit, book, store) = Self.make()
+        _ = store
+        let output = await toolkit.execute(name: "draft_subcategory", input: ["category": "cat_cafe", "name": "Доставка", "merchant": "glovo"])
+        let value = try #require(output.value, "\(output.error ?? "")")
+        #expect(value["new"] == true)
+        #expect(value["records"] == 2)
+        #expect(book.drafts["draft_1"]?.operations == [
+            .subcategoryTag(category: store.categories[0], name: "Доставка", transactionIds: ["t_glovo", "t_coffee"]),
+        ])
+
+        let nobody = await toolkit.execute(name: "draft_subcategory", input: ["category": "cat_cafe", "name": "Доставка", "merchant": "magnum"])
+        #expect(nobody.value == nil)
+    }
+
     @Test func onlyAnUnusedCategoryIsDeleted() async throws {
         let (toolkit, book, store) = Self.make()
         _ = store

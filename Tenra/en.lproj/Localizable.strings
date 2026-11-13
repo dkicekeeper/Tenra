@@ -1827,6 +1827,7 @@
 "assistant.draft.debtSettles" = "It will be marked as settled";
 "assistant.draft.pauses" = "It will be paused: no charges until you resume it";
 "assistant.draft.mergesInto" = "Its %lld records move to the category below, and this one is deleted";
+"assistant.draft.subcategory" = "Subcategory “%@”, records tagged: %lld";
 "assistant.draft.resumes" = "It will be resumed";
 "assistant.voice.send" = "Ask Ten";
 "assistant.voice.again" = "Say it again";

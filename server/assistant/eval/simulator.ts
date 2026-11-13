@@ -405,6 +405,22 @@ function suggestBudgets() {
   return { currency: BASE_CURRENCY, from: `${months[0]}-01`, months_counted: months.length, categories: rows };
 }
 
+// As FinanceToolkit+Categories.draftSubcategory does; the fixture has no subcategories.
+function draftSubcategory(input: Input) {
+  const reference = (str(input, "category", true) ?? "").trim().toLowerCase();
+  const subject = CATEGORIES.find((c) => c.id === reference) ?? CATEGORIES.find((c) => c.name.toLowerCase() === reference);
+  if (!subject) throw new ToolInputError(`Unknown category ${reference} in category. Use a category id from <app_context>.`);
+  const name = (str(input, "name", true) ?? "").trim();
+  if (!name || name.length > 40) throw new ToolInputError("name must be 1 to 40 characters.");
+  const merchant = (str(input, "merchant") ?? "").trim().toLowerCase();
+  const records = merchant ? TRANSACTIONS.filter((t) => t.categoryId === subject.id && t.merchant.toLowerCase().includes(merchant)).length : 0;
+  if (merchant && records === 0) throw new ToolInputError(`No record of ${subject.name} has ${merchant} in its name. Check the merchant with get_category_audit or search_transactions.`);
+  return {
+    draft_id: `draft_${++draftSeq}`, category_id: subject.id, category: subject.name, subcategory: name, new: true,
+    records: Math.min(records, 300), records_left: Math.max(0, records - 300), saved: false,
+  };
+}
+
 // As FinanceToolkitCompute.duplicates does: the same day, type, amount, currency and account.
 function findDuplicates() {
   const from = `${Number(TODAY.slice(0, 4)) - 1}${TODAY.slice(4)}`;
@@ -1245,6 +1261,7 @@ const HANDLERS: Record<string, (input: Input) => unknown> = {
   find_duplicates: findDuplicates,
   suggest_budgets: suggestBudgets,
   draft_category_change: draftCategoryChange,
+  draft_subcategory: draftSubcategory,
   draft_review_confirm: draftReviewConfirm,
   get_loans: getLoans,
   get_deposits: getDeposits,

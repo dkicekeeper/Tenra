@@ -1827,6 +1827,7 @@
 "assistant.draft.debtSettles" = "Жабылған деп белгіленеді";
 "assistant.draft.pauses" = "Кідіртіледі: жалғастырғанша есептен шығарылмайды";
 "assistant.draft.mergesInto" = "Жазбалар: %lld. Олар төмендегі санатқа өтеді, ал бұл санат жойылады";
+"assistant.draft.subcategory" = "Ішкі санат «%@», белгіленетін жазбалар: %lld";
 "assistant.draft.resumes" = "Жалғастырылады";
 "assistant.voice.send" = "Тэннен сұрау";
 "assistant.voice.again" = "Қайта айту";

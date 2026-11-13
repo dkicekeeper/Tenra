@@ -299,18 +299,20 @@ mid-answer.
     shows the next one; on an empty install the automatic capture card. The chats page has no
     section title under the navigation one and lists every kept chat, not six.
 
-17. Payments on review (next build): with a few payments in Settings › Wallet › To review,
+17. Payments on review (build 89): with a few payments in Settings › Wallet › To review,
     "Разбери платежи на проверке" names them and shows one card with them and the button
     "Верно"; it empties the list and "Отмена" brings them back. "Glovo это продукты, а не кафе"
     drafts the change, and saving it takes the payment off review.
 
-18. Categories (next build): "Посмотри на мои категории, что бы ты поменял" names a few changes
+18. Categories (build 89): "Посмотри на мои категории, что бы ты поменял" names a few changes
     and drafts nothing; "Переименуй X в Y" shows Было and Станет, the history shows the new name
     and "Отмена" the old one; "Слей X в Y" shows both categories with the number of records,
     after "Сохранить" X is gone and its records are in Y (History, Analytics, the budget of Y),
     "Отмена" brings X back with its records; deleting a category with records is refused.
     "Найди дубли" names the pairs recorded twice and offers to delete the extra one of each.
     "Подбери мне лимиты" offers up to three budgets, each on its own card.
+    Next build: "Сделай в Кафе подкатегорию Доставка для Glovo" shows the category and how
+    many records get the subcategory; after "Сохранить" they carry it, "Отмена" takes it off.
 
 **On the phone, left from the versions already in the store** (not marked done before 1.8.2 went
 out; the store build is the one to check):

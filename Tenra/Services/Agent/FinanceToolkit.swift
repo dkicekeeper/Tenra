@@ -127,6 +127,7 @@ final class FinanceToolkit: AgentToolExecuting {
             case "find_duplicates": return .success(await duplicates())
             case "get_category_audit": return .success(await categoryAudit())
             case "draft_category_change": return try draftCategoryChange(input)
+            case "draft_subcategory": return try draftSubcategory(input)
             case "get_review_queue": return .success(reviewQueueResult())
             case "draft_review_confirm": return try draftReviewConfirm(input)
             case "get_loans": return .success(loansResult())
@@ -1398,7 +1399,7 @@ final class FinanceToolkit: AgentToolExecuting {
             return describeSubscriptionState(operation)
         case .reviewConfirm:
             return describeReview(operation)
-        case .categoryRename, .categoryMerge, .categoryDelete:
+        case .categoryRename, .categoryMerge, .categoryDelete, .subcategoryTag:
             return describeCategoryChange(operation)
         }
     }

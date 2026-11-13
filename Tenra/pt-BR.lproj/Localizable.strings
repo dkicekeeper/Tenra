@@ -2025,6 +2025,9 @@
 "assistant.notice.goal.behind" = "Guarde %1$@ por mês para chegar até %2$@";
 "assistant.notice.ask.goal" = "Como recupero o atraso em “%@”?";
 "assistant.notice.setup" = "Você registra os gastos à mão. Configure a automação da Wallet uma vez e os pagamentos com Apple Pay vão se registrar sozinhos.";
+"assistant.notice.tidy.title" = "Ordem nos seus dados";
+"assistant.notice.tidy" = "Uma vez por mês eu olho os pagamentos para revisar, suas categorias, duplicados e assinaturas. Vamos ver o que se acumulou?";
+"assistant.notice.ask.tidy" = "Faça a arrumação mensal: o que vale pôr em ordem?";
 "assistant.topic.goal.onTrack" = "Estou no ritmo para “%@”?";
 "assistant.topic.goal.faster" = "Como guardo mais rápido para “%@”?";
 "assistant.topic.debt.status" = "Quanto falta da dívida com %@?";

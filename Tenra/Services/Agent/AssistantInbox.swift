@@ -34,6 +34,9 @@ struct AssistantNotice: Codable, Equatable, Identifiable, Sendable {
         case goal
         /// Auto-capture not set up yet: its action opens the Wallet guide, not Ten.
         case setup
+        /// The monthly look at the order in the data (payments on review, categories,
+        /// duplicates, subscriptions): "Go through it" has Ten run `get_cleanup_overview`.
+        case tidy
         /// An asset's valuation out of date: its action opens a new valuation, not Ten.
         case asset
         /// A long loan no asset is bought with (plan-assets-roadmap 1.2): its action opens a new
@@ -408,6 +411,26 @@ extension AssistantNotices {
         )
     }
 
+    /// The monthly tidy-up: once a calendar month, for someone with enough records for there
+    /// to be something to tidy.
+    static func tidy(entries: Int, now: Date, calendar: Calendar = .current) -> AssistantNotice? {
+        guard entries >= tidyAfterEntries else { return nil }
+        let month = calendar.dateComponents([.year, .month], from: now)
+        return AssistantNotice(
+            id: String(format: "tidy:%04d-%02d", month.year ?? 0, month.month ?? 0),
+            kind: .tidy,
+            title: String(localized: "assistant.notice.tidy.title"),
+            body: String(localized: "assistant.notice.tidy"),
+            mood: .idle,
+            question: String(localized: "assistant.notice.ask.tidy"),
+            insightId: nil,
+            createdAt: now
+        )
+    }
+
+    /// Records before the first monthly tidy-up.
+    static let tidyAfterEntries = 50
+
     /// Entries before the setup message.
     static let setupAfterEntries = 5
 
@@ -504,7 +527,7 @@ extension AssistantNotices {
             case .asset: return notice.subjectId.map(staleAssets.contains) ?? true
             case .loanAsset: return notice.subjectId.map(loansWithoutAsset.contains) ?? true
             case .feedback: return feedbackRound.map { notice.id == FeedbackAsk.noticeID(round: $0) } ?? true
-            case .signal, .digest: return true
+            case .signal, .digest, .tidy: return true
             }
         }
     }

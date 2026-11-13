@@ -2025,6 +2025,9 @@
 "assistant.notice.goal.behind" = "%2$@ tarihine yetişmek için ayda %1$@ ayır";
 "assistant.notice.ask.goal" = "“%@” hedefine nasıl yetişirim?";
 "assistant.notice.setup" = "Harcamaları elle giriyorsun. Wallet otomasyonunu bir kez kur, Apple Pay ödemeleri kendiliğinden kaydedilsin.";
+"assistant.notice.tidy.title" = "Verilerinde düzen";
+"assistant.notice.tidy" = "Ayda bir kez kontrol bekleyen ödemelere, kategorilerine, yinelenen kayıtlara ve aboneliklere bakıyorum. Neler birikmiş, bakalım mı?";
+"assistant.notice.ask.tidy" = "Aylık düzenlemeyi yap: neleri toparlamalıyız?";
 "assistant.topic.goal.onTrack" = "“%@” hedefinde yolunda mıyım?";
 "assistant.topic.goal.faster" = "“%@” için nasıl daha hızlı biriktiririm?";
 "assistant.topic.debt.status" = "%@ ile olan borçta ne kadar kaldı?";

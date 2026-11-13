@@ -395,6 +395,9 @@ class AppCoordinator {
         ) {
             candidates.append(nudge)
         }
+        if let tidy = AssistantNotices.tidy(entries: transactionStore.transactionsCount, now: now) {
+            candidates.append(tidy)
+        }
         if let ask = AssistantNotices.feedbackAsk(round: feedbackRound(now: now), now: now) {
             candidates.append(ask)
         }

@@ -69,6 +69,29 @@ struct AgentReviewTests {
         #expect(value.value(atPath: "payments.1.guessed.0") == "account")
     }
 
+    @Test func theOverviewCountsWhatThereIsToTidy() async throws {
+        let (toolkit, _, store, _) = Self.make()
+        store.transactions.append(
+            Transaction(id: "t_glovo_2", date: "2026-10-27", description: "Glovo", amount: 4_200, currency: "KZT", type: .expense, category: "Кафе", accountId: "acc_kaspi")
+        )
+        let output = await toolkit.execute(name: "get_cleanup_overview", input: [:])
+        let value = try #require(output.value, "\(output.error ?? "")")
+        #expect(value["on_review"] == 2)
+        #expect(value["review_questions_on_screen"] == 1)
+        #expect(value["duplicate_groups"] == 1)
+        #expect(value["categories_unused"] == 0)
+        #expect(value["subscriptions_missed"] == 0)
+    }
+
+    @Test func theMonthlyTidyComesOnceAMonthAfterEnoughRecords() {
+        #expect(AssistantNotices.tidy(entries: 10, now: Self.now) == nil)
+        let october = AssistantNotices.tidy(entries: 200, now: Self.now)
+        #expect(october?.id == "tidy:2026-10")
+        #expect(october?.kind == .tidy)
+        let november = AssistantNotices.tidy(entries: 200, now: Self.now.addingTimeInterval(10 * 86_400))
+        #expect(november?.id == "tidy:2026-11")
+    }
+
     @Test func confirmingAllDraftsEveryPaymentAndNoQuestion() async throws {
         let (toolkit, book, store, captures) = Self.make()
         _ = store

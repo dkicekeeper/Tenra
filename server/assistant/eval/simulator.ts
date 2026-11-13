@@ -420,6 +420,20 @@ function suggestBudgets() {
   return { currency: BASE_CURRENCY, from: `${months[0]}-01`, months_counted: months.length, categories: rows };
 }
 
+// As FinanceToolkit.cleanupOverview does: counts from the other sweeps.
+function getCleanupOverview() {
+  const audit = getCategoryAudit();
+  return {
+    on_review: getReviewQueue().total,
+    review_questions_on_screen: 0,
+    duplicate_groups: findDuplicates().count_total,
+    categories_unused: audit.categories.filter((c) => c.unused).length,
+    categories_idle: audit.categories.filter((c) => c.idle).length,
+    records_without_category: 0,
+    subscriptions_missed: getSubscriptionAudit().subscriptions.filter((s) => s.missed).length,
+  };
+}
+
 // As FinanceToolkitCompute.merchants does, on the fixture: nothing is remembered, no brands.
 function getMerchants() {
   const from = `${Number(TODAY.slice(0, 4)) - 1}${TODAY.slice(4)}`;
@@ -1336,6 +1350,7 @@ const HANDLERS: Record<string, (input: Input) => unknown> = {
   draft_subcategory: draftSubcategory,
   draft_balance_correction: draftBalanceCorrection,
   get_merchants: getMerchants,
+  get_cleanup_overview: getCleanupOverview,
   draft_merchant_rule: draftMerchantRule,
   draft_merchant_brand: draftMerchantBrand,
   draft_review_confirm: draftReviewConfirm,

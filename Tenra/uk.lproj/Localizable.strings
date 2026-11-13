@@ -2025,6 +2025,9 @@
 "assistant.notice.goal.behind" = "Щоб встигнути до %2$@, відкладайте %1$@ на місяць";
 "assistant.notice.ask.goal" = "Як наздогнати ціль «%@»?";
 "assistant.notice.setup" = "Ви вносите витрати вручну. Налаштуйте автоматизацію Wallet один раз, і оплати Apple Pay записуватимуться самі.";
+"assistant.notice.tidy.title" = "Порядок у даних";
+"assistant.notice.tidy" = "Раз на місяць я дивлюся на платежі на перевірці, категорії, дублі та підписки. Подивимося, що назбиралося?";
+"assistant.notice.ask.tidy" = "Проведи місячний розбір: що привести до ладу?";
 "assistant.topic.goal.onTrack" = "Чи встигаю до цілі «%@»?";
 "assistant.topic.goal.faster" = "Як швидше накопичити на «%@»?";
 "assistant.topic.debt.status" = "Скільки залишилось за боргом: %@?";

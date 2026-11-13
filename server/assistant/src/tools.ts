@@ -183,6 +183,12 @@ const readTools: Tool[] = [
     input_schema: object({}),
   },
   {
+    name: "get_cleanup_overview",
+    description:
+      "How much there is to tidy in the user's data, by part, in one call: on_review (payments recorded by themselves with a guess nobody looked at), review_questions_on_screen, duplicate_groups (records that look entered twice), categories_unused (never used), categories_idle (not used for a year), records_without_category (their category no longer exists) and subscriptions_missed (active subscriptions with no charge for a long time). Use it for the monthly tidy-up; each part has its own tool for the details.",
+    input_schema: object({}),
+  },
+  {
     name: "get_merchants",
     description:
       "The merchants of the last twelve months of expenses, for tidying them: up to 40, the most used first, each with merchant (its name), records, total in the base currency, categories (where its records went, with counts: more than one means it is split), remembered_category (the category a payment there gets when it records itself; null when none is remembered) and brand (the brand it is joined into, or null); merchants_total; and look_alike: groups of merchants whose names start with the same word and are not one brand yet (maybe points of one brand).",

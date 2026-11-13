@@ -319,6 +319,8 @@ mid-answer.
     Продукты" shows the merchant with the category; after "Сохранить" Settings › Wallet ›
     merchants lists it, and the next payment there gets the category. "Zara Mega и Zara Dostyk
     это один магазин" joins them: the merchant's screen shows both points.
+    Once a month Ten writes "Порядок в данных"; "Разобрать" (or "Проведи месячный разбор") says
+    what has piled up and offers each part as a chip under the reply.
 
 **On the phone, left from the versions already in the store** (not marked done before 1.8.2 went
 out; the store build is the one to check):

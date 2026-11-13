@@ -124,6 +124,7 @@ final class FinanceToolkit: AgentToolExecuting {
             case "draft_debt_change": return try await draftDebtChange(input)
             case "find_recurring_candidates": return .success(await recurringCandidates())
             case "draft_balance_correction": return try draftBalanceCorrection(input)
+            case "get_cleanup_overview": return .success(await cleanupOverview())
             case "get_merchants": return .success(await merchantsResult())
             case "draft_merchant_rule": return try draftMerchantRule(input)
             case "draft_merchant_brand": return try draftMerchantBrand(input)

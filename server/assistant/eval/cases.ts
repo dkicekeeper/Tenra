@@ -850,6 +850,15 @@ export const CASES: EvalCase[] = [
     ],
   },
   {
+    id: "ru-monthly-tidy",
+    locale: "ru",
+    prompt: "Проведи месячный разбор: что привести в порядок?",
+    checks: [
+      { kind: "called", anyOf: ["get_cleanup_overview"] },
+      { kind: "notCalled", tools: ["draft_review_confirm", "draft_transaction_delete", "draft_category_change", "draft_recategorize"] },
+    ],
+  },
+  {
     id: "ru-merchant-rule",
     locale: "ru",
     prompt: "Magnum теперь всегда записывай в «Продукты»",

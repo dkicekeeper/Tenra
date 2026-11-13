@@ -2025,6 +2025,9 @@
 "assistant.notice.goal.behind" = "%2$@までに達成するには毎月%1$@を貯めましょう";
 "assistant.notice.ask.goal" = "「%@」の遅れを取り戻すには？";
 "assistant.notice.setup" = "支出を手入力しています。Wallet のオートメーションを一度設定すれば、Apple Pay の支払いが自動で記録されます。";
+"assistant.notice.tidy.title" = "データの整理";
+"assistant.notice.tidy" = "月に一度、確認待ちの支払い、カテゴリ、重複、サブスクリプションを見直します。たまっているものを見てみましょうか。";
+"assistant.notice.ask.tidy" = "月次の整理をして。何を整えるべき？";
 "assistant.topic.goal.onTrack" = "「%@」は順調ですか？";
 "assistant.topic.goal.faster" = "「%@」をもっと早く貯めるには？";
 "assistant.topic.debt.status" = "%@との貸し借りはあといくら残っていますか？";

@@ -53,6 +53,29 @@ extension FinanceToolkit {
         }.value
     }
 
+    /// `get_cleanup_overview`: how much there is to tidy, by part, from the sweeps of the
+    /// other tools: one call for the monthly look.
+    func cleanupOverview() async -> JSONValue {
+        let review = reviewQueueResult()
+        async let duplicateSweep = duplicates()
+        async let categorySweep = categoryAudit()
+        async let subscriptionSweep = subscriptionAudit()
+        let (found, audit, subs) = await (duplicateSweep, categorySweep, subscriptionSweep)
+        func count(_ value: JSONValue?, where flag: String) -> Double {
+            guard case .array(let rows)? = value else { return 0 }
+            return Double(rows.filter { $0[flag] == true }.count)
+        }
+        return [
+            "on_review": review["total"] ?? 0,
+            "review_questions_on_screen": review["questions_on_screen"] ?? 0,
+            "duplicate_groups": found["count_total"] ?? 0,
+            "categories_unused": .number(count(audit["categories"], where: "unused")),
+            "categories_idle": .number(count(audit["categories"], where: "idle")),
+            "records_without_category": audit.value(atPath: "without_category.records") ?? 0,
+            "subscriptions_missed": .number(count(subs["subscriptions"], where: "missed")),
+        ]
+    }
+
     /// `get_subscription_audit`: every subscription with its real charges
     /// (FinanceToolkitCompute.subscriptionAudit), swept off the main actor.
     func subscriptionAudit() async -> JSONValue {

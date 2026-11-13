@@ -310,6 +310,21 @@ out; the store build is the one to check):
 1. **CI green**, then a TestFlight build (done: build 86 from 9708fca, 2026-11-13; CI green on
    225edd2, the last commit that touched the app).
 2. **The phone checks above.**
-3. **What's New** in this file, then `prepare-version --version 1.8.3 --build <N>`.
-4. **One submission**: `asc.py prepare-review --version 1.8.3`; the founder sends it, or
+3. **What's New** in this file (written 2026-11-13), then `prepare-version --version 1.8.3 --build <N>`.
+4. **App Review notes**, in English, set from this block by
+   `asc.py review-notes --version 1.8.3 --apply`:
+
+```
+New in 1.8.3, the assistant (Ten, the middle tab). It answers through Claude by Anthropic only after the person turns cloud answers on in the consent screen shown before the first question (Settings > Assistant has the same switch and screen). Ten can now prepare changes to the person's own records: correct or delete a transaction, move a merchant's transactions to another category, change a savings goal or a personal debt, pause a subscription. Nothing is changed until the person taps Save or Delete on the card Ten shows, and Undo puts it back. To try it: on Home add two expenses, open Ten, allow cloud answers and type "delete my last expense"; a card lists the record with a Delete button. Asked how to do something ("how do I add a deposit?"), Ten answers with a button that opens the app's own form or screen. Ten's message "How do you like Tenra?" on Home opens a short talk whose answer goes to the developer; when cloud answers are on and the answer says something is wrong, Ten then tries to help with it (the privacy policy says so).
+
+Bank notification capture (announced in 1.8) uses the Shortcuts personal automation "When I get a notification from an app" (iOS 27), which runs the Tenra action "Log a bank notification" with the notification's Title, Subtitle, Text, App and Date. To try it without a bank app: open Shortcuts, create a new shortcut, add the Tenra action "Log a bank notification", set Text to "Card ending 4321 was charged $25.00 at COFFEE SHOP" and App to "My Bank", and run it. The expense appears in Tenra at once and waits in Settings > Wallet > To review. Settings > Siri & Shortcuts > Set up bank notifications has the step-by-step guide and "Check a notification", which shows what Tenra reads from a pasted notification without saving anything. The notification's text never leaves the device.
+
+Apple Pay capture uses the Shortcuts "Wallet" personal automation, which fires only on a real contactless payment. To try it without one: create a shortcut with the Tenra action "Log an Apple Pay payment", fill in an amount (e.g. 1500) and a merchant (e.g. "Coffee Boom") and run it. The step-by-step setup guide is in Settings > Siri & Shortcuts.
+
+Tenra Pro features can be tried with a sandbox purchase on the paywall: Settings, the "Get Tenra Pro" button at the top.
+
+Assets (Finances > Assets) are a Tenra Pro feature: adding one opens the paywall without Pro. The estimate from listings (an asset's screen, the menu, "Estimate from listings") is Pro only, 10 a month: it sends the asset's kind and the characteristics filled in its form (city, district, area, rooms, year; for a car make, model, year, mileage) to Tenra's server, where Claude searches the web for similar listings and returns the middle asking price, the range and the listings with links. No name, address number, VIN or plate is sent. To try it: buy Pro in the sandbox, add a car (Toyota Camry, 2019, 110000 km, Almaty, Kazakhstan), open it and choose Estimate from listings.
+```
+
+5. **One submission**: `asc.py prepare-review --version 1.8.3`; the founder sends it, or
    `--submit` on the founder's word.

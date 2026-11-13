@@ -419,7 +419,8 @@ struct AssistantView: View {
     /// 8.6.0): the header 12 pt above the card, each chat a row that pads itself 12 pt, the
     /// section's divider under each row's text.
     private var recentChats: some View {
-        FormSection(header: String(localized: "assistant.recent")) {
+        // No header: the page's title says what these are.
+        FormSection {
             ForEach(chats) { thread in
                 Button {
                     Task {

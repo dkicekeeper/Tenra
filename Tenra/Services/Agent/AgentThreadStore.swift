@@ -86,7 +86,7 @@ nonisolated struct AgentThreadSummary: Equatable, Identifiable, Sendable {
 }
 
 nonisolated final class AgentThreadStore: @unchecked Sendable {
-    static let keep = 20
+    static let keep = 100
 
     private static let logger = Logger(subsystem: "Tenra", category: "AgentThreadStore")
     private static let entityName = "AgentThreadEntity"

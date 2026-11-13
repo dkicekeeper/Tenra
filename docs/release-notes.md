@@ -172,6 +172,8 @@ Tenra의 새로운 기능:
   (deployed 2026-11-12). In build 81.
 - "Find my subscriptions in the history": Ten looks through the last year for payments that
   repeat like a subscription and offers to add them. In build 87.
+- The chats page lists the whole kept history (the latest 100 chats, five before) under one
+  title. After build 87.
 - Ten's messages get a one-tap button: "Pause" on a subscription charged tomorrow, "Mark
   settled" on a debt due tomorrow; the draft opens in Ten's chat to confirm (DesignKit 8.11.0). In build 87.
 - Ten's home is one thing at a time: Ten, large, with the message it wrote first (or its

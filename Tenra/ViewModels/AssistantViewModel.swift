@@ -83,7 +83,7 @@ final class AssistantViewModel {
     }
 
     /// The kept threads the home lists, the open one aside.
-    static let recentLimit = 5
+    static let recentLimit = AgentThreadStore.keep
 
     struct Entry: Identifiable, Equatable {
         enum Content: Equatable {

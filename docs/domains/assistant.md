@@ -239,8 +239,10 @@ enum AgentBlock {                // AgentReply.swift; source = a tool result's r
   back after a relaunch (their cards are empty). A long history drops its oldest questions whole
   (`trimIfNeeded`: at most 60 messages and 128 KB; the server takes 80 and 256 KB) and the context
   is sent again. "Delete all data" and a restore reset the open thread and Ten's Home notices
-  (`AssistantViewModel.storeDidReset`, `AssistantInbox.clear`). The assistant's home lists the open
-  thread and five more; tap opens, touch and hold deletes (`deleteThread`). Every call of the
+  (`AssistantViewModel.storeDidReset`, `AssistantInbox.clear`). The chats page of the
+  assistant's home lists every kept thread (`AgentThreadStore.keep`, the latest 100; the page's
+  title names them, the section has no header); tap opens, touch and hold deletes
+  (`deleteThread`). Every call of the
   thread store, and of the fact store, waits for the ones before it (`OrderedWork`, one
   `AgentThreadStore` for the chat and the sealing): two saves of a thread never both insert it,
   and a chat deleted while its reply is written stays deleted. "New chat" and a new message wait

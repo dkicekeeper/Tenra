@@ -183,6 +183,12 @@ const readTools: Tool[] = [
     input_schema: object({}),
   },
   {
+    name: "get_merchants",
+    description:
+      "The merchants of the last twelve months of expenses, for tidying them: up to 40, the most used first, each with merchant (its name), records, total in the base currency, categories (where its records went, with counts: more than one means it is split), remembered_category (the category a payment there gets when it records itself; null when none is remembered) and brand (the brand it is joined into, or null); merchants_total; and look_alike: groups of merchants whose names start with the same word and are not one brand yet (maybe points of one brand).",
+    input_schema: object({}),
+  },
+  {
     name: "get_subscription_audit",
     description:
       "Each subscription with its real charges, for looking them over: amount, currency, frequency, active, charges_total, last_charge, days_since_last_charge, recent_charges (up to 4, newest first), price_change_percent (between the last two charges, null when it did not change), missed (an active subscription with no charge for an interval and a half: probably cancelled or forgotten) and same_name_as (other subscriptions with the same name: probably entered twice). Read only: pausing is draft_subscription_state, the amount and cancelling are on the subscription's screen.",
@@ -409,6 +415,30 @@ const draftTools: Tool[] = [
         delete: { type: "boolean" },
       },
       ["category"],
+    ),
+  },
+  {
+    name: "draft_merchant_rule",
+    description:
+      "Prepares a rule for a merchant, for the user to confirm on the card: from now on a payment there that records itself (Apple Pay, a bank notification) gets this expense category. It does not move the records already saved: records_in_other_categories says how many sit elsewhere, and draft_recategorize moves them. merchant is a name from get_merchants; category is an expense category id from <app_context> or its name. Returns draft_id.",
+    input_schema: object(
+      {
+        merchant: { type: "string" },
+        category: { type: "string" },
+      },
+      ["merchant", "category"],
+    ),
+  },
+  {
+    name: "draft_merchant_brand",
+    description:
+      "Prepares joining points of one brand that the bank names apart (\"ZARA MEGA\" and \"ZARA DOSTYK\") into one merchant, for the user to confirm on the card: its screen then shows every point's records together. Nothing in the records changes. merchants are 2 to 10 names from get_merchants (its look_alike groups are candidates); name is the brand's name, optional. A merchant already in a brand is refused: brands are changed on the merchant's screen. Returns draft_id.",
+    input_schema: object(
+      {
+        merchants: { type: "array", items: { type: "string" } },
+        name: { type: "string" },
+      },
+      ["merchants"],
     ),
   },
   {

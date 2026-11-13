@@ -508,6 +508,17 @@ private struct AssistantDraftCard: View {
                     categoryRow(into.name)
                 } else if case .categoryDelete(let category) = operation {
                     categoryRow(category.name)
+                } else if case .merchantRule(let merchant, let category) = operation {
+                    ItemRow(merchant, meta: [MetaLine([.text(category.name)])], leading: .symbol("storefront"), style: .large)
+                        .accessibilityElement(children: .combine)
+                } else if case .merchantBrand(let merchants, let name) = operation {
+                    ItemRow(
+                        name ?? merchants.first ?? "",
+                        meta: [MetaLine([.text(merchants.joined(separator: ", "))])],
+                        leading: .symbol("storefront"),
+                        style: .large
+                    )
+                    .accessibilityElement(children: .combine)
                 } else if case .balanceCorrection(let account, let from, let to) = operation {
                     UniversalRow(
                         "\(account.name) · \(String(localized: "assistant.draft.budgetWas"))",
@@ -680,7 +691,8 @@ private struct AssistantDraftCard: View {
         draft.operations.contains { operation in
             switch operation {
             case .transactionEdit, .transactionDelete, .goalChange, .debtChange, .subscriptionState, .reviewConfirm,
-                 .categoryRename, .categoryMerge, .categoryDelete, .subcategoryTag, .balanceCorrection: true
+                 .categoryRename, .categoryMerge, .categoryDelete, .subcategoryTag, .balanceCorrection,
+                 .merchantRule, .merchantBrand: true
             default: false
             }
         }
@@ -910,7 +922,8 @@ private struct AssistantDraftCard: View {
         switch operation {
         case .budget, .recurring, .fact, .goal, .goalContribution, .debt, .debtRepayment, .asset, .assetValuation,
              .transactionEdit, .transactionDelete, .goalChange, .debtChange, .subscriptionState, .reviewConfirm,
-             .categoryRename, .categoryMerge, .categoryDelete, .subcategoryTag, .balanceCorrection:
+             .categoryRename, .categoryMerge, .categoryDelete, .subcategoryTag, .balanceCorrection,
+             .merchantRule, .merchantBrand:
             return nil
         case .single(let draft):
             return Transaction(

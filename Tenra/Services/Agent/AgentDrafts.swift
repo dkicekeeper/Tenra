@@ -66,6 +66,10 @@ enum AgentDraftOperation: Equatable {
     case categoryRename(before: CustomCategory, name: String)
     case categoryMerge(from: CustomCategory, into: CustomCategory, records: Int)
     case categoryDelete(CustomCategory)
+    /// The expense category a merchant's payments get from now on, and points of one brand
+    /// joined into one merchant (FinanceToolkit+Merchants).
+    case merchantRule(merchant: String, category: CustomCategory)
+    case merchantBrand(merchants: [String], name: String?)
     /// An everyday account set to the balance the bank shows (FinanceToolkit+Accounts).
     case balanceCorrection(account: Account, from: Double, to: Double)
     /// A subcategory in a category (made when it is new), and the records tagged with it.
@@ -135,6 +139,8 @@ enum AgentSavedRecord: Equatable {
     case categoryMerged(AgentCategoryMergeUndo)
     case subcategoryTagged(AgentSubcategoryUndo)
     case balanceCorrected(accountId: String, previous: Double)
+    case merchantRuleSet(AgentMerchantRuleUndo)
+    case merchantBranded(groupId: String)
 }
 
 enum AgentDraftError: Error {
@@ -294,6 +300,8 @@ extension AgentDraftBook.Writer {
         return Self(
             save: { operation in
                 switch operation {
+                case .merchantRule, .merchantBrand:
+                    return try Self.saveMerchantChange(operation, store: store)
                 case .balanceCorrection(let account, let from, let to):
                     // The card showed what the account had: it must still have it.
                     let current = store.balanceCoordinator.balances[account.id] ?? account.balance
@@ -369,6 +377,8 @@ extension AgentDraftBook.Writer {
             },
             undo: { record in
                 switch record {
+                case .merchantRuleSet, .merchantBranded:
+                    Self.undoMerchantChange(record)
                 case .balanceCorrected(let accountId, let previous):
                     try? setBalance(previous, of: accountId)
                 case .categoryRenamed, .categoryDeleted, .categoryMerged, .subcategoryTagged:

@@ -420,6 +420,49 @@ function suggestBudgets() {
   return { currency: BASE_CURRENCY, from: `${months[0]}-01`, months_counted: months.length, categories: rows };
 }
 
+// As FinanceToolkitCompute.merchants does, on the fixture: nothing is remembered, no brands.
+function getMerchants() {
+  const from = `${Number(TODAY.slice(0, 4)) - 1}${TODAY.slice(4)}`;
+  const tallies: Record<string, { records: number; total: number; categories: Record<string, number> }> = {};
+  for (const t of TRANSACTIONS) {
+    if (t.type !== "expense" || t.date < from || t.date > TODAY || t.merchant.trim().length < 3) continue;
+    const tally = (tallies[t.merchant] ??= { records: 0, total: 0, categories: {} });
+    tally.records += 1;
+    tally.total += toBase(t.amount, t.currency);
+    const category = categoryName(t.categoryId);
+    tally.categories[category] = (tally.categories[category] ?? 0) + 1;
+  }
+  const ranked = Object.entries(tallies).sort((a, b) => b[1].records - a[1].records || a[0].localeCompare(b[0]));
+  return {
+    from, to: TODAY, currency: BASE_CURRENCY,
+    merchants: ranked.slice(0, 40).map(([merchant, tally]) => ({
+      merchant, records: tally.records, total: round(tally.total),
+      categories: Object.entries(tally.categories).sort((a, b) => b[1] - a[1]).map(([category, records]) => ({ category, records })),
+      remembered_category: null, brand: null,
+    })),
+    merchants_total: ranked.length,
+    look_alike: [],
+  };
+}
+
+function draftMerchantRule(input: Input) {
+  const merchant = (str(input, "merchant", true) ?? "").trim();
+  if (merchant.length < 3) throw new ToolInputError(`${merchant} is too short to be a merchant's name. Use a name from get_merchants.`);
+  const reference = (str(input, "category", true) ?? "").trim().toLowerCase();
+  const category = CATEGORIES.find((c) => c.type === "expense" && (c.id === reference || c.name.toLowerCase() === reference));
+  if (!category) throw new ToolInputError(`Unknown expense category ${reference}. Use a category id from <app_context>.`);
+  const elsewhere = TRANSACTIONS.filter((t) => t.type === "expense" && t.merchant.toLowerCase() === merchant.toLowerCase() && t.categoryId !== category.id).length;
+  return { draft_id: `draft_${++draftSeq}`, merchant, category_id: category.id, category: category.name, records_in_other_categories: elsewhere, saved: false };
+}
+
+function draftMerchantBrand(input: Input) {
+  const merchants = Array.isArray(input.merchants) ? [...new Set((input.merchants as unknown[]).map((m) => String(m).trim()))] : [];
+  if (merchants.some((m) => m.length < 3)) throw new ToolInputError("A merchant's name is too short. Use names from get_merchants.");
+  if (merchants.length < 2) throw new ToolInputError("Give at least two different merchants to join.");
+  if (merchants.length > 10) throw new ToolInputError("At most 10 merchants in one brand draft.");
+  return { draft_id: `draft_${++draftSeq}`, merchants, name: str(input, "name")?.trim() || null, saved: false };
+}
+
 // As FinanceToolkit+Accounts.draftBalanceCorrection does.
 function draftBalanceCorrection(input: Input) {
   const reference = (str(input, "account", true) ?? "").trim().toLowerCase();
@@ -1292,6 +1335,9 @@ const HANDLERS: Record<string, (input: Input) => unknown> = {
   draft_category_change: draftCategoryChange,
   draft_subcategory: draftSubcategory,
   draft_balance_correction: draftBalanceCorrection,
+  get_merchants: getMerchants,
+  draft_merchant_rule: draftMerchantRule,
+  draft_merchant_brand: draftMerchantBrand,
   draft_review_confirm: draftReviewConfirm,
   get_loans: getLoans,
   get_deposits: getDeposits,

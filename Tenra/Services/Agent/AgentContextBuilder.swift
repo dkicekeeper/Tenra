@@ -161,8 +161,8 @@ nonisolated enum AgentContextBuilder {
         // terms it reads: the prompt uses draft_transaction_edit, draft_transaction_delete,
         // draft_recategorize, draft_goal_change, draft_debt_change, get_loans and get_deposits
         // only when these lines name them.
-        lines.append("changes: transactions (edit, delete, recategorize), goals, debts, subscriptions (pause, resume), review (confirm), categories (rename, merge, delete, subcategory), accounts (balance)")
-        lines.append("reads: loans, deposits, recurring_candidates, review_queue, category_audit, duplicates, budget_suggestions, subscription_audit")
+        lines.append("changes: transactions (edit, delete, recategorize), goals, debts, subscriptions (pause, resume), review (confirm), categories (rename, merge, delete, subcategory), accounts (balance), merchants (rule, brand)")
+        lines.append("reads: loans, deposits, recurring_candidates, review_queue, category_audit, duplicates, budget_suggestions, subscription_audit, merchants")
         // Without facts the line is left out, as before there was a memory.
         if !facts.isEmpty { lines.append("facts you remember about the user: \(facts)") }
         if !goals.isEmpty { lines.append("savings goals: \(goals)") }

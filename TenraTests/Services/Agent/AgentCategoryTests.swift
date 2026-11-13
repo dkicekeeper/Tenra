@@ -123,6 +123,27 @@ struct AgentCategoryTests {
         #expect(mixed.value == nil)
     }
 
+    @Test func merchantsListTheirCategoriesAndARuleIsDrafted() async throws {
+        let (toolkit, book, store) = Self.make()
+        let defaults = UserDefaults(suiteName: "tests.\(UUID().uuidString)")!
+        let output = await toolkit.merchantsResult(
+            memory: MerchantCategoryMemory(defaults: defaults), groups: MerchantGroupStore(defaults: defaults)
+        )
+        #expect(output.value(atPath: "merchants.0.merchant") == "Glovo")
+        #expect(output.value(atPath: "merchants.0.records") == 2)
+        #expect(output.value(atPath: "merchants.0.categories.0.category") == "Кафе")
+        #expect(output.value(atPath: "merchants.0.remembered_category") == .null)
+        #expect(output["merchants_total"] == 2)
+
+        let rule = await toolkit.execute(name: "draft_merchant_rule", input: ["merchant": "Glovo", "category": "cat_food"])
+        let value = try #require(rule.value, "\(rule.error ?? "")")
+        #expect(value["records_in_other_categories"] == 2)
+        #expect(book.drafts["draft_1"]?.operations == [.merchantRule(merchant: "Glovo", category: store.categories[1])])
+
+        let income = await toolkit.execute(name: "draft_merchant_rule", input: ["merchant": "Glovo", "category": "cat_salary"])
+        #expect(income.value == nil)
+    }
+
     @Test func aSubcategoryDraftTagsTheMerchantsRecords() async throws {
         let (toolkit, book, store) = Self.make()
         _ = store

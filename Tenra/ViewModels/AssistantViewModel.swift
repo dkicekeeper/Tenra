@@ -923,7 +923,7 @@ enum AssistantStep: Equatable {
         switch tool {
         case "get_spending_summary": self = .spending
         case "compare_periods": self = .comparing
-        case "search_transactions", "get_review_queue", "find_duplicates": self = .searching
+        case "search_transactions", "get_review_queue", "find_duplicates", "get_merchants": self = .searching
         case "get_accounts", "get_loans", "get_deposits": self = .accounts
         case "get_budgets", "get_category_audit", "suggest_budgets": self = .budgets
         case "list_recurring", "find_recurring_candidates", "get_subscription_audit": self = .recurring

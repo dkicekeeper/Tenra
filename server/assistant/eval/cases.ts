@@ -850,6 +850,25 @@ export const CASES: EvalCase[] = [
     ],
   },
   {
+    id: "ru-merchant-rule",
+    locale: "ru",
+    prompt: "Magnum теперь всегда записывай в «Продукты»",
+    checks: [
+      { kind: "called", anyOf: ["draft_merchant_rule"] },
+      { kind: "block", type: "confirm" },
+      { kind: "notCalled", tools: ["draft_transactions", "draft_category_change", "draft_transaction_delete"] },
+    ],
+  },
+  {
+    id: "ru-merchants-look",
+    locale: "ru",
+    prompt: "Посмотри на моих продавцов: что стоит привести в порядок?",
+    checks: [
+      { kind: "called", anyOf: ["get_merchants"] },
+      { kind: "notCalled", tools: ["draft_merchant_rule", "draft_merchant_brand", "draft_recategorize"] },
+    ],
+  },
+  {
     id: "ru-subscription-audit",
     locale: "ru",
     prompt: "Проверь мои подписки: есть ли среди них лишние или подорожавшие?",

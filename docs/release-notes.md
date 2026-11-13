@@ -315,6 +315,10 @@ mid-answer.
     many records get the subcategory; after "Сохранить" they carry it, "Отмена" takes it off.
     "На карте на самом деле 250 000, поправь остаток" shows Было and Станет; after "Сохранить"
     the account shows it and the history is unchanged, "Отмена" puts the old balance back.
+    "Проверь мои подписки" names only the ones worth a look. "Magnum всегда записывай в
+    Продукты" shows the merchant with the category; after "Сохранить" Settings › Wallet ›
+    merchants lists it, and the next payment there gets the category. "Zara Mega и Zara Dostyk
+    это один магазин" joins them: the merchant's screen shows both points.
 
 **On the phone, left from the versions already in the store** (not marked done before 1.8.2 went
 out; the store build is the one to check):

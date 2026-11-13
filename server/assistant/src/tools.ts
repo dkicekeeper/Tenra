@@ -177,6 +177,12 @@ const readTools: Tool[] = [
     input_schema: object({}),
   },
   {
+    name: "find_recurring_candidates",
+    description:
+      "Looks through the last year of expenses for payments that repeat like a subscription or a regular payment and are not one in the app yet: the same merchant at even intervals (weekly, monthly, quarterly, yearly) for about the same amount. Returns up to 10 candidates with the name, amount, currency, frequency, how many times, the last date, the next expected date, the category and the account. Use it when the user asks to find their subscriptions or regular payments in the history; offer draft_recurring for the ones they pick.",
+    input_schema: object({}),
+  },
+  {
     name: "get_loans",
     description:
       "The user's loans and installment plans with their terms: what is left to repay, the original amount, the yearly rate, the monthly payment and its day, the term, payments made and left, the end date, the last payment and the interest paid so far. Use it for questions about a loan's terms; simulate_loan works out refinancing and early repayment.",

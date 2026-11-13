@@ -43,6 +43,16 @@ extension FinanceToolkit {
         return ["loans": .array(loans)]
     }
 
+    /// `find_recurring_candidates`: expenses that repeat like a subscription and are not one
+    /// yet (FinanceToolkitCompute.recurringCandidates), swept off the main actor.
+    func recurringCandidates() async -> JSONValue {
+        let snapshot = makeSnapshot()
+        let known = Set(store.recurringSeries.map { $0.description.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() })
+        return await Task.detached(priority: .userInitiated) {
+            FinanceToolkitCompute.recurringCandidates(snapshot, knownNames: known)
+        }.value
+    }
+
     /// `get_deposits`: every deposit account with its terms and its balance.
     func depositsResult() -> JSONValue {
         let balances = store.balanceCoordinator.balances

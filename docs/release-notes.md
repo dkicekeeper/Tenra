@@ -45,6 +45,9 @@ another version.
 - Ten knows the terms of loans and deposits: the rate, the monthly payment and its day, the
   payments left, the interest accrued on a deposit. Needs the server with prompt 2026-11-12.7
   (deployed 2026-11-12). In build 81.
+- "Find my subscriptions in the history": Ten looks through the last year for payments that
+  repeat like a subscription and offers to add them. Needs the server with prompt 2026-11-13.1.
+  Not in a build yet.
 - Ten's home is one thing at a time: Ten, large, with the message it wrote first (or its
   greeting) under it; three chips over the field, "Record", "Ask" and "How to"; the chats behind
   a button at the top. After build 84 (build 84 had an earlier, busier arrangement).

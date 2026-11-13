@@ -118,6 +118,7 @@ final class FinanceToolkit: AgentToolExecuting {
             case "draft_subscription_state": return try draftSubscriptionState(input)
             case "draft_goal_change": return try await draftGoalChange(input)
             case "draft_debt_change": return try await draftDebtChange(input)
+            case "find_recurring_candidates": return .success(await recurringCandidates())
             case "get_loans": return .success(loansResult())
             case "get_deposits": return .success(depositsResult())
             case "get_goals": return try await goalsResult()
@@ -149,7 +150,7 @@ final class FinanceToolkit: AgentToolExecuting {
 
     // MARK: - Snapshot
 
-    private func makeSnapshot() -> FinanceSnapshot {
+    func makeSnapshot() -> FinanceSnapshot {
         var idByName: [String: String] = [:]
         var nameById: [String: String] = [:]
         for category in store.categories {

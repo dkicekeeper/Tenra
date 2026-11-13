@@ -910,7 +910,7 @@ enum AssistantStep: Equatable {
         case "search_transactions": self = .searching
         case "get_accounts", "get_loans", "get_deposits": self = .accounts
         case "get_budgets": self = .budgets
-        case "list_recurring": self = .recurring
+        case "list_recurring", "find_recurring_candidates": self = .recurring
         case "get_insights": self = .insights
         case "get_goals", "get_debts": self = .plans
         case "get_assets", "get_net_worth": self = .assets

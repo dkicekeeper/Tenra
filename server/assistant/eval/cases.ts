@@ -819,6 +819,16 @@ export const CASES: EvalCase[] = [
     ],
   },
   {
+    id: "ru-find-subscriptions",
+    locale: "ru",
+    prompt: "Найди в моей истории платежи, которые похожи на подписки, но не заведены",
+    checks: [
+      { kind: "called", anyOf: ["find_recurring_candidates"] },
+      { kind: "notCalled", tools: ["draft_transactions", "draft_transaction_delete", "draft_recategorize"] },
+      { kind: "textHas", groups: [["steam"]], label: "names Steam" },
+    ],
+  },
+  {
     id: "ru-loan-terms",
     locale: "ru",
     prompt: "Какая ставка по моему кредиту и сколько платежей осталось?",

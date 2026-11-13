@@ -154,6 +154,28 @@ struct AgentChangeTests {
         #expect(unknown.error?.contains("Unknown subscription") == true)
     }
 
+    @Test func aMonthlyChargeOfTheSameAmountIsARecurringCandidate() async throws {
+        let (toolkit, _, store) = Self.make()
+        store.transactions += [
+            Transaction(id: "s1", date: "2026-07-21", description: "Steam", amount: 9_000, currency: "KZT", type: .expense, category: "Кафе", accountId: "acc_kaspi"),
+            Transaction(id: "s2", date: "2026-08-21", description: "Steam", amount: 9_000, currency: "KZT", type: .expense, category: "Кафе", accountId: "acc_kaspi"),
+            Transaction(id: "s3", date: "2026-09-21", description: "Steam", amount: 9_200, currency: "KZT", type: .expense, category: "Кафе", accountId: "acc_kaspi"),
+            Transaction(id: "s4", date: "2026-10-21", description: "steam ", amount: 9_000, currency: "KZT", type: .expense, category: "Кафе", accountId: "acc_kaspi"),
+            // Three times at uneven days and amounts: not a rhythm.
+            Transaction(id: "p1", date: "2026-08-02", description: "Аптека", amount: 3_000, currency: "KZT", type: .expense, category: "Кафе", accountId: "acc_kaspi"),
+            Transaction(id: "p2", date: "2026-08-19", description: "Аптека", amount: 12_000, currency: "KZT", type: .expense, category: "Кафе", accountId: "acc_kaspi"),
+            Transaction(id: "p3", date: "2026-10-05", description: "Аптека", amount: 1_500, currency: "KZT", type: .expense, category: "Кафе", accountId: "acc_kaspi"),
+        ]
+        let output = await toolkit.execute(name: "find_recurring_candidates", input: [:])
+        let value = try #require(output.value, "\(output.error ?? "")")
+        #expect(value["count_total"] == 1)
+        #expect(value.value(atPath: "candidates.0.frequency") == "monthly")
+        #expect(value.value(atPath: "candidates.0.amount") == 9_000)
+        #expect(value.value(atPath: "candidates.0.times") == 4)
+        #expect(value.value(atPath: "candidates.0.next_date") == "2026-11-21")
+        #expect(value.value(atPath: "candidates.0.account_id") == "acc_kaspi")
+    }
+
     @Test func loansAndDepositsAreListedEvenWhenThereAreNone() async throws {
         let (toolkit, _, store) = Self.make()
         _ = store

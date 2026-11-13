@@ -111,6 +111,7 @@ database, only the results of the tools it asked for.
 |---|---|---|
 | Read | `get_spending_summary`, `compare_periods`, `search_transactions`, `get_accounts`, `get_budgets`, `list_recurring`, `get_insights` (+ health score), `get_goals`, `get_debts`, `get_assets`, `get_net_worth`, `estimate_asset_value`, `convert_currency` | `SummaryCalculator` / `TransactionType.summaryContribution`, `TransactionQueryService`, `BalanceCoordinator`, `CategoryBudgetService.budgetProgress`, `InsightsService`, `SpendingQueryService`, `AssetValuationMath` through `AssetStore`, `NetWorthCalculator` (and the net worth insight's months), `POST /v1/valuation` through `AgentServerClient` (§8) |
 | Draft | `draft_transactions`, `draft_budget`, `draft_recurring`, `draft_goal`, `draft_goal_contribution`, `draft_debt`, `draft_debt_repayment`, `draft_asset`, `draft_asset_valuation`, `draft_fact` | `TransactionDraftService.makeDraft` → `commit`, `CategoriesViewModel.setBudget`, `SubscriptionCreationService` + `linkSubcategoriesToTransaction` (red flag 5), `GoalStore`, `DebtStore`, `AssetStore`, `AgentMemory` |
+| Find what repeats | `find_recurring_candidates` | `FinanceToolkitCompute.recurringCandidates`: the last 13 months' expenses with no series, grouped by merchant and currency; the same merchant at even gaps (weekly from 4 times, monthly and quarterly from 3, yearly from 2) with amounts within 15%; merchants that are a series already are left out; up to 10, the steadiest first, with the next expected date. Off the main actor. The assistant offers `draft_recurring` for what the person picks; the prompt uses it only when the `reads` line names `recurring_candidates` |
 | Loans and deposits (read) | `get_loans` (what is left, rate, monthly payment and its day, term, payments made and left, interest paid), `get_deposits` (balance, rate, capitalization, posting day, interest accrued since the last posting) | `FinanceToolkit+Accounts`: `LoanInfo`, `DepositInfo`, read only (red flags 2 and 8); the prompt uses them only with the `reads` line of `<app_context>` |
 | Pause a subscription | `draft_subscription_state` (pause, resume) | `FinanceToolkit+PlanChanges`; Save through `TransactionStore.pauseSubscription` / `resumeSubscription`, Undo does the other one. A subscription's amount, date and cancellation stay on its screen (the propagation question is asked there, red flag 10): the prompt answers those with the open block "subscriptions" |
 | Change a goal or a debt | `draft_goal_change` (name, target, deadline), `draft_debt_change` (due date, note, settle) | `FinanceToolkit+PlanChanges`; Save through `GoalStore.update` / `DebtStore.update` in `Writer.savePlan` after checking the goal or debt is still what the card showed, Undo puts the previous one back; the prompt uses them only when the `changes` line names goals and debts |
@@ -438,7 +439,8 @@ The app runs the agent loop, because the tools run on the phone: one server call
   without the line gets none of them), `changes: transactions (edit, delete, recategorize), goals, debts, subscriptions (pause,
   resume)` (what this version changes in what is
   saved; an app without the line, or without the word, is told to do it in History), `reads:
-  loans, deposits` (it runs `get_loans` and `get_deposits`), `state` (how the app is set up for this person:
+  loans, deposits, recurring_candidates` (it runs `get_loans`, `get_deposits` and
+  `find_recurring_candidates`), `state` (how the app is set up for this person:
   `plan free|pro; regular accounts N of M free; auto_capture on|off; backups automatic on|off,
   icloud on|off, last <date>|none; spending_reminder on|off; budgets N`, flags and counts only,
   from `AgentContextSnapshot.AppState`; the prompt's "How the app is set up for this person"
@@ -667,12 +669,12 @@ spending, no em dashes, in all 11 languages.
 - **Pro for a person on the server**: the server sees only RevenueCat, so a Founding User (kept on
   the phone) needs `pro` granted there (Actions → RevenueCat → `grant`).
 - **Eval** (`server/assistant/eval/`): a synthetic user (`fixture.ts`; never real statements), a
-  tool simulator, 90 cases in Russian and English (`cases.ts`; help with the app: the 14 `ru-howto-*` and
+  tool simulator, 91 cases in Russian and English (`cases.ts`; help with the app: the 14 `ru-howto-*` and
   `en-howto-*`, whose `textHas` check wants the guide's steps named or whose `blockWith` wants the
   button; the forms: `ru-create-deposit`, `en-create-loan`, `ru-create-account`,
   `ru-create-category` (what was said is in `prefill`, nothing guessed, nothing drafted) and
   `ru-goal-stays-draft`; the state line: `ru-state-backup`, `ru-state-capture`, `en-state-plan`; changing what is saved: `ru-edit-amount`, `en-edit-category`, `ru-delete-one`,
-  `ru-delete-transfer-refused`, `ru-recategorize-merchant`; a loan payment: `ru-howto-loan-payment`, `ru-loan-paid-today` (the button to the payment form, never a draft); a subscription: `ru-subscription-pause`, `ru-subscription-amount-on-screen`; a goal or a debt changed: `ru-goal-move-deadline`, `ru-debt-extend`; loan and deposit terms:
+  `ru-delete-transfer-refused`, `ru-recategorize-merchant`; finding what repeats: `ru-find-subscriptions`; a loan payment: `ru-howto-loan-payment`, `ru-loan-paid-today` (the button to the payment form, never a draft); a subscription: `ru-subscription-pause`, `ru-subscription-amount-on-screen`; a goal or a debt changed: `ru-goal-move-deadline`, `ru-debt-extend`; loan and deposit terms:
   `ru-loan-terms`, `ru-deposit-interest`; a complaint from the feedback talk (`<feedback>`):
   `ru-feedback-howto`, `ru-feedback-missing`, `en-feedback-defect`
   (the fixture is a free user with backups on the phone only and nothing captured); assets: `ru-asset-new`,

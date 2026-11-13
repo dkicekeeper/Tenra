@@ -373,6 +373,21 @@ function draftTransactionDelete(input: Input) {
   return { draft_id: `draft_${++draftSeq}`, count: items.length, items, skipped, saved: false };
 }
 
+// As FinanceToolkitCompute.recurringCandidates does, on the fixture: Steam is charged on the 21st
+// of every month and is not a subscription in the app.
+function findRecurringCandidates() {
+  const steam = TRANSACTIONS.filter((t) => t.merchant === "Steam" && t.date <= TODAY).sort((a, b) => a.date.localeCompare(b.date));
+  const last = steam[steam.length - 1];
+  if (!last || steam.length < 3) return { candidates: [], count_total: 0 };
+  return {
+    candidates: [{
+      name: "Steam", amount: last.amount, currency: last.currency, frequency: "monthly", times: steam.length, last_date: last.date,
+      next_date: "2026-11-21", category_id: last.categoryId, category: categoryName(last.categoryId), account_id: last.accountId, account: accountName(last.accountId),
+    }],
+    count_total: 1,
+  };
+}
+
 // As FinanceToolkit+Accounts does: the terms of the loan and the deposit of the fixture.
 function getLoans() {
   const account = ACCOUNTS.find((a) => a.id === LOAN_TERMS.accountId)!;
@@ -1099,6 +1114,7 @@ const HANDLERS: Record<string, (input: Input) => unknown> = {
   draft_subscription_state: draftSubscriptionState,
   draft_goal_change: draftGoalChange,
   draft_debt_change: draftDebtChange,
+  find_recurring_candidates: findRecurringCandidates,
   get_loans: getLoans,
   get_deposits: getDeposits,
   draft_recurring: draftRecurring,

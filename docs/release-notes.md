@@ -7,7 +7,7 @@ its notes and checklist: [archive/release-notes-1.8.2.md](archive/release-notes-
 **Status 2026-11-12:** the changes below are in `main` (Tenra#160, Tenra#161, then Ten's forms,
 state line, help with complaints, the entries and editing and deleting records, at f3900c7),
 TestFlight build
-84 is processed (from the cloud, `main` at cb701dc), the server with `POST /v1/feedback` and
+86 is processed (from the cloud, `main` at 9708fca; 85 failed at signing and was never uploaded), the server with `POST /v1/feedback` and
 prompt 2026-11-12.12 is deployed and the owner's Telegram chat is linked (`telegram-link`, a test line arrived 12.11), the What's New blocks for the 13 storefronts and en-GB are not
 written, the phone checks are not done.
 
@@ -50,7 +50,7 @@ another version.
   Not in a build yet.
 - Ten's home is one thing at a time: Ten, large, with the message it wrote first (or its
   greeting) under it; three chips over the field, "Record", "Ask" and "How to"; the chats behind
-  a button at the top. After build 84 (build 84 had an earlier, busier arrangement).
+  a button at the top. In build 86 (build 84 had an earlier, busier arrangement).
 - Settings › Assistant has "Ask Ten about the app", and Ten's home puts first the "how to"
   questions for what the person has not set up yet (automatic capture, a first budget, a backup
   in iCloud). After build 79.
@@ -148,7 +148,7 @@ mid-answer.
     по кредиту и сколько платежей осталось?" and "Сколько процентов набежало по депозиту?" are
     answered with the app's own figures.
 
-14. Ten's home (the build after 84): Ten is large; under it the card "Тэн пишет" when a message
+14. Ten's home (build 86): Ten is large; under it the card "Тэн пишет" when a message
     waits ("Разобрать" starts its chat), else one line of greeting; over the field the chips
     "Записать" (the keyboard comes up), "Спросить" and "Как сделать" (their questions replace the
     chips, "Назад" brings the three back, a question starts a chat); the bubble at the top right
@@ -182,8 +182,8 @@ out; the store build is the one to check):
 
 ## Submission checklist
 
-1. **CI green**, then a TestFlight build (done: build 84 from cb701dc, 2026-11-12; CI green on
-   that commit).
+1. **CI green**, then a TestFlight build (done: build 86 from 9708fca, 2026-11-13; CI green on
+   225edd2, the last commit that touched the app).
 2. **The phone checks above.**
 3. **What's New** in this file, then `prepare-version --version 1.8.3 --build <N>`.
 4. **One submission**: `asc.py prepare-review --version 1.8.3`; the founder sends it, or

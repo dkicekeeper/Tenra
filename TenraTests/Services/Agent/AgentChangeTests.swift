@@ -188,7 +188,7 @@ struct AgentChangeTests {
         #expect(value.value(atPath: "subscriptions.0.missed") == false)
         #expect(value.value(atPath: "subscriptions.1.id") == "rec_gym")
         #expect(value.value(atPath: "subscriptions.1.missed") == true)
-        #expect(value.value(atPath: "subscriptions.1.price_change_percent") == .null)
+        #expect(value.value(atPath: "subscriptions.1.price_change_percent") == JSONValue.null)
     }
 
     @Test func aSubscriptionPausesOnlyWhileItRuns() async throws {

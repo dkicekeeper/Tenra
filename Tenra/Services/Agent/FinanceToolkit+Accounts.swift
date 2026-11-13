@@ -61,19 +61,21 @@ extension FinanceToolkit {
         async let categorySweep = categoryAudit()
         async let subscriptionSweep = subscriptionAudit()
         let (found, audit, subs) = await (duplicateSweep, categorySweep, subscriptionSweep)
-        func count(_ value: JSONValue?, where flag: String) -> Double {
-            guard case .array(let rows)? = value else { return 0 }
-            return Double(rows.filter { $0[flag] == true }.count)
+        let zero = JSONValue.number(0)
+        func count(_ value: JSONValue?, where flag: String) -> JSONValue {
+            guard case .array(let rows)? = value else { return zero }
+            let flagged = rows.filter { row in row[flag] == JSONValue.bool(true) }
+            return JSONValue.number(Double(flagged.count))
         }
-        return [
-            "on_review": review["total"] ?? 0,
-            "review_questions_on_screen": review["questions_on_screen"] ?? 0,
-            "duplicate_groups": found["count_total"] ?? 0,
-            "categories_unused": .number(count(audit["categories"], where: "unused")),
-            "categories_idle": .number(count(audit["categories"], where: "idle")),
-            "records_without_category": audit.value(atPath: "without_category.records") ?? 0,
-            "subscriptions_missed": .number(count(subs["subscriptions"], where: "missed")),
-        ]
+        var overview: [String: JSONValue] = [:]
+        overview["on_review"] = review["total"] ?? zero
+        overview["review_questions_on_screen"] = review["questions_on_screen"] ?? zero
+        overview["duplicate_groups"] = found["count_total"] ?? zero
+        overview["categories_unused"] = count(audit["categories"], where: "unused")
+        overview["categories_idle"] = count(audit["categories"], where: "idle")
+        overview["records_without_category"] = audit.value(atPath: "without_category.records") ?? zero
+        overview["subscriptions_missed"] = count(subs["subscriptions"], where: "missed")
+        return JSONValue.object(overview)
     }
 
     /// `get_subscription_audit`: every subscription with its real charges

@@ -132,7 +132,7 @@ struct AgentCategoryTests {
         #expect(output.value(atPath: "merchants.0.merchant") == "Glovo")
         #expect(output.value(atPath: "merchants.0.records") == 2)
         #expect(output.value(atPath: "merchants.0.categories.0.category") == "Кафе")
-        #expect(output.value(atPath: "merchants.0.remembered_category") == .null)
+        #expect(output.value(atPath: "merchants.0.remembered_category") == JSONValue.null)
         #expect(output["merchants_total"] == 2)
 
         let rule = await toolkit.execute(name: "draft_merchant_rule", input: ["merchant": "Glovo", "category": "cat_food"])

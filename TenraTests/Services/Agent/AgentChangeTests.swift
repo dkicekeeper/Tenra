@@ -57,8 +57,11 @@ struct AgentChangeTests {
         let value = try #require(output.value, "\(output.error ?? "")")
         #expect(value["before"] == 50_000)
         #expect(value["after"] == 48_500)
-        #expect(value["difference"] == -1_500)
-        #expect(book.drafts["draft_1"]?.operations == [.balanceCorrection(account: store.accounts[1], from: 50_000, to: 48_500)])
+        #expect(value["difference"] == JSONValue.number(-1_500.0))
+        let halyk: Account = store.accounts[1]
+        let expected: [AgentDraftOperation] = [AgentDraftOperation.balanceCorrection(account: halyk, from: 50_000.0, to: 48_500.0)]
+        let drafted: [AgentDraftOperation] = book.drafts["draft_1"]?.operations ?? []
+        #expect(drafted == expected)
 
         let same = await toolkit.execute(name: "draft_balance_correction", input: ["account": "acc_halyk", "balance": 50_000])
         #expect(same.value == nil)

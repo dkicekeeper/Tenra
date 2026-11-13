@@ -489,55 +489,8 @@ private struct AssistantDraftCard: View {
                     transactionRow(change.after, store: store)
                 } else if case .transactionDelete(let transaction) = operation {
                     transactionRow(transaction, store: store)
-                } else if case .reviewConfirm(let transaction) = operation {
-                    transactionRow(transaction, store: store)
-                } else if case .categoryRename(let before, let name) = operation {
-                    InlineStatusText(message: String(localized: "assistant.draft.budgetWas"), type: .info)
-                        .padding(.vertical, AppSpacing.md)
-                    categoryRow(before.name)
-                    InlineStatusText(message: String(localized: "assistant.draft.becomes"), type: .info)
-                        .padding(.vertical, AppSpacing.md)
-                    categoryRow(name)
-                } else if case .categoryMerge(let from, let into, let records) = operation {
-                    categoryRow(from.name)
-                    InlineStatusText(
-                        message: String(format: String(localized: "assistant.draft.mergesInto"), records),
-                        type: .info
-                    )
-                    .padding(.vertical, AppSpacing.md)
-                    categoryRow(into.name)
-                } else if case .categoryDelete(let category) = operation {
-                    categoryRow(category.name)
-                } else if case .merchantRule(let merchant, let category) = operation {
-                    ItemRow(merchant, meta: [MetaLine([.text(category.name)])], leading: .symbol("storefront"), style: .large)
-                        .accessibilityElement(children: .combine)
-                } else if case .merchantBrand(let merchants, let name) = operation {
-                    ItemRow(
-                        name ?? merchants.first ?? "",
-                        meta: [MetaLine([.text(merchants.joined(separator: ", "))])],
-                        leading: .symbol("storefront"),
-                        style: .large
-                    )
-                    .accessibilityElement(children: .combine)
-                } else if case .balanceCorrection(let account, let from, let to) = operation {
-                    UniversalRow(
-                        "\(account.name) · \(String(localized: "assistant.draft.budgetWas"))",
-                        icon: "creditcard",
-                        config: .info,
-                        accessory: .amount(from, currency: account.currency)
-                    )
-                    UniversalRow(
-                        String(localized: "assistant.draft.becomes"),
-                        config: .info,
-                        accessory: .amount(to, currency: account.currency)
-                    )
-                } else if case .subcategoryTag(let category, let name, let transactionIds) = operation {
-                    categoryRow(category.name)
-                    InlineStatusText(
-                        message: String(format: String(localized: "assistant.draft.subcategory"), name, transactionIds.count),
-                        type: .info
-                    )
-                    .padding(.vertical, AppSpacing.md)
+                } else if Self.isTidy(operation) {
+                    tidyRows(operation, store: store)
                 } else if case .subscriptionState(let series, let pause) = operation {
                     recurringRow(series)
                     InlineStatusText(
@@ -768,6 +721,76 @@ private struct AssistantDraftCard: View {
                 config: .info,
                 accessory: .amount(previous, currency: store.baseCurrency)
             )
+        }
+    }
+
+    /// The rows of the drafts that tidy the data (a payment on review, a category, a
+    /// subcategory, a merchant, an account's balance). Apart from `body`'s chain, which the
+    /// type checker walks branch by branch: a long chain there stalls the build.
+    @ViewBuilder
+    private func tidyRows(_ operation: AgentDraftOperation, store: TransactionStore) -> some View {
+        switch operation {
+        case .reviewConfirm(let transaction):
+            transactionRow(transaction, store: store)
+        case .categoryRename(let before, let name):
+            InlineStatusText(message: String(localized: "assistant.draft.budgetWas"), type: .info)
+                .padding(.vertical, AppSpacing.md)
+            categoryRow(before.name)
+            InlineStatusText(message: String(localized: "assistant.draft.becomes"), type: .info)
+                .padding(.vertical, AppSpacing.md)
+            categoryRow(name)
+        case .categoryMerge(let from, let into, let records):
+            categoryRow(from.name)
+            InlineStatusText(
+                message: String(format: String(localized: "assistant.draft.mergesInto"), records),
+                type: .info
+            )
+            .padding(.vertical, AppSpacing.md)
+            categoryRow(into.name)
+        case .categoryDelete(let category):
+            categoryRow(category.name)
+        case .merchantRule(let merchant, let category):
+            ItemRow(merchant, meta: [MetaLine([.text(category.name)])], leading: .symbol("storefront"), style: .large)
+                .accessibilityElement(children: .combine)
+        case .merchantBrand(let merchants, let name):
+            ItemRow(
+                name ?? merchants.first ?? "",
+                meta: [MetaLine([.text(merchants.joined(separator: ", "))])],
+                leading: .symbol("storefront"),
+                style: .large
+            )
+            .accessibilityElement(children: .combine)
+        case .balanceCorrection(let account, let from, let to):
+            UniversalRow(
+                "\(account.name) · \(String(localized: "assistant.draft.budgetWas"))",
+                icon: "creditcard",
+                config: .info,
+                accessory: .amount(from, currency: account.currency)
+            )
+            UniversalRow(
+                String(localized: "assistant.draft.becomes"),
+                config: .info,
+                accessory: .amount(to, currency: account.currency)
+            )
+        case .subcategoryTag(let category, let name, let transactionIds):
+            categoryRow(category.name)
+            InlineStatusText(
+                message: String(format: String(localized: "assistant.draft.subcategory"), name, transactionIds.count),
+                type: .info
+            )
+            .padding(.vertical, AppSpacing.md)
+        default:
+            EmptyView()
+        }
+    }
+
+    private static func isTidy(_ operation: AgentDraftOperation) -> Bool {
+        switch operation {
+        case .reviewConfirm, .categoryRename, .categoryMerge, .categoryDelete, .subcategoryTag, .merchantRule, .merchantBrand,
+             .balanceCorrection:
+            true
+        default:
+            false
         }
     }
 

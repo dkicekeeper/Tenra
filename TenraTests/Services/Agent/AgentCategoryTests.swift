@@ -138,7 +138,10 @@ struct AgentCategoryTests {
         let rule = await toolkit.execute(name: "draft_merchant_rule", input: ["merchant": "Glovo", "category": "cat_food"])
         let value = try #require(rule.value, "\(rule.error ?? "")")
         #expect(value["records_in_other_categories"] == 2)
-        #expect(book.drafts["draft_1"]?.operations == [.merchantRule(merchant: "Glovo", category: store.categories[1])])
+        let food: CustomCategory = store.categories[1]
+        let expected: [AgentDraftOperation] = [AgentDraftOperation.merchantRule(merchant: "Glovo", category: food)]
+        let drafted: [AgentDraftOperation] = book.drafts["draft_1"]?.operations ?? []
+        #expect(drafted == expected)
 
         let income = await toolkit.execute(name: "draft_merchant_rule", input: ["merchant": "Glovo", "category": "cat_salary"])
         #expect(income.value == nil)
@@ -151,9 +154,11 @@ struct AgentCategoryTests {
         let value = try #require(output.value, "\(output.error ?? "")")
         #expect(value["new"] == true)
         #expect(value["records"] == 2)
-        #expect(book.drafts["draft_1"]?.operations == [
-            .subcategoryTag(category: store.categories[0], name: "Доставка", transactionIds: ["t_glovo", "t_coffee"]),
-        ])
+        let cafe: CustomCategory = store.categories[0]
+        let ids: [String] = ["t_glovo", "t_coffee"]
+        let expected: [AgentDraftOperation] = [AgentDraftOperation.subcategoryTag(category: cafe, name: "Доставка", transactionIds: ids)]
+        let drafted: [AgentDraftOperation] = book.drafts["draft_1"]?.operations ?? []
+        #expect(drafted == expected)
 
         let nobody = await toolkit.execute(name: "draft_subcategory", input: ["category": "cat_cafe", "name": "Доставка", "merchant": "magnum"])
         #expect(nobody.value == nil)
@@ -169,7 +174,10 @@ struct AgentCategoryTests {
         let unused = await toolkit.execute(name: "draft_category_change", input: ["category": "cat_gifts", "delete": true])
         let value = try #require(unused.value, "\(unused.error ?? "")")
         #expect(value["action"] == "delete")
-        #expect(book.drafts["draft_1"]?.operations == [.categoryDelete(store.categories[2])])
+        let gifts: CustomCategory = store.categories[2]
+        let expected: [AgentDraftOperation] = [AgentDraftOperation.categoryDelete(gifts)]
+        let drafted: [AgentDraftOperation] = book.drafts["draft_1"]?.operations ?? []
+        #expect(drafted == expected)
 
         let both = await toolkit.execute(name: "draft_category_change", input: ["category": "cat_gifts", "delete": true, "name": "Подарочки"])
         #expect(both.value == nil)

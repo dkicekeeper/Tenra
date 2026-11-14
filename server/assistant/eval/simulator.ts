@@ -477,6 +477,14 @@ function draftMerchantBrand(input: Input) {
   return { draft_id: `draft_${++draftSeq}`, merchants, name: str(input, "name")?.trim() || null, saved: false };
 }
 
+// As FinanceToolkit+Merchants.draftFeedback does.
+function draftFeedback(input: Input) {
+  const text = (str(input, "text", true) ?? "").trim();
+  if (!text) throw new ToolInputError("text must not be empty: ask the user what to tell the developer.");
+  if (text.length > 2000) throw new ToolInputError("text must be 2000 characters or fewer.");
+  return { draft_id: `draft_${++draftSeq}`, text, sent: false };
+}
+
 // As FinanceToolkit+Accounts.draftBalanceCorrection does.
 function draftBalanceCorrection(input: Input) {
   const reference = (str(input, "account", true) ?? "").trim().toLowerCase();
@@ -1349,6 +1357,7 @@ const HANDLERS: Record<string, (input: Input) => unknown> = {
   draft_category_change: draftCategoryChange,
   draft_subcategory: draftSubcategory,
   draft_balance_correction: draftBalanceCorrection,
+  draft_feedback: draftFeedback,
   get_merchants: getMerchants,
   get_cleanup_overview: getCleanupOverview,
   draft_merchant_rule: draftMerchantRule,

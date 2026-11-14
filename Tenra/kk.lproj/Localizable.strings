@@ -1810,6 +1810,8 @@
 "assistant.open.missing" = "Бұл Tenra-да енді жоқ";
 "assistant.draft.save" = "Сақтау";
 "assistant.draft.saved" = "Сақталды";
+"assistant.draft.send" = "Жіберу";
+"assistant.draft.feedbackSent" = "Әзірлеушіге жіберілді";
 "assistant.draft.undo" = "Болдырмау";
 "assistant.draft.undone" = "Әрекет болдырылмады. Ештеңе сақталмады.";
 "assistant.draft.failed" = "Сақтау мүмкін болмады. Қайталап көріңіз.";

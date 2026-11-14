@@ -66,6 +66,8 @@ enum AgentDraftOperation: Equatable {
     case categoryRename(before: CustomCategory, name: String)
     case categoryMerge(from: CustomCategory, into: CustomCategory, records: Int)
     case categoryDelete(CustomCategory)
+    /// What the person asked Ten to tell the developer (`POST /v1/feedback`, source `chat`).
+    case feedback(text: String, mood: AgentFeedbackMessage.Mood?)
     /// The expense category a merchant's payments get from now on, and points of one brand
     /// joined into one merchant (FinanceToolkit+Merchants).
     case merchantRule(merchant: String, category: CustomCategory)
@@ -140,6 +142,8 @@ enum AgentSavedRecord: Equatable {
     case subcategoryTagged(AgentSubcategoryUndo)
     case balanceCorrected(accountId: String, previous: Double)
     case merchantRuleSet(AgentMerchantRuleUndo)
+    /// Words that went to the developer: they cannot be taken back.
+    case feedbackSent
     case merchantBranded(groupId: String)
 }
 
@@ -155,6 +159,8 @@ enum AgentDraftError: Error {
     case overRepayment
     /// The record was changed or deleted between the draft and Save.
     case recordChanged
+    /// Words for the developer, and nowhere to send them (no server, no App Attest).
+    case noFeedbackChannel
 }
 
 struct AgentDraft: Equatable, Identifiable {
@@ -285,6 +291,7 @@ extension AgentDraftBook.Writer {
         debts: DebtStore? = nil,
         assets: AssetStore? = nil,
         accountsViewModel: AccountsViewModel? = nil,
+        feedback: AgentFeedbackTransport? = nil,
         isPro: @escaping () -> Bool = { true }
     ) -> Self {
         // The account shows `balance`: its starting balance takes the difference, as when the
@@ -302,6 +309,10 @@ extension AgentDraftBook.Writer {
                 switch operation {
                 case .merchantRule, .merchantBrand:
                     return try Self.saveMerchantChange(operation, store: store)
+                case .feedback(let text, let mood):
+                    guard let feedback else { throw AgentDraftError.noFeedbackChannel }
+                    try await feedback.feedback(AgentFeedbackMessage(text: text, mood: mood, source: .chat))
+                    return .feedbackSent
                 case .balanceCorrection(let account, let from, let to):
                     // The card showed what the account had: it must still have it.
                     let current = store.balanceCoordinator.balances[account.id] ?? account.balance
@@ -379,6 +390,8 @@ extension AgentDraftBook.Writer {
                 switch record {
                 case .merchantRuleSet, .merchantBranded:
                     Self.undoMerchantChange(record)
+                case .feedbackSent:
+                    break
                 case .balanceCorrected(let accountId, let previous):
                     try? setBalance(previous, of: accountId)
                 case .categoryRenamed, .categoryDeleted, .categoryMerged, .subcategoryTagged:

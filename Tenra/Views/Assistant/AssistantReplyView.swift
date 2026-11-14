@@ -57,6 +57,8 @@ private struct AssistantBlockView: View {
             AssistantRecurringList(ids: AgentReplyData.recurringIds(source: source, results: results))
         case .insight(_, let insightId):
             AssistantInsightCard(insightId: insightId)
+        case .open(let destination, _, let label) where destination == .appReview:
+            AssistantReviewLink(label: label)
         case .open(let destination, let targetId, let label):
             if let route = AssistantRoute(destination: destination, targetId: targetId) {
                 AssistantOpenLink(route: route, label: label)
@@ -634,6 +636,11 @@ private struct AssistantDraftCard: View {
         draft.operations.contains { if case .categoryDelete = $0 { true } else { false } }
     }
 
+    /// The draft sends words to the developer: "Send", and no Undo once sent.
+    private var sendsFeedback: Bool {
+        draft.operations.contains { if case .feedback = $0 { true } else { false } }
+    }
+
     /// The draft confirms payments on review: its button says "Correct", as on that screen.
     private var confirmsReview: Bool {
         draft.operations.contains { if case .reviewConfirm = $0 { true } else { false } }
@@ -672,8 +679,9 @@ private struct AssistantDraftCard: View {
         case .pending, .saving:
             DSButton(
                 deletes || deletesCategory ? String(localized: "assistant.draft.delete")
+                    : sendsFeedback ? String(localized: "assistant.draft.send")
                     : confirmsReview ? String(localized: "walletReview.confirm") : String(localized: "assistant.draft.save"),
-                systemImage: deletes || deletesCategory ? "trash" : "checkmark",
+                systemImage: deletes || deletesCategory ? "trash" : sendsFeedback ? "paperplane" : "checkmark",
                 fullWidth: true,
                 isLoading: state == .saving
             ) {
@@ -683,6 +691,9 @@ private struct AssistantDraftCard: View {
                 }
             }
             .padding(.vertical, AppSpacing.md)
+        case .saved where sendsFeedback:
+            InlineStatusText(message: String(localized: "assistant.draft.feedbackSent"), type: .success)
+                .padding(.vertical, AppSpacing.md)
         case .saved:
             HStack {
                 InlineStatusText(message: deletes ? String(localized: "assistant.draft.deleted") : String(localized: "assistant.draft.saved"), type: .success)
@@ -760,6 +771,9 @@ private struct AssistantDraftCard: View {
                 style: .large
             )
             .accessibilityElement(children: .combine)
+        case .feedback(let text, _):
+            ItemRow(text, leading: .symbol("envelope"), style: .large)
+                .accessibilityElement(children: .combine)
         case .balanceCorrection(let account, let from, let to):
             UniversalRow(
                 "\(account.name) · \(String(localized: "assistant.draft.budgetWas"))",
@@ -787,7 +801,7 @@ private struct AssistantDraftCard: View {
     private static func isTidy(_ operation: AgentDraftOperation) -> Bool {
         switch operation {
         case .reviewConfirm, .categoryRename, .categoryMerge, .categoryDelete, .subcategoryTag, .merchantRule, .merchantBrand,
-             .balanceCorrection:
+             .balanceCorrection, .feedback:
             true
         default:
             false
@@ -946,7 +960,7 @@ private struct AssistantDraftCard: View {
         case .budget, .recurring, .fact, .goal, .goalContribution, .debt, .debtRepayment, .asset, .assetValuation,
              .transactionEdit, .transactionDelete, .goalChange, .debtChange, .subscriptionState, .reviewConfirm,
              .categoryRename, .categoryMerge, .categoryDelete, .subcategoryTag, .balanceCorrection,
-             .merchantRule, .merchantBrand:
+             .merchantRule, .merchantBrand, .feedback:
             return nil
         case .single(let draft):
             return Transaction(
@@ -984,6 +998,30 @@ private struct AssistantDraftCard: View {
 /// A row into one of the app's screens, pushed on the assistant's stack: a standard row in a
 /// card that pads it at the sides (DesignKit 8.0.0), in the accent, with the chevron of a push
 /// outside a List.
+/// Tenra's "Write a Review" page in the App Store, from an `open` block "app_review".
+private struct AssistantReviewLink: View {
+    let label: String
+
+    static let url = URL(string: "https://apps.apple.com/app/id6761530361?action=write-review")!
+
+    var body: some View {
+        Link(destination: Self.url) {
+            UniversalRow(
+                config: .standard,
+                leadingIcon: .sfSymbol("star.bubble", color: AppColors.accent, size: AppIconSize.lg),
+                title: label,
+                titleColor: AppColors.accent
+            ) {
+                DisclosureChevron()
+            }
+            .padding(.horizontal, AppSpacing.lg)
+            .contentShape(Rectangle())
+            .cardStyle()
+        }
+        .buttonStyle(.plain)
+    }
+}
+
 private struct AssistantOpenLink: View {
     let route: AssistantRoute
     let label: String

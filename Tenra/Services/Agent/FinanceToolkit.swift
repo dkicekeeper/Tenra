@@ -128,6 +128,7 @@ final class FinanceToolkit: AgentToolExecuting {
             case "get_merchants": return .success(await merchantsResult())
             case "draft_merchant_rule": return try draftMerchantRule(input)
             case "draft_merchant_brand": return try draftMerchantBrand(input)
+            case "draft_feedback": return try draftFeedback(input)
             case "get_subscription_audit": return .success(await subscriptionAudit())
             case "suggest_budgets": return .success(await budgetSuggestions())
             case "find_duplicates": return .success(await duplicates())
@@ -1409,7 +1410,7 @@ final class FinanceToolkit: AgentToolExecuting {
             return describeCategoryChange(operation)
         case .balanceCorrection:
             return describeBalanceCorrection(operation)
-        case .merchantRule, .merchantBrand:
+        case .merchantRule, .merchantBrand, .feedback:
             return describeMerchantChange(operation)
         }
     }

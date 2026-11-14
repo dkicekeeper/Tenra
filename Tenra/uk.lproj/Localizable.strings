@@ -1810,6 +1810,8 @@
 "assistant.open.missing" = "Цього вже немає в Tenra";
 "assistant.draft.save" = "Зберегти";
 "assistant.draft.saved" = "Збережено";
+"assistant.draft.send" = "Надіслати";
+"assistant.draft.feedbackSent" = "Надіслано розробнику";
 "assistant.draft.undo" = "Скасувати";
 "assistant.draft.undone" = "Скасовано. Нічого не збережено.";
 "assistant.draft.failed" = "Не вдалося зберегти. Спробуйте ще раз.";

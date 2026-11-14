@@ -1810,6 +1810,8 @@
 "assistant.open.missing" = "Esto ya no está en Tenra";
 "assistant.draft.save" = "Guardar";
 "assistant.draft.saved" = "Guardado";
+"assistant.draft.send" = "Enviar";
+"assistant.draft.feedbackSent" = "Enviado al desarrollador";
 "assistant.draft.undo" = "Deshacer";
 "assistant.draft.undone" = "Deshecho. No se guardó nada.";
 "assistant.draft.failed" = "No se pudo guardar. Inténtalo de nuevo.";

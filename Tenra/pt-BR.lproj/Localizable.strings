@@ -1810,6 +1810,8 @@
 "assistant.open.missing" = "Isso não está mais no Tenra";
 "assistant.draft.save" = "Salvar";
 "assistant.draft.saved" = "Salvo";
+"assistant.draft.send" = "Enviar";
+"assistant.draft.feedbackSent" = "Enviado ao desenvolvedor";
 "assistant.draft.undo" = "Desfazer";
 "assistant.draft.undone" = "Desfeito. Nada foi salvo.";
 "assistant.draft.failed" = "Não foi possível salvar. Tente de novo.";

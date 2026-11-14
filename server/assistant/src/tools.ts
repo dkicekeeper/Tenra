@@ -448,6 +448,18 @@ const draftTools: Tool[] = [
     ),
   },
   {
+    name: "draft_feedback",
+    description:
+      "Prepares the user's words for the developer of Tenra, for them to send from the card (its button is Send). Use it when the user asks to pass something on to the developer or the team, to leave feedback, to report a problem or to suggest a feature. text is what they want said, in their own words and language, without changes beyond joining their messages; mood is good for praise, bad for a complaint, omitted otherwise. Nothing is sent until they press Send. Returns draft_id.",
+    input_schema: object(
+      {
+        text: { type: "string", description: "Up to 2000 characters" },
+        mood: { type: "string", enum: ["good", "bad"] },
+      },
+      ["text"],
+    ),
+  },
+  {
     name: "draft_balance_correction",
     description:
       "Prepares setting an everyday account to the balance the bank shows, for the user to confirm on the card. The account's starting balance takes the difference: no income or expense is made up and the statistics do not change. Use it only after the user gives the real balance and no missing record explains the difference, or when they just want the balance set. Not for loans and deposits. account is an account id from <app_context> or its name; balance is in the account's currency. Returns draft_id, before, after and difference.",
@@ -674,7 +686,7 @@ const renderReply: Tool = {
               type: "string",
               enum: [
                 "category", "account", "analytics", "history", "budgets", "subscriptions", "assets", "asset",
-                "accounts", "deposits", "loans", "goals", "goal", "debts", "debt", "settings", "backups", "wallet_guide", "loan_payment", "review", "create",
+                "accounts", "deposits", "loans", "goals", "goal", "debts", "debt", "settings", "backups", "wallet_guide", "loan_payment", "review", "app_review", "create",
               ],
               description: "The first eight always work. The rest only when <app_context> has a screens line that lists them.",
             },

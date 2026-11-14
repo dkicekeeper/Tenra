@@ -1810,6 +1810,8 @@
 "assistant.open.missing" = "これは Tenra にもうありません";
 "assistant.draft.save" = "保存";
 "assistant.draft.saved" = "保存しました";
+"assistant.draft.send" = "送信";
+"assistant.draft.feedbackSent" = "開発者に送信しました";
 "assistant.draft.undo" = "取り消す";
 "assistant.draft.undone" = "取り消しました。何も保存されていません。";
 "assistant.draft.failed" = "保存できませんでした。もう一度お試しください。";

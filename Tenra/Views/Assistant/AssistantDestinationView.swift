@@ -74,6 +74,9 @@ enum AssistantRoute: Hashable {
         case .loanPayment:
             guard let id else { return nil }
             self = .loanPayment(id)
+        case .appReview:
+            // A link out of the app (AssistantReviewLink), not a screen.
+            return nil
         }
     }
 

@@ -225,6 +225,7 @@ class AppCoordinator {
             debts: debts,
             assets: assets,
             accountsViewModel: accountsViewModel,
+            feedback: feedbackTransport,
             isPro: { PremiumManager.shared.isPro }
         ))
         let toolkit = FinanceToolkit(

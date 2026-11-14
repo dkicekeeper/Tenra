@@ -189,11 +189,30 @@ extension FinanceToolkit {
         ])
     }
 
+    private struct FeedbackInput: Decodable {
+        let text: String
+        let mood: String?
+    }
+
+    /// `draft_feedback`: words for the developer, sent from the card when the person confirms.
+    func draftFeedback(_ input: JSONValue) throws -> AgentToolOutput {
+        guard let drafts else { return .failure(Self.notYet("draft_feedback")) }
+        let args = try input.decoded(as: FeedbackInput.self)
+        let text = args.text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !text.isEmpty else { throw FinanceToolError(message: "text must not be empty: ask the user what to tell the developer.") }
+        guard text.count <= 2_000 else { throw FinanceToolError(message: "text must be 2000 characters or fewer.") }
+        let mood = args.mood.flatMap(AgentFeedbackMessage.Mood.init(rawValue:))
+        let id = drafts.add([.feedback(text: text, mood: mood)])
+        return .success(["draft_id": .string(id), "text": .string(text), "sent": false])
+    }
+
     /// What a merchant draft will do (FinanceToolkit.describe).
     func describeMerchantChange(_ operation: AgentDraftOperation) -> JSONValue {
         switch operation {
         case .merchantRule(let merchant, let category):
             return ["type": "merchant_rule", "merchant": .string(merchant), "category_id": .string(category.id), "category": .string(category.name)]
+        case .feedback(let text, _):
+            return ["type": "feedback", "text": .string(text)]
         case .merchantBrand(let merchants, let name):
             return ["type": "merchant_brand", "merchants": .array(merchants.map(JSONValue.string)), "name": name.map(JSONValue.string) ?? .null]
         default:

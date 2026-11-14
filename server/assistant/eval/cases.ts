@@ -887,6 +887,24 @@ export const CASES: EvalCase[] = [
     ],
   },
   {
+    id: "ru-feedback-to-developer",
+    locale: "ru",
+    prompt: "Передай разработчику, что мне нравится, как работают бюджеты",
+    checks: [
+      { kind: "called", anyOf: ["draft_feedback"] },
+      { kind: "block", type: "confirm" },
+      { kind: "notCalled", tools: ["draft_budget", "draft_transactions"] },
+    ],
+  },
+  {
+    id: "ru-leave-review",
+    locale: "ru",
+    prompt: "Мне нравится приложение, хочу оставить отзыв",
+    checks: [
+      { kind: "blockWith", type: "open", match: (b) => b.destination === "app_review", label: "links to the App Store review" },
+    ],
+  },
+  {
     id: "ru-balance-correction",
     locale: "ru",
     prompt: "На Kaspi Gold на самом деле 250 000, не знаю, откуда разница. Поправь остаток",

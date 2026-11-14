@@ -51,6 +51,20 @@ struct AgentChangeTests {
         return (toolkit, book, store)
     }
 
+    @Test func feedbackIsDraftedAndSentOnlyFromTheCard() async throws {
+        let (toolkit, book, store) = Self.make()
+        _ = store
+        let output = await toolkit.execute(name: "draft_feedback", input: ["text": "  Нравятся бюджеты  ", "mood": "good"])
+        let value = try #require(output.value, "\(output.error ?? "")")
+        #expect(value["sent"] == false)
+        let expected: [AgentDraftOperation] = [AgentDraftOperation.feedback(text: "Нравятся бюджеты", mood: .good)]
+        let drafted: [AgentDraftOperation] = book.drafts["draft_1"]?.operations ?? []
+        #expect(drafted == expected)
+
+        let empty = await toolkit.execute(name: "draft_feedback", input: ["text": "  "])
+        #expect(empty.value == nil)
+    }
+
     @Test func aBalanceCorrectionKeepsWhatTheAccountShowed() async throws {
         let (toolkit, book, store) = Self.make()
         let output = await toolkit.execute(name: "draft_balance_correction", input: ["account": "Halyk", "balance": 48_500])

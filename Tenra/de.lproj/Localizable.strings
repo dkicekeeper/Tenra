@@ -1810,6 +1810,8 @@
 "assistant.open.missing" = "Das gibt es in Tenra nicht mehr";
 "assistant.draft.save" = "Speichern";
 "assistant.draft.saved" = "Gespeichert";
+"assistant.draft.send" = "Senden";
+"assistant.draft.feedbackSent" = "An den Entwickler gesendet";
 "assistant.draft.undo" = "Widerrufen";
 "assistant.draft.undone" = "Rückgängig gemacht. Nichts wurde gespeichert.";
 "assistant.draft.failed" = "Speichern fehlgeschlagen. Versuchen Sie es noch einmal.";

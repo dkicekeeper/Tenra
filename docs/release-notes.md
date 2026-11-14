@@ -219,6 +219,15 @@ out; the store build is the one to check):
    two questions over the field; the previous chat is in the home's list; a question tapped goes
    (the consent sheet first on a fresh install).
 
+## In the next version
+
+- Ten sends words to the developer from its chat (the owner's report 2026-11-14: asked to pass
+  on that the budgets are good, Ten promised to, then said it cannot). "Передай разработчику…"
+  gives a card with the words and "Отправить"; after it the card says "Отправлено
+  разработчику" and the words arrive in Telegram with the source `chat`. "Хочу оставить отзыв"
+  after praise also gives a button to the App Store's review page. Needs the server with prompt
+  2026-11-14.1; on 1.8.3 the same server only stops Ten from promising to pass anything on.
+
 ## Submission checklist
 
 1. **CI green**, then a TestFlight build under the new version number.

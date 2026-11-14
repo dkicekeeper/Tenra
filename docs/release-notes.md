@@ -1,8 +1,8 @@
 # The next version: What's New and the checklist
 
 1.8.3 is in the store since 2026-11-13/14 (build 90; its notes:
-[archive/release-notes-1.8.3.md](archive/release-notes-1.8.3.md)). Nothing new is in `main` after
-it. **The next version has no number yet**: the project still says 1.8.3, and a build under a
+[archive/release-notes-1.8.3.md](archive/release-notes-1.8.3.md)). `main` already carries what is
+under "In the next version" below (the server with prompt 2026-11-14.4 is deployed). **The next version has no number yet**: the project still says 1.8.3, and a build under a
 released version is refused by App Store Connect, so the number is raised (the founder's call:
 1.8.4 for a small update, 1.9 is kept for the update the featuring nomination promises in the last
 week of December, [plan-growth.md](plan-growth.md) stage 4) before the next TestFlight build.

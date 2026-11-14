@@ -89,7 +89,8 @@ const TYPED_SCALE = /(\d[\d\s\u00a0\u202f]*(?:[.,]\d+)?)\s?(тыс(?:яч[аи]?
 // A bare year ("к марту 2027") is a date, not an amount; with a currency MONEY_IN_TEXT still catches it.
 const YEAR = /^(?:19|20)\d{2}$/;
 // JS \b is ASCII-only even with /u: Cyrillic words are bounded with \p{L} lookarounds.
-const SAVED_CLAIM = /(?<!\p{L})(сохранил[аи]?|записал[аи]?|добавил[аи]?|создал[аи]?|запомнил[аи]?|сохранено|записано|запомнено)(?!\p{L})|\bI(?:'ve| have)? (?:saved|recorded|added|logged|remembered)\b|\b(?:is|was|has been|have been) (?:saved|recorded|logged|remembered)\b/iu;
+// "ничего не записано" (the spending reminder comes on such days) is not a claim: no "не" before it.
+const SAVED_CLAIM = /(?<!\p{L})(?<!не )(сохранил[аи]?|записал[аи]?|добавил[аи]?|создал[аи]?|запомнил[аи]?|сохранено|записано|запомнено)(?!\p{L})|\bI(?:'ve| have)? (?:saved|recorded|added|logged|remembered)\b|\b(?:is|was|has been|have been) (?:saved|recorded|logged|remembered)\b/iu;
 const PURPOSE_CLAUSE = /(?<!\p{L})чтобы(?!\p{L})[^.!?,\n]*/giu;
 
 // A reply that turns a money question away. A one-line "picking specific products needs a

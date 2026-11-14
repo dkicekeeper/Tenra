@@ -17,6 +17,9 @@ import { caseCheck, typedByUser, universalChecks, type CheckResult, type Reply, 
 import { addUsage, cost, emptyUsage, estimate, PRICING, type Usage } from "./pricing";
 import { executeTool, resetDrafts, ToolInputError } from "./simulator";
 
+/** Tools 1.8.3 does not have (an "older" case answers them as the app does). */
+const NEWER_TOOLS = new Set(["draft_feedback", "draft_reminder", "draft_spending_reminder", "draft_account_change"]);
+
 type MessageParam = Anthropic.Beta.BetaMessageParam;
 
 function arg(name: string, fallback: string): string {
@@ -112,6 +115,10 @@ async function runCase(client: Anthropic, model: string, effort: Effort, testCas
         try {
           // As the app does: the model never sees tool_use ids, so each result names itself.
           const ref = `r${record.calls.filter((c) => c.ref).length + 1}`;
+          // An older build answers a tool it does not have as FinanceToolkit.notYet does.
+          if (testCase.context === "older" && NEWER_TOOLS.has(use.name)) {
+            throw new ToolInputError(`${use.name} is not available in this version of Tenra yet. Tell the user it is coming soon.`);
+          }
           const raw = executeTool(use.name, input);
           const result = raw && typeof raw === "object" && !Array.isArray(raw) ? { result_id: ref, ...raw } : { result_id: ref, value: raw };
           record.calls.push({ id: use.id, ref, name: use.name, input, result });

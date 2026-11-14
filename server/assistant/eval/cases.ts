@@ -959,8 +959,7 @@ export const CASES: EvalCase[] = [
     context: "older",
     prompt: "Напомни мне в пятницу оплатить кредит",
     checks: [
-      { kind: "notCalled", tools: ["draft_reminder"] },
-      { kind: "textLacks", words: ["напомню", "поставил напоминание", "я напомню"], label: "promises no reminder" },
+      { kind: "textLacks", words: ["напомню", "поставил напоминание", "напоминание поставлено", "напоминание установлено"], label: "promises no reminder" },
     ],
   },
   {

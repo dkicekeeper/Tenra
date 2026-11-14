@@ -463,7 +463,7 @@ const draftTools: Tool[] = [
   {
     name: "draft_spending_reminder",
     description:
-      "Prepares turning the evening spending reminder on or off, or moving it to another time, for the user to confirm on the card. It comes only on days with nothing recorded. time is HH:MM; without it the time stays. Returns draft_id, on, time and was_on.",
+      "Prepares turning the evening spending reminder (Settings, Spending reminder) on or off, or moving it to another time, for the user to confirm on the card: call it whenever the user asks to turn on, turn off or move the reminder to record spending; nothing changes without it. It comes only on days with nothing recorded. time is HH:MM; without it the time stays. Returns draft_id, on, time and was_on.",
     input_schema: object(
       {
         on: { type: "boolean" },

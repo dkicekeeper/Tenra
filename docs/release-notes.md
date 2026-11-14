@@ -226,7 +226,7 @@ out; the store build is the one to check):
   gives a card with the words and "Отправить"; after it the card says "Отправлено
   разработчику" and the words arrive in Telegram with the source `chat`. "Хочу оставить отзыв"
   after praise also gives a button to the App Store's review page. Needs the server with prompt
-  2026-11-14.1; on 1.8.3 the same server only stops Ten from promising to pass anything on.
+  2026-11-14.2; on 1.8.3 the same server only stops Ten from promising to pass anything on.
 
 ## Submission checklist
 

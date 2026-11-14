@@ -477,6 +477,39 @@ function draftMerchantBrand(input: Input) {
   return { draft_id: `draft_${++draftSeq}`, merchants, name: str(input, "name")?.trim() || null, saved: false };
 }
 
+// As FinanceToolkit+Actions does.
+function hhmm(raw: string | undefined, fallback: string) {
+  const value = raw ?? fallback;
+  if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(value)) throw new ToolInputError("time must be HH:MM, 00:00 to 23:59.");
+  return value;
+}
+
+function draftReminder(input: Input) {
+  const text = (str(input, "text", true) ?? "").trim();
+  if (!text || text.length > 200) throw new ToolInputError("text must be 1 to 200 characters.");
+  const date = dateArg(input, "date");
+  if (!date) throw new ToolInputError("date must be YYYY-MM-DD.");
+  if (date < TODAY) throw new ToolInputError("The reminder must be later than now.");
+  const time = hhmm(str(input, "time"), "10:00");
+  return { draft_id: `draft_${++draftSeq}`, text, date, time, set: false };
+}
+
+function draftSpendingReminder(input: Input) {
+  if (typeof input.on !== "boolean") throw new ToolInputError("on must be true or false.");
+  const time = hhmm(str(input, "time"), "20:00");
+  if (input.on === false) throw new ToolInputError("The spending reminder is already set that way.");
+  return { draft_id: `draft_${++draftSeq}`, on: input.on, time, was_on: false, saved: false };
+}
+
+function draftAccountChange(input: Input) {
+  const reference = (str(input, "account", true) ?? "").trim().toLowerCase();
+  const account = ACCOUNTS.find((a) => a.id === reference) ?? ACCOUNTS.find((a) => a.name.toLowerCase() === reference);
+  if (!account) throw new ToolInputError(`Unknown account ${reference}. Use an account id from <app_context>.`);
+  const name = (str(input, "name") ?? "").trim();
+  if (!name && typeof input.in_total !== "boolean") throw new ToolInputError("Nothing changes: give a new name or in_total.");
+  return { draft_id: `draft_${++draftSeq}`, account_id: account.id, name: name || account.name, in_total: input.in_total ?? true, saved: false };
+}
+
 // As FinanceToolkit+Merchants.draftFeedback does.
 function draftFeedback(input: Input) {
   const text = (str(input, "text", true) ?? "").trim();
@@ -1358,6 +1391,9 @@ const HANDLERS: Record<string, (input: Input) => unknown> = {
   draft_subcategory: draftSubcategory,
   draft_balance_correction: draftBalanceCorrection,
   draft_feedback: draftFeedback,
+  draft_reminder: draftReminder,
+  draft_spending_reminder: draftSpendingReminder,
+  draft_account_change: draftAccountChange,
   get_merchants: getMerchants,
   get_cleanup_overview: getCleanupOverview,
   draft_merchant_rule: draftMerchantRule,

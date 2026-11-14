@@ -226,7 +226,14 @@ out; the store build is the one to check):
   gives a card with the words and "Отправить"; after it the card says "Отправлено
   разработчику" and the words arrive in Telegram with the source `chat`. "Хочу оставить отзыв"
   after praise also gives a button to the App Store's review page. Needs the server with prompt
-  2026-11-14.2; on 1.8.3 the same server only stops Ten from promising to pass anything on.
+  2026-11-14.3; on 1.8.3 the same server only stops Ten from promising to pass anything on.
+- Ten does what is asked of it directly: "Напомни завтра утром заплатить за интернет" gives a
+  card with the words and the time, "Сохранить" asks for notifications once and the reminder
+  comes at 09:00 ("Отмена" removes it); "Включи вечернее напоминание на 21:00" switches the
+  Settings reminder; "Переименуй счёт Kaspi Gold в Основная карта" and "Не учитывай Freedom в
+  общем балансе" change the account (Home shows it, "Отмена" puts it back). "Как отменить Tenra
+  Pro" gives a button to the Apple Account's subscriptions. "Поменяй валюту на доллары",
+  "Отправь маме 20 000" and "Удали счёт" get the way to do it, never a claim that it is done.
 
 ## Submission checklist
 

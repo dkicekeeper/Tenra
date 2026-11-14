@@ -1812,6 +1812,10 @@
 "assistant.draft.saved" = "Gespeichert";
 "assistant.draft.send" = "Senden";
 "assistant.draft.feedbackSent" = "An den Entwickler gesendet";
+"assistant.draft.reminderOn" = "An, um %@";
+"assistant.draft.reminderOff" = "Aus";
+"assistant.draft.inTotal" = "Zählt zum Gesamtsaldo";
+"assistant.draft.notInTotal" = "Zählt nicht zum Gesamtsaldo";
 "assistant.draft.undo" = "Widerrufen";
 "assistant.draft.undone" = "Rückgängig gemacht. Nichts wurde gespeichert.";
 "assistant.draft.failed" = "Speichern fehlgeschlagen. Versuchen Sie es noch einmal.";

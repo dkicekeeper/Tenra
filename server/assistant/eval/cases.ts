@@ -5,6 +5,8 @@ export interface EvalCase {
   id: string;
   locale: "ru" | "en";
   prompt: string;
+  /** "older": the app context of a build without the changes line, as 1.8.2 sends it. */
+  context?: "older";
   /** Text blocks before the question, as the app sends them (<draft_status>, <attachment_result>). */
   notes?: string[];
   checks: Check[];
@@ -884,6 +886,81 @@ export const CASES: EvalCase[] = [
     checks: [
       { kind: "called", anyOf: ["get_subscription_audit"] },
       { kind: "notCalled", tools: ["draft_transactions", "draft_transaction_delete", "draft_recurring"] },
+    ],
+  },
+  {
+    id: "ru-remind-tomorrow",
+    locale: "ru",
+    prompt: "Напомни мне завтра утром заплатить за интернет",
+    checks: [
+      { kind: "called", anyOf: ["draft_reminder"] },
+      { kind: "block", type: "confirm" },
+      { kind: "notCalled", tools: ["draft_transactions", "draft_recurring"] },
+    ],
+  },
+  {
+    id: "ru-spending-reminder-on",
+    locale: "ru",
+    prompt: "Включи вечернее напоминание о тратах на 21:00",
+    checks: [
+      { kind: "called", anyOf: ["draft_spending_reminder"] },
+      { kind: "block", type: "confirm" },
+    ],
+  },
+  {
+    id: "ru-rename-account",
+    locale: "ru",
+    prompt: "Переименуй счёт Kaspi Gold в «Основная карта»",
+    checks: [
+      { kind: "called", anyOf: ["draft_account_change"] },
+      { kind: "block", type: "confirm" },
+      { kind: "notCalled", tools: ["draft_balance_correction", "draft_category_change"] },
+    ],
+  },
+  {
+    id: "ru-change-base-currency",
+    locale: "ru",
+    prompt: "Поменяй основную валюту на доллары",
+    checks: [
+      { kind: "blockWith", type: "open", match: (b) => b.destination === "settings", label: "opens Settings" },
+      { kind: "textHas", groups: [["настройк"]], label: "points to Settings" },
+      { kind: "textLacks", words: ["поменял", "изменил", "сменил", "готово"], label: "claims no change" },
+    ],
+  },
+  {
+    id: "ru-cancel-pro",
+    locale: "ru",
+    prompt: "Как отменить подписку Tenra Pro?",
+    checks: [
+      { kind: "blockWith", type: "open", match: (b) => b.destination === "manage_subscription", label: "links to the Apple subscriptions" },
+    ],
+  },
+  {
+    id: "ru-send-money",
+    locale: "ru",
+    prompt: "Отправь маме 20 000 с Kaspi",
+    checks: [
+      { kind: "notCalled", tools: ["draft_balance_correction", "draft_feedback"] },
+      { kind: "textHas", groups: [["не переводит", "не отправля", "не может отправ", "не умеет", "только запис", "не перевожу", "не могу отправ", "не могу перев"]], label: "says Tenra does not move money" },
+    ],
+  },
+  {
+    id: "ru-delete-account",
+    locale: "ru",
+    prompt: "Удали счёт Freedom USD",
+    checks: [
+      { kind: "notCalled", tools: ["draft_transaction_delete", "draft_category_change", "draft_account_change"] },
+      { kind: "blockWith", type: "open", match: (b) => b.destination === "account" || b.destination === "accounts", label: "opens the account" },
+    ],
+  },
+  {
+    id: "ru-remind-no-line",
+    locale: "ru",
+    context: "older",
+    prompt: "Напомни мне в пятницу оплатить кредит",
+    checks: [
+      { kind: "notCalled", tools: ["draft_reminder"] },
+      { kind: "textLacks", words: ["напомню", "поставил напоминание", "я напомню"], label: "promises no reminder" },
     ],
   },
   {

@@ -51,6 +51,59 @@ struct AgentChangeTests {
         return (toolkit, book, store)
     }
 
+    @Test func aReminderIsLaterThanNowAndWithinAYear() async throws {
+        let (toolkit, book, store) = Self.make()
+        _ = store
+        let output = await toolkit.execute(name: "draft_reminder", input: ["text": "Заплатить за квартиру", "date": "2026-10-30", "time": "09:30"])
+        let value = try #require(output.value, "\(output.error ?? "")")
+        #expect(value["time"] == "09:30")
+        guard case .reminder(let reminder)? = book.drafts["draft_1"]?.operations.first else {
+            Issue.record("expected a reminder")
+            return
+        }
+        #expect(reminder.text == "Заплатить за квартиру")
+        #expect(reminder.date > Self.now)
+
+        let past = await toolkit.execute(name: "draft_reminder", input: ["text": "Вчера", "date": "2026-10-27"])
+        #expect(past.value == nil)
+        let far = await toolkit.execute(name: "draft_reminder", input: ["text": "Через два года", "date": "2028-10-30"])
+        #expect(far.value == nil)
+        let badTime = await toolkit.execute(name: "draft_reminder", input: ["text": "Утром", "date": "2026-10-30", "time": "25:00"])
+        #expect(badTime.value == nil)
+    }
+
+    @Test func theSpendingReminderDraftChangesOnlyWhatDiffers() throws {
+        let (toolkit, book, store) = Self.make()
+        _ = store
+        let defaults = UserDefaults(suiteName: "tests.\(UUID().uuidString)")!
+        let output = try toolkit.draftSpendingReminder(["on": true, "time": "21:00"], defaults: defaults)
+        let value = try #require(output.value, "\(output.error ?? "")")
+        #expect(value["was_on"] == false)
+        let expected: [AgentDraftOperation] = [AgentDraftOperation.spendingReminder(AgentSpendingReminderState(on: true, minutes: 21 * 60))]
+        let drafted: [AgentDraftOperation] = book.drafts["draft_1"]?.operations ?? []
+        #expect(drafted == expected)
+        // Off and already off: nothing to draft.
+        #expect(throws: FinanceToolError.self) { try toolkit.draftSpendingReminder(["on": false], defaults: defaults) }
+    }
+
+    @Test func anAccountChangeKeepsWhatItWas() async throws {
+        let (toolkit, book, store) = Self.make()
+        let output = await toolkit.execute(name: "draft_account_change", input: ["account": "Halyk", "name": "Halyk зарплатная", "in_total": false])
+        let value = try #require(output.value, "\(output.error ?? "")")
+        #expect(value["in_total"] == false)
+        guard case .accountChange(let before, let after)? = book.drafts["draft_1"]?.operations.first else {
+            Issue.record("expected an account change")
+            return
+        }
+        #expect(before == store.accounts[1])
+        #expect(after.name == "Halyk зарплатная")
+        #expect(after.includeInBalance == false)
+        #expect(after.initialBalance == before.initialBalance)
+
+        let same = await toolkit.execute(name: "draft_account_change", input: ["account": "acc_halyk", "name": "Halyk"])
+        #expect(same.value == nil)
+    }
+
     @Test func feedbackIsDraftedAndSentOnlyFromTheCard() async throws {
         let (toolkit, book, store) = Self.make()
         _ = store

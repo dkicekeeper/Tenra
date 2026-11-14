@@ -1812,6 +1812,10 @@
 "assistant.draft.saved" = "Enregistré";
 "assistant.draft.send" = "Envoyer";
 "assistant.draft.feedbackSent" = "Envoyé au développeur";
+"assistant.draft.reminderOn" = "Activé, à %@";
+"assistant.draft.reminderOff" = "Désactivé";
+"assistant.draft.inTotal" = "Compté dans le solde total";
+"assistant.draft.notInTotal" = "Non compté dans le solde total";
 "assistant.draft.undo" = "Annuler";
 "assistant.draft.undone" = "Annulé. Rien n’a été enregistré.";
 "assistant.draft.failed" = "Échec de l’enregistrement. Réessayez.";

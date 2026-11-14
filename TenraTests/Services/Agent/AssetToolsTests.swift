@@ -344,7 +344,7 @@ struct AssetToolsTests {
         #expect(text.contains("\nvaluation: listings\n"))
         // The line the server reads before offering the newer `open` destinations; its words
         // are the eval fixture's (server/assistant/eval/fixture.ts).
-        #expect(text.contains("\nscreens: accounts, deposits, loans, goals, goal, debts, debt, settings, backups, wallet_guide, loan_payment, review, app_review, create (account, deposit, loan, category)\n"))
+        #expect(text.contains("\nscreens: accounts, deposits, loans, goals, goal, debts, debt, settings, backups, wallet_guide, loan_payment, review, app_review, manage_subscription, create (account, deposit, loan, category)\n"))
         #expect(AssistantStep(tool: "estimate_asset_value") == .valuing)
     }
 

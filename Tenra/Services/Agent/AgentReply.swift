@@ -56,6 +56,8 @@ nonisolated enum AgentDestination: String, Sendable, Equatable, Decodable {
     case review
     /// The App Store's "Write a Review" page of Tenra: a link out of the app, not a screen.
     case appReview = "app_review"
+    /// The Apple Account's subscriptions page, where Tenra Pro is cancelled: a link out too.
+    case manageSubscription = "manage_subscription"
 }
 
 /// What an `open` block with the destination "create" starts: the app's own form for a new

@@ -138,7 +138,7 @@ nonisolated enum AgentContextBuilder {
             "valuation: listings",
             // What this version's `open` blocks reach (plan-ten-agent 4.2): the lists of
             // Finances, goals and debts by id, Settings, and the forms for a new one.
-            "screens: accounts, deposits, loans, goals, goal, debts, debt, settings, backups, wallet_guide, loan_payment, review, app_review, create (account, deposit, loan, category)",
+            "screens: accounts, deposits, loans, goals, goal, debts, debt, settings, backups, wallet_guide, loan_payment, review, app_review, manage_subscription, create (account, deposit, loan, category)",
         ]
         if let state = snapshot.state {
             let regular = snapshot.accounts.filter { $0.kind == "regular" }.count
@@ -161,7 +161,7 @@ nonisolated enum AgentContextBuilder {
         // terms it reads: the prompt uses draft_transaction_edit, draft_transaction_delete,
         // draft_recategorize, draft_goal_change, draft_debt_change, get_loans and get_deposits
         // only when these lines name them.
-        lines.append("changes: transactions (edit, delete, recategorize), goals, debts, subscriptions (pause, resume), review (confirm), categories (rename, merge, delete, subcategory), accounts (balance), merchants (rule, brand), feedback (send)")
+        lines.append("changes: transactions (edit, delete, recategorize), goals, debts, subscriptions (pause, resume), review (confirm), categories (rename, merge, delete, subcategory), accounts (balance), merchants (rule, brand), feedback (send), reminders (once, spending), accounts (rename, in_total)")
         lines.append("reads: loans, deposits, recurring_candidates, review_queue, category_audit, duplicates, budget_suggestions, subscription_audit, merchants, cleanup_overview")
         // Without facts the line is left out, as before there was a memory.
         if !facts.isEmpty { lines.append("facts you remember about the user: \(facts)") }

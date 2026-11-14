@@ -44,6 +44,8 @@ export type Check =
   | { kind: "textAtLeast"; chars: number }
   /** The reply's text names every group: one of each group's words, case-insensitive (word stems work). */
   | { kind: "textHas"; groups: string[][]; label: string }
+  /** The reply's text has none of the words, case-insensitive: a promise or a claim it must not make. */
+  | { kind: "textLacks"; words: string[]; label: string }
   | { kind: "noPick" };
 
 export interface CheckResult {
@@ -120,7 +122,7 @@ const BLOCK_FIELDS: Record<string, Record<string, (v: unknown) => boolean>> = {
   open: {
     destination: oneOf([
       "category", "account", "analytics", "history", "budgets", "subscriptions", "assets", "asset",
-      "accounts", "deposits", "loans", "goals", "goal", "debts", "debt", "settings", "backups", "wallet_guide", "loan_payment", "review", "app_review", "create",
+      "accounts", "deposits", "loans", "goals", "goal", "debts", "debt", "settings", "backups", "wallet_guide", "loan_payment", "review", "app_review", "manage_subscription", "create",
     ]),
     target_id: OPTIONAL_STRING,
     label: STRING,
@@ -272,6 +274,11 @@ export function caseCheck(record: RunRecord, check: Check): CheckResult {
       const text = textOf(record).toLowerCase();
       const missing = check.groups.filter((group) => !group.some((word) => text.includes(word.toLowerCase())));
       return { name: check.label, pass: missing.length === 0, detail: missing.length ? `missing ${missing.map((g) => g.join("|")).join("; ")}` : undefined };
+    }
+    case "textLacks": {
+      const text = textOf(record).toLowerCase();
+      const found = check.words.filter((word) => text.includes(word.toLowerCase()));
+      return { name: check.label, pass: found.length === 0, detail: found.length ? `has ${found.join(", ")}` : undefined };
     }
     case "noPick": {
       const pick = textOf(record).match(PICK)?.[0];

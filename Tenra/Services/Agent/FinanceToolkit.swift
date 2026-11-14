@@ -129,6 +129,9 @@ final class FinanceToolkit: AgentToolExecuting {
             case "draft_merchant_rule": return try draftMerchantRule(input)
             case "draft_merchant_brand": return try draftMerchantBrand(input)
             case "draft_feedback": return try draftFeedback(input)
+            case "draft_reminder": return try draftReminder(input)
+            case "draft_spending_reminder": return try draftSpendingReminder(input)
+            case "draft_account_change": return try draftAccountChange(input)
             case "get_subscription_audit": return .success(await subscriptionAudit())
             case "suggest_budgets": return .success(await budgetSuggestions())
             case "find_duplicates": return .success(await duplicates())
@@ -1412,6 +1415,8 @@ final class FinanceToolkit: AgentToolExecuting {
             return describeBalanceCorrection(operation)
         case .merchantRule, .merchantBrand, .feedback:
             return describeMerchantChange(operation)
+        case .reminder, .spendingReminder, .accountChange:
+            return describeAction(operation)
         }
     }
 }

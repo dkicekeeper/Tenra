@@ -1812,6 +1812,10 @@
 "assistant.draft.saved" = "Kaydedildi";
 "assistant.draft.send" = "Gönder";
 "assistant.draft.feedbackSent" = "Geliştiriciye gönderildi";
+"assistant.draft.reminderOn" = "Açık, saat %@";
+"assistant.draft.reminderOff" = "Kapalı";
+"assistant.draft.inTotal" = "Toplam bakiyeye dahil";
+"assistant.draft.notInTotal" = "Toplam bakiyeye dahil değil";
 "assistant.draft.undo" = "Geri al";
 "assistant.draft.undone" = "Geri alındı. Hiçbir şey kaydedilmedi.";
 "assistant.draft.failed" = "Kaydedilemedi. Tekrar dene.";

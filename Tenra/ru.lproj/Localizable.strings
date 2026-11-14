@@ -1812,6 +1812,10 @@
 "assistant.draft.saved" = "Сохранено";
 "assistant.draft.send" = "Отправить";
 "assistant.draft.feedbackSent" = "Отправлено разработчику";
+"assistant.draft.reminderOn" = "Включится, в %@";
+"assistant.draft.reminderOff" = "Выключится";
+"assistant.draft.inTotal" = "Учитывается в общем балансе";
+"assistant.draft.notInTotal" = "Не учитывается в общем балансе";
 "assistant.draft.undo" = "Отменить";
 "assistant.draft.undone" = "Отменено. Ничего не сохранено.";
 "assistant.draft.failed" = "Не удалось сохранить. Попробуйте ещё раз.";

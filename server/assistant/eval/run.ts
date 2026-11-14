@@ -52,7 +52,13 @@ async function runCase(client: Anthropic, model: string, effort: Effort, testCas
     {
       role: "user",
       content: [
-        { type: "text", text: appContext(testCase.locale) },
+        {
+          type: "text",
+          // An older build: no changes line, so none of the change tools.
+          text: testCase.context === "older"
+            ? appContext(testCase.locale).split("\n").filter((line) => !line.startsWith("changes:")).join("\n")
+            : appContext(testCase.locale),
+        },
         // Blocks the app sends before the question: a draft made on the phone, an attachment.
         ...(testCase.notes ?? []).map((text) => ({ type: "text" as const, text })),
         { type: "text", text: testCase.prompt },

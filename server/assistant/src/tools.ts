@@ -448,6 +448,44 @@ const draftTools: Tool[] = [
     ),
   },
   {
+    name: "draft_reminder",
+    description:
+      "Prepares a one-off reminder for the user to confirm on the card: at the day and time a notification on their phone shows text. date is YYYY-MM-DD, today or later and at most a year ahead; time is HH:MM in 24 hours, 10:00 by default; text is the reminder in the user's language, short (\"Pay the rent\"). For a payment that repeats, a subscription or a regular payment (draft_recurring) reminds before each charge. Returns draft_id.",
+    input_schema: object(
+      {
+        text: { type: "string" },
+        date: { type: "string", description: "YYYY-MM-DD" },
+        time: { type: "string", description: "HH:MM" },
+      },
+      ["text", "date"],
+    ),
+  },
+  {
+    name: "draft_spending_reminder",
+    description:
+      "Prepares turning the evening spending reminder on or off, or moving it to another time, for the user to confirm on the card. It comes only on days with nothing recorded. time is HH:MM; without it the time stays. Returns draft_id, on, time and was_on.",
+    input_schema: object(
+      {
+        on: { type: "boolean" },
+        time: { type: "string", description: "HH:MM" },
+      },
+      ["on"],
+    ),
+  },
+  {
+    name: "draft_account_change",
+    description:
+      "Prepares a new name for an account, or whether it counts in the total balance on Home (in_total), for the user to confirm on the card. account is an account id from <app_context> or its name. Its balance, currency and kind are changed on the account's screen; the balance can also be set with draft_balance_correction. Returns draft_id.",
+    input_schema: object(
+      {
+        account: { type: "string" },
+        name: { type: "string", description: "Up to 40 characters" },
+        in_total: { type: "boolean" },
+      },
+      ["account"],
+    ),
+  },
+  {
     name: "draft_feedback",
     description:
       "Prepares the user's words for the developer of Tenra, for them to send from the card (its button is Send). Use it when the user asks to pass something on to the developer or the team, to leave feedback, to report a problem or to suggest a feature. text is what they want said, in their own words and language, without changes beyond joining their messages; mood is good for praise, bad for a complaint, omitted otherwise. Nothing is sent until they press Send. Returns draft_id.",
@@ -686,7 +724,7 @@ const renderReply: Tool = {
               type: "string",
               enum: [
                 "category", "account", "analytics", "history", "budgets", "subscriptions", "assets", "asset",
-                "accounts", "deposits", "loans", "goals", "goal", "debts", "debt", "settings", "backups", "wallet_guide", "loan_payment", "review", "app_review", "create",
+                "accounts", "deposits", "loans", "goals", "goal", "debts", "debt", "settings", "backups", "wallet_guide", "loan_payment", "review", "app_review", "manage_subscription", "create",
               ],
               description: "The first eight always work. The rest only when <app_context> has a screens line that lists them.",
             },

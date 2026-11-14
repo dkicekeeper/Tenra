@@ -1812,6 +1812,10 @@
 "assistant.draft.saved" = "Збережено";
 "assistant.draft.send" = "Надіслати";
 "assistant.draft.feedbackSent" = "Надіслано розробнику";
+"assistant.draft.reminderOn" = "Увімкнеться, о %@";
+"assistant.draft.reminderOff" = "Вимкнеться";
+"assistant.draft.inTotal" = "Враховується в загальному балансі";
+"assistant.draft.notInTotal" = "Не враховується в загальному балансі";
 "assistant.draft.undo" = "Скасувати";
 "assistant.draft.undone" = "Скасовано. Нічого не збережено.";
 "assistant.draft.failed" = "Не вдалося зберегти. Спробуйте ще раз.";

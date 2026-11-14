@@ -1812,6 +1812,10 @@
 "assistant.draft.saved" = "Salvato";
 "assistant.draft.send" = "Invia";
 "assistant.draft.feedbackSent" = "Inviato allo sviluppatore";
+"assistant.draft.reminderOn" = "Attivo, alle %@";
+"assistant.draft.reminderOff" = "Disattivato";
+"assistant.draft.inTotal" = "Conta nel saldo totale";
+"assistant.draft.notInTotal" = "Non conta nel saldo totale";
 "assistant.draft.undo" = "Annulla";
 "assistant.draft.undone" = "Annullato. Non è stato salvato nulla.";
 "assistant.draft.failed" = "Impossibile salvare. Riprova.";

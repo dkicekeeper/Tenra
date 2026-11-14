@@ -1812,6 +1812,10 @@
 "assistant.draft.saved" = "Сақталды";
 "assistant.draft.send" = "Жіберу";
 "assistant.draft.feedbackSent" = "Әзірлеушіге жіберілді";
+"assistant.draft.reminderOn" = "Қосылады, %@";
+"assistant.draft.reminderOff" = "Өшіріледі";
+"assistant.draft.inTotal" = "Жалпы балансқа кіреді";
+"assistant.draft.notInTotal" = "Жалпы балансқа кірмейді";
 "assistant.draft.undo" = "Болдырмау";
 "assistant.draft.undone" = "Әрекет болдырылмады. Ештеңе сақталмады.";
 "assistant.draft.failed" = "Сақтау мүмкін болмады. Қайталап көріңіз.";

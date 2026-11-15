@@ -35,6 +35,12 @@ here.
   Pro" gives a button to the Apple Account's subscriptions. "Поменяй валюту на доллары",
   "Отправь маме 20 000" and "Удали счёт" get the way to do it, never a claim that it is done.
 
+- A subscription billed by Apple (the owner's report 2026-11-15: Roblox 6 060 on the 13th, charged
+  as APPLE.COM/BILL, stayed a separate expense next to the planned charge): with APPLE.COM/BILL
+  already linked to another subscription, To review now asks "Похоже на Roblox" with "Объединить";
+  after one merge by hand each next charge of that amount merges on its own, and the other Apple
+  subscriptions keep merging too.
+
 ## Submission checklist
 
 1. **CI green**, then a TestFlight build under the new version number.

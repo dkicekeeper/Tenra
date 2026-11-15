@@ -842,6 +842,15 @@ export const CASES: EvalCase[] = [
     ],
   },
   {
+    id: "ru-review-merchants-word",
+    locale: "ru",
+    prompt: "Есть продавцы на проверку?",
+    checks: [
+      { kind: "called", anyOf: ["get_review_queue"] },
+      { kind: "notCalled", tools: ["get_merchants", "draft_merchant_rule"] },
+    ],
+  },
+  {
     id: "ru-review-confirm-all",
     locale: "ru",
     prompt: "На проверке всё угадано верно, подтверди все платежи",

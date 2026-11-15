@@ -78,6 +78,10 @@ struct SubscriptionChargeLinkerTests {
         #expect(merged.recurringSeriesId == series.id)
         #expect(store.transactions.filter { $0.recurringSeriesId == series.id }.count == 1)
         #expect(captures.isMatched(occurrenceId: planned.id))
+        // The merchant is remembered for this subscription, alongside any other it bills for.
+        memory.remember(seriesId: "another", forMerchant: "YANDEX*PLUS")
+        #expect(memory.seriesIds(forMerchant: "YANDEX*PLUS") == [series.id, "another"])
+        #expect(memory.seriesId(forMerchant: "YANDEX*PLUS") == "another")
         #expect(memory.seriesId(forMerchant: "YANDEX*PLUS") == series.id)
     }
 

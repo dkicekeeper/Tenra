@@ -8,6 +8,10 @@
 //  its own, whatever its name, account or currency (SubscriptionChargeMatcher, tier 1). A
 //  suggestion the person turned down is kept too, so it is not asked again.
 //
+//  A merchant may charge for several subscriptions: a biller such as "APPLE.COM/BILL" charges
+//  for iCloud, a game and an app alike, so every subscription linked to it is kept, and the
+//  amount tells them apart (SubscriptionChargeMatcher).
+//
 //  Keyed on the normalized merchant (MerchantCategoryMemory.key), one UserDefaults blob. A
 //  deleted subscription simply matches nothing. docs/domains/recurring.md §Real charges.
 //
@@ -22,8 +26,11 @@ final class SubscriptionMerchantMemory {
     private static let storageKey = "subscription.merchants.v1"
 
     private struct Snapshot: Codable {
-        /// `[normalized merchant: series id]`
+        /// `[normalized merchant: the series last linked]`, kept for snapshots saved before
+        /// `seriesSetByMerchant`.
         var seriesByMerchant: [String: String]
+        /// `[normalized merchant: every series linked to it]`. nil in snapshots saved before it.
+        var seriesSetByMerchant: [String: [String]]?
         /// `[normalized merchant: series ids turned down]`
         var dismissed: [String: [String]]
     }
@@ -37,17 +44,30 @@ final class SubscriptionMerchantMemory {
            let decoded = try? JSONDecoder().decode(Snapshot.self, from: data) {
             snapshot = decoded
         } else {
-            snapshot = Snapshot(seriesByMerchant: [:], dismissed: [:])
+            snapshot = Snapshot(seriesByMerchant: [:], seriesSetByMerchant: [:], dismissed: [:])
         }
     }
 
-    /// The subscription the person linked this merchant to.
+    /// The subscription the person linked this merchant to last.
     func seriesId(forMerchant merchant: String) -> String? {
         MerchantCategoryMemory.key(forMerchant: merchant).flatMap { snapshot.seriesByMerchant[$0] }
     }
 
+    /// Every subscription the person linked this merchant to.
+    func seriesIds(forMerchant merchant: String) -> Set<String> {
+        guard let key = MerchantCategoryMemory.key(forMerchant: merchant) else { return [] }
+        var ids = Set(snapshot.seriesSetByMerchant?[key] ?? [])
+        if let last = snapshot.seriesByMerchant[key] { ids.insert(last) }
+        return ids
+    }
+
     func remember(seriesId: String, forMerchant merchant: String) {
         guard let key = MerchantCategoryMemory.key(forMerchant: merchant) else { return }
+        var set = snapshot.seriesSetByMerchant ?? [:]
+        var ids = set[key] ?? snapshot.seriesByMerchant[key].map { [$0] } ?? []
+        if !ids.contains(seriesId) { ids.append(seriesId) }
+        set[key] = ids
+        snapshot.seriesSetByMerchant = set
         snapshot.seriesByMerchant[key] = seriesId
         snapshot.dismissed[key]?.removeAll { $0 == seriesId }
         persist()
@@ -69,7 +89,7 @@ final class SubscriptionMerchantMemory {
 
     /// Wipe everything. Exposed for tests.
     func reset() {
-        snapshot = Snapshot(seriesByMerchant: [:], dismissed: [:])
+        snapshot = Snapshot(seriesByMerchant: [:], seriesSetByMerchant: [:], dismissed: [:])
         defaults.removeObject(forKey: Self.storageKey)
     }
 

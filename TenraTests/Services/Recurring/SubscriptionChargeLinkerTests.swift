@@ -78,11 +78,11 @@ struct SubscriptionChargeLinkerTests {
         #expect(merged.recurringSeriesId == series.id)
         #expect(store.transactions.filter { $0.recurringSeriesId == series.id }.count == 1)
         #expect(captures.isMatched(occurrenceId: planned.id))
-        // The merchant is remembered for this subscription, alongside any other it bills for.
+        #expect(memory.seriesId(forMerchant: "YANDEX*PLUS") == series.id)
+        // Remembered alongside any other subscription the same merchant bills for.
         memory.remember(seriesId: "another", forMerchant: "YANDEX*PLUS")
         #expect(memory.seriesIds(forMerchant: "YANDEX*PLUS") == [series.id, "another"])
         #expect(memory.seriesId(forMerchant: "YANDEX*PLUS") == "another")
-        #expect(memory.seriesId(forMerchant: "YANDEX*PLUS") == series.id)
     }
 
     @Test("A captured charge keeps its capture under the planned charge: the other source's report stays a duplicate")

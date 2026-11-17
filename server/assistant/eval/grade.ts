@@ -44,6 +44,8 @@ export type Check =
   | { kind: "textAtLeast"; chars: number }
   /** The reply's text names every group: one of each group's words, case-insensitive (word stems work). */
   | { kind: "textHas"; groups: string[][]; label: string }
+  /** The reply's text has none of the words, case-insensitive: a promise or a claim it must not make. */
+  | { kind: "textLacks"; words: string[]; label: string }
   | { kind: "noPick" };
 
 export interface CheckResult {
@@ -87,7 +89,8 @@ const TYPED_SCALE = /(\d[\d\s\u00a0\u202f]*(?:[.,]\d+)?)\s?(тыс(?:яч[аи]?
 // A bare year ("к марту 2027") is a date, not an amount; with a currency MONEY_IN_TEXT still catches it.
 const YEAR = /^(?:19|20)\d{2}$/;
 // JS \b is ASCII-only even with /u: Cyrillic words are bounded with \p{L} lookarounds.
-const SAVED_CLAIM = /(?<!\p{L})(сохранил[аи]?|записал[аи]?|добавил[аи]?|создал[аи]?|запомнил[аи]?|сохранено|записано|запомнено)(?!\p{L})|\bI(?:'ve| have)? (?:saved|recorded|added|logged|remembered)\b|\b(?:is|was|has been|have been) (?:saved|recorded|logged|remembered)\b/iu;
+// "ничего не записано" (the spending reminder comes on such days) is not a claim: no "не" before it.
+const SAVED_CLAIM = /(?<!\p{L})(?<!не )(сохранил[аи]?|записал[аи]?|добавил[аи]?|создал[аи]?|запомнил[аи]?|сохранено|записано|запомнено)(?!\p{L})|\bI(?:'ve| have)? (?:saved|recorded|added|logged|remembered)\b|\b(?:is|was|has been|have been) (?:saved|recorded|logged|remembered)\b/iu;
 const PURPOSE_CLAUSE = /(?<!\p{L})чтобы(?!\p{L})[^.!?,\n]*/giu;
 
 // A reply that turns a money question away. A one-line "picking specific products needs a
@@ -120,7 +123,7 @@ const BLOCK_FIELDS: Record<string, Record<string, (v: unknown) => boolean>> = {
   open: {
     destination: oneOf([
       "category", "account", "analytics", "history", "budgets", "subscriptions", "assets", "asset",
-      "accounts", "deposits", "loans", "goals", "goal", "debts", "debt", "settings", "backups", "wallet_guide", "loan_payment", "review", "create",
+      "accounts", "deposits", "loans", "goals", "goal", "debts", "debt", "settings", "backups", "wallet_guide", "loan_payment", "review", "app_review", "manage_subscription", "create",
     ]),
     target_id: OPTIONAL_STRING,
     label: STRING,
@@ -272,6 +275,11 @@ export function caseCheck(record: RunRecord, check: Check): CheckResult {
       const text = textOf(record).toLowerCase();
       const missing = check.groups.filter((group) => !group.some((word) => text.includes(word.toLowerCase())));
       return { name: check.label, pass: missing.length === 0, detail: missing.length ? `missing ${missing.map((g) => g.join("|")).join("; ")}` : undefined };
+    }
+    case "textLacks": {
+      const text = textOf(record).toLowerCase();
+      const found = check.words.filter((word) => text.includes(word.toLowerCase()));
+      return { name: check.label, pass: found.length === 0, detail: found.length ? `has ${found.join(", ")}` : undefined };
     }
     case "noPick": {
       const pick = textOf(record).match(PICK)?.[0];

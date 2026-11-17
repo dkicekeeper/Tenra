@@ -66,6 +66,13 @@ enum AgentDraftOperation: Equatable {
     case categoryRename(before: CustomCategory, name: String)
     case categoryMerge(from: CustomCategory, into: CustomCategory, records: Int)
     case categoryDelete(CustomCategory)
+    /// A one-off reminder, the evening spending reminder, an account's name or place in the
+    /// total (FinanceToolkit+Actions).
+    case reminder(AgentReminder)
+    case spendingReminder(AgentSpendingReminderState)
+    case accountChange(before: Account, after: Account)
+    /// What the person asked Ten to tell the developer (`POST /v1/feedback`, source `chat`).
+    case feedback(text: String, mood: AgentFeedbackMessage.Mood?)
     /// The expense category a merchant's payments get from now on, and points of one brand
     /// joined into one merchant (FinanceToolkit+Merchants).
     case merchantRule(merchant: String, category: CustomCategory)
@@ -140,6 +147,11 @@ enum AgentSavedRecord: Equatable {
     case subcategoryTagged(AgentSubcategoryUndo)
     case balanceCorrected(accountId: String, previous: Double)
     case merchantRuleSet(AgentMerchantRuleUndo)
+    /// Words that went to the developer: they cannot be taken back.
+    case feedbackSent
+    case reminderSet(AgentReminder)
+    case spendingReminderSet(previous: AgentSpendingReminderState)
+    case accountChanged(before: Account)
     case merchantBranded(groupId: String)
 }
 
@@ -155,6 +167,8 @@ enum AgentDraftError: Error {
     case overRepayment
     /// The record was changed or deleted between the draft and Save.
     case recordChanged
+    /// Words for the developer, and nowhere to send them (no server, no App Attest).
+    case noFeedbackChannel
 }
 
 struct AgentDraft: Equatable, Identifiable {
@@ -285,6 +299,7 @@ extension AgentDraftBook.Writer {
         debts: DebtStore? = nil,
         assets: AssetStore? = nil,
         accountsViewModel: AccountsViewModel? = nil,
+        feedback: AgentFeedbackTransport? = nil,
         isPro: @escaping () -> Bool = { true }
     ) -> Self {
         // The account shows `balance`: its starting balance takes the difference, as when the
@@ -302,6 +317,23 @@ extension AgentDraftBook.Writer {
                 switch operation {
                 case .merchantRule, .merchantBrand:
                     return try Self.saveMerchantChange(operation, store: store)
+                case .reminder(let reminder):
+                    try await AgentReminderCenter.schedule(reminder)
+                    return .reminderSet(reminder)
+                case .spendingReminder(let state):
+                    let defaults = UserDefaults.standard
+                    let previous = AgentSpendingReminderState(on: SpendingReminder.isEnabled(defaults: defaults), minutes: SpendingReminder.minutes(defaults: defaults))
+                    defaults.set(state.minutes, forKey: SpendingReminder.minutesKey)
+                    await SpendingReminder.setEnabled(state.on, defaults: defaults)
+                    return .spendingReminderSet(previous: previous)
+                case .accountChange(let before, let after):
+                    guard let accountsViewModel, store.accounts.first(where: { $0.id == before.id }) == before else { throw AgentDraftError.recordChanged }
+                    accountsViewModel.updateAccount(after)
+                    return .accountChanged(before: before)
+                case .feedback(let text, let mood):
+                    guard let feedback else { throw AgentDraftError.noFeedbackChannel }
+                    try await feedback.feedback(AgentFeedbackMessage(text: text, mood: mood, source: .chat))
+                    return .feedbackSent
                 case .balanceCorrection(let account, let from, let to):
                     // The card showed what the account had: it must still have it.
                     let current = store.balanceCoordinator.balances[account.id] ?? account.balance
@@ -379,6 +411,18 @@ extension AgentDraftBook.Writer {
                 switch record {
                 case .merchantRuleSet, .merchantBranded:
                     Self.undoMerchantChange(record)
+                case .feedbackSent:
+                    break
+                case .reminderSet(let reminder):
+                    AgentReminderCenter.cancel(reminder)
+                case .spendingReminderSet(let previous):
+                    UserDefaults.standard.set(previous.minutes, forKey: SpendingReminder.minutesKey)
+                    await SpendingReminder.setEnabled(previous.on)
+                case .accountChanged(let before):
+                    guard let accountsViewModel, var current = store.accounts.first(where: { $0.id == before.id }) else { return }
+                    current.name = before.name
+                    current.includeInBalance = before.includeInBalance
+                    accountsViewModel.updateAccount(current)
                 case .balanceCorrected(let accountId, let previous):
                     try? setBalance(previous, of: accountId)
                 case .categoryRenamed, .categoryDeleted, .categoryMerged, .subcategoryTagged:

@@ -1810,6 +1810,12 @@
 "assistant.open.missing" = "Isso não está mais no Tenra";
 "assistant.draft.save" = "Salvar";
 "assistant.draft.saved" = "Salvo";
+"assistant.draft.send" = "Enviar";
+"assistant.draft.feedbackSent" = "Enviado ao desenvolvedor";
+"assistant.draft.reminderOn" = "Ativado, às %@";
+"assistant.draft.reminderOff" = "Desativado";
+"assistant.draft.inTotal" = "Conta no saldo total";
+"assistant.draft.notInTotal" = "Não conta no saldo total";
 "assistant.draft.undo" = "Desfazer";
 "assistant.draft.undone" = "Desfeito. Nada foi salvo.";
 "assistant.draft.failed" = "Não foi possível salvar. Tente de novo.";

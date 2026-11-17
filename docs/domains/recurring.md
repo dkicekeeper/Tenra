@@ -100,15 +100,17 @@ series itself is never touched (red flag 10).
 Which planned charge a real one is (`SubscriptionChargeMatcher.match`), within three days of the
 planned date, the closest first, never one already taken (`WalletCaptureStore.isMatched`):
 
-1. the subscription remembered for the merchant (`SubscriptionMerchantMemory`, normalized
-   merchant → series id), within 30 %;
+1. a subscription remembered for the merchant (`SubscriptionMerchantMemory`, normalized
+   merchant → every series linked to it: a biller such as "APPLE.COM/BILL" charges for several,
+   and the amount picks one), within 30 %;
 2. a brand word the merchant shares with the subscription (`WalletPaymentResolver.billedWords`:
    "NETFLIX.COM" and "Netflix", "APPLE.COM/BILL" and "iCloud+"), within 5 % in the same currency,
    10 % across currencies (against the planned account-currency amount when the bank charged in
    the account's currency, else at the cached rate);
 3. otherwise the same amount is only a **suggestion**: the payment is recorded and To review asks
    "Looks like X" (Merge, or ✕: never asked again for that merchant). Never for a bank's transfer
-   to a person, a merchant remembered for another subscription, or no merchant.
+   to a person or no merchant; a merchant remembered for other subscriptions still gets it (a
+   biller charges for many).
 
 Any account: the real account wins, except when the card's account was only a guess (then the
 subscription's). An intent's process holds no history, so a confident match from an automation is

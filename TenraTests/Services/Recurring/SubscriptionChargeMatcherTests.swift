@@ -64,7 +64,7 @@ struct SubscriptionChargeMatcherTests {
         SubscriptionChargeMatcher.match(
             charge,
             occurrences: occurrences,
-            rememberedSeriesId: remembered,
+            rememberedSeriesIds: remembered.map { Set([$0]) } ?? [],
             dismissedSeriesIds: dismissed,
             suggests: suggests,
             accountCurrency: { _ in accountCurrency },
@@ -149,7 +149,7 @@ struct SubscriptionChargeMatcherTests {
         ]
         let onFreedom = SubscriptionChargeMatcher.match(
             charge(450, merchant: "APPLE.COM/BILL"), occurrences: candidates,
-            rememberedSeriesId: nil, dismissedSeriesIds: [], suggests: true, accountId: "freedom",
+            rememberedSeriesIds: [], dismissedSeriesIds: [], suggests: true, accountId: "freedom",
             accountCurrency: { _ in "KZT" }, convert: { _, _, _ in nil }
         )
         #expect(onFreedom?.occurrence.id == "icloud")
@@ -208,13 +208,34 @@ struct SubscriptionChargeMatcherTests {
         #expect(result?.isConfident == false)
     }
 
-    @Test("No suggestion for a dismissed subscription, a transfer or a merchant remembered elsewhere")
+    @Test("No suggestion for a dismissed subscription, a transfer or no merchant")
     func noSuggestion() {
         let planned = occurrence("tx-1", "Интернет", date: "2026-10-19", seriesId: "internet")
         #expect(match(charge(merchant: "KAZAKHTELECOM AO"), [planned], dismissed: ["internet"]) == nil)
         #expect(match(charge(merchant: "Иван П."), [planned], suggests: false) == nil)
-        #expect(match(charge(merchant: "KAZAKHTELECOM AO"), [planned], remembered: "other") == nil)
         #expect(match(charge(merchant: ""), [planned]) == nil)
+    }
+
+    @Test("A biller remembered for one subscription still suggests another of the same amount")
+    func billerRememberedElsewhere() {
+        // APPLE.COM/BILL was linked to iCloud+; a game it bills for comes on its own date.
+        let game = occurrence("tx-roblox", "Roblox", amount: 6_060, date: "2026-11-13", seriesId: "roblox")
+        let result = match(charge(6_060, on: "2026-11-13", merchant: "APPLE.COM/BILL"), [game], remembered: "icloud")
+        #expect(result?.occurrence.id == "tx-roblox")
+        #expect(result?.isConfident == false)
+    }
+
+    @Test("A biller remembered for several subscriptions merges each by its amount")
+    func billerRememberedForSeveral() {
+        let icloud = occurrence("tx-icloud", "iCloud+", amount: 450, date: "2026-11-13", seriesId: "icloud")
+        let game = occurrence("tx-roblox", "Roblox", amount: 6_060, date: "2026-11-13", seriesId: "roblox")
+        let result = SubscriptionChargeMatcher.match(
+            charge(6_060, on: "2026-11-13", merchant: "APPLE.COM/BILL"), occurrences: [icloud, game],
+            rememberedSeriesIds: ["icloud", "roblox"], dismissedSeriesIds: [], suggests: true,
+            accountCurrency: { _ in "KZT" }, convert: { _, _, _ in nil }
+        )
+        #expect(result?.occurrence.id == "tx-roblox")
+        #expect(result?.isConfident == true)
     }
 
     // MARK: - Merge

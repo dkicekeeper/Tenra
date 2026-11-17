@@ -157,7 +157,7 @@ enum WalletPaymentRecorder {
                 occurrences: subscriptionOccurrences(around: payment.date, context: context).filter {
                     $0.recurringOccurrenceId != nil && !captures.isMatched(occurrenceId: $0.id)
                 },
-                rememberedSeriesId: memory.seriesId(forMerchant: payment.merchant),
+                rememberedSeriesIds: memory.seriesIds(forMerchant: payment.merchant),
                 dismissedSeriesIds: memory.dismissedSeriesIds(forMerchant: payment.merchant),
                 suggests: payment.isTransferLike != true,
                 accountId: account.isGuess ? nil : account.accountId,

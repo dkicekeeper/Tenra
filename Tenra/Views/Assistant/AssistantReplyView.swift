@@ -57,6 +57,10 @@ private struct AssistantBlockView: View {
             AssistantRecurringList(ids: AgentReplyData.recurringIds(source: source, results: results))
         case .insight(_, let insightId):
             AssistantInsightCard(insightId: insightId)
+        case .open(let destination, _, let label) where destination == .appReview:
+            AssistantReviewLink(label: label, url: AssistantReviewLink.url, systemImage: "star.bubble")
+        case .open(let destination, _, let label) where destination == .manageSubscription:
+            AssistantReviewLink(label: label, url: AssistantReviewLink.subscriptionsURL, systemImage: "creditcard")
         case .open(let destination, let targetId, let label):
             if let route = AssistantRoute(destination: destination, targetId: targetId) {
                 AssistantOpenLink(route: route, label: label)
@@ -634,6 +638,11 @@ private struct AssistantDraftCard: View {
         draft.operations.contains { if case .categoryDelete = $0 { true } else { false } }
     }
 
+    /// The draft sends words to the developer: "Send", and no Undo once sent.
+    private var sendsFeedback: Bool {
+        draft.operations.contains { if case .feedback = $0 { true } else { false } }
+    }
+
     /// The draft confirms payments on review: its button says "Correct", as on that screen.
     private var confirmsReview: Bool {
         draft.operations.contains { if case .reviewConfirm = $0 { true } else { false } }
@@ -645,7 +654,7 @@ private struct AssistantDraftCard: View {
             switch operation {
             case .transactionEdit, .transactionDelete, .goalChange, .debtChange, .subscriptionState, .reviewConfirm,
                  .categoryRename, .categoryMerge, .categoryDelete, .subcategoryTag, .balanceCorrection,
-                 .merchantRule, .merchantBrand: true
+                 .merchantRule, .merchantBrand, .spendingReminder, .accountChange: true
             default: false
             }
         }
@@ -672,8 +681,9 @@ private struct AssistantDraftCard: View {
         case .pending, .saving:
             DSButton(
                 deletes || deletesCategory ? String(localized: "assistant.draft.delete")
+                    : sendsFeedback ? String(localized: "assistant.draft.send")
                     : confirmsReview ? String(localized: "walletReview.confirm") : String(localized: "assistant.draft.save"),
-                systemImage: deletes || deletesCategory ? "trash" : "checkmark",
+                systemImage: deletes || deletesCategory ? "trash" : sendsFeedback ? "paperplane" : "checkmark",
                 fullWidth: true,
                 isLoading: state == .saving
             ) {
@@ -683,6 +693,9 @@ private struct AssistantDraftCard: View {
                 }
             }
             .padding(.vertical, AppSpacing.md)
+        case .saved where sendsFeedback:
+            InlineStatusText(message: String(localized: "assistant.draft.feedbackSent"), type: .success)
+                .padding(.vertical, AppSpacing.md)
         case .saved:
             HStack {
                 InlineStatusText(message: deletes ? String(localized: "assistant.draft.deleted") : String(localized: "assistant.draft.saved"), type: .success)
@@ -760,6 +773,32 @@ private struct AssistantDraftCard: View {
                 style: .large
             )
             .accessibilityElement(children: .combine)
+        case .feedback(let text, _):
+            ItemRow(text, leading: .symbol("envelope"), style: .large)
+                .accessibilityElement(children: .combine)
+        case .reminder(let reminder):
+            ItemRow(
+                reminder.text,
+                meta: [MetaLine([.text("\(DateFormatters.day(reminder.date, includeYear: false, abbreviated: true)), \(reminder.date.formatted(date: .omitted, time: .shortened))")])],
+                leading: .symbol("bell"),
+                style: .large
+            )
+            .accessibilityElement(children: .combine)
+        case .spendingReminder(let state):
+            ItemRow(
+                String(localized: "settings.spendingReminder.title"),
+                meta: [MetaLine([.text(Self.spendingReminderLine(state))])],
+                leading: .symbol(state.on ? "bell.badge" : "bell.slash"),
+                style: .large
+            )
+            .accessibilityElement(children: .combine)
+        case .accountChange(let before, let after):
+            InlineStatusText(message: String(localized: "assistant.draft.budgetWas"), type: .info)
+                .padding(.vertical, AppSpacing.md)
+            ItemRow(before.name, meta: [MetaLine([.text(Self.totalLine(before))])], leading: .symbol("creditcard"), style: .large)
+            InlineStatusText(message: String(localized: "assistant.draft.becomes"), type: .info)
+                .padding(.vertical, AppSpacing.md)
+            ItemRow(after.name, meta: [MetaLine([.text(Self.totalLine(after))])], leading: .symbol("creditcard"), style: .large)
         case .balanceCorrection(let account, let from, let to):
             UniversalRow(
                 "\(account.name) · \(String(localized: "assistant.draft.budgetWas"))",
@@ -784,10 +823,21 @@ private struct AssistantDraftCard: View {
         }
     }
 
+    private static func spendingReminderLine(_ state: AgentSpendingReminderState) -> String {
+        guard state.on else { return String(localized: "assistant.draft.reminderOff") }
+        let time = Calendar.current.date(bySettingHour: state.minutes / 60, minute: state.minutes % 60, second: 0, of: Date())
+            .map { $0.formatted(date: .omitted, time: .shortened) } ?? ""
+        return String(format: String(localized: "assistant.draft.reminderOn"), time)
+    }
+
+    private static func totalLine(_ account: Account) -> String {
+        account.includeInBalance ? String(localized: "assistant.draft.inTotal") : String(localized: "assistant.draft.notInTotal")
+    }
+
     private static func isTidy(_ operation: AgentDraftOperation) -> Bool {
         switch operation {
         case .reviewConfirm, .categoryRename, .categoryMerge, .categoryDelete, .subcategoryTag, .merchantRule, .merchantBrand,
-             .balanceCorrection:
+             .balanceCorrection, .feedback, .reminder, .spendingReminder, .accountChange:
             true
         default:
             false
@@ -946,7 +996,7 @@ private struct AssistantDraftCard: View {
         case .budget, .recurring, .fact, .goal, .goalContribution, .debt, .debtRepayment, .asset, .assetValuation,
              .transactionEdit, .transactionDelete, .goalChange, .debtChange, .subscriptionState, .reviewConfirm,
              .categoryRename, .categoryMerge, .categoryDelete, .subcategoryTag, .balanceCorrection,
-             .merchantRule, .merchantBrand:
+             .merchantRule, .merchantBrand, .feedback, .reminder, .spendingReminder, .accountChange:
             return nil
         case .single(let draft):
             return Transaction(
@@ -984,6 +1034,34 @@ private struct AssistantDraftCard: View {
 /// A row into one of the app's screens, pushed on the assistant's stack: a standard row in a
 /// card that pads it at the sides (DesignKit 8.0.0), in the accent, with the chevron of a push
 /// outside a List.
+/// A page out of the app from an `open` block: Tenra's "Write a Review" page in the App Store
+/// ("app_review"), the Apple Account's subscriptions ("manage_subscription").
+private struct AssistantReviewLink: View {
+    let label: String
+    let url: URL
+    let systemImage: String
+
+    static let url = URL(string: "https://apps.apple.com/app/id6761530361?action=write-review")!
+    static let subscriptionsURL = URL(string: "https://apps.apple.com/account/subscriptions")!
+
+    var body: some View {
+        Link(destination: url) {
+            UniversalRow(
+                config: .standard,
+                leadingIcon: .sfSymbol(systemImage, color: AppColors.accent, size: AppIconSize.lg),
+                title: label,
+                titleColor: AppColors.accent
+            ) {
+                DisclosureChevron()
+            }
+            .padding(.horizontal, AppSpacing.lg)
+            .contentShape(Rectangle())
+            .cardStyle()
+        }
+        .buttonStyle(.plain)
+    }
+}
+
 private struct AssistantOpenLink: View {
     let route: AssistantRoute
     let label: String

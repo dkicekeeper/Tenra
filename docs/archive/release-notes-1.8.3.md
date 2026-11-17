@@ -1,24 +1,23 @@
-# Tenra 1.8.3: What's New and the checklist
+# Tenra 1.8.3: What's New (ASC, 13 storefront locales and en-GB)
 
-Version 1.8.3 in the project since 2026-11-11 (the founder's call: a small update now; 1.9 is
-kept for the update the featuring nomination promises in the last week of December,
-[plan-growth.md](../plan-growth.md) stage 4). 1.8.2 is in the store since 2026-11-10/11 (build 76;
-its notes and checklist: [release-notes-1.8.2.md](release-notes-1.8.2.md)).
-**In the store since 2026-11-14** (READY_FOR_SALE, build 90, approved within a day of the
-submission); the phone checks below were not marked done and are carried to
-[release-notes.md](../release-notes.md). **Status 2026-11-13:** everything below is in `main` (fa3bf62). TestFlight build 90 (from the
-cloud) is processed and selected for version 1.8.3 in App Store Connect with the What's New below
-and the App Review notes; builds 86 to 89 came before it the same day (85 failed at signing and
-was never uploaded). The server with `POST /v1/feedback` and prompt 2026-11-13.11 is deployed
-(eval on Haiku at low effort: 100 of 104), the owner's Telegram chat is linked. The version was
-submitted for review on 2026-11-13 on the founder's word (`prepare-review --submit`, build 90);
-the phone checks below were left to the founder.
+Version 1.8.3, in the store since 2026-11-13/14 (App Store Connect showed READY_FOR_DISTRIBUTION on
+2026-11-14) with TestFlight build 90 (from the cloud, `main` at fa3bf62). Sent for review on
+2026-11-13 on the founder's word (`prepare-review --submit`), released after approval. Builds 77
+to 89 (2026-11-11 to 13) were earlier states of the same version; 85 failed at signing and was
+never uploaded. The assistant's server was deployed the same day with prompt 2026-11-13.11 (eval
+on Haiku at low effort: 100 of 104). The phone checks were not done before the release; the
+founder did them on 2026-11-14 in the version from the store: all fine (the list below).
+`prepare-version` (Actions → App Store Connect, [asc.md](../asc.md)) pasted each block into App
+Store Connect; en-GB (search in Kazakhstan) carries ru's text. No em dashes (user rule).
 
-When the blocks are written: one `## <locale>` heading per storefront (en-US, ru, en-GB, de-DE,
-es-ES, es-MX, fr-FR, fr-CA, tr, pt-BR, it, uk, ja, ko), which `prepare-version` (Actions → App
-Store Connect, [asc.md](../asc.md)) pastes into App Store Connect; en-GB (search in Kazakhstan)
-carries ru's text. No em dashes (user rule). `prepare-version` refuses notes whose title names
-another version.
+What the version brought: Ten as a helper for the app ([plan-ten-agent.md](../plan-ten-agent.md):
+forms opened with their fields filled in, the state of the app, help with a complaint, editing
+and deleting records, moving a merchant's records, goals and debts, a subscription's pause, the
+loan payment form, loans' and deposits' terms, subscriptions found in the history), order in the
+data (payments on review, the category audit with rename, merge and delete, subcategories,
+duplicates, budgets from what is spent, the subscription audit, merchant rules and brands, an
+account's balance, the monthly tidy-up), Ten's home with a card that always offers an action,
+feedback through Ten, and a paywall per gate (RevenueCat placements).
 
 ## en-US
 
@@ -160,7 +159,36 @@ Tenra의 새로운 기능:
 • 잘 안 되는 것이 있나요? 무엇이 문제인지 텐에게 알려 주시면 바로 해결을 시도합니다. 텐의 홈 화면도 더 단순해졌습니다.
 ```
 
-## In this version (main since 2026-11-10)
+## Submission checklist
+
+1. **CI green**, then a TestFlight build (done: build 90 from fa3bf62, 2026-11-13; CI green on
+   that code).
+2. **The phone checks** (done by the founder on 2026-11-14, after the release: all fine; the list
+   below).
+3. **What's New** in this file (written 2026-11-13), then `prepare-version --version 1.8.3 --build <N>`
+   (done 2026-11-13: version created, 14 locales updated, build 90 selected).
+4. **App Review notes**, in English, set from this block by
+   `asc.py review-notes --version 1.8.3 --apply` (done 2026-11-13):
+
+```
+New in 1.8.3, the assistant (Ten, the middle tab). It answers through Claude by Anthropic only after the person turns cloud answers on in the consent screen shown before the first question (Settings > Assistant has the same switch and screen). Ten can now prepare changes to the person's own records: correct or delete a transaction, move a merchant's transactions to another category, change a savings goal or a personal debt, pause a subscription. Nothing is changed until the person taps Save or Delete on the card Ten shows, and Undo puts it back. To try it: on Home add two expenses, open Ten, allow cloud answers and type "delete my last expense"; a card lists the record with a Delete button. Asked how to do something ("how do I add a deposit?"), Ten answers with a button that opens the app's own form or screen. Ten's message "How do you like Tenra?" on Home opens a short talk whose answer goes to the developer; when cloud answers are on and the answer says something is wrong, Ten then tries to help with it (the privacy policy says so).
+
+Bank notification capture (announced in 1.8) uses the Shortcuts personal automation "When I get a notification from an app" (iOS 27), which runs the Tenra action "Log a bank notification" with the notification's Title, Subtitle, Text, App and Date. To try it without a bank app: open Shortcuts, create a new shortcut, add the Tenra action "Log a bank notification", set Text to "Card ending 4321 was charged $25.00 at COFFEE SHOP" and App to "My Bank", and run it. The expense appears in Tenra at once and waits in Settings > Wallet > To review. Settings > Siri & Shortcuts > Set up bank notifications has the step-by-step guide and "Check a notification", which shows what Tenra reads from a pasted notification without saving anything. The notification's text never leaves the device.
+
+Apple Pay capture uses the Shortcuts "Wallet" personal automation, which fires only on a real contactless payment. To try it without one: create a shortcut with the Tenra action "Log an Apple Pay payment", fill in an amount (e.g. 1500) and a merchant (e.g. "Coffee Boom") and run it. The step-by-step setup guide is in Settings > Siri & Shortcuts.
+
+Tenra Pro features can be tried with a sandbox purchase on the paywall: Settings, the "Get Tenra Pro" button at the top.
+
+Assets (Finances > Assets) are a Tenra Pro feature: adding one opens the paywall without Pro. The estimate from listings (an asset's screen, the menu, "Estimate from listings") is Pro only, 10 a month: it sends the asset's kind and the characteristics filled in its form (city, district, area, rooms, year; for a car make, model, year, mileage) to Tenra's server, where Claude searches the web for similar listings and returns the middle asking price, the range and the listings with links. No name, address number, VIN or plate is sent. To try it: buy Pro in the sandbox, add a car (Toyota Camry, 2019, 110000 km, Almaty, Kazakhstan), open it and choose Estimate from listings.
+```
+
+5. **One submission**: `asc.py prepare-review --version 1.8.3 --build 90 --submit` on the
+   founder's word (done 2026-11-13: "Submitted for review: 1 of 1 item(s)").
+
+## Phone checks (done by the founder on 2026-11-14: all fine)
+
+Shipped in 1.8.3 without a check on a phone; the build numbers are the TestFlight builds of
+1.8.3 each came with. A defect found here goes into the next version.
 
 - Ten opens the app's own forms: asked to add an account, a deposit, a loan or a category (or
   how to), it answers with a button that opens the form with what was said already filled in
@@ -362,28 +390,3 @@ out; the store build is the one to check):
    "Спросить Ten" on an account, a deposit, a loan and a subscription opens a new empty chat with
    two questions over the field; the previous chat is in the home's list; a question tapped goes
    (the consent sheet first on a fresh install).
-
-## Submission checklist
-
-1. **CI green**, then a TestFlight build (done: build 87 from 87ba234, 2026-11-13; CI green on
-   that code).
-2. **The phone checks above.**
-3. **What's New** in this file (written 2026-11-13), then `prepare-version --version 1.8.3 --build <N>`
-   (done 2026-11-13: version created, 14 locales updated, build 87 selected).
-4. **App Review notes**, in English, set from this block by
-   `asc.py review-notes --version 1.8.3 --apply` (done 2026-11-13):
-
-```
-New in 1.8.3, the assistant (Ten, the middle tab). It answers through Claude by Anthropic only after the person turns cloud answers on in the consent screen shown before the first question (Settings > Assistant has the same switch and screen). Ten can now prepare changes to the person's own records: correct or delete a transaction, move a merchant's transactions to another category, change a savings goal or a personal debt, pause a subscription. Nothing is changed until the person taps Save or Delete on the card Ten shows, and Undo puts it back. To try it: on Home add two expenses, open Ten, allow cloud answers and type "delete my last expense"; a card lists the record with a Delete button. Asked how to do something ("how do I add a deposit?"), Ten answers with a button that opens the app's own form or screen. Ten's message "How do you like Tenra?" on Home opens a short talk whose answer goes to the developer; when cloud answers are on and the answer says something is wrong, Ten then tries to help with it (the privacy policy says so).
-
-Bank notification capture (announced in 1.8) uses the Shortcuts personal automation "When I get a notification from an app" (iOS 27), which runs the Tenra action "Log a bank notification" with the notification's Title, Subtitle, Text, App and Date. To try it without a bank app: open Shortcuts, create a new shortcut, add the Tenra action "Log a bank notification", set Text to "Card ending 4321 was charged $25.00 at COFFEE SHOP" and App to "My Bank", and run it. The expense appears in Tenra at once and waits in Settings > Wallet > To review. Settings > Siri & Shortcuts > Set up bank notifications has the step-by-step guide and "Check a notification", which shows what Tenra reads from a pasted notification without saving anything. The notification's text never leaves the device.
-
-Apple Pay capture uses the Shortcuts "Wallet" personal automation, which fires only on a real contactless payment. To try it without one: create a shortcut with the Tenra action "Log an Apple Pay payment", fill in an amount (e.g. 1500) and a merchant (e.g. "Coffee Boom") and run it. The step-by-step setup guide is in Settings > Siri & Shortcuts.
-
-Tenra Pro features can be tried with a sandbox purchase on the paywall: Settings, the "Get Tenra Pro" button at the top.
-
-Assets (Finances > Assets) are a Tenra Pro feature: adding one opens the paywall without Pro. The estimate from listings (an asset's screen, the menu, "Estimate from listings") is Pro only, 10 a month: it sends the asset's kind and the characteristics filled in its form (city, district, area, rooms, year; for a car make, model, year, mileage) to Tenra's server, where Claude searches the web for similar listings and returns the middle asking price, the range and the listings with links. No name, address number, VIN or plate is sent. To try it: buy Pro in the sandbox, add a car (Toyota Camry, 2019, 110000 km, Almaty, Kazakhstan), open it and choose Estimate from listings.
-```
-
-5. **One submission**: `asc.py prepare-review --version 1.8.3`; the founder sends it, or
-   `--submit` on the founder's word.

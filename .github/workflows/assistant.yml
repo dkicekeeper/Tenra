@@ -175,6 +175,10 @@ jobs:
                   return error.code, json.load(error)
           status, body = call("getMe")
           print("getMe:", status, body.get("description", "ok"))
+          if not re.fullmatch(r"-?\d+", chat):
+              # Not a chat id: the Worker writes to the chat telegram-link stored, which deploys keep.
+              print("TELEGRAM_CHAT_ID secret is not a chat id: the Worker uses the linked chat (telegram-link); no test line.")
+              sys.exit(0 if status == 200 else 1)
           status, body = call("sendMessage", {"chat_id": chat, "text": "Tenra: проверка канала обратной связи."})
           print("sendMessage:", status, body.get("description", "ok"))
           sys.exit(0 if status == 200 else 1)

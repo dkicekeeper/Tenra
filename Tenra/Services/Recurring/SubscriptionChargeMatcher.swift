@@ -9,13 +9,15 @@
 //  takes the real amount, currency, conversion, date and account.
 //
 //  Which planned charge a real one stands for, strongest first:
-//  1. the subscription remembered for the merchant (SubscriptionMerchantMemory, taught by a
-//     link by hand), within 30 % (a price change, the bank's rate);
+//  1. a subscription remembered for the merchant (SubscriptionMerchantMemory, taught by a
+//     link by hand; a biller such as APPLE.COM/BILL may be remembered for several, and the
+//     amount picks one), within 30 % (a price change, the bank's rate);
 //  2. a brand word the merchant shares with the subscription ("NETFLIX.COM" and "Netflix",
 //     or the billing company: "APPLE.COM/BILL" and "iCloud+"), within 5 % in the same
 //     currency, 10 % across currencies;
 //  3. otherwise the same amount (5 %, 10 % across currencies) is only a suggestion the
-//     person answers in To review: a coffee priced like a subscription must not vanish.
+//     person answers in To review: a coffee priced like a subscription must not vanish. Also
+//     for a merchant remembered for other subscriptions: a biller charges for many.
 //  Always within three days of the planned date; on the payment's own account first (two
 //  subscriptions of one brand and price on two cards), then the closest. Pure: the memory, the
 //  rates and the accounts' currencies are passed in. docs/domains/recurring.md §Real charges.
@@ -62,7 +64,7 @@ nonisolated enum SubscriptionChargeMatcher {
     static func match(
         _ charge: Charge,
         occurrences: [Transaction],
-        rememberedSeriesId: String?,
+        rememberedSeriesIds: Set<String>,
         dismissedSeriesIds: Set<String>,
         suggests: Bool,
         accountId: String? = nil,
@@ -85,7 +87,7 @@ nonisolated enum SubscriptionChargeMatcher {
             let tolerance = gap.isConverted ? convertedTolerance : sameCurrencyTolerance
 
             let tier: Int
-            if seriesId == rememberedSeriesId {
+            if rememberedSeriesIds.contains(seriesId) {
                 guard gap.value <= rememberedTolerance else { continue }
                 tier = 0
             } else if !merchantWords.isEmpty,
@@ -93,7 +95,7 @@ nonisolated enum SubscriptionChargeMatcher {
                 guard gap.value <= tolerance else { continue }
                 tier = 1
             } else {
-                guard suggests, rememberedSeriesId == nil, !merchantWords.isEmpty,
+                guard suggests, !merchantWords.isEmpty,
                       !dismissedSeriesIds.contains(seriesId), gap.value <= tolerance else { continue }
                 tier = 2
             }

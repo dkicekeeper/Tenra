@@ -20,7 +20,7 @@ export const FEEDBACK_LIMITS = {
 export type Mood = "good" | "bad";
 
 /** Where in the app the message was written. */
-const SOURCES = new Set(["notice", "survey", "settings"]);
+const SOURCES = new Set(["notice", "survey", "settings", "chat"]);
 
 export interface FeedbackRequest {
   text: string;

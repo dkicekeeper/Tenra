@@ -5,7 +5,8 @@ Domain reference for Ten, Tenra's AI finance assistant: the app side (`Tenra/Ser
 (`server/assistant/`, a Cloudflare Worker) and the protocol between them. Ten shipped in 1.6
 (2026-10-19). Open work (the Apple models and Siri on iOS 27) is
 [plan-assistant-ios27.md](../plan-assistant-ios27.md), and Ten as an agent for the whole app is
-[plan-ten-agent.md](../plan-ten-agent.md); smaller open items are in
+[plan-ten-agent.md](../plan-ten-agent.md), and Ten's looks, wardrobe, quests and moments are
+[plan-ten-gamification.md](../plan-ten-gamification.md); smaller open items are in
 [backlog.md](../backlog.md). The original design with its reasoning is archived in
 [archive/plans/plan-ai-assistant.md](../archive/plans/plan-ai-assistant.md).
 
@@ -592,7 +593,8 @@ listening with the voice level (`AssistantVoiceSheet`), thinking while tools run
 several (`AssistantView`). Gestures, speech and a wardrobe come from DesignKit
 (`ParticleCreature*`; the wardrobe opens from the assistant's home). Touch parts the particles. At 22 pt (the tab) and under Reduce Motion it is a still glyph: 12 dots and the
 eyes (`CreatureTabLabel`). Name: Ten (Тэн). Tone: friendly, short, no moralising or shame about
-spending, no em dashes, in all 11 languages.
+spending, no em dashes, in all 11 languages. Open work on its emotions in the app's big moments,
+quests, slots and other looks: [plan-ten-gamification.md](../plan-ten-gamification.md).
 
 ## 10. Privacy, consent and safety
 

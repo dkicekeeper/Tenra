@@ -43,8 +43,8 @@ with the commit of every fix, are in
 Found by the design-system audit of 2026-10-15 (everything since 1.5):
 - **Logic in `Views/Assistant`:** `AppStreak`, `AssistantChatter` and `AssistantDaydreams`
   hold rules and data, no views: they belong in `Services/Agent/`, as does the catalogue half
-  of `AssistantWardrobe`. Move once the wardrobe settles (no change to it since 2026-10-16, so
-  it may have).
+  of `AssistantWardrobe`. Moves in stage 0 of
+  [plan-ten-gamification.md](plan-ten-gamification.md).
 
 Found by the release audit of 2026-10-15 (details and file references:
 [archive/release-audit-1.6-2026-10-15.md](archive/release-audit-1.6-2026-10-15.md)):

@@ -16,7 +16,8 @@
 //  (CoreDataStack.swapStore). Manual and automatic backups have separate limits, so the
 //  weekly automatic backup never deletes one the user made. The person's logo pictures
 //  (UserLogoStore, Application Support/UserLogos) are copied into each backup folder and back
-//  on restore, best effort: they live outside the store.
+//  on restore, best effort: they live outside the store. So are small files a caller hands in
+//  (`extraFiles`: Ten's wardrobe, `ten.json`), given back on restore for the caller to apply.
 //
 //  The container's Documents folder is NOT public (Info.plist
 //  `NSUbiquitousContainerIsDocumentScopePublic = false`, since 2026-09-25): a
@@ -212,7 +213,8 @@ nonisolated final class CloudBackupService: @unchecked Sendable {
         transactionCount: Int,
         accountCount: Int,
         categoryCount: Int,
-        isAutomatic: Bool = false
+        isAutomatic: Bool = false,
+        extraFiles: [String: Data] = [:]
     ) async throws -> BackupMetadata {
         guard let backupsDir = backupsDirectoryURL() else {
             throw CoreDataStack.CloudBackupError.noActiveStore
@@ -259,6 +261,10 @@ nonisolated final class CloudBackupService: @unchecked Sendable {
             // The person's own logo pictures (UserLogoStore) go with the store, best effort:
             // a backup without them still restores everything else.
             Self.copyUserLogos(from: UserLogoStore.directory, to: backupDir.appendingPathComponent(Self.userLogosFolder))
+            // State kept outside the store (Ten's wardrobe), best effort as the logos.
+            for (name, data) in extraFiles {
+                try? data.write(to: backupDir.appendingPathComponent(name), options: .atomic)
+            }
             metadata = BackupMetadata(
                 id: UUID().uuidString,
                 date: Date(),
@@ -395,7 +401,10 @@ nonisolated final class CloudBackupService: @unchecked Sendable {
         }
     }
 
-    func restoreBackup(_ metadata: BackupMetadata) async throws {
+    /// Restores `metadata`'s backup and returns the files named in `extraFiles` it holds (state
+    /// kept outside the store, such as Ten's wardrobe) for the caller to apply.
+    @discardableResult
+    func restoreBackup(_ metadata: BackupMetadata, extraFiles: [String] = []) async throws -> [String: Data] {
         // NOTE: The JSON metadata.modelVersion field is unreliable historical data —
         // all backups were stamped v7 regardless of actual schema. The gate is a real
         // CoreData store-metadata check in swapStore, on a copy of the backup's store.
@@ -437,7 +446,7 @@ nonisolated final class CloudBackupService: @unchecked Sendable {
         // used.
         let stack = coreDataStack
         let shownVersion = metadata.modelVersion
-        try await Task.detached(priority: .userInitiated) { [self] in
+        let extras = try await Task.detached(priority: .userInitiated) { [self] () -> [String: Data] in
             guard ensureDownloaded(sourceURL),
                   ensureDownloaded(PersistentStoreFiles.walURL(ofStore: sourceURL)) else {
                 throw CoreDataStack.CloudBackupError.notDownloaded
@@ -459,9 +468,18 @@ nonisolated final class CloudBackupService: @unchecked Sendable {
                 for file in files { _ = ensureDownloaded(file) }
             }
             Self.copyUserLogos(from: logos, to: UserLogoStore.directory)
+            // The caller's own files (best effort: an older backup has none).
+            var extras: [String: Data] = [:]
+            for name in extraFiles {
+                let url = sourceURL.deletingLastPathComponent().appendingPathComponent(name)
+                _ = ensureDownloaded(url)
+                extras[name] = try? Data(contentsOf: url)
+            }
+            return extras
         }.value
 
         CloudBackupService.logger.info("Backup restored: \(metadata.id)")
+        return extras
     }
 
     // MARK: - Delete Backup

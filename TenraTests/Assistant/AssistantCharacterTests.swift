@@ -2,8 +2,8 @@
 //  AssistantCharacterTests.swift
 //  TenraTests
 //
-//  Ten as a character: the days-in-a-row streak, what opens its accessories and what it
-//  daydreams of.
+//  Ten as a character: what opens its accessories and what it daydreams of. The record streak
+//  and the wardrobe's state: TenWardrobeStoreTests.
 //
 
 import Testing
@@ -20,17 +20,6 @@ struct AssistantCharacterTests {
 
     private func day(_ year: Int, _ month: Int, _ day: Int) -> Date {
         calendar.date(from: DateComponents(year: year, month: month, day: day, hour: 12))!
-    }
-
-    // MARK: Streak
-
-    @Test("The next day adds one, the same day keeps the run, a gap starts again")
-    func streak() {
-        let today = day(2026, 10, 15)
-        #expect(AppStreak.next(lastDay: "2026-10-14", count: 4, today: today, calendar: calendar) == 5)
-        #expect(AppStreak.next(lastDay: "2026-10-15", count: 4, today: today, calendar: calendar) == 4)
-        #expect(AppStreak.next(lastDay: "2026-10-12", count: 4, today: today, calendar: calendar) == 1)
-        #expect(AppStreak.next(lastDay: "", count: 0, today: today, calendar: calendar) == 1)
     }
 
     // MARK: Wardrobe

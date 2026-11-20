@@ -2080,9 +2080,9 @@
 "assistant.wardrobe.glasses" = "Көзілдірік";
 "assistant.wardrobe.sunglasses" = "Күннен қорғайтын көзілдірік";
 "assistant.wardrobe.sleepMask" = "Ұйқы маскасы";
-"assistant.wardrobe.footer" = "Мерекелерде Тэн өзі киінеді: Жаңа жылда мерекелік қалпақ, Наурызда тақия, бірге атап өткен күні тәж киеді. Жаңалары Tenra-да қатарынан өткен күндер мен мақсаттар үшін ашылады.";
-"assistant.wardrobe.lock.streak7" = "Tenra-да қатарынан 7 күн";
-"assistant.wardrobe.lock.streak30" = "Tenra-да қатарынан 30 күн";
+"assistant.wardrobe.footer" = "Мерекелерде Тэн өзі киінеді: Жаңа жылда мерекелік қалпақ, Наурызда тақия, бірге атап өткен күні тәж киеді. Жаңалары жазбасы бар қатарынан өткен күндер мен мақсаттар үшін ашылады.";
+"assistant.wardrobe.lock.streak7" = "Қатарынан 7 күн жазбамен";
+"assistant.wardrobe.lock.streak30" = "Қатарынан 30 күн жазбамен";
 "assistant.wardrobe.lock.firstGoal" = "Мақсат қойыңыз";
 "assistant.wardrobe.lock.goalReached" = "Мақсатқа жетіңіз";
 "assistant.wardrobe.lock.nauryz" = "Наурызда ашылады";

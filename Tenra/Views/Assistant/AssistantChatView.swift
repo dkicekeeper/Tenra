@@ -33,6 +33,8 @@ import SwiftUI
 
 struct AssistantChatView: View {
     let model: AssistantViewModel
+    /// What Ten wears; a celebrated reply puts the crown on.
+    let wardrobe: TenWardrobeStore
 
     @Environment(PremiumManager.self) private var premium
     /// Optional so a preview without the tab bar's owner does not trap.
@@ -54,8 +56,6 @@ struct AssistantChatView: View {
     @State private var viewportHeight: CGFloat = 0
     // Ten's thoughts and reactions (AssistantChatter).
     @AppStorage(AssistantChatter.enabledKey) private var chatterOn = true
-    @AppStorage(AssistantWardrobe.choiceKey) private var accessoryChoice = ""
-    @AppStorage(AssistantWardrobe.crownDayKey) private var crownDay = ""
     @State private var speech: CreatureSpeech?
     @State private var gesture: CreatureGesture = .nod
     @State private var gestureCount = 0
@@ -207,7 +207,7 @@ struct AssistantChatView: View {
         // Its words go beside it, on the free side of the bar (VoiceOver reads them; Ten itself
         // is hidden from VoiceOver by ParticleCreature).
         ParticleCreature(mood: mascotMood, speech: chatterOn ? speech : nil,
-                         accessory: AssistantWardrobe.accessory(choice: accessoryChoice, crownDay: crownDay, at: .now))
+                         accessory: wardrobe.accessory())
             .creatureGesture(gesture, trigger: gestureCount, haptic: true)
             // It looks round and stretches between replies (DesignKit 4.11).
             .creatureAmbience(.lively)
@@ -373,7 +373,7 @@ struct AssistantChatView: View {
                 speech = AssistantChatter.cheer
                 play(.hop)
                 // A crown for the rest of the day (AssistantWardrobe).
-                crownDay = AssistantChatter.dayKey(.now)
+                wardrobe.celebrate()
             case .proud:
                 speech = AssistantChatter.wellDone
                 play(.hop)

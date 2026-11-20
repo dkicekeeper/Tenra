@@ -107,7 +107,8 @@ final class CloudSyncViewModel {
                 transactionCount: transactionCount,
                 accountCount: accountCount,
                 categoryCount: categoryCount,
-                isAutomatic: true
+                isAutomatic: true,
+                extraFiles: tenFiles()
             )
             insertCreatedBackup(metadata)
             automaticBackupFailure = nil
@@ -118,6 +119,18 @@ final class CloudSyncViewModel {
             automaticBackupFailure = error.localizedDescription
             Self.logger.error("Automatic backup failed: \(error.localizedDescription, privacy: .public)")
         }
+    }
+
+    /// Ten's wardrobe for a new backup: it lives in UserDefaults, outside the store.
+    private func tenFiles() -> [String: Data] {
+        guard let data = appCoordinator?.tenWardrobe.backupData() else { return [:] }
+        return [TenWardrobeStore.backupFileName: data]
+    }
+
+    /// A restored backup's wardrobe joins what this phone has (TenWardrobeStore.merge).
+    private func applyTenFiles(_ files: [String: Data]) {
+        guard let data = files[TenWardrobeStore.backupFileName] else { return }
+        appCoordinator?.tenWardrobe.merge(backup: data)
     }
 
     /// Puts a new backup at the top of the list and drops the ones the service evicted for
@@ -185,7 +198,8 @@ final class CloudSyncViewModel {
             let metadata = try await backupService.createBackup(
                 transactionCount: transactionCount,
                 accountCount: accountCount,
-                categoryCount: categoryCount
+                categoryCount: categoryCount,
+                extraFiles: tenFiles()
             )
             insertCreatedBackup(metadata)
             automaticBackupFailure = nil
@@ -200,7 +214,8 @@ final class CloudSyncViewModel {
         isRestoringBackup = true
 
         do {
-            try await backupService.restoreBackup(metadata)
+            let files = try await backupService.restoreBackup(metadata, extraFiles: [TenWardrobeStore.backupFileName])
+            applyTenFiles(files)
             // swapStore posts storeDidResetNotification (FRC rebuilds) but in-memory
             // stores (TransactionStore, BalanceCoordinator, etc.) need a full reload.
             if let coordinator = appCoordinator {
@@ -287,7 +302,8 @@ final class CloudSyncViewModel {
             }.value
             iCloudEnabled = true
             UserDefaults.standard.set(true, forKey: Self.iCloudDecidedKey)
-            try await service.restoreBackup(metadata)
+            let files = try await service.restoreBackup(metadata, extraFiles: [TenWardrobeStore.backupFileName])
+            applyTenFiles(files)
         } catch {
             await showError(error.localizedDescription)
             return false

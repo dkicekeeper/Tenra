@@ -31,6 +31,8 @@ class AppCoordinator {
     @ObservationIgnored let goalStore: GoalStore
     @ObservationIgnored let debtStore: DebtStore
     @ObservationIgnored let assetStore: AssetStore
+    /// Ten's wardrobe: what it wears, what is open, the record streak (Services/Agent).
+    @ObservationIgnored let tenWardrobe: TenWardrobeStore
     @ObservationIgnored let transactionsViewModel: TransactionsViewModel
     @ObservationIgnored let settingsViewModel: SettingsViewModel
     @ObservationIgnored let insightsViewModel: InsightsViewModel
@@ -555,6 +557,7 @@ class AppCoordinator {
         self.goalStore = GoalStore(repository: keepsInStore ? GoalRepository() : nil)
         self.debtStore = DebtStore(repository: keepsInStore ? DebtRepository() : nil)
         self.assetStore = AssetStore(repository: keepsInStore ? AssetRepository() : nil)
+        self.tenWardrobe = TenWardrobeStore()
 
         // 7. Setup SettingsViewModel
         let storageService = SettingsStorageService()
@@ -725,6 +728,10 @@ class AppCoordinator {
             ActivationAttributes.noteRecorded(transactions, total: store?.transactions.count ?? 0)
         }
         transactionStore.onSeriesCreated = { _ in SpendingReminder.noteSeriesCreated() }
+        // The person's own records (no imports) move Ten's record streak.
+        transactionStore.onOwnRecords = { [weak wardrobe = tenWardrobe] transactions in
+            wardrobe?.noteRecords(transactions)
+        }
 
         // A fact Ten forgot (Settings or a saved draft) leaves every kept chat that mentions it:
         // they are sealed, the open one too, and go no further to the model.

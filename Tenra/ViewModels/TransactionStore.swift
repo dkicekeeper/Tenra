@@ -387,6 +387,14 @@ final class TransactionStore {
     /// made by a background intent counts as one made in the app.
     @ObservationIgnored var onRecorded: (([Transaction]) -> Void)?
 
+    /// The person's own records for Ten's record streak (TenWardrobeStore.noteRecords): what
+    /// `onRecorded` gets, minus rows an import adds (a CSV while `isImporting`, a statement while
+    /// `isCommittingImport`): an import is never a day's record (plan-ten-gamification §7.1).
+    @ObservationIgnored var onOwnRecords: (([Transaction]) -> Void)?
+
+    /// Set by ImportCommitter while it adds a statement's rows one by one.
+    @ObservationIgnored var isCommittingImport = false
+
     /// Every recurring series created (a subscription, a regular payment): the person recorded
     /// something today even when its first occurrence is not due yet. Set by AppCoordinator for
     /// the spending reminder (SpendingReminder.noteSeriesCreated).
@@ -1309,10 +1317,15 @@ final class TransactionStore {
         //     rows are on disk when the caller resumes, as with the per-row paths.
         await persistBulkChange(event)
 
-        // 4c. Who listens for new records (the spending reminder, the activation milestones).
+        // 4c. Who listens for new records (the spending reminder, the activation milestones,
+        //     Ten's record streak).
         switch event {
-        case .added(let tx): onRecorded?([tx])
-        case .bulkAdded(let txs): onRecorded?(txs)
+        case .added(let tx):
+            onRecorded?([tx])
+            if !isImporting && !isCommittingImport { onOwnRecords?([tx]) }
+        case .bulkAdded(let txs):
+            onRecorded?(txs)
+            if !isImporting && !isCommittingImport { onOwnRecords?(txs) }
         case .seriesCreated(let series): onSeriesCreated?(series)
         default: break
         }

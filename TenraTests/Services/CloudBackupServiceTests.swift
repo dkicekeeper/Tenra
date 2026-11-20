@@ -245,6 +245,18 @@ struct CloudBackupServiceTests {
         #expect(try restoreWorkDirectories(beside: liveStoreURL(of: stack)).isEmpty)
     }
 
+    @Test("Files kept outside the store (Ten's wardrobe) travel with the backup and come back")
+    func extraFilesRoundTrip() async throws {
+        let (service, stack, _) = try makeService()
+        seedTransactions(count: 1, in: stack.persistentContainer)
+        let ten = Data(#"{"choice":"beanie"}"#.utf8)
+        let metadata = try await service.createBackup(
+            transactionCount: 1, accountCount: 0, categoryCount: 0, extraFiles: ["ten.json": ten]
+        )
+        let restored = try await service.restoreBackup(metadata, extraFiles: ["ten.json", "missing.json"])
+        #expect(restored == ["ten.json": ten])
+    }
+
     // MARK: - Test 4: Legacy "v7"-stamped backup still restores
 
     @Test("Legacy 'v7'-stamped backup (existing user backups) restores successfully")

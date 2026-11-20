@@ -591,7 +591,15 @@ follow the finger, a mesh between near particles, a core glowing in the mood's c
 `render_reply`'s `mood` (`AgentMood`) once a reply arrives, and the app's own states before it:
 listening with the voice level (`AssistantVoiceSheet`), thinking while tools run, determined after
 several (`AssistantView`). Gestures, speech and a wardrobe come from DesignKit
-(`ParticleCreature*`; the wardrobe opens from the assistant's home). Touch parts the particles. At 22 pt (the tab) and under Reduce Motion it is a still glyph: 12 dots and the
+(`ParticleCreature*`; the wardrobe opens from the assistant's home). The rules live in
+`Services/Agent/` (`AssistantChatter`, `AssistantDaydreams`, the wardrobe's catalogue
+`AssistantWardrobe`); its state in `TenWardrobeStore` (`AppCoordinator.tenWardrobe`): what Ten
+wears, what is open (never closes again), the crown day and the record streak
+(`TenRecordStreak`: days the person added a record of their own, through
+`TransactionStore.onOwnRecords`, which leaves out a CSV and a statement; a series' own payments
+and deposit interest are not the person's; one missed day a week is a day off). It is kept in
+UserDefaults and copied into every backup as `ten.json` (`CloudBackupService` `extraFiles`),
+merged on restore so nothing earned is lost. Touch parts the particles. At 22 pt (the tab) and under Reduce Motion it is a still glyph: 12 dots and the
 eyes (`CreatureTabLabel`). Name: Ten (Тэн). Tone: friendly, short, no moralising or shame about
 spending, no em dashes, in all 11 languages. Open work on its emotions in the app's big moments,
 quests, slots and other looks: [plan-ten-gamification.md](../plan-ten-gamification.md).

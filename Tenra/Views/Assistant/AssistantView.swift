@@ -69,8 +69,6 @@ struct AssistantView: View {
     // Ten's lines and gestures on the home (AssistantChatter).
     @AppStorage(AssistantChatter.enabledKey) private var chatterOn = true
     @AppStorage(AssistantChatter.greetedDayKey) private var greetedDay = ""
-    @AppStorage(AssistantWardrobe.choiceKey) private var accessoryChoice = ""
-    @AppStorage(AssistantWardrobe.crownDayKey) private var crownDay = ""
     @State private var daydreams = AssistantDaydreams.neutral
     @State private var speech: CreatureSpeech?
     @State private var gesture: CreatureGesture = .wave
@@ -149,7 +147,7 @@ struct AssistantView: View {
             }
             .navigationDestination(for: AssistantPage.self) { page in
                 switch page {
-                case .chat: AssistantChatView(model: model)
+                case .chat: AssistantChatView(model: model, wardrobe: coordinator.tenWardrobe)
                 case .wardrobe: AssistantWardrobeView()
                 case .chats: chatsPage
                 }
@@ -235,7 +233,7 @@ struct AssistantView: View {
             ParticleCreature(mood: AssistantMetrics.mood(for: model, reading: readingAttachment ? readingProgress ?? 0 : nil),
                              isInteractive: true,
                              speech: chatterOn ? speech : nil,
-                             accessory: AssistantWardrobe.accessory(choice: accessoryChoice, crownDay: crownDay, at: .now))
+                             accessory: coordinator.tenWardrobe.accessory())
                 .creatureGesture(gesture, trigger: gestureCount)
                 // A life of its own (DesignKit 4.11): it looks round, stretches, dozes off when
                 // left alone and, while "Ten chats" is on, daydreams of what is on the person's

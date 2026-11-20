@@ -156,6 +156,9 @@ enum ImportCommitter {
         categories: CategoriesViewModel?,
         balance: BalanceCoordinator?
     ) async -> Int {
+        // A statement's rows are not the person's records of the day (Ten's record streak).
+        store.isCommittingImport = true
+        defer { store.isCommittingImport = false }
         var added: [Transaction] = []
         var convertedLegs: [(transaction: Transaction, accountId: String)] = []
         var links: [String: [String]] = [:]

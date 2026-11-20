@@ -262,7 +262,7 @@ struct ScreenMockupTests {
         let coordinator = AppCoordinator()
         try await render(name) {
             NavigationStack {
-                AssistantChatView(model: model)
+                AssistantChatView(model: model, wardrobe: coordinator.tenWardrobe)
             }
             .environment(coordinator)
             .environment(PremiumManager.shared)

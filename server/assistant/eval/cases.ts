@@ -1162,4 +1162,76 @@ export const CASES: EvalCase[] = [
     prompt: "Где посмотреть все мои подписки?",
     checks: [{ kind: "blockWith", type: "open", match: (b) => b.destination === "subscriptions", label: "opens the subscriptions" }],
   },
+  // Ten's face on the reply (render_reply.mood, the prompt's mood rule): the bright ones show
+  // only when the model picks them. The fixture holds a reached goal (goal_phone), a dentist
+  // bill far above the usual in August, groceries over their budget this month and transport
+  // well under it.
+  {
+    id: "ru-mood-thanks",
+    locale: "ru",
+    prompt: "Спасибо тебе, ты очень помогаешь!",
+    checks: [{ kind: "notCalled", tools: DRAFTS }, { kind: "mood", anyOf: ["love"] }],
+  },
+  {
+    id: "en-mood-joke",
+    locale: "en",
+    prompt: "Tell me a joke about money",
+    checks: [{ kind: "notCalled", tools: DRAFTS }, { kind: "mood", anyOf: ["playful"] }],
+  },
+  {
+    id: "ru-mood-goal-reached",
+    locale: "ru",
+    prompt: "Как там моя цель на новый телефон?",
+    checks: [
+      { kind: "called", anyOf: ["get_goals"] },
+      { kind: "notCalled", tools: ["draft_goal", "draft_goal_contribution", "draft_goal_change"] },
+      { kind: "mood", anyOf: ["celebrate"] },
+    ],
+  },
+  {
+    id: "ru-mood-nothing-found",
+    locale: "ru",
+    prompt: "Покажи мои покупки в IKEA",
+    checks: [
+      { kind: "toolArgs", tool: "search_transactions", match: (i) => mentions(i.query, "ikea", "икеа"), label: "searched for IKEA" },
+      { kind: "mood", anyOf: ["empty"] },
+    ],
+  },
+  {
+    id: "en-mood-empty-period",
+    locale: "en",
+    prompt: "How much did I spend on clothes in June?",
+    checks: [
+      { kind: "called", anyOf: ["get_spending_summary", "search_transactions"] },
+      { kind: "mood", anyOf: ["empty"] },
+    ],
+  },
+  {
+    id: "ru-mood-budget-kept",
+    locale: "ru",
+    prompt: "В этом месяце старался меньше ездить на такси. Уложился в бюджет на транспорт?",
+    checks: [
+      { kind: "called", anyOf: ["get_budgets", "get_spending_summary"] },
+      { kind: "mood", anyOf: ["proud"] },
+    ],
+  },
+  {
+    id: "ru-mood-unusual-expense",
+    locale: "ru",
+    prompt: "Было что-то необычное в моих тратах за последние месяцы?",
+    checks: [
+      { kind: "called", anyOf: ["search_transactions", "get_spending_summary", "compare_periods"] },
+      { kind: "textHas", groups: [["стоматолог", "здоров", "зуб", "лечени", "врач"]], label: "names the dentist bill" },
+      { kind: "mood", anyOf: ["surprised"] },
+    ],
+  },
+  {
+    id: "ru-mood-overspent",
+    locale: "ru",
+    prompt: "Уложился ли я в бюджет на продукты в этом месяце?",
+    checks: [
+      { kind: "called", anyOf: ["get_budgets", "get_spending_summary"] },
+      { kind: "mood", anyOf: ["concerned"] },
+    ],
+  },
 ];

@@ -421,7 +421,10 @@ once every store has loaded), and
 ## 8. Server and protocol (`server/assistant/`)
 
 A Cloudflare Worker (Workers Paid). It hides the Anthropic key, checks Pro through RevenueCat,
-keeps quotas in KV (`tenra-assistant-quota`), **logs no content**, and has a switch
+keeps quotas in KV (`tenra-assistant-quota`), **logs no content** (status and error codes, and
+one line per finished turn with the mood the reply was shown with, `turn mood celebrate`, `none`
+without a reply, `invalid` for a mood outside the enum: `replyMood` in `src/claude.ts`, so how
+often Ten's bright faces are picked can be read in the Worker's logs), and has a switch
 (`ASSISTANT_ENABLED`) to stop the cloud without a release. Configuration in `wrangler.toml`:
 `ASSISTANT_MODEL` `claude-haiku-5-5`, `ASSISTANT_EFFORT` low, `ASSISTANT_MAX_TOKENS`,
 `FREE_MONTHLY_CALLS` 150 and `PRO_MONTHLY_CALLS` 900 (per App Attest key), `GLOBAL_DAILY_CALLS`,
@@ -703,7 +706,11 @@ quests, slots and other looks: [plan-ten-gamification.md](../plan-ten-gamificati
 - **Pro for a person on the server**: the server sees only RevenueCat, so a Founding User (kept on
   the phone) needs `pro` granted there (Actions → RevenueCat → `grant`).
 - **Eval** (`server/assistant/eval/`): a synthetic user (`fixture.ts`; never real statements), a
-  tool simulator, 114 cases in Russian and English (`cases.ts`; help with the app: the 14 `ru-howto-*` and
+  tool simulator, 122 cases in Russian and English (`cases.ts`; the reply's mood, a `mood` check
+  with the moods it may take: `ru-mood-thanks` love, `en-mood-joke` playful, `ru-mood-goal-reached`
+  celebrate (the fixture's `goal_phone` is reached), `ru-mood-nothing-found` and
+  `en-mood-empty-period` empty, `ru-mood-budget-kept` proud, `ru-mood-unusual-expense` surprised
+  (the fixture's dentist bill in August), `ru-mood-overspent` concerned; help with the app: the 14 `ru-howto-*` and
   `en-howto-*`, whose `textHas` check wants the guide's steps named or whose `blockWith` wants the
   button; the forms: `ru-create-deposit`, `en-create-loan`, `ru-create-account`,
   `ru-create-category` (what was said is in `prefill`, nothing guessed, nothing drafted) and

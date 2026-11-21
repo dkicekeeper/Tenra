@@ -681,6 +681,10 @@ export const RENDER_REPLY = "render_reply";
 export const RENDER_REPLY_TOO_EARLY =
   "render_reply was called together with other tools, before their results existed, so nothing was shown. Call render_reply again, alone, pointing at the results above.";
 
+/** render_reply's moods: Ten's face on the reply (AgentMood in Tenra/Services/Agent/AgentReply.swift). */
+export const MOODS = ["idle", "happy", "concerned", "celebrate", "proud", "surprised", "love", "playful", "empty"] as const;
+export type Mood = (typeof MOODS)[number];
+
 // Not strict: the API compiles strict schemas into one grammar and refuses this block union
 // ("compiled grammar is too large"), failing every request. The app decodes each block on
 // its own and shows nothing for one it cannot read (AgentReply.swift); the eval's
@@ -747,7 +751,7 @@ const renderReply: Tool = {
         ],
       },
     },
-    mood: { type: "string", enum: ["idle", "happy", "concerned", "celebrate", "proud", "surprised", "love", "playful", "empty"] },
+    mood: { type: "string", enum: [...MOODS] },
     suggestions: { type: "array", items: { type: "string" } },
   }),
 };

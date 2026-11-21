@@ -1,6 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { describe, expect, it } from "vitest";
-import { buildParams, donePayload, errorPayload, normalizeForEcho } from "../src/claude";
+import { buildParams, donePayload, errorPayload, normalizeForEcho, replyMood } from "../src/claude";
 import { readConfig } from "../src/config";
 import { SYSTEM_PROMPT } from "../src/prompt";
 import { RENDER_REPLY, TOOLS } from "../src/tools";
@@ -88,6 +88,40 @@ describe("donePayload", () => {
     const done = donePayload(message("max_tokens", [{ type: "tool_use", id: "t", name: RENDER_REPLY, input: {} } as Block]));
     expect(done.truncated).toBe(true);
     expect(done.usage).toEqual({ input_tokens: 10, output_tokens: 5, cache_read_input_tokens: 0, cache_creation_input_tokens: 3 });
+  });
+});
+
+describe("replyMood", () => {
+  const reply = (input: unknown, id = "toolu_r"): Block => ({ type: "tool_use", id, name: RENDER_REPLY, input }) as Block;
+  const tool = (name: string): Block => ({ type: "tool_use", id: `toolu_${name}`, name, input: {} }) as Block;
+  const text = (t: string): Block => ({ type: "text", text: t, citations: null }) as Block;
+  const mood = (stop_reason: string, content: Block[]) => replyMood({ stop_reason: stop_reason as never, content });
+
+  it("reads the mood of a reply the app shows", () => {
+    const shown = { blocks: [{ type: "text", text: "Цель на телефон собрана, 400 000 ₸" }], mood: "celebrate", suggestions: ["Что дальше?"] };
+    expect(mood("tool_use", [{ type: "thinking", thinking: "", signature: "s" } as Block, reply(shown)])).toBe("celebrate");
+    expect(mood("tool_use", [reply({ blocks: [], mood: "love", suggestions: [] })])).toBe("love");
+  });
+
+  it("logs nothing while the turn goes on", () => {
+    expect(mood("tool_use", [tool("get_goals")])).toBeNull();
+    // render_reply next to other calls goes back to the model as too early.
+    expect(mood("tool_use", [tool("get_goals"), reply({ blocks: [], mood: "happy", suggestions: [] })])).toBeNull();
+  });
+
+  it("says none when the turn ends without a reply the app shows", () => {
+    expect(mood("end_turn", [text("Готово")])).toBe("none");
+    expect(mood("end_turn", [])).toBe("none");
+    expect(mood("refusal", [reply({ blocks: [], mood: "happy", suggestions: [] })])).toBe("none");
+    expect(mood("max_tokens", [reply({ blocks: [], mood: "proud" })])).toBe("none");
+  });
+
+  it("never passes on anything but an enum value", () => {
+    expect(mood("tool_use", [reply({ blocks: [], suggestions: [] })])).toBe("invalid");
+    expect(mood("tool_use", [reply({ blocks: [], mood: "celebrate: 400 000 ₸ saved", suggestions: [] })])).toBe("invalid");
+    expect(mood("tool_use", [reply({ blocks: [], mood: { text: "x" }, suggestions: [] })])).toBe("invalid");
+    expect(mood("tool_use", [reply("not an object")])).toBe("invalid");
+    expect(mood("tool_use", [reply(null)])).toBe("invalid");
   });
 });
 

@@ -72,11 +72,14 @@ The checks 1.8.3 shipped with were done by the founder on 2026-11-14: all fine (
    "Сынақ біткенге 2 күн қалғанда еске саламыз. App Store-да тоқтатуға болады.") hold the same
    draft, checked against the published version: only that override and that text differ.
    Publish all eighteen (`publish-paywall`) once 1.8.4 is in the store.
-2. **Apple's retention message** (App Store Connect → the subscription group → Retention
-   Messages; shown when a subscriber starts to cancel; no prices or offers in the text, and no
-   offer at all for people who never paid). Text only. Created by the founder, then "Add for
-   Review"; check in the sandbox whether a trial's cancellation shows it. en-GB carries ru's
-   text (search in Kazakhstan, D9).
+2. **Apple's retention message** (App Store Connect → Monetization → Subscriptions → Retention
+   Messaging; shown when a subscriber starts to cancel; no prices or offers in the text, and no
+   offer at all for people who never paid). Created on 2026-11-23 by `asc.py
+   push-retention-message --apply` from `appstore/retention-message.json` (Actions → App Store
+   Connect): `trial-reminder`, text only, 14 locales, on the annual and the monthly subscription,
+   version in `PREPARE_FOR_SUBMISSION`. `prepare-review` puts it into 1.8.4's submission. Before
+   that: check in the sandbox (testers see the draft) whether a trial's cancellation shows it.
+   en-GB carries ru's text (search in Kazakhstan, D9).
 
    | Locale | Header | Body |
    |---|---|---|

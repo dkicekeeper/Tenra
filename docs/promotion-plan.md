@@ -283,6 +283,11 @@ tab, Android.
 - [x] Интеграция в RevenueCat (подключена 29.10): проект → Integrations → Apple AdServices → Add Apple Search Ads
   integration → Advanced → Sign in with Apple, доступ Read Only (вход админа аккаунта Apple Ads;
   API-ключ для этого не нужен). Токен атрибуции приложение отправляет с 1.7 (`PremiumManager`).
+  Названия кампаний в графиках RevenueCat даёт только Advanced: около 18.11 он вернулся в
+  «Pending» (Basic оставался «Done»), и установки из рекламы шли как «No campaign»; основатель
+  переподключил его 23.11 (Sign in with Apple, Read Only). Субботняя сессия проверяет долю
+  «No campaign» среди установок с атрибуцией Click: если она снова растёт, интеграцию
+  переподключить.
 
 Claude: готовит кампании и сверяет их настройки; вход в Apple Ads и RevenueCat за основателем
 (API Apple Ads не подключён, кампании заводятся в веб-интерфейсе).

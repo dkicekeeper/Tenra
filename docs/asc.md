@@ -156,12 +156,22 @@ python3 appstore/asc.py nominations             # заявки на featuring и
 python3 appstore/asc.py push-nomination [--submit]
                                                 # заявка из appstore/nomination.json черновиком в ASC
                                                 # (Featuring → Nominations); --submit отправляет Apple
+python3 appstore/asc.py retention-messages      # удерживающие сообщения Apple: версии, их статус,
+                                                # языки и подписки, к которым привязаны
+python3 appstore/asc.py push-retention-message [--apply]
+                                                # сообщение из appstore/retention-message.json (Apple
+                                                # показывает его, когда человек начинает отменять
+                                                # подписку): версия с текстом на всех языках файла,
+                                                # привязка к подпискам файла; без --apply только
+                                                # показывает; на проверку не отправляет, это делает
+                                                # prepare-review вместе с версией приложения
 python3 appstore/asc.py iap-prices [--product tenra.pro.lifetime] [--territory KAZ,USA]
                                                 # разовая покупка: базовая страна, цены, заданные
                                                 # вручную, и цена витрин, которые идут за базовой
 python3 appstore/asc.py review-notes --version 1.7 [--apply]   # заметки для App Review из release-notes.md
 python3 appstore/asc.py prepare-review --version 1.7 [--build N] [--submit]
-                                                # черновик отправки на проверку: версия и спецстраницы;
+                                                # черновик отправки на проверку: версия, спецстраницы
+                                                # и удерживающее сообщение в подготовке;
                                                 # без --submit не отправляет, отправляет основатель
                                                 # кнопкой в ASC. --submit отправляет (только когда
                                                 # основатель так сказал); --build N: ничего не делает,

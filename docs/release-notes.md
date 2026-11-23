@@ -31,6 +31,12 @@ The checks 1.8.3 shipped with were done by the founder on 2026-11-14: all fine (
   next arrive too; the message leaves Home after the first send. "Не хочу подписку" mentions the
   lifetime purchase on the same screen.
 
+- Ten's wardrobe after the update: what was worn is still worn, the sunglasses and the sleep mask
+  stay open if they were, the locks read "7 дней подряд с записью". A record today: nothing
+  visible yet (progress on locked items comes in stage 1), but after 7 days of records the
+  sunglasses open without visiting the wardrobe.
+- A backup made now and restored keeps what Ten wears and what is open.
+
 ## In the next version
 
 - Ten sends words to the developer from its chat (the owner's report 2026-11-14: asked to pass
@@ -52,6 +58,13 @@ The checks 1.8.3 shipped with were done by the founder on 2026-11-14: all fine (
   already linked to another subscription, To review now asks "Похоже на Roblox" with "Объединить";
   after one merge by hand each next charge of that amount merges on its own, and the other Apple
   subscriptions keep merging too.
+
+- Ten's sunglasses and sleep mask now open for days in a row with a record, not for days the app
+  was opened (the owner's decision, plan-ten-gamification §7.1): a record by hand, by voice, from
+  Ten's draft or caught by Wallet or a bank notification counts, a statement or a CSV does not,
+  and one missed day a week does not break the run. Already open accessories stay open; the new
+  run starts from zero. Ten's wardrobe also goes into backups now, so a restore on a new phone
+  brings it back.
 
 - Tenra Pro's free trial (docs/promotion-plan.md §6, 2026-11-23: all five trials of November
   were turned off, four on the second day): a notification two days before the trial ends says

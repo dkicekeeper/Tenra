@@ -1,6 +1,7 @@
 // Grades one assistant turn. Universal checks run on every case; each case adds its own.
 // Every check is mechanical: the numbers the user sees must resolve from tool results.
 
+import type { Mood } from "../src/tools";
 import { ACCOUNTS, ASSETS, CATEGORIES, DEBTS, GOALS } from "./fixture";
 
 export interface ToolCall {
@@ -46,6 +47,8 @@ export type Check =
   | { kind: "textHas"; groups: string[][]; label: string }
   /** The reply's text has none of the words, case-insensitive: a promise or a claim it must not make. */
   | { kind: "textLacks"; words: string[]; label: string }
+  /** Ten's face on the reply (render_reply.mood) is one of these. */
+  | { kind: "mood"; anyOf: Mood[] }
   | { kind: "noPick" };
 
 export interface CheckResult {
@@ -280,6 +283,11 @@ export function caseCheck(record: RunRecord, check: Check): CheckResult {
       const text = textOf(record).toLowerCase();
       const found = check.words.filter((word) => text.includes(word.toLowerCase()));
       return { name: check.label, pass: found.length === 0, detail: found.length ? `has ${found.join(", ")}` : undefined };
+    }
+    case "mood": {
+      const mood = record.reply?.mood;
+      const pass = check.anyOf.some((m) => m === mood);
+      return { name: `mood ${check.anyOf.join("|")}`, pass, detail: pass ? undefined : String(mood ?? "none") };
     }
     case "noPick": {
       const pick = textOf(record).match(PICK)?.[0];

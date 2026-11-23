@@ -40,12 +40,6 @@ with the commit of every fix, are in
   (the deploy keeps `ANTHROPIC_API_KEY`). Left: confirm the "Tenra eval" workspace has its own
   spend limit (about $15 a month covers two release evals on Haiku and Sonnet).
 
-Found by the design-system audit of 2026-10-15 (everything since 1.5):
-- **Logic in `Views/Assistant`:** `AppStreak`, `AssistantChatter` and `AssistantDaydreams`
-  hold rules and data, no views: they belong in `Services/Agent/`, as does the catalogue half
-  of `AssistantWardrobe`. Moves in stage 0 of
-  [plan-ten-gamification.md](plan-ten-gamification.md).
-
 Found by the release audit of 2026-10-15 (details and file references:
 [archive/release-audit-1.6-2026-10-15.md](archive/release-audit-1.6-2026-10-15.md)):
 - **Ten on Home keeps animating** while a notice is unread (`AssistantNoticeCard`'s live

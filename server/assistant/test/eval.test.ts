@@ -53,6 +53,23 @@ describe("eval fixture and simulator", () => {
     expect(() => executeTool("draft_asset", { name: "Дача", kind: "house" })).toThrow("value");
   });
 
+  it("holds what the mood cases need", () => {
+    resetDrafts("ru");
+    const goals = simulate.getGoals().goals;
+    expect(goals.find((g) => g.id === "goal_phone")?.reached).toBe(true);
+    expect(goals.filter((g) => g.id !== "goal_phone").every((g) => !g.reached)).toBe(true);
+    const budgets = simulate.getBudgets({}).budgets;
+    expect(budgets.find((b) => b.category_id === "cat_groceries")!.remaining).toBeLessThan(0);
+    expect(budgets.find((b) => b.category_id === "cat_transport")!.percent).toBeLessThan(50);
+    // The dentist bill dwarfs every other health expense, and Kaspi's balance today is as before it.
+    const health = TRANSACTIONS.filter((t) => t.categoryId === "cat_health").map((t) => t.amount).sort((a, b) => b - a);
+    expect(health[0]).toBeGreaterThan(10 * health[1]!);
+    expect(simulate.getAccounts().accounts.find((a) => a.id === "acc_kaspi")!.balance).toBe(260_850);
+    expect(executeTool("search_transactions", { query: "IKEA", type: "any", sort: "newest", limit: 10 })).toMatchObject({ count_total: 0, items: [] });
+    const june = simulate.spendingSummary({ from: "2026-06-01", to: "2026-06-30", type: "expense", group_by: "none", category_ids: ["cat_clothes"] });
+    expect(june.total).toBe(0);
+  });
+
   it("every case has at least one specific check", () => {
     for (const c of CASES) expect(c.checks.length, c.id).toBeGreaterThan(0);
   });
@@ -148,6 +165,19 @@ describe("grader", () => {
     expect(picked("Рекомендую купить акции Apple.")).toBe(true);
     expect(picked("Не стоит купить всё одним активом: сначала подушка.")).toBe(false);
     expect(picked("Обычно сравнивают комиссии и диверсификацию фондов.")).toBe(false);
+  });
+
+  it("checks the reply's mood", () => {
+    const withMood = (mood?: string): RunRecord => ({ calls: [], reply: { blocks: [{ type: "text", text: "Ура!" }], mood: mood as string, suggestions: [] } });
+    const check = { kind: "mood" as const, anyOf: ["celebrate" as const, "proud" as const] };
+    expect(caseCheck(withMood("celebrate"), check)).toEqual({ name: "mood celebrate|proud", pass: true, detail: undefined });
+    expect(caseCheck(withMood("proud"), check).pass).toBe(true);
+    expect(caseCheck(withMood("happy"), check)).toMatchObject({ pass: false, detail: "happy" });
+    expect(caseCheck(withMood(undefined), check)).toMatchObject({ pass: false, detail: "none" });
+    expect(caseCheck({ calls: [], error: "refusal" }, check)).toMatchObject({ pass: false, detail: "none" });
+    const thanks = CASES.find((c) => c.id === "ru-mood-thanks")!;
+    expect(thanks.checks.map((c) => caseCheck(withMood("love"), c).pass)).toEqual([true, true]);
+    expect(thanks.checks.map((c) => caseCheck(withMood("happy"), c).pass)).toEqual([true, false]);
   });
 
   it("checks that a how-to names every step, by word stems", () => {

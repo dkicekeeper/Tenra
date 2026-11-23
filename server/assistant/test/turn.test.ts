@@ -89,8 +89,52 @@ async function freeTurn(kv: MemoryKV) {
   return text;
 }
 
+/** A stream that answers with `content`, as the model's final message. */
+const answeringStream = (content: unknown[], stop_reason = "tool_use") => ({
+  async *[Symbol.asyncIterator]() {
+    yield { type: "message_start", message: {} };
+  },
+  finalMessage: async () => ({
+    id: "msg_1",
+    type: "message",
+    role: "assistant",
+    model: "claude-opus-5-5",
+    content,
+    stop_reason,
+    usage: { input_tokens: 10, output_tokens: 5, cache_read_input_tokens: 0, cache_creation_input_tokens: 0 },
+  }),
+});
+
 const day = new Date().toISOString().slice(0, 10);
 const month = day.slice(0, 7);
+
+describe("the log of a finished turn", () => {
+  beforeEach(() => {
+    scripted.stream = undefined;
+  });
+
+  const logged = async (content: unknown[], stop_reason?: string) => {
+    const log = vi.spyOn(console, "log").mockImplementation(() => undefined);
+    try {
+      scripted.stream = () => answeringStream(content, stop_reason);
+      const events = await freeTurn(new MemoryKV());
+      expect(events).toContain("event: done");
+      return log.mock.calls.map((args) => args.join(" "));
+    } finally {
+      log.mockRestore();
+    }
+  };
+
+  it("holds the reply's mood and nothing of the conversation", async () => {
+    const input = { blocks: [{ type: "text", text: "Спасибо, Асхат! Рад помочь с бюджетом 150 000" }], mood: "love", suggestions: ["Покажи бюджеты"] };
+    expect(await logged([{ type: "tool_use", id: "toolu_1", name: "render_reply", input }])).toEqual(["turn mood love"]);
+  });
+
+  it("says none for a turn that ended without render_reply, and waits while tools run", async () => {
+    expect(await logged([{ type: "text", text: "Привет", citations: null }], "end_turn")).toEqual(["turn mood none"]);
+    expect(await logged([{ type: "tool_use", id: "toolu_1", name: "get_goals", input: {} }])).toEqual([]);
+  });
+});
 
 describe("a turn whose model call fails", () => {
   beforeEach(() => {

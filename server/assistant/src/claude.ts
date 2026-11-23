@@ -2,7 +2,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import type { Config } from "./config";
 import { SYSTEM_PROMPT } from "./prompt";
 import type { Tier } from "./quota";
-import { toolsFor } from "./tools";
+import { MOODS, RENDER_REPLY, toolsFor, type Mood } from "./tools";
 
 type Params = Anthropic.Beta.Messages.MessageCreateParamsStreaming;
 type ContentBlock = Anthropic.Beta.BetaContentBlock;
@@ -94,6 +94,25 @@ export function donePayload(message: Anthropic.Beta.BetaMessage): DonePayload {
       cache_creation_input_tokens: message.usage.cache_creation_input_tokens ?? 0,
     },
   };
+}
+
+/**
+ * What a model call's reply looks like, for the one log line of a finished turn (index.ts):
+ * render_reply's mood when the app shows the reply, "none" when the turn ends without one (no
+ * render_reply, a refusal, an answer cut off by max_tokens: the app shows an error), "invalid"
+ * for a mood outside the enum (the app shows idle), null while the turn goes on (other tools to
+ * run, or render_reply sent next to them, which goes back as RENDER_REPLY_TOO_EARLY). The same
+ * rules as the app's loop (AgentConversation.swift). Reads the mood field only, and returns an
+ * enum value or a fixed word, so nothing of the conversation can reach the log.
+ */
+export function replyMood(message: Pick<Anthropic.Beta.BetaMessage, "content" | "stop_reason">): Mood | "none" | "invalid" | null {
+  if (message.stop_reason === "refusal" || message.stop_reason === "max_tokens") return "none";
+  const uses = message.content.filter((b): b is Anthropic.Beta.BetaToolUseBlock => b.type === "tool_use");
+  if (uses.length === 0) return "none";
+  const [use] = uses;
+  if (uses.length > 1 || use?.name !== RENDER_REPLY) return null;
+  const mood: unknown = use.input && typeof use.input === "object" ? (use.input as { mood?: unknown }).mood : undefined;
+  return MOODS.find((m) => m === mood) ?? "invalid";
 }
 
 export interface ErrorPayload {

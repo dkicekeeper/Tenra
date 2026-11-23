@@ -1,6 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { AttestError, checkAssertion, isValidKeyId, issueChallenge, registerKey } from "./appattest";
-import { buildParams, donePayload, errorPayload } from "./claude";
+import { buildParams, donePayload, errorPayload, replyMood } from "./claude";
 import { readConfig, type Config, type Env } from "./config";
 import { resolveTier, UpstreamError } from "./entitlement";
 import { allowFeedback, notifyOwner, parseFeedbackRequest, storeFeedback, type FeedbackRecord } from "./feedback";
@@ -34,7 +34,8 @@ import { parseValuationRequest, valuate, VALUATION_PROMPT_VERSION, valuationConf
 // Pro calls per customer. GET /v1/attest/challenge and POST /v1/attest register that key once
 // per install.
 //
-// Nothing about the conversation is logged: only status codes and error codes. Feedback is the
+// Nothing about the conversation is logged: only status codes, error codes and the mood the
+// reply was shown with ("turn mood celebrate", replyMood in claude.ts). Feedback is the
 // exception by design: its words are stored, because the person wrote them to be read.
 
 const json = (body: unknown, status = 200) =>
@@ -137,6 +138,10 @@ export default {
           }
           const message = await stream.finalMessage();
           await send("done", { ...donePayload(message), tier, quota: { used: quota.used, limit: quota.limit } });
+          // How often each of Ten's faces is picked: the mood's enum value only, once the turn
+          // is over (a call that leaves tools for the app to run logs nothing).
+          const mood = replyMood(message);
+          if (mood) console.log(`turn mood ${mood}`);
         } catch (error) {
           if (disconnected) {
             console.log(`turn stopped: the app left${started ? "" : " before the answer"}`);

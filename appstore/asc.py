@@ -79,6 +79,12 @@
     python3 appstore/asc.py push-nomination [--submit]
                                                     the nomination of appstore/nomination.json as a
                                                     draft in App Store Connect; --submit sends it
+    python3 appstore/asc.py retention-messages  the retention messages, their versions and subscriptions
+    python3 appstore/asc.py push-retention-message [--apply]
+                                                    the message of appstore/retention-message.json
+                                                    (shown when someone starts to cancel), its
+                                                    texts and subscriptions; not submitted:
+                                                    prepare-review adds it to the release
     python3 appstore/asc.py iap-prices [--product tenra.pro.lifetime] [--territory KAZ,USA]
                                                     a one-time purchase's base territory, manual
                                                     prices and what the storefronts charge
@@ -643,6 +649,7 @@ def submit_for_review(app: str, items: list[tuple[str, str]], lenient: set[str] 
     }})["data"]
     types = {"appStoreVersion": "appStoreVersions",
              "appCustomProductPageVersion": "appCustomProductPageVersions",
+             "retentionMessageVersion": "retentionMessageVersions",
              "appStoreVersionExperimentV2": "appStoreVersionExperiments",
              "appAssetLibraryImage": "appAssetLibraryImages"}
     added = 0
@@ -1318,6 +1325,129 @@ def push_nomination(app: str, submit: bool) -> None:
           f"({wanted['type']}, from {wanted['publishStartDate']}).")
 
 
+# Retention message --------------------------------------------------------------------------------
+
+RETENTION = Path(__file__).resolve().parent / "retention-message.json"
+RETENTION_HEADER_MAX = 66
+RETENTION_BODY_MAX = 144
+RETENTION_EDITABLE = {"PREPARE_FOR_SUBMISSION", "REJECTED", "DEVELOPER_REJECTED"}
+
+
+def retention_config(path: Path = RETENTION) -> dict:
+    """appstore/retention-message.json, checked: Apple's lengths (header 66, body 144), no em
+    dash (user rule), and no price or offer in the text (App Review rejects those)."""
+    config = json.loads(path.read_text(encoding="utf-8"))
+    problems = []
+    for locale, text in config["localizations"].items():
+        header, body = text.get("header", ""), text.get("body", "")
+        if not header or not body:
+            problems.append(f"{locale}: header and body are both required")
+        if len(header) > RETENTION_HEADER_MAX:
+            problems.append(f"{locale}: header is {len(header)} characters, Apple takes {RETENTION_HEADER_MAX}")
+        if len(body) > RETENTION_BODY_MAX:
+            problems.append(f"{locale}: body is {len(body)} characters, Apple takes {RETENTION_BODY_MAX}")
+        if "—" in header + body:
+            problems.append(f"{locale}: an em dash")
+        if re.search(r"[$€£₸₽¥₩%]", header + body):
+            problems.append(f"{locale}: a price or a discount sign (App Review rejects them)")
+    if problems:
+        sys.exit("appstore/retention-message.json:\n  " + "\n  ".join(problems))
+    return config
+
+
+def retention_messages(app: str) -> None:
+    """The app's retention messages: their versions with review state and locales, and the
+    subscriptions each one is on. Read only."""
+    messages, _ = get_all(f"/v1/apps/{app}/retentionMessages", {"limit": 10})
+    rows = []
+    for message in messages:
+        on, _ = get_all(f"/v1/retentionMessages/{message['id']}/subscriptions", {"limit": 50})
+        products = ", ".join(s["attributes"].get("productId", "?") for s in on) or "none"
+        versions, _ = get_all(f"/v1/retentionMessages/{message['id']}/versions", {"limit": 10})
+        for version in versions or [{"id": "-", "attributes": {}}]:
+            locales = []
+            if version["id"] != "-":
+                items, _ = get_all(f"/v1/retentionMessageVersions/{version['id']}/localizations", {"limit": 50})
+                locales = sorted(item["attributes"].get("locale", "?") for item in items)
+            rows.append([message["attributes"].get("referenceName"), version["id"],
+                         version["attributes"].get("state", "-"), len(locales), products])
+    table("Retention messages", ["Reference name", "Version", "State", "Locales", "Subscriptions"], rows)
+
+
+def push_retention_message(app: str, apply: bool) -> None:
+    """The retention message of appstore/retention-message.json (what Apple shows when someone
+    starts to cancel the subscription): the message, a version in preparation with header and
+    body in every locale of the file, and the file's subscriptions assigned to it. Not submitted:
+    `prepare-review` adds a version in preparation to the release's submission. Without `apply`
+    it only shows what it would write. A message of the same reference name is reused, its
+    version in preparation updated (a new version when the last one is in review or live)."""
+    config = retention_config()
+    name = config["referenceName"]
+    wanted = config["localizations"]
+    table(f"Retention message {name!r}", ["Locale", "Header", "Body (characters)"],
+          [[locale, text["header"], len(text["body"])] for locale, text in wanted.items()])
+    by_product = {item["attributes"].get("productId"): item for item in subscriptions(app)}
+    missing = [product for product in config["subscriptions"] if product not in by_product]
+    if missing:
+        sys.exit(f"No subscription with product id {', '.join(missing)} in App Store Connect.")
+    messages, _ = get_all(f"/v1/apps/{app}/retentionMessages", {"limit": 10})
+    message = next((m for m in messages if m["attributes"].get("referenceName") == name), None)
+    if not apply:
+        print(f"Dry run: {'updates' if message else 'creates'} {name!r} with {len(wanted)} locale(s) and assigns it to "
+              f"{', '.join(config['subscriptions'])}. Add --apply to write it.")
+        return
+
+    if not message:
+        message = send("POST", "/v1/retentionMessages", {"data": {
+            "type": "retentionMessages", "attributes": {"referenceName": name},
+            "relationships": {"app": {"data": {"type": "apps", "id": app}}},
+        }})["data"]
+        print(f"Created the message {name!r} ({message['id']}).", flush=True)
+    versions, _ = get_all(f"/v1/retentionMessages/{message['id']}/versions", {"limit": 10})
+    version = next((v for v in versions if v["attributes"].get("state") in RETENTION_EDITABLE), None)
+    if not version:
+        version = send("POST", "/v1/retentionMessageVersions", {"data": {
+            "type": "retentionMessageVersions",
+            "relationships": {"retentionMessage": {"data": {"type": "retentionMessages", "id": message["id"]}}},
+        }})["data"]
+        print(f"Created version {version['id']} (text only).", flush=True)
+
+    existing, _ = get_all(f"/v1/retentionMessageVersions/{version['id']}/localizations", {"limit": 50})
+    by_locale = {item["attributes"].get("locale"): item for item in existing}
+    written = 0
+    for locale, text in wanted.items():
+        attributes = {"header": text["header"], "body": text["body"]}
+        current = by_locale.get(locale)
+        if current:
+            if all(current["attributes"].get(key) == value for key, value in attributes.items()):
+                continue
+            send("PATCH", f"/v1/retentionMessageLocalizations/{current['id']}", {"data": {
+                "type": "retentionMessageLocalizations", "id": current["id"], "attributes": attributes}})
+        else:
+            send("POST", "/v1/retentionMessageLocalizations", {"data": {
+                "type": "retentionMessageLocalizations", "attributes": {"locale": locale, **attributes},
+                "relationships": {"retentionMessageVersion": {
+                    "data": {"type": "retentionMessageVersions", "id": version["id"]}}},
+            }})
+        written += 1
+    extra = sorted(set(by_locale) - set(wanted))
+
+    for product in config["subscriptions"]:
+        subscription_id = by_product[product]["id"]
+        linked = (get(f"/v1/subscriptions/{subscription_id}/relationships/retentionMessage").get("data") or {}).get("id")
+        if linked == message["id"]:
+            continue
+        # Each subscription has one message: assigning replaces whatever was there.
+        send("PATCH", f"/v1/subscriptions/{subscription_id}/relationships/retentionMessage",
+             {"data": {"type": "retentionMessages", "id": message["id"]}})
+        print(f"  {product}: assigned{' (replaced another message)' if linked else ''}", flush=True)
+
+    state = get(f"/v1/retentionMessageVersions/{version['id']}").get("data", {}).get("attributes", {}).get("state")
+    print(f"Retention message {name!r}: version {version['id']} ({state}), {written} locale(s) written, "
+          f"{len(wanted)} in the file" + (f", also in App Store Connect: {', '.join(extra)}" if extra else "")
+          + ". Not submitted: prepare-review adds it to the release's submission.")
+
+
 # Review notes and the draft submission ------------------------------------------------------------
 
 def review_notes_text(path: Path = NOTES) -> str:
@@ -1388,7 +1518,17 @@ def prepare_review(app: str, version: str, submit: bool = False, expected_build:
             if page_version["attributes"].get("state") in CPP_EDITABLE:
                 items.append(("appCustomProductPageVersion", page_version["id"]))
                 print(f"  {page['attributes'].get('name')}: version {page_version['id']}", flush=True)
-    submit_for_review(app, items, lenient={"appCustomProductPageVersion"}, submit=submit)
+    # A retention message in preparation (push-retention-message) goes with the release: it may
+    # promise what the release brings.
+    messages, _ = get_all(f"/v1/apps/{app}/retentionMessages", {"limit": 10})
+    for message in messages:
+        versions, _ = get_all(f"/v1/retentionMessages/{message['id']}/versions", {"limit": 10})
+        for message_version in versions:
+            if message_version["attributes"].get("state") in RETENTION_EDITABLE:
+                items.append(("retentionMessageVersion", message_version["id"]))
+                print(f"  retention message {message['attributes'].get('referenceName')}: version "
+                      f"{message_version['id']}", flush=True)
+    submit_for_review(app, items, lenient={"appCustomProductPageVersion", "retentionMessageVersion"}, submit=submit)
 
 
 # Version screenshots -----------------------------------------------------------------------------
@@ -2058,6 +2198,10 @@ def main(argv: list[str]) -> None:
         nominations(app)
     elif command == "push-nomination":
         push_nomination(app, "--submit" in args)
+    elif command == "retention-messages":
+        retention_messages(app)
+    elif command == "push-retention-message":
+        push_retention_message(app, "--apply" in args)
     elif command == "iap-prices":
         iap_prices(app, option("--product", "tenra.pro.lifetime"), option("--territory", "KAZ,USA").split(","))
     elif command == "review-notes":

@@ -57,8 +57,9 @@ struct FeedbackAskTests {
         #expect(subjects.contains(open))
     }
 
-    private static func status(trial: Bool = true, willRenew: Bool = false, ends: Date? = day(20)) -> ProStatus {
-        ProStatus(plan: .annual, expirationDate: ends, willRenew: willRenew, managementURL: nil, isTrial: trial)
+    /// A trial status ending on day 20 unless `endsOnDay` says otherwise (nil: no end).
+    private static func status(trial: Bool = true, willRenew: Bool = false, endsOnDay: Double? = 20) -> ProStatus {
+        ProStatus(plan: .annual, expirationDate: endsOnDay.map { day($0) }, willRenew: willRenew, managementURL: nil, isTrial: trial)
     }
 
     @Test("Ten asks why only while a trial runs with its renewal off")
@@ -74,8 +75,8 @@ struct FeedbackAskTests {
         #expect(AssistantNotices.trialRenewalOff(nil, now: now) == nil)
         #expect(AssistantNotices.trialRenewalOff(Self.status(willRenew: true), now: now) == nil)
         #expect(AssistantNotices.trialRenewalOff(Self.status(trial: false), now: now) == nil)
-        #expect(AssistantNotices.trialRenewalOff(Self.status(ends: nil), now: now) == nil)
-        #expect(AssistantNotices.trialRenewalOff(Self.status(ends: Self.day(9)), now: now) == nil)
+        #expect(AssistantNotices.trialRenewalOff(Self.status(endsOnDay: nil), now: now) == nil)
+        #expect(AssistantNotices.trialRenewalOff(Self.status(endsOnDay: 9), now: now) == nil)
     }
 
     @Test("Each trial has its own question")

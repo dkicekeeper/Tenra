@@ -163,10 +163,8 @@ python3 appstore/asc.py push-retention-message [--apply]
                                                 # показывает его, когда человек начинает отменять
                                                 # подписку): версия с текстом на всех языках файла,
                                                 # привязка к подпискам файла, картинка из поля
-                                                # image (одна на все языки, RETENTION_MESSAGE_ASSET;
-                                                # собирает scripts/compose_retention_art.py:
-                                                # Тэн и облачко с календарём «2» и колокольчиком,
-                                                # без слов); без --apply только
+                                                # image, если оно есть (3840x2160, одна на все
+                                                # языки, RETENTION_MESSAGE_ASSET); без --apply только
                                                 # показывает; на проверку не отправляет, это делает
                                                 # prepare-review вместе с версией приложения
 python3 appstore/asc.py iap-prices [--product tenra.pro.lifetime] [--territory KAZ,USA]

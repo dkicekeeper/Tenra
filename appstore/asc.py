@@ -1331,6 +1331,7 @@ RETENTION = Path(__file__).resolve().parent / "retention-message.json"
 RETENTION_HEADER_MAX = 66
 RETENTION_BODY_MAX = 144
 RETENTION_EDITABLE = {"PREPARE_FOR_SUBMISSION", "REJECTED", "DEVELOPER_REJECTED"}
+RETENTION_IMAGE_SIZES = {(3840, 2160), (5244, 2950)}
 
 
 def retention_config(path: Path = RETENTION) -> dict:
@@ -1350,9 +1351,23 @@ def retention_config(path: Path = RETENTION) -> dict:
             problems.append(f"{locale}: an em dash")
         if re.search(r"[$€£₸₽¥₩%]", header + body):
             problems.append(f"{locale}: a price or a discount sign (App Review rejects them)")
+    image = config.get("image")
+    if image:
+        size = png_size(ROOT / image) if (ROOT / image).exists() else None
+        if size not in RETENTION_IMAGE_SIZES:
+            problems.append(f"image {image}: {size or 'missing'}, Apple takes "
+                            + " or ".join(f"{w}x{h}" for w, h in RETENTION_IMAGE_SIZES))
     if problems:
         sys.exit("appstore/retention-message.json:\n  " + "\n  ".join(problems))
     return config
+
+
+def png_size(path: Path) -> tuple[int, int] | None:
+    """Width and height from a PNG's header (no image library in Actions)."""
+    head = path.read_bytes()[:24]
+    if head[:8] != b"\x89PNG\r\n\x1a\n":
+        return None
+    return int.from_bytes(head[16:20], "big"), int.from_bytes(head[20:24], "big")
 
 
 def retention_messages(app: str) -> None:
@@ -1374,6 +1389,30 @@ def retention_messages(app: str) -> None:
     table("Retention messages", ["Reference name", "Version", "State", "Locales", "Subscriptions"], rows)
 
 
+def retention_image(app: str, version_id: str, path: Path) -> str:
+    """The image above the message: one for every language (it belongs to the version), from the
+    asset library (uploaded once, by content), placed as RETENTION_MESSAGE_ASSET. A placement can't
+    be edited: one showing another image is deleted first."""
+    library = get(f"/v1/apps/{app}/assetLibrary")["data"]["id"]
+    images, _ = get_all(f"/v1/appAssetLibraries/{library}/images", {"limit": 200})
+    image_id = library_image(library, {i["attributes"].get("referenceName"): i for i in images}, path)
+    current = get(f"/v1/retentionMessageVersions/{version_id}/placement", {"include": "image"}).get("data")
+    if current:
+        shown = ((current.get("relationships") or {}).get("image") or {}).get("data") or {}
+        if shown.get("id") == image_id:
+            return "unchanged"
+        request(f"/v1/appAssetLibraryPlacements/{current['id']}", method="DELETE")
+    send("POST", "/v1/appAssetLibraryPlacements", {"data": {
+        "type": "appAssetLibraryPlacements",
+        "attributes": {"placementType": "RETENTION_MESSAGE_ASSET"},
+        "relationships": {
+            "retentionMessageVersion": {"data": {"type": "retentionMessageVersions", "id": version_id}},
+            "image": {"data": {"type": "appAssetLibraryImages", "id": image_id}},
+        },
+    }})
+    return f"placed ({path.name})"
+
+
 def push_retention_message(app: str, apply: bool) -> None:
     """The retention message of appstore/retention-message.json (what Apple shows when someone
     starts to cancel the subscription): the message, a version in preparation with header and
@@ -1393,8 +1432,9 @@ def push_retention_message(app: str, apply: bool) -> None:
     messages, _ = get_all(f"/v1/apps/{app}/retentionMessages", {"limit": 10})
     message = next((m for m in messages if m["attributes"].get("referenceName") == name), None)
     if not apply:
-        print(f"Dry run: {'updates' if message else 'creates'} {name!r} with {len(wanted)} locale(s) and assigns it to "
-              f"{', '.join(config['subscriptions'])}. Add --apply to write it.")
+        image = f", the image {config['image']}" if config.get("image") else ""
+        print(f"Dry run: {'updates' if message else 'creates'} {name!r} with {len(wanted)} locale(s){image} and assigns it "
+              f"to {', '.join(config['subscriptions'])}. Add --apply to write it.")
         return
 
     if not message:
@@ -1441,6 +1481,9 @@ def push_retention_message(app: str, apply: bool) -> None:
         send("PATCH", f"/v1/subscriptions/{subscription_id}/relationships/retentionMessage",
              {"data": {"type": "retentionMessages", "id": message["id"]}})
         print(f"  {product}: assigned{' (replaced another message)' if linked else ''}", flush=True)
+
+    if config.get("image"):
+        print(f"  image: {retention_image(app, version['id'], ROOT / config['image'])}", flush=True)
 
     state = get(f"/v1/retentionMessageVersions/{version['id']}").get("data", {}).get("attributes", {}).get("state")
     print(f"Retention message {name!r}: version {version['id']} ({state}), {written} locale(s) written, "

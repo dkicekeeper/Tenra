@@ -76,7 +76,9 @@ The checks 1.8.3 shipped with were done by the founder on 2026-11-14: all fine (
    Messaging; shown when a subscriber starts to cancel; no prices or offers in the text, and no
    offer at all for people who never paid). Created on 2026-11-23 by `asc.py
    push-retention-message --apply` from `appstore/retention-message.json` (Actions → App Store
-   Connect): `trial-reminder`, text only, 14 locales, on the annual and the monthly subscription,
+   Connect): `trial-reminder`, 14 locales, on the annual and the monthly subscription, with the
+   image `screenshots/art/retention.png` (Ten and a bubble with a calendar page "2" and a bell,
+   no words: one image for every language; `scripts/compose_retention_art.py`),
    version in `PREPARE_FOR_SUBMISSION`. `prepare-review` puts it into 1.8.4's submission. Before
    that: check in the sandbox (testers see the draft) whether a trial's cancellation shows it.
    en-GB carries ru's text (search in Kazakhstan, D9).

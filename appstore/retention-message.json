@@ -4,6 +4,7 @@
     "tenra.pro.annual",
     "tenra.pro.monthly"
   ],
+  "image": "screenshots/art/retention.png",
   "localizations": {
     "en-US": {
       "header": "No need to cancel early",

@@ -54,6 +54,9 @@ struct ProStatus: Equatable, Sendable {
     let willRenew: Bool
     /// Apple's manage-subscription page for this customer (RevenueCat `managementURL`).
     let managementURL: URL?
+    /// The free trial is running (RevenueCat's period type `trial`): `expirationDate` is its
+    /// end, and TrialReminder warns two days before it.
+    var isTrial = false
 }
 
 @MainActor
@@ -300,7 +303,8 @@ final class PremiumManager {
                 plan: ProStatus.Plan(productID: entitlement.productIdentifier),
                 expirationDate: entitlement.expirationDate,
                 willRenew: entitlement.willRenew,
-                managementURL: info.managementURL
+                managementURL: info.managementURL,
+                isTrial: entitlement.periodType == .trial
             )
         }
 
@@ -311,6 +315,9 @@ final class PremiumManager {
         isSubscriber = active
         proStatus = status
         log.info("pro entitlement active=\(active, privacy: .public)")
+        // The reminder two days before a trial ends follows the entitlement: a new trial, renewal
+        // turned off or on, a paid period or no Pro each replace or remove it.
+        Task { await TrialReminder.reschedule(for: status) }
     }
 
     // MARK: - Offerings

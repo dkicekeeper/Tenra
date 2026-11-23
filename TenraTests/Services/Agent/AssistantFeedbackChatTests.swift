@@ -208,6 +208,67 @@ struct AssistantFeedbackChatTests {
         #expect(transport.calls.isEmpty)
     }
 
+    @Test func afterATrialTenAsksWhyWithThreeReasons() {
+        let model = makeModel()
+        #expect(model.startFeedback(source: .trial, transport: Outbox()))
+        #expect(model.feedbackStep == .reason)
+        #expect(lastLine(model) == String(localized: "feedback.chat.askTrial"))
+        #expect(model.suggestions == AssistantViewModel.trialReasons)
+        #expect(AssistantViewModel.trialReasons.count == 3)
+    }
+
+    @Test func aTrialReasonGoesAtOnceThenTenAsksMore() async {
+        let outbox = Outbox()
+        let transport = ScriptedTransport(Self.helpReply)
+        let model = makeModel(transport, cloudConsent: true)
+        var sentMoods: [AgentFeedbackMessage.Mood?] = []
+        model.startFeedback(source: .trial, transport: outbox) { sentMoods.append($0) }
+
+        await model.send(AssistantViewModel.trialPrice)
+        #expect(outbox.sent == [AgentFeedbackMessage(text: AssistantViewModel.trialPrice, mood: .bad, source: .trial)])
+        #expect(sentMoods == [.bad])
+        #expect(model.feedbackStep == .details(.bad))
+        #expect(lastLine(model) == String(localized: "feedback.chat.trialAskPrice"))
+        #expect(model.suggestions.isEmpty)
+
+        await model.send("3 000 a year")
+        #expect(outbox.sent.last == AgentFeedbackMessage(text: "3 000 a year", mood: .bad, source: .trial))
+        #expect(lastLine(model) == String(localized: "feedback.chat.thanks"))
+        #expect(model.feedbackStep == nil)
+        // Not a problem Ten could settle: nothing went to the model, even with the cloud allowed.
+        #expect(transport.calls.isEmpty)
+        #expect(sentMoods == [.bad])
+    }
+
+    @Test func eachTrialReasonLeadsToItsOwnQuestion() {
+        #expect(AssistantViewModel.trialFollowUp(for: AssistantViewModel.trialPrice) == String(localized: "feedback.chat.trialAskPrice"))
+        #expect(AssistantViewModel.trialFollowUp(for: AssistantViewModel.trialFreeEnough) == String(localized: "feedback.chat.trialAskFreeEnough"))
+        #expect(AssistantViewModel.trialFollowUp(for: AssistantViewModel.trialNoSubscription) == String(localized: "feedback.chat.trialAskNoSubscription"))
+    }
+
+    @Test func wordsTypedInsteadOfATrialReasonAreTheReason() async {
+        let outbox = Outbox()
+        let model = makeModel()
+        model.startFeedback(source: .trial, transport: outbox)
+
+        await model.send("Forgot I started it")
+        #expect(outbox.sent == [AgentFeedbackMessage(text: "Forgot I started it", mood: .bad, source: .trial)])
+        #expect(model.feedbackStep == nil)
+    }
+
+    @Test func aFailedTrialReasonKeepsTheQuestion() async {
+        let outbox = Outbox()
+        outbox.failing = true
+        let model = makeModel()
+        model.startFeedback(source: .trial, transport: outbox)
+
+        await model.send(AssistantViewModel.trialNoSubscription)
+        #expect(outbox.sent.isEmpty)
+        #expect(model.feedbackStep == .reason)
+        #expect(lastLine(model) == String(localized: "feedback.chat.failed"))
+        #expect(model.suggestions == AssistantViewModel.trialReasons)
+    }
+
     @Test func aNewChatEndsTheTalk() async {
         let transport = ScriptedTransport([[AgentScript.done([AgentScript.render("toolu_1", source: "r1", mood: "idle", suggestions: [])])]])
         let outbox = Outbox()

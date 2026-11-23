@@ -529,7 +529,9 @@ struct AssistantView: View {
     /// rating by Apple's prompt.
     private func startFeedback(_ notice: AssistantNotice) {
         guard let transport = coordinator.feedbackTransport else { return }
-        let source: AgentFeedbackMessage.Source = notice.id == FeedbackAsk.surveyNoticeID ? .survey : .notice
+        let source: AgentFeedbackMessage.Source = notice.id == FeedbackAsk.surveyNoticeID
+            ? .survey
+            : FeedbackAsk.isTrialNotice(notice.id) ? .trial : .notice
         let started = model.startFeedback(source: source, transport: transport) { mood in
             AssistantInbox.shared.markRead(notice.id)
             if mood == .good, source != .survey {

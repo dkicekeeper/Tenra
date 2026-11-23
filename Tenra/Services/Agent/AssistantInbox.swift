@@ -526,7 +526,11 @@ extension AssistantNotices {
             case .setup: return !capturing
             case .asset: return notice.subjectId.map(staleAssets.contains) ?? true
             case .loanAsset: return notice.subjectId.map(loansWithoutAsset.contains) ?? true
-            case .feedback: return feedbackRound.map { notice.id == FeedbackAsk.noticeID(round: $0) } ?? true
+            case .feedback:
+                // The question after a trial's renewal was turned off is not a round: it stays
+                // until it is answered or hidden.
+                if FeedbackAsk.isTrialNotice(notice.id) { return true }
+                return feedbackRound.map { notice.id == FeedbackAsk.noticeID(round: $0) } ?? true
             case .signal, .digest, .tidy: return true
             }
         }

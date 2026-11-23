@@ -36,6 +36,7 @@ describe("feedback request", () => {
     expect(parseFeedbackRequest(payload({ resolved: "yes" })).resolved).toBeUndefined();
     expect(telegramText({ at: "2026-11-12T10:00:00Z", text: "Не нашёл депозит", mood: "bad", resolved: false })).toMatch(/^❌ Ten did not help: Не нашёл депозит/);
     expect(parseFeedbackRequest(payload({ text: "Бюджеты супер", source: "chat" }))?.source).toBe("chat");
+    expect(parseFeedbackRequest(payload({ text: "Дорого", mood: "bad", source: "trial" }))?.source).toBe("trial");
     const odd = parseFeedbackRequest(payload({ mood: "meh", source: "elsewhere", app: "<script>", os: "x", locale: "!!" }));
     expect(odd).toMatchObject({ mood: undefined, source: undefined, app: undefined, os: undefined, locale: undefined });
   });

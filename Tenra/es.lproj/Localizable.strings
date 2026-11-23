@@ -2429,3 +2429,17 @@
 "feedback.chat.notHelpedReply" = "Entendido. El desarrollador sabrá que sigue sin resolverse.";
 "feedback.chat.failed" = "No se ha podido enviar. Comprueba la conexión y escribe de nuevo.";
 "feedback.chat.placeholder" = "Escribe tu respuesta…";
+"trialReminder.title" = "Tu prueba de Tenra Pro termina en 2 días";
+"trialReminder.body.annual" = "Después empieza la suscripción anual por %@, si no la cancelas. Para cancelarla, abre Ajustes, toca tu nombre y luego Suscripciones.";
+"trialReminder.body.monthly" = "Después empieza la suscripción mensual por %@, si no la cancelas. Para cancelarla, abre Ajustes, toca tu nombre y luego Suscripciones.";
+"trialReminder.body.noPrice" = "Después empieza la suscripción, si no la cancelas. Para cancelarla, abre Ajustes, toca tu nombre y luego Suscripciones.";
+"trialReminder.body.cancelled" = "La renovación está desactivada, no se cobrará nada. Después se cierran las funciones Pro y tus registros se quedan.";
+"feedback.trial.notice.title" = "Renovación de Pro desactivada";
+"feedback.trial.notice.body" = "¿Me cuentas qué no te convenció? Se lo pasaré al desarrollador.";
+"feedback.chat.askTrial" = "Desactivaste la renovación de Tenra Pro. ¿Qué no te convenció? Se lo pasaré al desarrollador.";
+"feedback.chat.trialPrice" = "Es caro";
+"feedback.chat.trialFreeEnough" = "Me basta lo gratis";
+"feedback.chat.trialNoSubscription" = "Sin suscripciones";
+"feedback.chat.trialAskPrice" = "Gracias, ya lo tiene el desarrollador. ¿Qué precio te parecería justo?";
+"feedback.chat.trialAskFreeEnough" = "Gracias, ya lo tiene el desarrollador. ¿Qué haría que Pro valiera la pena para ti?";
+"feedback.chat.trialAskNoSubscription" = "Gracias, ya lo tiene el desarrollador. Por cierto, Pro también se puede comprar para siempre, con un solo pago y sin suscripción: está en la misma pantalla de compra. ¿Qué más ayudaría?";

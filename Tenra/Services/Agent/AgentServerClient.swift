@@ -49,6 +49,8 @@ nonisolated struct AgentFeedbackMessage: Sendable, Equatable {
         case settings
         /// Asked in Ten's chat ("tell the developer…"), sent from its card (`draft_feedback`).
         case chat
+        /// Ten's question after Tenra Pro's renewal was turned off during the free trial.
+        case trial
     }
 
     var text: String

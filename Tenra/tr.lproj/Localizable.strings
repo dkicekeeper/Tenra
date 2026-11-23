@@ -2429,3 +2429,17 @@
 "feedback.chat.notHelpedReply" = "Anlaşıldı. Geliştirici sorunun hâlâ çözülmediğini bilecek.";
 "feedback.chat.failed" = "Gönderilemedi. Bağlantını kontrol edip tekrar yaz.";
 "feedback.chat.placeholder" = "Yanıtını yaz…";
+"trialReminder.title" = "Tenra Pro denemen 2 gün sonra bitiyor";
+"trialReminder.body.annual" = "Sonra, iptal etmezsen yıllık abonelik %@ ile başlar. İptal için Ayarlar’da adına, sonra Abonelikler’e dokun.";
+"trialReminder.body.monthly" = "Sonra, iptal etmezsen aylık abonelik %@ ile başlar. İptal için Ayarlar’da adına, sonra Abonelikler’e dokun.";
+"trialReminder.body.noPrice" = "Sonra, iptal etmezsen abonelik başlar. İptal için Ayarlar’da adına, sonra Abonelikler’e dokun.";
+"trialReminder.body.cancelled" = "Yenileme kapalı, ücret alınmayacak. Sonra Pro özellikleri kapanır, kayıtların kalır.";
+"feedback.trial.notice.title" = "Pro yenilemesi kapalı";
+"feedback.trial.notice.body" = "Neyin uymadığını anlatır mısın? Geliştiriciye iletirim.";
+"feedback.chat.askTrial" = "Tenra Pro yenilemesini kapattın. Ne uymadı? Geliştiriciye iletirim.";
+"feedback.chat.trialPrice" = "Pahalı";
+"feedback.chat.trialFreeEnough" = "Ücretsizi yetiyor";
+"feedback.chat.trialNoSubscription" = "Abonelik istemiyorum";
+"feedback.chat.trialAskPrice" = "Teşekkürler, geliştiriciye ulaştı. Hangi fiyat adil olurdu?";
+"feedback.chat.trialAskFreeEnough" = "Teşekkürler, geliştiriciye ulaştı. Pro’yu senin için ne değerli kılardı?";
+"feedback.chat.trialAskNoSubscription" = "Teşekkürler, geliştiriciye ulaştı. Bu arada Pro, abonelik olmadan tek ödemeyle ömür boyu da alınabilir: aynı satın alma ekranında. Başka ne yardımcı olurdu?";

@@ -129,6 +129,10 @@ private struct PaywallSheetContent: View {
         paywallView
             .onPurchaseCompleted { customerInfo in
                 premium.applyPaywallResult(customerInfo)
+                // The paywall promises a reminder two days before a trial ends: ask for banners
+                // now, while the promise is fresh.
+                let status = premium.proStatus
+                Task { await TrialReminder.afterPurchase(status) }
                 // Rarest, highest-emotion success moment in the app — acknowledge the
                 // unlock with a success haptic (ordinary tx saves already fire one)
                 // before dismissing.

@@ -2,10 +2,10 @@
 
 1.8.3 is in the store since 2026-11-13/14 (build 90; its notes:
 [archive/release-notes-1.8.3.md](archive/release-notes-1.8.3.md)). `main` already carries what is
-under "In the next version" below (the server with prompt 2026-11-14.4 is deployed). **The next version has no number yet**: the project still says 1.8.3, and a build under a
-released version is refused by App Store Connect, so the number is raised (the founder's call:
-1.8.4 for a small update, 1.9 is kept for the update the featuring nomination promises in the last
-week of December, [plan-growth.md](plan-growth.md) stage 4) before the next TestFlight build.
+under "In the next version" below (the server with prompt 2026-11-14.4 is deployed). **The next
+version is 1.8.4** (the project says 1.8.4 since 2026-11-23; the founder's call: 1.8.4 for a small
+update, 1.9 is kept for the update the featuring nomination promises in the last week of December,
+[plan-growth.md](plan-growth.md) stage 4). What's New blocks are not written yet.
 
 When the blocks are written: one `## <locale>` heading per storefront (en-US, ru, en-GB, de-DE,
 es-ES, es-MX, fr-FR, fr-CA, tr, pt-BR, it, uk, ja, ko), which `prepare-version` (Actions → App
@@ -16,8 +16,20 @@ another version.
 ## Phone checks
 
 The checks 1.8.3 shipped with were done by the founder on 2026-11-14: all fine (the list is in
-[archive/release-notes-1.8.3.md](archive/release-notes-1.8.3.md)). Those of the next version go
-here.
+[archive/release-notes-1.8.3.md](archive/release-notes-1.8.3.md)).
+
+- **Trial reminder** (sandbox account, annual with the 14-day trial): after the purchase on the
+  paywall iOS asks for notifications (when Tenra had only quiet ones or none); Settings → Tenra
+  Pro shows the trial. The reminder is pending for 10:00 two calendar days before the trial's
+  last day (sandbox trials last minutes, so check the pending request in Xcode's console or
+  with a debugger, not by waiting). Turning renewal off in the sandbox subscriptions and
+  reopening Tenra replaces its words with "Продление выключено, списаний не будет…".
+- **Ten's question after renewal is off**: with the same sandbox trial turned off, Home shows
+  Ten's "Продление Pro выключено"; "Написать" opens the talk with three chips ("Дорого", "Хватает
+  бесплатного", "Не хочу подписку"). A chip arrives in Telegram at once with the source `trial`
+  (server deployed with `trial` among the sources), Ten asks its follow-up, and the words typed
+  next arrive too; the message leaves Home after the first send. "Не хочу подписку" mentions the
+  lifetime purchase on the same screen.
 
 ## In the next version
 
@@ -40,6 +52,14 @@ here.
   already linked to another subscription, To review now asks "Похоже на Roblox" with "Объединить";
   after one merge by hand each next charge of that amount merges on its own, and the other Apple
   subscriptions keep merging too.
+
+- Tenra Pro's free trial (docs/promotion-plan.md §6, 2026-11-23: all five trials of November
+  were turned off, four on the second day): a notification two days before the trial ends says
+  what happens next (the yearly subscription and its price, or that nothing is charged with
+  renewal off) and how to cancel; after a trial starts on the paywall Tenra asks for
+  notifications so it comes as a banner. With renewal off, Ten asks on Home what did not suit
+  (three chips and the words after them, to the developer with the source `trial`). The paywall
+  and Apple's retention message promise this reminder: publish them with 1.8.4.
 
 ## Submission checklist
 

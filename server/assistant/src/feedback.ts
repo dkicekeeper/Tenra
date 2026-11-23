@@ -20,7 +20,8 @@ export const FEEDBACK_LIMITS = {
 export type Mood = "good" | "bad";
 
 /** Where in the app the message was written. */
-const SOURCES = new Set(["notice", "survey", "settings", "chat"]);
+/** `trial`: Ten's question after Tenra Pro's renewal was turned off during the free trial. */
+const SOURCES = new Set(["notice", "survey", "settings", "chat", "trial"]);
 
 export interface FeedbackRequest {
   text: string;

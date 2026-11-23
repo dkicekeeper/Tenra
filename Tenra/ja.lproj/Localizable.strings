@@ -2429,3 +2429,17 @@
 "feedback.chat.notHelpedReply" = "わかりました。まだ解決していないことを開発者に伝えます。";
 "feedback.chat.failed" = "送信できませんでした。接続を確認して、もう一度書いてください。";
 "feedback.chat.placeholder" = "回答を入力…";
+"trialReminder.title" = "Tenra Proのお試しはあと2日で終わります";
+"trialReminder.body.annual" = "キャンセルしない場合、その後%@の年間サブスクリプションが始まります。キャンセルは「設定」でお名前をタップし、「サブスクリプション」から行えます。";
+"trialReminder.body.monthly" = "キャンセルしない場合、その後%@の月間サブスクリプションが始まります。キャンセルは「設定」でお名前をタップし、「サブスクリプション」から行えます。";
+"trialReminder.body.noPrice" = "キャンセルしない場合、その後サブスクリプションが始まります。キャンセルは「設定」でお名前をタップし、「サブスクリプション」から行えます。";
+"trialReminder.body.cancelled" = "更新はオフなので、料金はかかりません。その後Proの機能は閉じますが、記録は残ります。";
+"feedback.trial.notice.title" = "Proの更新がオフになっています";
+"feedback.trial.notice.body" = "合わなかった点を教えていただけますか？開発者に伝えます。";
+"feedback.chat.askTrial" = "Tenra Proの更新をオフにされましたね。何が合いませんでしたか？開発者に伝えます。";
+"feedback.chat.trialPrice" = "高い";
+"feedback.chat.trialFreeEnough" = "無料で十分";
+"feedback.chat.trialNoSubscription" = "サブスクは嫌";
+"feedback.chat.trialAskPrice" = "ありがとうございます。開発者に届きました。いくらなら妥当だと思いますか？";
+"feedback.chat.trialAskFreeEnough" = "ありがとうございます。開発者に届きました。どうすればProが必要だと思えますか？";
+"feedback.chat.trialAskNoSubscription" = "ありがとうございます。開発者に届きました。ちなみにProには、サブスクなしの一回払いでずっと使えるプランもあります。同じ購入画面にあります。ほかに役立ちそうなことはありますか？";

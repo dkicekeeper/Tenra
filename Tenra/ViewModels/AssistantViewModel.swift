@@ -433,6 +433,7 @@ final class AssistantViewModel {
         // Where the cloud does not answer (RU, BY) every suggestion would be a question.
         // The feedback talk's two answers are not questions to the cloud: they show everywhere.
         if feedbackStep == .mood { return phase == .idle ? [Self.feedbackLike, Self.feedbackDislike] : [] }
+        if feedbackStep == .reason { return phase == .idle ? Self.trialReasons : [] }
         if feedbackFollowUp != nil { return phase == .idle ? [Self.feedbackHelped, Self.feedbackNotHelped] : [] }
         guard phase == .idle, !access.region.isOutOfRegion(now: access.now()) else { return [] }
         if feedbackHelpOffer != nil { return [Self.feedbackHelp] }
@@ -455,6 +456,23 @@ final class AssistantViewModel {
         case mood
         /// Ten asked for the words; the next message is sent to the owner.
         case details(AgentFeedbackMessage.Mood?)
+        /// Ten asked why Tenra Pro's renewal was turned off in the trial; the three reasons are
+        /// over the field (source `.trial`).
+        case reason
+    }
+
+    static var trialPrice: String { String(localized: "feedback.chat.trialPrice") }
+    static var trialFreeEnough: String { String(localized: "feedback.chat.trialFreeEnough") }
+    static var trialNoSubscription: String { String(localized: "feedback.chat.trialNoSubscription") }
+    static var trialReasons: [String] { [trialPrice, trialFreeEnough, trialNoSubscription] }
+
+    /// What Ten asks after a reason chip: the question that reason leads to.
+    static func trialFollowUp(for reason: String) -> String {
+        switch reason {
+        case trialPrice: return String(localized: "feedback.chat.trialAskPrice")
+        case trialNoSubscription: return String(localized: "feedback.chat.trialAskNoSubscription")
+        default: return String(localized: "feedback.chat.trialAskFreeEnough")
+        }
     }
 
     static var feedbackLike: String { String(localized: "feedback.chat.like") }
@@ -497,6 +515,9 @@ final class AssistantViewModel {
         if source == .survey {
             feedbackStep = .details(.bad)
             say(String(localized: "feedback.chat.askBad"), mood: .sad)
+        } else if source == .trial {
+            feedbackStep = .reason
+            say(String(localized: "feedback.chat.askTrial"), mood: .concerned)
         } else {
             feedbackStep = .mood
             say(String(localized: "feedback.chat.askMood"), mood: .idle)
@@ -523,6 +544,35 @@ final class AssistantViewModel {
             await sendFeedback(text, mood: nil, entry: entry.id)
         case .details(let mood):
             await sendFeedback(text, mood: mood, entry: entry.id)
+        case .reason where Self.trialReasons.contains(text):
+            await sendTrialReason(text)
+        case .reason:
+            // Typed instead of a chip: the words are the reason.
+            await sendFeedback(text, mood: .bad, entry: entry.id)
+        }
+    }
+
+    /// A reason chip after the trial's renewal was turned off. The reason goes to the owner at
+    /// once (it is the answer that matters, and the person may write nothing more), then Ten
+    /// asks what that reason leads to; the words typed next go to the owner too.
+    private func sendTrialReason(_ reason: String) async {
+        guard let transport = feedbackTransport else {
+            say(String(localized: "feedback.chat.failed"), mood: .sad)
+            return
+        }
+        phase = .working(.composing)
+        do {
+            try await transport.feedback(AgentFeedbackMessage(text: reason, mood: .bad, source: feedbackSource))
+            feedbackSent?(.bad)
+            feedbackSent = nil
+            try? await Task.sleep(for: Self.feedbackPause)
+            phase = .idle
+            feedbackStep = .details(.bad)
+            say(Self.trialFollowUp(for: reason), mood: .concerned)
+        } catch {
+            phase = .idle
+            // The same question stands, with its chips.
+            say(String(localized: "feedback.chat.failed"), mood: .sad)
         }
     }
 
@@ -548,7 +598,8 @@ final class AssistantViewModel {
             // Kind words end here. A complaint Ten then tries to settle itself: at once when
             // the cloud is allowed, else behind a chip that asks for the consent. Where the
             // cloud does not answer (RU, BY) the thanks are all, as before.
-            let canHelp = mood != .good && !access.region.isOutOfRegion(now: access.now())
+            // Why a trial was not kept is for the owner, not a problem Ten could settle.
+            let canHelp = mood != .good && feedbackSource != .trial && !access.region.isOutOfRegion(now: access.now())
             let helpsNow = canHelp && access.cloudConsent()
             // After a complaint Ten stays sorry; after kind words it is glad.
             if helpsNow {

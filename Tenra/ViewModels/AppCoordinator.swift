@@ -402,6 +402,10 @@ class AppCoordinator {
         if let ask = AssistantNotices.feedbackAsk(round: feedbackRound(now: now), now: now) {
             candidates.append(ask)
         }
+        if feedbackTransport != nil,
+           let ask = AssistantNotices.trialRenewalOff(PremiumManager.shared.proStatus, now: now) {
+            candidates.append(ask)
+        }
         return candidates
     }
 

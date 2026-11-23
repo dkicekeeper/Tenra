@@ -2429,3 +2429,17 @@
 "feedback.chat.notHelpedReply" = "Understood. The developer will know it is still not solved.";
 "feedback.chat.failed" = "The message did not go. Check your connection and write again.";
 "feedback.chat.placeholder" = "Write your answer…";
+"trialReminder.title" = "Your Tenra Pro trial ends in 2 days";
+"trialReminder.body.annual" = "Then the yearly subscription starts at %@, unless you cancel it. To cancel, open Settings, tap your name, then Subscriptions.";
+"trialReminder.body.monthly" = "Then the monthly subscription starts at %@, unless you cancel it. To cancel, open Settings, tap your name, then Subscriptions.";
+"trialReminder.body.noPrice" = "Then the subscription starts, unless you cancel it. To cancel, open Settings, tap your name, then Subscriptions.";
+"trialReminder.body.cancelled" = "Renewal is off, so nothing will be charged. After that the Pro features close, and your records stay.";
+"feedback.trial.notice.title" = "Pro renewal is off";
+"feedback.trial.notice.body" = "Will you tell me what did not suit you? I will pass it on to the developer.";
+"feedback.chat.askTrial" = "You turned off Tenra Pro renewal. What did not suit you? I will pass it on to the developer.";
+"feedback.chat.trialPrice" = "Too expensive";
+"feedback.chat.trialFreeEnough" = "Free is enough";
+"feedback.chat.trialNoSubscription" = "No subscriptions";
+"feedback.chat.trialAskPrice" = "Thank you, the developer has it. What price would feel fair?";
+"feedback.chat.trialAskFreeEnough" = "Thank you, the developer has it. What would make Pro worth it for you?";
+"feedback.chat.trialAskNoSubscription" = "Thank you, the developer has it. By the way, Pro can also be bought once and kept forever, with no subscription: it is on the same purchase screen. What else would help?";

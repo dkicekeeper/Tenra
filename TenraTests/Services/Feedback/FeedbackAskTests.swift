@@ -56,4 +56,38 @@ struct FeedbackAskTests {
         #expect(!subjects.contains(old))
         #expect(subjects.contains(open))
     }
+
+    private static func status(trial: Bool = true, willRenew: Bool = false, ends: Date? = day(20)) -> ProStatus {
+        ProStatus(plan: .annual, expirationDate: ends, willRenew: willRenew, managementURL: nil, isTrial: trial)
+    }
+
+    @Test("Ten asks why only while a trial runs with its renewal off")
+    func trialRenewalOff() throws {
+        let now = Self.day(10)
+        let notice = try #require(AssistantNotices.trialRenewalOff(Self.status(), now: now))
+        #expect(notice.kind == .feedback)
+        #expect(notice.id == FeedbackAsk.trialNoticeID(trialEnds: Self.day(20)))
+        #expect(FeedbackAsk.isTrialNotice(notice.id))
+        #expect(!FeedbackAsk.isTrialNotice(FeedbackAsk.noticeID(round: 1)))
+        #expect(!FeedbackAsk.isTrialNotice(FeedbackAsk.surveyNoticeID))
+
+        #expect(AssistantNotices.trialRenewalOff(nil, now: now) == nil)
+        #expect(AssistantNotices.trialRenewalOff(Self.status(willRenew: true), now: now) == nil)
+        #expect(AssistantNotices.trialRenewalOff(Self.status(trial: false), now: now) == nil)
+        #expect(AssistantNotices.trialRenewalOff(Self.status(ends: nil), now: now) == nil)
+        #expect(AssistantNotices.trialRenewalOff(Self.status(ends: Self.day(9)), now: now) == nil)
+    }
+
+    @Test("Each trial has its own question")
+    func trialKeys() {
+        #expect(FeedbackAsk.trialNoticeID(trialEnds: Self.day(14)) != FeedbackAsk.trialNoticeID(trialEnds: Self.day(30)))
+    }
+
+    @Test("The trial's question stays in Ten's inbox whatever round is open")
+    func trialSubjects() throws {
+        let notice = try #require(AssistantNotices.trialRenewalOff(Self.status(), now: Self.day(10)))
+        var subjects = AssistantNotices.Subjects(subscriptions: [], debts: [], goals: [])
+        subjects.feedbackRound = 2
+        #expect(subjects.contains(notice))
+    }
 }

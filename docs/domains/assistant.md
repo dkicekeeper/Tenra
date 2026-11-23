@@ -351,6 +351,20 @@ e-mail; the e-mail stays as the fallback without a server or App Attest
 (`AppCoordinator.feedbackTransport` is nil, and Ten does not ask either). Pinned by
 `FeedbackAskTests` and `AssistantFeedbackChatTests`.
 
+**Why a trial was not kept** (`AssistantNotices.trialRenewalOff`, source `trial`; all five trials
+of November were turned off, four on the second day, [promotion-plan.md](../promotion-plan.md)
+§6): while Tenra Pro's trial runs with renewal off (`ProStatus.isTrial`, `willRenew` false),
+Ten's message on Home asks what did not suit, once per trial (key
+`FeedbackAsk.trialNoticeID(trialEnds:)`, kept whatever feedback round is open). "Write" opens the
+same scripted talk, starting at `FeedbackStep.reason`: Ten asks, three chips stand over the field
+("Too expensive", "Free is enough", "No subscriptions", `AssistantViewModel.trialReasons`). A chip
+goes to the owner at once (it is the answer that matters, mood `bad`) and marks the Home message
+read; then Ten asks what that reason leads to (`trialFollowUp`: a fair price; what would make Pro
+worth it; with "No subscriptions", that lifetime is on the same purchase screen), and the words
+typed next go too. Words typed instead of a chip are the reason. Ten does not try to help with a
+trial's answer (no model turn): it is for the owner. Comes from `refreshAssistantInbox`, so it
+shows from the next time Tenra comes to the front after the renewal was turned off.
+
 Auto-capture not set up (`Kind.setup`, `AssistantNotices.setupNudge`): once, after
 `setupAfterEntries` entries, for someone who hid Home's auto-capture card; its button is "Set
 up" and opens the Wallet guide instead of asking Ten (no action spent), and it leaves once an
@@ -497,7 +511,7 @@ The app runs the agent loop, because the tools run on the phone: one server call
 
 What a person wrote to Ten about the app (`src/feedback.ts`, the app's `AgentFeedbackTransport`).
 The one place where the server keeps words, because they are written to be read. Body:
-`{"protocol": 1, "text", "mood"?: "good"|"bad", "source"?: "notice"|"survey"|"settings"|"chat",
+`{"protocol": 1, "text", "mood"?: "good"|"bad", "source"?: "notice"|"survey"|"settings"|"chat"|"trial",
 "resolved"?: bool (a follow-up after Ten's help: the same text, and whether it helped; Telegram
 shows "Ten helped" or "Ten did not help"), "app", "os", "locale", "user"?}`, signed by App Attest like a turn. No model is called, so neither
 `ASSISTANT_ENABLED` nor `BLOCKED_COUNTRIES` applies, and the App Attest routes are open the same

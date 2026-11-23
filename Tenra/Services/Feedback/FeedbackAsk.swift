@@ -46,6 +46,16 @@ nonisolated enum FeedbackAsk {
     /// The key of the message that opens the talk after the rating survey's "not really". It is
     /// never in the inbox: it only carries the talk to Ten's chat.
     static let surveyNoticeID = "feedback:survey"
+
+    /// The key of Ten's question after Tenra Pro's renewal was turned off in a trial: one per
+    /// trial (its end), so it asks once, answered or hidden.
+    static func trialNoticeID(trialEnds: Date) -> String {
+        "\(trialNoticePrefix)\(Int(trialEnds.timeIntervalSince1970))"
+    }
+
+    static let trialNoticePrefix = "feedback:trial:"
+
+    static func isTrialNotice(_ id: String) -> Bool { id.hasPrefix(trialNoticePrefix) }
 }
 
 extension AssistantNotices {
@@ -59,6 +69,26 @@ extension AssistantNotices {
             title: String(localized: "feedback.notice.title"),
             body: String(localized: "feedback.notice.body"),
             mood: .idle,
+            question: "",
+            insightId: nil,
+            createdAt: now
+        )
+    }
+
+    /// Tenra Pro's renewal is off while the trial runs (docs/promotion-plan.md §6, 2026-11-23:
+    /// all five trials of November were turned off, four on the second day, and nobody knows
+    /// why). Ten asks what did not suit; the button opens the talk with three reasons as chips
+    /// (`AssistantViewModel.startFeedback(source: .trial)`), and the answer goes to the owner.
+    /// Nil for anyone else: no Pro, renewal on, a paid period, lifetime.
+    static func trialRenewalOff(_ status: ProStatus?, now: Date) -> AssistantNotice? {
+        guard let status, status.isTrial, !status.willRenew,
+              let trialEnds = status.expirationDate, trialEnds > now else { return nil }
+        return AssistantNotice(
+            id: FeedbackAsk.trialNoticeID(trialEnds: trialEnds),
+            kind: .feedback,
+            title: String(localized: "feedback.trial.notice.title"),
+            body: String(localized: "feedback.trial.notice.body"),
+            mood: .concerned,
             question: "",
             insightId: nil,
             createdAt: now

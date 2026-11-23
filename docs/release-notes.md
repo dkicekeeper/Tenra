@@ -67,8 +67,11 @@ The checks 1.8.3 shipped with were done by the founder on 2026-11-14: all fine (
    2026-11-23: for a customer eligible for the trial the line under the button reads "Напомним
    за 2 дня до конца пробного периода. Отмена в любой момент в настройках App Store." (override
    `intro_offer`, text `trialRmnd1`, 14 locales; the others see the auto-renewal line as before).
-   The founder looked at the render first; the other seventeen copies (Kazakh, the eight gates
-   in both languages) get the same line, then all eighteen are published.
+   The founder approved the render the same day; all eighteen copies (the main one, the Kazakh
+   one, the eight gates in both languages; Kazakh text in every locale of the Kazakh copies:
+   "Сынақ біткенге 2 күн қалғанда еске саламыз. App Store-да тоқтатуға болады.") hold the same
+   draft, checked against the published version: only that override and that text differ.
+   Publish all eighteen (`publish-paywall`) once 1.8.4 is in the store.
 2. **Apple's retention message** (App Store Connect → the subscription group → Retention
    Messages; shown when a subscriber starts to cancel; no prices or offers in the text, and no
    offer at all for people who never paid). Text only. Created by the founder, then "Add for

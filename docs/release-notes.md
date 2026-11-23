@@ -5,7 +5,10 @@
 under "In the next version" below (the server with prompt 2026-11-14.4 is deployed). **The next
 version is 1.8.4** (the project says 1.8.4 since 2026-11-23; the founder's call: 1.8.4 for a small
 update, 1.9 is kept for the update the featuring nomination promises in the last week of December,
-[plan-growth.md](plan-growth.md) stage 4). What's New blocks are not written yet.
+[plan-growth.md](plan-growth.md) stage 4). **Build 91 is in TestFlight** since 2026-11-23 19:41 UTC
+(VALID, internal testing), built from the branch with main merged in (the trial reminder, Ten's
+question, stage 0 of Ten's looks) while CI of that merge was still running: two attempts lost their
+macOS runner. What's New blocks are not written yet.
 
 When the blocks are written: one `## <locale>` heading per storefront (en-US, ru, en-GB, de-DE,
 es-ES, es-MX, fr-FR, fr-CA, tr, pt-BR, it, uk, ja, ko), which `prepare-version` (Actions → App

@@ -61,6 +61,36 @@ The checks 1.8.3 shipped with were done by the founder on 2026-11-14: all fine (
   (three chips and the words after them, to the developer with the source `trial`). The paywall
   and Apple's retention message promise this reminder: publish them with 1.8.4.
 
+## With 1.8.4 in the store (not before: both promise the reminder)
+
+1. **The paywall's trial line**: the main paywall (`pw32bb8818b3674c29`) holds a draft since
+   2026-11-23: for a customer eligible for the trial the line under the button reads "Напомним
+   за 2 дня до конца пробного периода. Отмена в любой момент в настройках App Store." (override
+   `intro_offer`, text `trialRmnd1`, 14 locales; the others see the auto-renewal line as before).
+   The founder looked at the render first; the other seventeen copies (Kazakh, the eight gates
+   in both languages) get the same line, then all eighteen are published.
+2. **Apple's retention message** (App Store Connect → the subscription group → Retention
+   Messages; shown when a subscriber starts to cancel; no prices or offers in the text, and no
+   offer at all for people who never paid). Text only. Created by the founder, then "Add for
+   Review"; check in the sandbox whether a trial's cancellation shows it. en-GB carries ru's
+   text (search in Kazakhstan, D9).
+
+   | Locale | Header | Body |
+   |---|---|---|
+   | en-US | No need to cancel early | If you are on a free trial, Tenra will remind you 2 days before it ends. Your accounts, deposits and loans stay where they are. |
+   | ru, en-GB | Можно не отменять заранее | Если у вас пробный период, Tenra напомнит за 2 дня до его конца. Ваши счета, вклады и кредиты останутся на месте. |
+   | de-DE | Sie müssen nicht vorab kündigen | Im kostenlosen Test erinnert Tenra Sie 2 Tage vor dessen Ende. Ihre Konten, Einlagen und Kredite bleiben, wo sie sind. |
+   | es-ES, es-MX | No hace falta cancelar antes | Si estás en la prueba gratuita, Tenra te avisará 2 días antes de que termine. Tus cuentas, depósitos y préstamos se quedan donde están. |
+   | fr-FR, fr-CA | Inutile de résilier à l’avance | Pendant l’essai gratuit, Tenra vous prévient 2 jours avant sa fin. Vos comptes, dépôts et prêts restent à leur place. |
+   | tr | Önceden iptal etmen gerekmiyor | Ücretsiz denemedeysen Tenra bitmeden 2 gün önce hatırlatır. Hesapların, mevduatların ve kredilerin yerinde kalır. |
+   | pt-BR | Não precisa cancelar antes | Se você está no teste grátis, o Tenra avisa 2 dias antes do fim. Suas contas, depósitos e empréstimos continuam onde estão. |
+   | it | Non serve annullare in anticipo | Se sei nella prova gratuita, Tenra ti avvisa 2 giorni prima della fine. I tuoi conti, depositi e prestiti restano dove sono. |
+   | uk | Можна не скасовувати заздалегідь | Якщо у вас пробний період, Tenra нагадає за 2 дні до його кінця. Ваші рахунки, вклади й кредити залишаться на місці. |
+   | ja | 前もって解約しなくても大丈夫です | 無料トライアル中なら、終了の2日前にTenraがお知らせします。口座、預金、ローンの記録はそのまま残ります。 |
+   | ko | 미리 해지하지 않아도 돼요 | 무료 체험 중이라면 끝나기 2일 전에 Tenra가 알려 드려요. 계좌, 예금, 대출 기록은 그대로 남아요. |
+3. **The server** with `trial` among the feedback sources (Actions → Assistant server →
+   `deploy`); an older server keeps such a message without its source.
+
 ## Submission checklist
 
 1. **CI green**, then a TestFlight build under the new version number.

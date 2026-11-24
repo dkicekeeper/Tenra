@@ -2449,6 +2449,7 @@
 "yearReview.empty.text" = "한 해에 기록이 30개 이상이면 연말 결산을 볼 수 있어요.";
 "yearReview.share" = "공유";
 "yearReview.cover.title" = "Tenra와 함께한 한 해";
+"yearReview.navTitle" = "%@년 결산";
 "yearReview.cover.text" = "올해는 어땠을까요: 나간 돈, 남은 돈, 그리고 만든 습관. 넘겨 보세요.";
 "yearReview.money.title" = "올해 쓴 돈";
 "yearReview.money.income" = "수입";

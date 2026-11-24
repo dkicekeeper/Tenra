@@ -2449,6 +2449,7 @@
 "yearReview.empty.text" = "A review comes together once the year has at least 30 records.";
 "yearReview.share" = "Share";
 "yearReview.cover.title" = "Your year in Tenra";
+"yearReview.navTitle" = "%@ in review";
 "yearReview.cover.text" = "How your year went: what went out, what was left, and the habit you built. Swipe through it.";
 "yearReview.money.title" = "This year you spent";
 "yearReview.money.income" = "Income";

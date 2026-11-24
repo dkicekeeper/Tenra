@@ -2449,6 +2449,7 @@
 "yearReview.empty.text" = "El resumen se arma cuando el año tiene al menos 30 registros.";
 "yearReview.share" = "Compartir";
 "yearReview.cover.title" = "Tu año en Tenra";
+"yearReview.navTitle" = "Resumen del año %@";
 "yearReview.cover.text" = "Cómo fue tu año: lo que salió, lo que quedó y el hábito que creaste. Desliza para verlo.";
 "yearReview.money.title" = "Este año gastaste";
 "yearReview.money.income" = "Ingresos";

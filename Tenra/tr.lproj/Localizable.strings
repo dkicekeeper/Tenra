@@ -2449,6 +2449,7 @@
 "yearReview.empty.text" = "Özet, yılda en az 30 kayıt olduğunda hazırlanır.";
 "yearReview.share" = "Paylaş";
 "yearReview.cover.title" = "Tenra'da yılın";
+"yearReview.navTitle" = "%@ yılı özeti";
 "yearReview.cover.text" = "Yılın nasıl geçti: ne gitti, ne kaldı ve hangi alışkanlığı edindin. Kaydırarak gör.";
 "yearReview.money.title" = "Bu yıl harcadığın";
 "yearReview.money.income" = "Gelir";

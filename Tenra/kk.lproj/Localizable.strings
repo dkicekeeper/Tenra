@@ -2449,6 +2449,7 @@
 "yearReview.empty.text" = "Жылда кемінде 30 жазба болғанда қорытынды жиналады.";
 "yearReview.share" = "Бөлісу";
 "yearReview.cover.title" = "Tenra-дағы жылыңыз";
+"yearReview.navTitle" = "%@ жылдың қорытындысы";
 "yearReview.cover.text" = "Жыл қалай өтті: қанша кетті, қанша қалды және қандай әдет қалыптасты. Парақтап көріңіз.";
 "yearReview.money.title" = "Биыл жұмсағаныңыз";
 "yearReview.money.income" = "Кірістер";

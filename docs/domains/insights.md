@@ -192,9 +192,10 @@ history. Free, like Analytics (owner's decision, 2026-11-24: never behind the pa
   the calmest complete one), top five categories, top three merchants, subscriptions, the habit
   (records, days, the longest run), the biggest one-off expense, the finale. A page with nothing
   to show is left out.
-- **Screens** (`Views/Insights/`): `YearReviewView` (the pages as stories: a paging scroll, each
-  page with its own still aurora, `YearReviewPalette`, the next one fading in under the finger as
-  far as the swipe has gone, `YearReviewAurora`; a page's content rises in the first time it
+- **Screens** (`Views/Insights/`): `YearReviewView` (the pages as stories, always dark: a paging
+  scroll, each page with its own still aurora, small pools of colour on black,
+  `YearReviewPalette`, the next one fading in under the finger as far as the swipe has gone,
+  `YearReviewAurora`; a soft edge under the bars; the title "Итоги года 2026"; a page's content rises in the first time it
   comes up; DesignKit parts: `LiveAmountText`, `ProgressRing`, `MiniBars`, `OrbChart`,
   `PackedCircleIcons`, `CalendarHeatmap`, `HeroSection`, `.celebration` on the finale),
   `YearReviewScreen` (loads a year and shows it), `YearReviewLink` (the card at the top of

@@ -82,7 +82,7 @@ struct YearReviewShareCard: View {
     /// The cover's aurora at the card's size, still and without grain, on the dark page.
     static func aurora(for format: ShareCard.Format) -> UIImage? {
         let renderer = ImageRenderer(content:
-            AuroraBackground(YearReviewPalette.spots(YearReviewPalette.cover), intensity: 1, grain: 0)
+            AuroraBackground(YearReviewPalette.spots(YearReviewPalette.cover, from: 1), intensity: 1, grain: 0)
                 .frame(width: format.width, height: format.height)
                 .environment(\.colorScheme, .dark)
         )

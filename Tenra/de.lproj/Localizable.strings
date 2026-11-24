@@ -2449,6 +2449,7 @@
 "yearReview.empty.text" = "Ein Rückblick entsteht, sobald das Jahr mindestens 30 Einträge hat.";
 "yearReview.share" = "Teilen";
 "yearReview.cover.title" = "Ihr Jahr in Tenra";
+"yearReview.navTitle" = "Jahresrückblick %@";
 "yearReview.cover.text" = "So lief Ihr Jahr: was ausgegeben wurde, was übrig blieb und welche Gewohnheit Sie aufgebaut haben. Wischen Sie durch.";
 "yearReview.money.title" = "Dieses Jahr haben Sie ausgegeben";
 "yearReview.money.income" = "Einnahmen";

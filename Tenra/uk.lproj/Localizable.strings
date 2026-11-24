@@ -2449,6 +2449,7 @@
 "yearReview.empty.text" = "Підсумки складаються, коли за рік набирається щонайменше 30 записів.";
 "yearReview.share" = "Поділитися";
 "yearReview.cover.title" = "Ваш рік у Tenra";
+"yearReview.navTitle" = "Підсумки року %@";
 "yearReview.cover.text" = "Яким був рік: скільки пішло, скільки залишилося і яка склалася звичка. Гортайте.";
 "yearReview.money.title" = "За рік ви витратили";
 "yearReview.money.income" = "Доходи";

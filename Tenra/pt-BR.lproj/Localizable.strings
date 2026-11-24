@@ -2449,6 +2449,7 @@
 "yearReview.empty.text" = "A retrospectiva se forma quando o ano tem pelo menos 30 registros.";
 "yearReview.share" = "Compartilhar";
 "yearReview.cover.title" = "Seu ano no Tenra";
+"yearReview.navTitle" = "Retrospectiva %@";
 "yearReview.cover.text" = "Como foi o seu ano: o que saiu, o que sobrou e o hábito que você criou. Deslize para ver.";
 "yearReview.money.title" = "Este ano você gastou";
 "yearReview.money.income" = "Receitas";

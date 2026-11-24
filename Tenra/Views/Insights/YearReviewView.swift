@@ -57,6 +57,7 @@ struct YearReviewScreen: View {
                         }
                     }
                 }
+                .preferredColorScheme(.dark)
             }
         }
         .task {
@@ -137,9 +138,9 @@ struct YearReviewView: View {
             .scrollTargetBehavior(.paging)
             .scrollPosition(id: $current)
             .scrollIndicators(.hidden)
-            // The pages scroll sideways: no edge under the bars (built with Xcode 27 it is hard,
-            // a band across the aurora); each page's own scroll keeps a soft one.
-            .scrollEdgeEffectHidden(true, for: [.top, .bottom])
+            // A soft edge under the bars over every page (built with Xcode 27 the style as it
+            // comes is hard: a band across the aurora); the pages' own scrolls draw none.
+            .scrollEdgeEffectStyle(.soft, for: [.top, .bottom])
             .onScrollGeometryChange(for: Double.self) { geometry in
                 geometry.contentOffset.x / max(geometry.containerSize.width, 1)
             } action: { _, progress in
@@ -162,7 +163,7 @@ struct YearReviewView: View {
                 .screenPadding()
                 .padding(.bottom, AppSpacing.md)
             }
-            .navigationTitle(Text(verbatim: String(review.year)))
+            .navigationTitle(String(format: String(localized: "yearReview.navTitle"), String(review.year)))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -170,6 +171,8 @@ struct YearReviewView: View {
                 }
             }
         }
+        // Night, with a little colour: dark whatever the phone's appearance.
+        .preferredColorScheme(.dark)
         .sheet(isPresented: $sharing) {
             ShareCardSheet(
                 previewTitle: "Tenra",
@@ -532,13 +535,16 @@ struct YearReviewView: View {
             let top = review.topCategories.prefix(YearReviewPalette.maxSpots)
             let largest = top.map(\.share).max() ?? 1
             guard !top.isEmpty, largest > 0 else { return YearReviewPalette.spots(YearReviewPalette.cover) }
-            return top.map { AuroraBackground.Spot(color: categoryStyle($0.key).color, weight: $0.share / largest) }
+            return top.map {
+                AuroraBackground.Spot(color: categoryStyle($0.key).color, weight: YearReviewPalette.heaviest * $0.share / largest)
+            }
         case .merchants: return YearReviewPalette.spots(YearReviewPalette.merchants)
         case .subscriptions: return YearReviewPalette.spots(YearReviewPalette.subscriptions)
         case .habit: return YearReviewPalette.spots(YearReviewPalette.habit)
         case .biggest:
             let color = review.biggestExpense.map { categoryStyle($0.categoryKey).color } ?? AppColors.accent
-            return [AuroraBackground.Spot(color: color, weight: 1)] + YearReviewPalette.spots(YearReviewPalette.biggest, from: 0.6)
+            return [AuroraBackground.Spot(color: color, weight: YearReviewPalette.heaviest)]
+                + YearReviewPalette.spots(YearReviewPalette.biggest, from: YearReviewPalette.heaviest - 0.2)
         case .finale: return YearReviewPalette.spots(YearReviewPalette.finale)
         }
     }
@@ -587,7 +593,7 @@ private struct YearReviewPageContainer<Content: View>: View {
         .defaultScrollAnchor(.center, for: .alignment)
         .scrollBounceBehavior(.basedOnSize)
         .scrollIndicators(.hidden)
-        .scrollEdgeEffectStyle(.soft, for: [.top, .bottom])
+        .scrollEdgeEffectHidden(true, for: [.top, .bottom])
     }
 }
 
@@ -651,8 +657,11 @@ private struct YearReviewAurora: View {
     }
 }
 
-/// Each page's hues (DesignKit's named palette), heaviest first.
+/// Each page's hues (DesignKit's named palette), heaviest first: small pools of colour on the
+/// night (the founder's review: mostly black, a little colour).
 enum YearReviewPalette {
+    /// The heaviest pool's weight: well under 1, so the pools stay small.
+    static let heaviest = 0.6
     static let cover: [AppColors.Palette] = [.violet, .pink, .cyan]
     static let money: [AppColors.Palette] = [.emerald, .teal, .green]
     static let months: [AppColors.Palette] = [.orange, .pink, .violet]
@@ -664,10 +673,10 @@ enum YearReviewPalette {
     /// The categories' page: up to as many of the top categories.
     static let maxSpots = 4
 
-    /// The hues as spots, each a fifth lighter than the one before, from `from`.
-    static func spots(_ hues: [AppColors.Palette], from weight: Double = 1) -> [AuroraBackground.Spot] {
+    /// The hues as spots, each lighter than the one before, from `from`.
+    static func spots(_ hues: [AppColors.Palette], from weight: Double = heaviest) -> [AuroraBackground.Spot] {
         hues.enumerated().map { offset, hue in
-            .init(color: hue.color, weight: max(weight - Double(offset) * 0.2, 0.2))
+            .init(color: hue.color, weight: max(weight - Double(offset) * 0.15, 0.15))
         }
     }
 }
@@ -687,7 +696,7 @@ enum YearReviewMetrics {
     /// The subscriptions' shelf.
     static let circlesWidth: CGFloat = 240
     static let subscriptionLogos = 5
-    static let auroraIntensity: Double = 0.55
+    static let auroraIntensity: Double = 0.4
 }
 
 /// The review's words that are not a plain key: plurals, months, the habit's counters.

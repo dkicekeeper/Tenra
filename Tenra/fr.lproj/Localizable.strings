@@ -2449,6 +2449,7 @@
 "yearReview.empty.text" = "Le bilan se forme dès que l'année compte au moins 30 entrées.";
 "yearReview.share" = "Partager";
 "yearReview.cover.title" = "Votre année dans Tenra";
+"yearReview.navTitle" = "Bilan de l’année %@";
 "yearReview.cover.text" = "Comment s'est passée votre année : ce qui est parti, ce qui est resté et l'habitude que vous avez prise. Faites défiler.";
 "yearReview.money.title" = "Cette année, vous avez dépensé";
 "yearReview.money.income" = "Revenus";

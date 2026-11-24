@@ -2449,6 +2449,7 @@
 "yearReview.empty.text" = "Итоги собираются, когда за год набирается хотя бы 30 записей.";
 "yearReview.share" = "Поделиться";
 "yearReview.cover.title" = "Ваш год в Tenra";
+"yearReview.navTitle" = "Итоги года %@";
 "yearReview.cover.text" = "Каким был год: сколько ушло, сколько осталось и какая сложилась привычка. Листайте.";
 "yearReview.money.title" = "За год вы потратили";
 "yearReview.money.income" = "Доходы";

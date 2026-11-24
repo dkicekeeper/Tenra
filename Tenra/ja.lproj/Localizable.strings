@@ -2449,6 +2449,7 @@
 "yearReview.empty.text" = "1年に30件以上の記録があると、振り返りができます。";
 "yearReview.share" = "共有";
 "yearReview.cover.title" = "Tenraでの1年";
+"yearReview.navTitle" = "%@年の振り返り";
 "yearReview.cover.text" = "今年はどんな1年だったか：出ていったお金、残ったお金、身についた習慣。スワイプして見てみましょう。";
 "yearReview.money.title" = "今年の支出";
 "yearReview.money.income" = "収入";

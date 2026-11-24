@@ -2449,6 +2449,7 @@
 "yearReview.empty.text" = "Il riepilogo si forma quando l'anno ha almeno 30 registrazioni.";
 "yearReview.share" = "Condividi";
 "yearReview.cover.title" = "Il tuo anno in Tenra";
+"yearReview.navTitle" = "Riepilogo dell’anno %@";
 "yearReview.cover.text" = "Com'è andato il tuo anno: cosa è uscito, cosa è rimasto e l'abitudine che hai costruito. Scorri per vederlo.";
 "yearReview.money.title" = "Quest'anno hai speso";
 "yearReview.money.income" = "Entrate";

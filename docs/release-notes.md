@@ -5,10 +5,12 @@
 (the founder's call 2026-11-24: 1.8.4 is not released on its own; 1.9 goes out now with all that
 is ready, what 1.8.4 was to bring and the year in review; the January plan and Ten's moments go
 to an update in the last week of December, which the featuring nomination promises,
-[plan-release-1.9.md](plan-release-1.9.md)). Build 91 (1.8.4, in TestFlight since 2026-11-23) is
-superseded: 1.9's build comes once CI is green on the year in review. `main` carries what is
-under "In this version" except the year in review (on the branch `claude/optimistic-mayer-n7wry2`
-until CI is green). What's New written 2026-11-24.
+[plan-release-1.9.md](plan-release-1.9.md)). **Build 93** (TestFlight 2026-11-24, from
+`f1cb53ca`, DesignKit 8.16.0) replaces build 91 (1.8.4). In App Store Connect on 2026-11-24:
+version 1.9 created with What's New in all 14 storefronts and build 93 (`prepare-version`), the
+App Review notes below set (`review-notes --apply`), and a draft review submission holds the
+version and the retention message `trial-reminder` (`prepare-review`), **not submitted**: the
+founder sends it. What's New written 2026-11-24.
 
 `prepare-version` (Actions → App Store Connect, [asc.md](asc.md)) pastes each block below into
 App Store Connect; en-GB (search in Kazakhstan) carries ru's text. No em dashes (user rule).
@@ -284,11 +286,12 @@ The checks 1.8.3 shipped with were done by the founder on 2026-11-14: all fine (
 
 ## Submission checklist
 
-1. **CI green**, then a TestFlight build of 1.9.
+1. **CI green**, then a TestFlight build of 1.9. Build 93 is in TestFlight (2026-11-24).
 2. **The phone checks above**, for what the version adds.
-3. **What's New** above, then `prepare-version --version 1.9 --build <N>`.
+3. **What's New** above, then `prepare-version --version 1.9 --build <N>`. Done 2026-11-24 with
+   build 93, all 14 storefronts updated.
 4. **App Review notes**, in English, set from this block by
-   `asc.py review-notes --version 1.9 --apply`:
+   `asc.py review-notes --version 1.9 --apply` (set 2026-11-24):
 
 ```
 New in 1.9, the year in review. From 15 December to 31 January, for someone with at least 30 records in the year and 30 days of history, Ten's message on Home and a card at the top of Analytics open a full-screen summary of the year, page by page (income and expenses, months, top categories and merchants, subscriptions, the habit, the biggest one-off expense), computed on the device. Its last page shares a picture for Stories through the system share sheet; the picture shows no amounts unless the person turns them on. Outside those dates the review can be opened in test builds (TestFlight and App Review) from Settings > About > Diagnostics > Year in review > Preview; with fewer than 30 records it says there is not enough to review yet.
@@ -303,4 +306,6 @@ Tenra Pro features can be tried with a sandbox purchase on the paywall: Settings
 ```
 
 5. **One submission**: `asc.py prepare-review --version 1.9` (it adds Apple's retention message);
-   the founder sends it, or `--submit` on the founder's word.
+   the founder sends it, or `--submit` on the founder's word. The draft is ready since 2026-11-24
+   (the version with build 93 and `trial-reminder`, 2 items): App Store Connect → Distribution →
+   the draft submission → Submit for Review.

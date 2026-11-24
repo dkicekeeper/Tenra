@@ -175,7 +175,7 @@ All return lightweight value-type structs (`InMemoryMonthlyTotal`, `InMemoryCate
 A calendar year in Tenra, page by page on the whole screen ([plan-release-1.9.md](../plan-release-1.9.md)
 §3). Shown from 15 December (the year that is ending) to 31 January (the one just ended),
 `YearReviewWindow`; nothing for someone with fewer than 30 records in the year or 30 days of
-history. Free, like Analytics.
+history. Free, like Analytics (owner's decision, 2026-11-24: never behind the paywall).
 
 - **Computing** (`Services/Insights/YearReview.swift`): `YearReviewBuilder.build` is a pure
   function of plain values, by the feed's money rules: realized rows of the year only, income
@@ -197,8 +197,8 @@ history. Free, like Analytics.
   of Analytics, inside the window only), and Ten's message on Home ([assistant.md](assistant.md)
   §6).
 - **Sharing** (`YearReviewShareCard`): DesignKit's `ShareCardFrame` in the Stories format through
-  its `ShareCardSheet`. Without amounts by default (shares, the share of income kept, the
-  counters); the "Amounts on the picture" switch on the last page
+  its `ShareCardSheet`. Without amounts by default (owner's decision, 2026-11-24: shares, the share
+  of income kept, the counters); the "Amounts on the picture" switch on the last page
   (`yearReview.shareAmounts`) adds what was spent and kept and each category's amount.
 - Pinned by `YearReviewTests`; mockups of every page, the message and the picture in
   `ScreenMockupTests` while the layout is in review.

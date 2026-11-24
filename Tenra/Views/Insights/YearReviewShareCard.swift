@@ -4,7 +4,8 @@
 //
 //  The year in review as a picture to share (docs/plan-release-1.9.md §3): DesignKit's
 //  ShareCardFrame in the Stories format, rendered by its ShareCardSheet. Ten, "My 2026 in
-//  Tenra", the habit's counters and the top categories by their shares. Without amounts by
+//  Tenra", the habit's counters and the top categories by their shares; at the foot the app's
+//  icon (LaunchIcon) and "Tenra" in Inter. Without amounts by
 //  default: shares and counts only, so the picture says nothing about the person's money; the
 //  "With amounts" switch on the review's last page adds what was spent and kept and each
 //  category's amount.
@@ -30,13 +31,29 @@ struct YearReviewShareCard: View {
     var accessory: CreatureAccessory? = nil
     var format: ShareCard.Format = .story
 
+    /// The brand line in Inter, the app's typeface, after the app's icon (DesignKit 8.16.0), so
+    /// a shared picture says which app it is from. The colours are the standard card's: the
+    /// aurora photo covers them.
+    static let style = ShareCard.Style(
+        top: ShareCard.Style.standard.top,
+        bottom: ShareCard.Style.standard.bottom,
+        accent: ShareCard.Style.standard.accent,
+        brandTypeface: .inter
+    )
+
     /// The text sent with the picture: "My 2026 in Tenra" and the App Store link.
     static func message(for review: YearReview) -> String {
         String(format: String(localized: "yearReview.share.message"), String(review.year)) + " " + appURL
     }
 
     var body: some View {
-        ShareCardFrame(format: format, brand: "Tenra", photo: Self.aurora(for: format)) {
+        ShareCardFrame(
+            format: format,
+            brand: "Tenra",
+            brandIcon: UIImage(named: "LaunchIcon"),
+            photo: Self.aurora(for: format),
+            style: Self.style
+        ) {
             ParticleCreature(mood: .happy, accessory: accessory)
                 .frame(width: YearReviewShareMetrics.creatureSize, height: YearReviewShareMetrics.creatureSize)
                 .designKitMotion(false)

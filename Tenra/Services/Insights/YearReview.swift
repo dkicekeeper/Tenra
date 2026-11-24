@@ -31,11 +31,20 @@ nonisolated struct YearReview: Sendable, Equatable {
         /// The normalized merchant (or brand) key.
         let key: String
         let name: String
+        /// How the bank last wrote it, for its logo (MerchantLogoStore).
+        let description: String
         let amount: Double
         let visits: Int
         /// The category key the merchant was most often recorded under, for its icon.
         let usualCategory: String
         var id: String { key }
+    }
+
+    nonisolated struct SubscriptionTotal: Sendable, Equatable, Identifiable {
+        /// The subscription's `RecurringSeries.id`, for its name and logo.
+        let seriesId: String
+        let amount: Double
+        var id: String { seriesId }
     }
 
     nonisolated struct BiggestExpense: Sendable, Equatable {
@@ -72,14 +81,19 @@ nonisolated struct YearReview: Sendable, Equatable {
     /// `YearReviewBuilder.minimumMerchants` merchants.
     let topMerchants: [MerchantTotal]
     let subscriptionsTotal: Double
-    /// Subscriptions that charged in the year.
-    let subscriptionsCount: Int
+    /// Each subscription that charged in the year, largest first.
+    let subscriptions: [SubscriptionTotal]
     let habit: Habit
+    /// Records per day ("yyyy-MM-dd"), for the habit's calendar.
+    let recordsByDay: [String: Int]
     let biggestExpense: BiggestExpense?
     /// A cross-currency row had no rate and was left out: recompute when rates arrive.
     let usedStaleFallback: Bool
 
     var saved: Double { income - expenses }
+
+    /// Subscriptions that charged in the year.
+    var subscriptionsCount: Int { subscriptions.count }
 
     /// What was left of the income, as a share of it; nil without income.
     var savingsRate: Double? { income > 0 ? (income - expenses) / income : nil }
@@ -156,9 +170,9 @@ nonisolated enum YearReviewBuilder {
         var byCategory: [String: Double] = [:]
         var stale = false
         var records = 0
-        var recordDays = Set<String>()
+        var recordsByDay: [String: Int] = [:]
         var subscriptionsTotal = 0.0
-        var chargedSubscriptions = Set<String>()
+        var bySubscription: [String: Double] = [:]
         var biggest: (amount: Double, tx: Transaction)?
 
         struct Merchant {
@@ -174,7 +188,7 @@ nonisolated enum YearReviewBuilder {
         for tx in transactions where tx.date.hasPrefix(prefix) && tx.date <= today {
             if isRecord(tx) {
                 records += 1
-                recordDays.insert(tx.date)
+                recordsByDay[tx.date, default: 0] += 1
             }
 
             let bucket = InsightsService.moneyBucket(tx.type)
@@ -198,7 +212,7 @@ nonisolated enum YearReviewBuilder {
 
             if let seriesId = tx.recurringSeriesId, subscriptionIds.contains(seriesId) {
                 subscriptionsTotal += amount
-                chargedSubscriptions.insert(seriesId)
+                bySubscription[seriesId, default: 0] += amount
             }
 
             guard tx.type == .expense else { continue }
@@ -255,6 +269,7 @@ nonisolated enum YearReviewBuilder {
                 return YearReview.MerchantTotal(
                     key: entry.key,
                     name: brands.brandName(entry.key) ?? MerchantName.displayName(entry.value.latestDescription),
+                    description: entry.value.latestDescription,
                     amount: entry.value.total,
                     visits: entry.value.visits,
                     usualCategory: usual
@@ -282,12 +297,15 @@ nonisolated enum YearReviewBuilder {
             topCategories: Array(topCategories),
             topMerchants: topMerchants,
             subscriptionsTotal: subscriptionsTotal,
-            subscriptionsCount: chargedSubscriptions.count,
+            subscriptions: bySubscription
+                .sorted { $0.value != $1.value ? $0.value > $1.value : $0.key < $1.key }
+                .map { YearReview.SubscriptionTotal(seriesId: $0.key, amount: $0.value) },
             habit: YearReview.Habit(
                 records: records,
-                days: recordDays.count,
-                longestStreak: longestStreak(recordDays, calendar: calendar)
+                days: recordsByDay.count,
+                longestStreak: longestStreak(Set(recordsByDay.keys), calendar: calendar)
             ),
+            recordsByDay: recordsByDay,
             biggestExpense: biggestExpense,
             usedStaleFallback: stale
         )

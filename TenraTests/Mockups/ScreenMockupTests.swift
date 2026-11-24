@@ -313,16 +313,47 @@ struct ScreenMockupTests {
             .init(key: "Shopping", label: "Shopping", amount: 390_000, share: 0.08),
         ],
         topMerchants: [
-            .init(key: "magnum", name: "Magnum", amount: 980_000, visits: 112, usualCategory: "Groceries"),
-            .init(key: "small", name: "Small", amount: 310_000, visits: 64, usualCategory: "Groceries"),
-            .init(key: "coffee boom", name: "Coffee Boom", amount: 145_000, visits: 58, usualCategory: "Restaurants"),
+            .init(key: "magnum", name: "Magnum", description: "MAGNUM CASH&CARRY", amount: 980_000, visits: 112, usualCategory: "Groceries"),
+            .init(key: "small", name: "Small", description: "SMALL 24", amount: 310_000, visits: 64, usualCategory: "Groceries"),
+            .init(key: "coffee boom", name: "Coffee Boom", description: "COFFEE BOOM", amount: 145_000, visits: 58, usualCategory: "Restaurants"),
         ],
         subscriptionsTotal: 142_000,
-        subscriptionsCount: 4,
+        subscriptions: [
+            .init(seriesId: "music", amount: 54_000),
+            .init(seriesId: "video", amount: 48_000),
+            .init(seriesId: "cloud", amount: 24_000),
+            .init(seriesId: "news", amount: 16_000),
+        ],
         habit: .init(records: 1_284, days: 301, longestStreak: 47),
+        recordsByDay: demoRecordsByDay,
         biggestExpense: .init(amount: 640_000, title: "Air Astana", categoryKey: "Transport", date: "2026-07-14"),
         usedStaleFallback: false
     )
+
+    /// Records on most days of 2026, more on weekends, a quiet week in August.
+    private static let demoRecordsByDay: [String: Int] = {
+        var days: [String: Int] = [:]
+        let calendar = FastDateParser.calendar
+        guard var day = FastDateParser.date(from: "2026-01-01") else { return days }
+        for index in 0..<334 {
+            if index % 9 != 4, !(212...218).contains(index) {
+                days[FastDateParser.string(from: day)] = 1 + (index * 7) % 5
+            }
+            day = calendar.date(byAdding: .day, value: 1, to: day) ?? day
+        }
+        return days
+    }()
+
+    private static let demoSeries = [
+        RecurringSeries(id: "music", amount: 4_500, currency: "KZT", category: "Shopping", description: "Music",
+                        frequency: .monthly, startDate: "2026-01-05", kind: .subscription, iconSource: .sfSymbol("music.note")),
+        RecurringSeries(id: "video", amount: 4_000, currency: "KZT", category: "Restaurants", description: "Video",
+                        frequency: .monthly, startDate: "2026-01-10", kind: .subscription, iconSource: .sfSymbol("play.tv.fill")),
+        RecurringSeries(id: "cloud", amount: 2_000, currency: "KZT", category: "Transport", description: "Cloud",
+                        frequency: .monthly, startDate: "2026-01-12", kind: .subscription, iconSource: .sfSymbol("icloud.fill")),
+        RecurringSeries(id: "news", amount: 1_400, currency: "KZT", category: "Rent", description: "News",
+                        frequency: .monthly, startDate: "2026-02-01", kind: .subscription, iconSource: .sfSymbol("newspaper.fill")),
+    ]
 
     private static let demoCategories = [
         CustomCategory(name: "Groceries", iconSource: .sfSymbol("cart.fill"), colorHex: "#34C759", type: .expense),
@@ -337,7 +368,7 @@ struct ScreenMockupTests {
         let pages = YearReviewPage.pages(for: Self.demoReview)
         for (index, page) in pages.enumerated() {
             try await render("year-review-\(index + 1)-\(page.rawValue)") {
-                YearReviewView(review: Self.demoReview, categories: Self.demoCategories, initialPage: index)
+                YearReviewView(review: Self.demoReview, categories: Self.demoCategories, series: Self.demoSeries, initialPage: index)
             }
         }
     }

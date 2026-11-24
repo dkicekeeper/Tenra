@@ -143,6 +143,7 @@ struct YearReviewTests {
         #expect(review.topMerchants[0].amount == 15_000)
         #expect(review.topMerchants[0].visits == 2)
         #expect(review.topMerchants[0].usualCategory == "Food")
+        #expect(review.topMerchants[0].description == "MAGNUM 34")
         #expect(review.topMerchants[1].amount == 8_000)
     }
 
@@ -158,6 +159,7 @@ struct YearReviewTests {
         let review = try #require(build(rows, series: [music, rent]))
         #expect(review.subscriptionsTotal == 22_000)
         #expect(review.subscriptionsCount == 1)
+        #expect(review.subscriptions == [YearReview.SubscriptionTotal(seriesId: music.id, amount: 22_000)])
         // Generated charges are not the person's records; the biggest one-off skips them too.
         #expect(review.habit.records == 30)
         #expect(review.biggestExpense?.amount == 1_000)
@@ -173,6 +175,9 @@ struct YearReviewTests {
         #expect(review.habit.records == 33)
         #expect(review.habit.days == 32)
         #expect(review.habit.longestStreak == 20)
+        #expect(review.recordsByDay["2026-02-01"] == 2)
+        #expect(review.recordsByDay["2026-02-02"] == 1)
+        #expect(review.recordsByDay.values.reduce(0, +) == 33)
         #expect(YearReviewBuilder.longestStreak(["2026-02-28", "2026-03-01", "2026-03-02", "2026-03-05"]) == 3)
         #expect(YearReviewBuilder.longestStreak([]) == 0)
     }

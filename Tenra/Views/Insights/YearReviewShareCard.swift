@@ -10,10 +10,13 @@
 //  category's amount.
 //
 //  An image, not a screen: fixed sizes (ShareCardFrame renders 360 points at 3×), the type at
-//  the default Dynamic Type size, the same dark colours in light and dark mode.
+//  the default Dynamic Type size, the same dark colours in light and dark mode. Behind it the
+//  cover's aurora (YearReviewPalette.cover), drawn once into the frame's photo, under its dark
+//  gradient.
 //
 
 import SwiftUI
+import UIKit
 
 struct YearReviewShareCard: View {
     /// The "With amounts" switch, kept between years.
@@ -33,7 +36,7 @@ struct YearReviewShareCard: View {
     }
 
     var body: some View {
-        ShareCardFrame(format: format, brand: "Tenra") {
+        ShareCardFrame(format: format, brand: "Tenra", photo: Self.aurora(for: format)) {
             ParticleCreature(mood: .happy, accessory: accessory)
                 .frame(width: YearReviewShareMetrics.creatureSize, height: YearReviewShareMetrics.creatureSize)
                 .designKitMotion(false)
@@ -74,6 +77,17 @@ struct YearReviewShareCard: View {
             Spacer(minLength: 0)
         }
         .dynamicTypeSize(.large)
+    }
+
+    /// The cover's aurora at the card's size, still and without grain, on the dark page.
+    static func aurora(for format: ShareCard.Format) -> UIImage? {
+        let renderer = ImageRenderer(content:
+            AuroraBackground(YearReviewPalette.spots(YearReviewPalette.cover), intensity: 1, grain: 0)
+                .frame(width: format.width, height: format.height)
+                .environment(\.colorScheme, .dark)
+        )
+        renderer.scale = ShareCard.Format.scale
+        return renderer.uiImage
     }
 
     // MARK: - Pieces

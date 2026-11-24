@@ -192,12 +192,16 @@ history. Free, like Analytics (owner's decision, 2026-11-24: never behind the pa
   the calmest complete one), top five categories, top three merchants, subscriptions, the habit
   (records, days, the longest run), the biggest one-off expense, the finale. A page with nothing
   to show is left out.
-- **Screens** (`Views/Insights/`): `YearReviewView` (the pages, DesignKit parts over a still
-  aurora), `YearReviewScreen` (loads a year and shows it), `YearReviewLink` (the card at the top
-  of Analytics, inside the window only), and Ten's message on Home ([assistant.md](assistant.md)
+- **Screens** (`Views/Insights/`): `YearReviewView` (the pages as stories: a paging scroll, each
+  page with its own still aurora, `YearReviewPalette`, the next one fading in under the finger as
+  far as the swipe has gone, `YearReviewAurora`; a page's content rises in the first time it
+  comes up; DesignKit parts: `LiveAmountText`, `ProgressRing`, `MiniBars`, `OrbChart`,
+  `PackedCircleIcons`, `CalendarHeatmap`, `HeroSection`, `.celebration` on the finale),
+  `YearReviewScreen` (loads a year and shows it), `YearReviewLink` (the card at the top of
+  Analytics, inside the window only), and Ten's message on Home ([assistant.md](assistant.md)
   §6).
 - **Sharing** (`YearReviewShareCard`): DesignKit's `ShareCardFrame` in the Stories format through
-  its `ShareCardSheet`. Without amounts by default (owner's decision, 2026-11-24: shares, the share
+  its `ShareCardSheet`, the cover's aurora as its photo. Without amounts by default (owner's decision, 2026-11-24: shares, the share
   of income kept, the counters); the "Amounts on the picture" switch on the last page
   (`yearReview.shareAmounts`) adds what was spent and kept and each category's amount.
 - Pinned by `YearReviewTests`; mockups of every page, the message and the picture in

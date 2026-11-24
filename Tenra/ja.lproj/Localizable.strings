@@ -2458,14 +2458,15 @@
 "yearReview.money.kept" = "収入の%@を残せました。";
 "yearReview.months.eyebrow" = "月ごと";
 "yearReview.months.title" = "1年の流れ";
-"yearReview.months.busiest" = "いちばん出費が多かった月：%@";
-"yearReview.months.calmest" = "いちばん落ち着いていた月：%@";
+"yearReview.months.busiest" = "いちばん出費が多かった月";
+"yearReview.months.calmest" = "いちばん落ち着いていた月";
 "yearReview.categories.eyebrow" = "お金の行き先";
 "yearReview.categories.title" = "支出の多いカテゴリ";
 "yearReview.merchants.eyebrow" = "よく行く場所";
 "yearReview.merchants.title" = "いちばん使ったお店";
 "yearReview.subscriptions.eyebrow" = "サブスクリプション";
 "yearReview.subscriptions.title" = "サブスクにかかった金額";
+"yearReview.subscriptions.perMonth" = "1か月あたりの平均";
 "yearReview.habit.eyebrow" = "習慣";
 "yearReview.habit.title" = "記録を続けました";
 "yearReview.habit.records" = "記録";

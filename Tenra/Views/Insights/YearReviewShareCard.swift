@@ -34,7 +34,7 @@ struct YearReviewShareCard: View {
 
     var body: some View {
         ShareCardFrame(format: format, brand: "Tenra") {
-            ParticleCreature(mood: .celebrating, accessory: accessory)
+            ParticleCreature(mood: .happy, accessory: accessory)
                 .frame(width: YearReviewShareMetrics.creatureSize, height: YearReviewShareMetrics.creatureSize)
                 .designKitMotion(false)
 
@@ -128,7 +128,7 @@ struct YearReviewShareCard: View {
 }
 
 enum YearReviewShareMetrics {
-    static let creatureSize: CGFloat = 80
+    static let creatureSize: CGFloat = 112
     static let categoryCount = 3
     static let barHeight: CGFloat = 6
     static let captionOpacity: Double = 0.7

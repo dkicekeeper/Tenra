@@ -206,7 +206,7 @@ struct YearReviewView: View {
 
     private var cover: some View {
         VStack(spacing: AppSpacing.xl) {
-            ParticleCreature(mood: .celebrating, accessory: accessory)
+            ParticleCreature(mood: .happy, accessory: accessory)
                 .frame(width: YearReviewMetrics.creatureSize, height: YearReviewMetrics.creatureSize)
                 .accessibilityHidden(true)
             VStack(spacing: AppSpacing.md) {
@@ -255,7 +255,7 @@ struct YearReviewView: View {
                 }
                 if let rate = review.savingsRate, rate > 0 {
                     VStack(alignment: .leading, spacing: AppSpacing.sm) {
-                        ProportionBar(ratio: rate, leftColor: AppColors.success, rightColor: AppColors.expense)
+                        ProportionBar(ratio: rate, leftColor: AppColors.success, rightColor: AppColors.pale(AppColors.success))
                         Text(String(format: String(localized: "yearReview.money.kept"), NumberDisplay.percent(rate * 100)))
                             .font(AppTypography.bodySmall)
                             .foregroundStyle(AppColors.textSecondary)
@@ -279,7 +279,8 @@ struct YearReviewView: View {
             FormSection {
                 if let busiest = review.busiestMonth {
                     AmountRow(
-                        String(format: String(localized: "yearReview.months.busiest"), YearReviewText.monthName(busiest)),
+                        YearReviewText.monthName(busiest),
+                        subtitle: String(localized: "yearReview.months.busiest"),
                         leading: .tinted(.sfSymbol("flame.fill"), AppColors.warning),
                         value: .amount(review.monthlyExpenses[busiest - 1]),
                         currency: review.currency
@@ -287,7 +288,8 @@ struct YearReviewView: View {
                 }
                 if let calmest = review.calmestMonth {
                     AmountRow(
-                        String(format: String(localized: "yearReview.months.calmest"), YearReviewText.monthName(calmest)),
+                        YearReviewText.monthName(calmest),
+                        subtitle: String(localized: "yearReview.months.calmest"),
                         leading: .tinted(.sfSymbol("leaf.fill"), AppColors.success),
                         value: .amount(review.monthlyExpenses[calmest - 1]),
                         currency: review.currency
@@ -345,6 +347,16 @@ struct YearReviewView: View {
             Text(YearReviewText.subscriptions(review.subscriptionsCount))
                 .font(AppTypography.body)
                 .foregroundStyle(AppColors.textSecondary)
+            if !review.monthlyExpenses.isEmpty {
+                FormSection {
+                    AmountRow(
+                        String(localized: "yearReview.subscriptions.perMonth"),
+                        leading: .tinted(.sfSymbol("calendar"), AppColors.accent),
+                        value: .amount(review.subscriptionsTotal / Double(review.monthlyExpenses.count)),
+                        currency: review.currency
+                    )
+                }
+            }
         }
     }
 
@@ -370,6 +382,7 @@ struct YearReviewView: View {
                     iconTint: .monochrome(style.color),
                     primaryAmount: biggest.amount,
                     primaryCurrency: review.currency,
+                    primaryAmountColor: AppColors.textPrimary,
                     subtitle: FastDateParser.date(from: biggest.date).map { DateFormatters.day($0, includeYear: false) }
                 )
                 .frame(maxWidth: .infinity)
@@ -454,10 +467,10 @@ enum YearReviewText {
         ]
     }
 
-    /// A month's name as it stands alone: "March", "март".
+    /// A month's name as it stands alone, as a title: "March", "Март".
     static func monthName(_ month: Int) -> String {
         let symbols = calendar.standaloneMonthSymbols
-        return symbols.indices.contains(month - 1) ? symbols[month - 1] : ""
+        return symbols.indices.contains(month - 1) ? symbols[month - 1].localizedCapitalized : ""
     }
 
     /// Each month's first letter, for the bars.

@@ -2464,8 +2464,8 @@
 "yearReview.subscriptions.perMonth" = "On average a month";
 "yearReview.habit.title" = "You kept track";
 "yearReview.habit.records" = "Records";
-"yearReview.habit.days" = "Days with records";
-"yearReview.habit.streak" = "Best streak, days";
+"yearReview.habit.days" = "Days logged";
+"yearReview.habit.streak" = "Days in a row";
 "yearReview.habit.text" = "Every record brings you closer to knowing where the money goes. Thank you for keeping at it.";
 "yearReview.biggest.title" = "Your largest one-off expense";
 "yearReview.finale.title" = "Ready for %@?";

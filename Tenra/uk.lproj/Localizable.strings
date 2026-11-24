@@ -2464,8 +2464,8 @@
 "yearReview.subscriptions.perMonth" = "У середньому на місяць";
 "yearReview.habit.title" = "Ви вели облік";
 "yearReview.habit.records" = "Записи";
-"yearReview.habit.days" = "Дні із записами";
-"yearReview.habit.streak" = "Найкраща серія, днів";
+"yearReview.habit.days" = "Дні із записом";
+"yearReview.habit.streak" = "Днів поспіль";
 "yearReview.habit.text" = "Кожен запис наближає до розуміння, куди йдуть гроші. Дякуємо, що не кидали.";
 "yearReview.biggest.title" = "Найбільша разова витрата";
 "yearReview.finale.title" = "Готові до %@?";

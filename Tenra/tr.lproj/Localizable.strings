@@ -2465,7 +2465,7 @@
 "yearReview.habit.title" = "Hesabını tuttun";
 "yearReview.habit.records" = "Kayıt";
 "yearReview.habit.days" = "Kayıtlı gün";
-"yearReview.habit.streak" = "En uzun seri, gün";
+"yearReview.habit.streak" = "Art arda gün";
 "yearReview.habit.text" = "Her kayıt, paranın nereye gittiğini bilmeye seni biraz daha yaklaştırır. Bırakmadığın için teşekkürler.";
 "yearReview.biggest.title" = "En büyük tek seferlik harcaman";
 "yearReview.finale.title" = "%@ için hazır mısın?";

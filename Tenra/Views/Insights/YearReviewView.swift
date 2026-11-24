@@ -137,6 +137,9 @@ struct YearReviewView: View {
             .scrollTargetBehavior(.paging)
             .scrollPosition(id: $current)
             .scrollIndicators(.hidden)
+            // The pages scroll sideways: no edge under the bars (built with Xcode 27 it is hard,
+            // a band across the aurora); each page's own scroll keeps a soft one.
+            .scrollEdgeEffectHidden(true, for: [.top, .bottom])
             .onScrollGeometryChange(for: Double.self) { geometry in
                 geometry.contentOffset.x / max(geometry.containerSize.width, 1)
             } action: { _, progress in
@@ -359,13 +362,14 @@ struct YearReviewView: View {
                 size: YearReviewMetrics.orbSize
             )
             .frame(maxWidth: .infinity)
+            // The orb gives the shares; the rows the amounts, one line each, so five fit.
             FormSection {
                 ForEach(review.topCategories) { category in
                     let style = categoryStyle(category.key)
                     AmountRow(
                         CategoryDisplay.displayName(for: category.key, type: .expense),
                         leading: .tinted(style.icon, style.color),
-                        value: .share(category.amount, percentage: category.share * 100),
+                        value: .amount(category.amount),
                         currency: review.currency
                     )
                 }
@@ -387,7 +391,7 @@ struct YearReviewView: View {
                     )
                 },
                 maxVisible: YearReviewBuilder.topMerchantCount,
-                containerWidth: YearReviewMetrics.circlesWidth
+                containerWidth: YearReviewMetrics.marblesWidth
             )
             .frame(maxWidth: .infinity)
             .accessibilityHidden(true)
@@ -442,7 +446,7 @@ struct YearReviewView: View {
                     AmountRow(
                         String(localized: "yearReview.subscriptions.perMonth"),
                         leading: .tinted(.sfSymbol("calendar"), AppColors.accent),
-                        value: .amount(review.subscriptionsTotal / Double(review.monthlyExpenses.count)),
+                        value: .amount((review.subscriptionsTotal / Double(review.monthlyExpenses.count)).rounded()),
                         currency: review.currency
                     )
                 }
@@ -568,9 +572,6 @@ private struct YearReviewPageContainer<Content: View>: View {
     let isShown: Bool
     @ViewBuilder let content: () -> Content
 
-    /// The scroll's height inside its insets: the content is centred in it.
-    @State private var visibleHeight: CGFloat = 0
-
     var body: some View {
         ScrollView {
             ZStack {
@@ -581,15 +582,12 @@ private struct YearReviewPageContainer<Content: View>: View {
                         .transition(.riseIn)
                 }
             }
-            .frame(maxWidth: .infinity, minHeight: visibleHeight)
+            .frame(maxWidth: .infinity)
         }
+        .defaultScrollAnchor(.center, for: .alignment)
         .scrollBounceBehavior(.basedOnSize)
         .scrollIndicators(.hidden)
-        .onScrollGeometryChange(for: CGFloat.self) { geometry in
-            geometry.containerSize.height - geometry.contentInsets.top - geometry.contentInsets.bottom
-        } action: { _, height in
-            visibleHeight = max(height, 0)
-        }
+        .scrollEdgeEffectStyle(.soft, for: [.top, .bottom])
     }
 }
 
@@ -683,8 +681,10 @@ enum YearReviewMetrics {
     static let ringSize: CGFloat = 112
     static let ringLine: CGFloat = 12
     /// The categories' orb.
-    static let orbSize: CGFloat = 240
-    /// The merchants' marbles and the subscriptions' shelf.
+    static let orbSize: CGFloat = 190
+    /// The merchants' marbles.
+    static let marblesWidth: CGFloat = 300
+    /// The subscriptions' shelf.
     static let circlesWidth: CGFloat = 240
     static let subscriptionLogos = 5
     static let auroraIntensity: Double = 0.55

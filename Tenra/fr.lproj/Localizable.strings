@@ -2463,9 +2463,9 @@
 "yearReview.subscriptions.title" = "Vos abonnements ont coûté";
 "yearReview.subscriptions.perMonth" = "En moyenne par mois";
 "yearReview.habit.title" = "Vous avez tenu vos comptes";
-"yearReview.habit.records" = "Entrées";
-"yearReview.habit.days" = "Jours avec entrées";
-"yearReview.habit.streak" = "Meilleure série, jours";
+"yearReview.habit.records" = "Saisies";
+"yearReview.habit.days" = "Jours de saisie";
+"yearReview.habit.streak" = "Jours d’affilée";
 "yearReview.habit.text" = "Chaque entrée vous rapproche de savoir où va l'argent. Merci d'avoir tenu bon.";
 "yearReview.biggest.title" = "Votre plus grosse dépense ponctuelle";
 "yearReview.finale.title" = "Prêt pour %@ ?";

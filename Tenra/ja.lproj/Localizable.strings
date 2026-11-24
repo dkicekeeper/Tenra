@@ -2465,7 +2465,7 @@
 "yearReview.habit.title" = "記録を続けました";
 "yearReview.habit.records" = "記録";
 "yearReview.habit.days" = "記録した日";
-"yearReview.habit.streak" = "最長連続日数";
+"yearReview.habit.streak" = "連続日数";
 "yearReview.habit.text" = "記録するたびに、お金の行き先が見えてきます。続けてくれてありがとう。";
 "yearReview.biggest.title" = "一度きりの最大の出費";
 "yearReview.finale.title" = "%@年の準備はできましたか？";

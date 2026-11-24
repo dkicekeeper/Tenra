@@ -2464,8 +2464,8 @@
 "yearReview.subscriptions.perMonth" = "Im Schnitt pro Monat";
 "yearReview.habit.title" = "Sie haben Buch geführt";
 "yearReview.habit.records" = "Einträge";
-"yearReview.habit.days" = "Tage mit Einträgen";
-"yearReview.habit.streak" = "Beste Serie, Tage";
+"yearReview.habit.days" = "Tage mit Eintrag";
+"yearReview.habit.streak" = "Tage in Folge";
 "yearReview.habit.text" = "Jeder Eintrag bringt Sie näher daran zu wissen, wohin das Geld geht. Danke, dass Sie drangeblieben sind.";
 "yearReview.biggest.title" = "Ihre größte einmalige Ausgabe";
 "yearReview.finale.title" = "Bereit für %@?";

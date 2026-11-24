@@ -2464,8 +2464,8 @@
 "yearReview.subscriptions.perMonth" = "Айына орта есеппен";
 "yearReview.habit.title" = "Сіз есеп жүргіздіңіз";
 "yearReview.habit.records" = "Жазбалар";
-"yearReview.habit.days" = "Жазба бар күндер";
-"yearReview.habit.streak" = "Ең ұзақ серия, күн";
+"yearReview.habit.days" = "Жазба күндері";
+"yearReview.habit.streak" = "Қатарынан күн";
 "yearReview.habit.text" = "Әр жазба ақшаның қайда кететінін түсінуге жақындатады. Тастамағаныңызға рақмет.";
 "yearReview.biggest.title" = "Ең ірі бір реттік шығын";
 "yearReview.finale.title" = "%@ жылына дайынсыз ба?";

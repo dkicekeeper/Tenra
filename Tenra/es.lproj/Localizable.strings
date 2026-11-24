@@ -2464,8 +2464,8 @@
 "yearReview.subscriptions.perMonth" = "De media al mes";
 "yearReview.habit.title" = "Llevaste la cuenta";
 "yearReview.habit.records" = "Registros";
-"yearReview.habit.days" = "Días con registros";
-"yearReview.habit.streak" = "Mejor racha, días";
+"yearReview.habit.days" = "Días con registro";
+"yearReview.habit.streak" = "Días seguidos";
 "yearReview.habit.text" = "Cada registro te acerca a saber a dónde va el dinero. Gracias por no dejarlo.";
 "yearReview.biggest.title" = "Tu mayor gasto puntual";
 "yearReview.finale.title" = "¿Listo para %@?";

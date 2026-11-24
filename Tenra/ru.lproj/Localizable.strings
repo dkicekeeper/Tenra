@@ -2464,8 +2464,8 @@
 "yearReview.subscriptions.perMonth" = "В среднем в месяц";
 "yearReview.habit.title" = "Вы вели учёт";
 "yearReview.habit.records" = "Записи";
-"yearReview.habit.days" = "Дни с записями";
-"yearReview.habit.streak" = "Лучшая серия, дней";
+"yearReview.habit.days" = "Дни с записью";
+"yearReview.habit.streak" = "Дней подряд";
 "yearReview.habit.text" = "Каждая запись приближает к пониманию, куда уходят деньги. Спасибо, что не бросали.";
 "yearReview.biggest.title" = "Самая крупная разовая трата";
 "yearReview.finale.title" = "Готовы к %@?";

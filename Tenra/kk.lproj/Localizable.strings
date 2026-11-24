@@ -2490,3 +2490,6 @@
 "yearReview.notice.action" = "Қорытындыны көру";
 "yearReview.card.title" = "Tenra-дағы %@ жылыңыз";
 "yearReview.card.text" = "Жыл парақ-парақпен: шығыстар, ең жақсы айлар, әдетіңіз. Бөлісуге арналған сурет те бар.";
+"yearReview.preview.header" = "Жыл қорытындысы";
+"yearReview.preview.row" = "%@ қорытындысын көру";
+"yearReview.preview.footer" = "Тек сынақ нұсқаларында (TestFlight, App Review): басқаларға қорытынды 15 желтоқсаннан 31 қаңтарға дейін көрінеді.";

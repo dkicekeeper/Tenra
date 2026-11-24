@@ -2490,3 +2490,6 @@
 "yearReview.notice.action" = "한 해 보기";
 "yearReview.card.title" = "Tenra와 함께한 %@년";
 "yearReview.card.text" = "페이지별 한 해: 지출, 최고의 달, 나의 습관. 공유할 이미지도 있어요.";
+"yearReview.preview.header" = "연말 결산";
+"yearReview.preview.row" = "%@년 결산 미리 보기";
+"yearReview.preview.footer" = "테스트 빌드에서만(TestFlight, App Review): 다른 사용자에게는 12월 15일부터 1월 31일까지 보여요.";

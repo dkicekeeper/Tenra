@@ -6,9 +6,12 @@
 //  App Store's products), what the Wallet and bank notification automations recorded, and the
 //  crash and performance reports MetricKit delivered, with a share button for the check and the
 //  reports. The owner's window into failures that would otherwise stay silent;
-//  nothing leaves the device unless the user shares it.
+//  nothing leaves the device unless the user shares it. In TestFlight, for App Review and in
+//  debug builds also a preview of the year in review outside its window (YearReviewWindow), so
+//  it can be checked before 15 December.
 //
 
+import StoreKit
 import SwiftUI
 
 struct DiagnosticsView: View {
@@ -16,6 +19,9 @@ struct DiagnosticsView: View {
 
     @State private var payloads: [DiagnosticPayloadSummary] = []
     @State private var shareItems: [URL] = []
+    /// Not the App Store's build: TestFlight, App Review (both sandbox) or a debug build.
+    @State private var isTestBuild = false
+    @State private var previewingReview = false
 
     var body: some View {
         // DesignKit 8.0.0: glass sections on the page (a List before).
@@ -24,6 +30,9 @@ struct DiagnosticsView: View {
                 launchCheckSection
                 captureSection
                 reportsSection
+                if isTestBuild {
+                    yearReviewPreviewSection
+                }
                 FormSection {
                     ShareLink(items: shareItems) {
                         UniversalRow(
@@ -44,6 +53,12 @@ struct DiagnosticsView: View {
         }
         .navigationTitle(String(localized: "settings.diagnostics"))
         .navigationBarTitleDisplayMode(.inline)
+        .fullScreenCover(isPresented: $previewingReview) {
+            YearReviewScreen(year: Self.previewYear)
+        }
+        .task {
+            isTestBuild = await Self.detectTestBuild()
+        }
         .task(id: center.lastReport?.finishedAt) {
             if center.lastReport == nil {
                 // Opened before the launch check ran (or it was skipped): run it now; the
@@ -54,6 +69,36 @@ struct DiagnosticsView: View {
             payloads = await center.payloadSummaries()
             shareItems = await center.prepareShareItems(payloads: payloads)
         }
+    }
+
+    // MARK: - Year in review preview
+
+    /// The year the review shows in its window, else the current one.
+    private static var previewYear: Int {
+        let now = Date()
+        return YearReviewWindow.year(on: now) ?? Calendar.current.component(.year, from: now)
+    }
+
+    private var yearReviewPreviewSection: some View {
+        FormSection(
+            header: String(localized: "yearReview.preview.header"),
+            footer: String(localized: "yearReview.preview.footer")
+        ) {
+            UniversalRow(
+                String(format: String(localized: "yearReview.preview.row"), String(Self.previewYear)),
+                icon: "gift",
+                accessory: .action { previewingReview = true }
+            )
+        }
+    }
+
+    private static func detectTestBuild() async -> Bool {
+        #if DEBUG
+        return true
+        #else
+        guard case .verified(let transaction)? = try? await AppTransaction.shared else { return false }
+        return transaction.environment != .production
+        #endif
     }
 
     // MARK: - Launch check

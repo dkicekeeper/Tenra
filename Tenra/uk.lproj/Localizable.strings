@@ -2490,3 +2490,6 @@
 "yearReview.notice.action" = "Дивитися підсумки";
 "yearReview.card.title" = "Ваш %@ у Tenra";
 "yearReview.card.text" = "Рік по сторінках: витрати, найкращі місяці, ваша звичка. І картинка, щоб поділитися.";
+"yearReview.preview.header" = "Підсумки року";
+"yearReview.preview.row" = "Переглянути підсумки %@";
+"yearReview.preview.footer" = "Лише в тестових збірках (TestFlight, App Review): люди бачать підсумки з 15 грудня по 31 січня.";

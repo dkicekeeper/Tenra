@@ -2490,3 +2490,6 @@
 "yearReview.notice.action" = "See the year";
 "yearReview.card.title" = "Your %@ in Tenra";
 "yearReview.card.text" = "The year page by page: spending, the best months, your habit. And a picture to share.";
+"yearReview.preview.header" = "Year in review";
+"yearReview.preview.row" = "Preview the %@ review";
+"yearReview.preview.footer" = "Test builds only (TestFlight, App Review): people see the review from 15 December to 31 January.";

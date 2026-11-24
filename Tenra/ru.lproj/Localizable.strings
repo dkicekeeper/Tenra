@@ -2490,3 +2490,6 @@
 "yearReview.notice.action" = "Смотреть итоги";
 "yearReview.card.title" = "Ваш %@ в Tenra";
 "yearReview.card.text" = "Год по страницам: траты, лучшие месяцы, ваша привычка. И картинка, чтобы поделиться.";
+"yearReview.preview.header" = "Итоги года";
+"yearReview.preview.row" = "Посмотреть итоги %@";
+"yearReview.preview.footer" = "Только в тестовых сборках (TestFlight, App Review): у людей итоги видны с 15 декабря по 31 января.";

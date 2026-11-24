@@ -2490,3 +2490,6 @@
 "yearReview.notice.action" = "Voir l'année";
 "yearReview.card.title" = "Votre %@ dans Tenra";
 "yearReview.card.text" = "L'année page par page : dépenses, meilleurs mois, votre habitude. Et une image à partager.";
+"yearReview.preview.header" = "Bilan de l'année";
+"yearReview.preview.row" = "Voir le bilan %@";
+"yearReview.preview.footer" = "Versions de test uniquement (TestFlight, App Review) : les autres voient le bilan du 15 décembre au 31 janvier.";

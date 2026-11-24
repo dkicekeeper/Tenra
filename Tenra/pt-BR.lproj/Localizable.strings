@@ -2490,3 +2490,6 @@
 "yearReview.notice.action" = "Ver o ano";
 "yearReview.card.title" = "Seu %@ no Tenra";
 "yearReview.card.text" = "O ano página por página: gastos, os melhores meses, seu hábito. E uma imagem para compartilhar.";
+"yearReview.preview.header" = "Retrospectiva do ano";
+"yearReview.preview.row" = "Ver a retrospectiva de %@";
+"yearReview.preview.footer" = "Só em versões de teste (TestFlight, App Review): as pessoas veem a retrospectiva de 15 de dezembro a 31 de janeiro.";

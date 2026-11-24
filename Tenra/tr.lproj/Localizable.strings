@@ -2490,3 +2490,6 @@
 "yearReview.notice.action" = "Yılı gör";
 "yearReview.card.title" = "Tenra'da %@ yılın";
 "yearReview.card.text" = "Sayfa sayfa yıl: harcamalar, en iyi aylar, alışkanlığın. Bir de paylaşmak için görsel.";
+"yearReview.preview.header" = "Yıl özeti";
+"yearReview.preview.row" = "%@ özetini gör";
+"yearReview.preview.footer" = "Yalnızca test sürümlerinde (TestFlight, App Review): diğer kullanıcılar özeti 15 Aralık ile 31 Ocak arasında görür.";

@@ -2490,3 +2490,6 @@
 "yearReview.notice.action" = "1年を見る";
 "yearReview.card.title" = "Tenraでの%@年";
 "yearReview.card.text" = "ページごとの1年：支出、いちばん良かった月、あなたの習慣。シェア用の画像もあります。";
+"yearReview.preview.header" = "1年の振り返り";
+"yearReview.preview.row" = "%@年の振り返りを見る";
+"yearReview.preview.footer" = "テスト版のみ（TestFlight、App Review）：通常は12月15日から1月31日まで表示されます。";

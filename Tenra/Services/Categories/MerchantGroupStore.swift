@@ -263,7 +263,7 @@ final class MerchantGroupStore {
 }
 
 /// The person's brands and linked operations as plain values, for a sweep off the main actor.
-nonisolated struct MerchantBrands: Sendable {
+nonisolated struct MerchantBrands: Sendable, Equatable {
     /// A point (normalized merchant) → its brand's id.
     let brandOfPoint: [String: String]
     /// A brand's id → its name.

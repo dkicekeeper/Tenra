@@ -342,5 +342,45 @@
 			<string>%lld активу</string>
 		</dict>
 	</dict>
+	<key>yearReview.merchants.visits</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld відвідування</string>
+			<key>few</key>
+			<string>%lld відвідування</string>
+			<key>many</key>
+			<string>%lld відвідувань</string>
+			<key>other</key>
+			<string>%lld відвідування</string>
+		</dict>
+	</dict>
+	<key>yearReview.subscriptions.count</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld підписка</string>
+			<key>few</key>
+			<string>%lld підписки</string>
+			<key>many</key>
+			<string>%lld підписок</string>
+			<key>other</key>
+			<string>%lld підписки</string>
+		</dict>
+	</dict>
 </dict>
 </plist>

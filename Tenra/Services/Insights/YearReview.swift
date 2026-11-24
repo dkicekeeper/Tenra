@@ -172,8 +172,7 @@ nonisolated enum YearReviewBuilder {
         var keyByDescription: [String: String] = [:]
 
         for tx in transactions where tx.date.hasPrefix(prefix) && tx.date <= today {
-            // The habit: what the person recorded, not what Tenra generated.
-            if tx.recurringSeriesId == nil, tx.type != .depositInterestAccrual {
+            if isRecord(tx) {
                 records += 1
                 recordDays.insert(tx.date)
             }
@@ -294,6 +293,35 @@ nonisolated enum YearReviewBuilder {
         )
     }
 
+    /// The habit counts what the person recorded, not what Tenra generated: a recurring
+    /// series' charges and deposit interest are left out.
+    static func isRecord(_ tx: Transaction) -> Bool {
+        tx.recurringSeriesId == nil && tx.type != .depositInterestAccrual
+    }
+
+    /// Whether `build` gives a review of `year` on `now`, without building it: its thresholds in
+    /// one light pass, for Ten's message, asked on every app open in the window.
+    static func isEligible(
+        year: Int,
+        transactions: [Transaction],
+        now: Date,
+        calendar: Calendar = FastDateParser.calendar
+    ) -> Bool {
+        let prefix = String(format: "%04d-", year)
+        let today = FastDateParser.string(from: now)
+        var firstEver: String?
+        var records = 0
+        for tx in transactions {
+            if firstEver.map({ tx.date < $0 }) ?? true { firstEver = tx.date }
+            if tx.date.hasPrefix(prefix), tx.date <= today, isRecord(tx) { records += 1 }
+        }
+        guard records >= minimumRecords,
+              let firstEver,
+              let firstDate = FastDateParser.date(from: firstEver),
+              let historyDays = calendar.dateComponents([.day], from: firstDate, to: now).day else { return false }
+        return historyDays >= minimumHistoryDays
+    }
+
     /// The longest run of consecutive calendar days among "yyyy-MM-dd" days.
     static func longestStreak(_ days: Set<String>, calendar: Calendar = FastDateParser.calendar) -> Int {
         let dates = days.compactMap(FastDateParser.date(from:)).sorted()
@@ -307,5 +335,30 @@ nonisolated enum YearReviewBuilder {
             previous = date
         }
         return longest
+    }
+}
+
+/// The pages of the review, in order (docs/plan-release-1.9.md §3). A page with nothing to show
+/// is left out: no income or expenses, a single month, no categories, under three merchants,
+/// no subscription charged, no one-off expense.
+nonisolated enum YearReviewPage: String, CaseIterable, Identifiable, Sendable {
+    case cover, money, months, categories, merchants, subscriptions, habit, biggest, finale
+
+    var id: String { rawValue }
+
+    static func pages(for review: YearReview) -> [YearReviewPage] {
+        allCases.filter { $0.shows(for: review) }
+    }
+
+    func shows(for review: YearReview) -> Bool {
+        switch self {
+        case .cover, .habit, .finale: true
+        case .money: review.expenses > 0 || review.income > 0
+        case .months: review.monthlyExpenses.filter { $0 > 0 }.count >= 2
+        case .categories: !review.topCategories.isEmpty
+        case .merchants: !review.topMerchants.isEmpty
+        case .subscriptions: review.subscriptionsCount > 0
+        case .biggest: review.biggestExpense != nil
+        }
     }
 }

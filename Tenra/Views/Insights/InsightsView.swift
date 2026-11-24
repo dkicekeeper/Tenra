@@ -189,6 +189,11 @@ struct InsightsView: View {
 
     private var insightsSummaryHeaderSection: some View {
         VStack(alignment: .leading, spacing: AppSpacing.lg) {
+            // The year in review, from 15 December to 31 January (YearReviewLink). Outside the
+            // window not even its empty frame, which would take the stack's spacing.
+            if YearReviewWindow.year(on: Date()) != nil {
+                YearReviewLink()
+            }
             summaryStatsGrid
             // How much can go out a day until the next income; a link to how it is reached.
             DailyAllowanceLink(namespace: insightNamespace)

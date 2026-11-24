@@ -365,6 +365,14 @@ typed next go too. Words typed instead of a chip are the reason. Ten does not tr
 trial's answer (no model turn): it is for the owner. Comes from `refreshAssistantInbox`, so it
 shows from the next time Tenra comes to the front after the renewal was turned off.
 
+**The year in review is ready** (`Kind.yearReview`, `AssistantNotices.yearReview`,
+[insights.md](insights.md) §Year in review): once a year (key `yearReview:<year>`), in its window
+(15 December to 31 January, `YearReviewWindow`), for someone the year has enough to review
+(`YearReviewBuilder.isEligible`, one light pass, skipped once the key is posted:
+`AssistantInbox.hasPosted`). Mood `celebrate`; its button is "See the year" and opens the review
+on the whole screen (`YearReviewScreen`), no model and no action spent. It leaves with the window
+(`Subjects.reviewYear`). Pinned by `YearReviewTests`.
+
 Auto-capture not set up (`Kind.setup`, `AssistantNotices.setupNudge`): once, after
 `setupAfterEntries` entries, for someone who hid Home's auto-capture card; its button is "Set
 up" and opens the Wallet guide instead of asking Ten (no action spent), and it leaves once an

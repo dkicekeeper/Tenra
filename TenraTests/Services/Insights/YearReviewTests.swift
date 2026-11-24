@@ -5,7 +5,8 @@
 //  Pins the year in review (YearReviewBuilder, docs/plan-release-1.9.md §3): realized rows of
 //  the year only, income and expenses by the shared money rule, months, top categories and
 //  merchants, subscriptions, the habit (records, days, the longest run), the biggest one-off
-//  expense, the thresholds, and the 15 December - 31 January window. Rates come from a pinned
+//  expense, the thresholds and their light check for Ten's message, the pages left out, the
+//  message's life, and the 15 December - 31 January window. Rates come from a pinned
 //  RateSnapshot, so no global FX state is touched. All data invented.
 //
 
@@ -201,6 +202,57 @@ struct YearReviewTests {
         #expect(build(recent, now: date(2027, 1, 10)) != nil)
         // A year not reached yet.
         #expect(build(daily(from: date(2026, 1, 1), count: 40), year: 2027) == nil)
+    }
+
+    @Test("The light check for Ten's message agrees with the build's thresholds")
+    func eligibility() {
+        let now = date(2026, 12, 20)
+        let enough = daily(from: date(2026, 1, 1), count: 30)
+        #expect(YearReviewBuilder.isEligible(year: 2026, transactions: enough, now: now, calendar: calendar))
+        #expect(!YearReviewBuilder.isEligible(year: 2026, transactions: Array(enough.prefix(29)), now: now, calendar: calendar))
+        // Generated charges are not records.
+        let series = (1...5).map { tx(String(format: "2026-%02d-05", $0), 100, series: "s1") }
+        #expect(!YearReviewBuilder.isEligible(year: 2026, transactions: Array(enough.prefix(29)) + series, now: now, calendar: calendar))
+        // Thirty records but fifteen days of history; in January the history is long enough.
+        let recent = (0..<3).flatMap { _ in daily(from: date(2026, 12, 5), count: 10) }
+        #expect(!YearReviewBuilder.isEligible(year: 2026, transactions: recent, now: now, calendar: calendar))
+        #expect(YearReviewBuilder.isEligible(year: 2026, transactions: recent, now: date(2027, 1, 10), calendar: calendar))
+        // A record still ahead does not count.
+        let ahead = Array(enough.prefix(29)) + [tx("2026-12-28", 100)]
+        #expect(!YearReviewBuilder.isEligible(year: 2026, transactions: ahead, now: now, calendar: calendar))
+        #expect(build(ahead) == nil)
+    }
+
+    @Test("A page with nothing to show is left out")
+    func pages() throws {
+        // January only, one category, no income, no merchants, no subscriptions.
+        let bare = try #require(build(daily(from: date(2026, 1, 1), count: 30)))
+        #expect(YearReviewPage.pages(for: bare) == [.cover, .money, .categories, .habit, .biggest, .finale])
+
+        let music = RecurringSeries(amount: 2_000, currency: "KZT", category: "Music", description: "Music",
+                                    frequency: .monthly, startDate: "2026-01-05", kind: .subscription)
+        var rows = daily(from: date(2026, 1, 1), count: 30)
+        rows += daily(from: date(2026, 2, 1), count: 5)
+        rows.append(tx("2026-03-01", 500_000, type: .income, category: "Salary"))
+        rows.append(tx("2026-03-05", 2_000, category: "Music", series: music.id))
+        rows += ["MAGNUM 12", "Small Coffee", "Book House"].map { tx("2026-04-01", 3_000, description: $0) }
+        let full = try #require(build(rows, series: [music]))
+        #expect(YearReviewPage.pages(for: full) == YearReviewPage.allCases)
+    }
+
+    @Test("Ten's message: once a year, kept only while its year shows")
+    func notice() {
+        let notice = AssistantNotices.yearReview(year: 2026, now: date(2026, 12, 15))
+        #expect(notice.id == "yearReview:2026")
+        #expect(notice.kind == .yearReview)
+        #expect(notice.subjectId == "2026")
+        var subjects = AssistantNotices.Subjects(subscriptions: [], debts: [], goals: [])
+        subjects.reviewYear = 2026
+        #expect(subjects.contains(notice))
+        subjects.reviewYear = 2027
+        #expect(!subjects.contains(notice))
+        subjects.reviewYear = nil
+        #expect(!subjects.contains(notice))
     }
 
     @Test("Shown from 15 December for the year ending, in January for the year just ended")

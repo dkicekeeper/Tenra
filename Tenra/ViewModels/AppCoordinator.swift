@@ -408,7 +408,21 @@ class AppCoordinator {
            let ask = AssistantNotices.trialRenewalOff(PremiumManager.shared.proStatus, now: now) {
             candidates.append(ask)
         }
+        if let review = yearReviewNotice(now: now) {
+            candidates.append(review)
+        }
         return candidates
+    }
+
+    /// "Your year in review is ready", once a year in its window (YearReviewWindow) for someone
+    /// it has enough to review. The light check skips a year whose message already posted.
+    private func yearReviewNotice(now: Date) -> AssistantNotice? {
+        guard isFullyInitialized, let year = YearReviewWindow.year(on: now) else { return nil }
+        let notice = AssistantNotices.yearReview(year: year, now: now)
+        guard !AssistantInbox.shared.hasPosted(notice.id),
+              YearReviewBuilder.isEligible(year: year, transactions: transactionStore.transactions, now: now)
+        else { return nil }
+        return notice
     }
 
     /// The round of "what do you think of Tenra?" open now (FeedbackAsk); nil where the message
@@ -444,7 +458,8 @@ class AppCoordinator {
             capturing: WalletCaptureStore.shared.hasEverCaptured,
             staleAssets: Set(assetStore.staleAssets().map(\.id)),
             loansWithoutAsset: Set(AssistantNotices.loansWithoutAsset(transactionStore.accounts, assets: assetStore.assets, now: Date()).compactMap(\.subjectId)),
-            feedbackRound: feedbackRound(now: Date())
+            feedbackRound: feedbackRound(now: Date()),
+            reviewYear: YearReviewWindow.year(on: Date())
         )
     }
 

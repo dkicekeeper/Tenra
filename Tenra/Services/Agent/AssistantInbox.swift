@@ -45,6 +45,9 @@ struct AssistantNotice: Codable, Equatable, Identifiable, Sendable {
         /// "What do you think of Tenra?" (FeedbackAsk): its action opens the feedback talk in Ten's
         /// chat, scripted on the phone.
         case feedback
+        /// "Your year in review is ready" (YearReview, 15 December to 31 January): its action
+        /// opens the review, not Ten.
+        case yearReview
     }
 
     enum Mood: String, Codable, Sendable {
@@ -434,6 +437,23 @@ extension AssistantNotices {
     /// Entries before the setup message.
     static let setupAfterEntries = 5
 
+    /// The year in review is ready (docs/plan-release-1.9.md §3): once a year, in its window, for
+    /// someone it has enough to review. `subjectId` is the year.
+    static func yearReview(year: Int, now: Date) -> AssistantNotice {
+        let yearText = String(year)
+        return AssistantNotice(
+            id: "yearReview:\(yearText)",
+            kind: .yearReview,
+            title: String(format: String(localized: "yearReview.notice.title"), yearText),
+            body: String(localized: "yearReview.notice.text"),
+            mood: .celebrate,
+            question: "",
+            insightId: nil,
+            subjectId: yearText,
+            createdAt: now
+        )
+    }
+
     /// Held assets whose valuation is out of date (AssetValuationMath.isStale): once a half-year
     /// each, until a new valuation.
     static func staleAssets(
@@ -514,6 +534,9 @@ extension AssistantNotices {
         /// The feedback round open now (FeedbackAsk): an earlier round's message has had its
         /// time. nil keeps whatever is there.
         var feedbackRound: Int? = nil
+        /// The year whose review shows now (YearReviewWindow); nil outside the window, when the
+        /// review's message has had its time.
+        var reviewYear: Int? = nil
 
         func contains(_ notice: AssistantNotice) -> Bool {
             switch notice.kind {
@@ -531,6 +554,7 @@ extension AssistantNotices {
                 // until it is answered or hidden.
                 if FeedbackAsk.isTrialNotice(notice.id) { return true }
                 return feedbackRound.map { notice.id == FeedbackAsk.noticeID(round: $0) } ?? true
+            case .yearReview: return reviewYear.map { notice.subjectId == String($0) } ?? false
             case .signal, .digest, .tidy: return true
             }
         }
@@ -572,6 +596,12 @@ final class AssistantInbox {
     }
 
     var unread: [AssistantNotice] { notices.filter { !$0.isRead } }
+
+    /// Whether a message with this key was posted (and is still remembered): a caller can skip
+    /// working out a message that would not post again.
+    func hasPosted(_ id: String) -> Bool {
+        posted[id] != nil
+    }
 
     /// Posts what was never posted. Insight messages stop at `signalsPerDay` a day.
     func post(_ candidates: [AssistantNotice], now: Date = Date(), calendar: Calendar = .current) {

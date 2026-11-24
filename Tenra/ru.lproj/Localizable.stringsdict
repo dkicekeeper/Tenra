@@ -342,5 +342,45 @@
 			<string>%lld актива</string>
 		</dict>
 	</dict>
+	<key>yearReview.merchants.visits</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld посещение</string>
+			<key>few</key>
+			<string>%lld посещения</string>
+			<key>many</key>
+			<string>%lld посещений</string>
+			<key>other</key>
+			<string>%lld посещения</string>
+		</dict>
+	</dict>
+	<key>yearReview.subscriptions.count</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld подписка</string>
+			<key>few</key>
+			<string>%lld подписки</string>
+			<key>many</key>
+			<string>%lld подписок</string>
+			<key>other</key>
+			<string>%lld подписки</string>
+		</dict>
+	</dict>
 </dict>
 </plist>

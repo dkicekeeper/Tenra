@@ -274,5 +274,37 @@
 			<string>%lld actifs</string>
 		</dict>
 	</dict>
+	<key>yearReview.merchants.visits</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld visite</string>
+			<key>other</key>
+			<string>%lld visites</string>
+		</dict>
+	</dict>
+	<key>yearReview.subscriptions.count</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld abonnement</string>
+			<key>other</key>
+			<string>%lld abonnements</string>
+		</dict>
+	</dict>
 </dict>
 </plist>

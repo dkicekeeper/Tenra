@@ -27,8 +27,9 @@ struct ScreenMockupTests {
     // list with its hero, an asset's screen and its form, a car losing value by its rule and a
     // garage whose valuation is out of date; a merchant merged from two points of a brand, with a
     // payment linked by hand, and the sheet that combines points (docs/plan-charts-by-day.md,
-    // after the device check). A new screen in review gets a `@Test` here that
-    // calls `render(_:height:_:)`.
+    // after the device check); the year in review's pages, Ten's message about it and its
+    // picture to share (docs/plan-release-1.9.md §3). A new screen in review gets a `@Test` here
+    // that calls `render(_:height:_:)`.
 
     // MARK: - Assets
 
@@ -290,6 +291,78 @@ struct ScreenMockupTests {
             await model.send("The loan screen is confusing: I cannot find where to add a payment.")
         }
         try await renderChat("feedback-chat-3-sent", model)
+    }
+
+    // MARK: - Year in review (docs/plan-release-1.9.md §3)
+
+    /// An invented year: income, twelve months with the busiest in July, five categories, three
+    /// merchants, subscriptions, a habit and a holiday as the biggest one-off expense.
+    private static let demoReview = YearReview(
+        year: 2026,
+        currency: "KZT",
+        expenses: 4_870_000,
+        income: 6_200_000,
+        monthlyExpenses: [380_000, 350_000, 420_000, 395_000, 410_000, 520_000,
+                          610_000, 390_000, 360_000, 400_000, 335_000, 300_000],
+        lastCompleteMonth: 11,
+        topCategories: [
+            .init(key: "Groceries", label: "Groceries", amount: 1_460_000, share: 0.30),
+            .init(key: "Rent", label: "Rent", amount: 1_200_000, share: 0.246),
+            .init(key: "Restaurants", label: "Restaurants", amount: 610_000, share: 0.125),
+            .init(key: "Transport", label: "Transport", amount: 420_000, share: 0.086),
+            .init(key: "Shopping", label: "Shopping", amount: 390_000, share: 0.08),
+        ],
+        topMerchants: [
+            .init(key: "magnum", name: "Magnum", amount: 980_000, visits: 112, usualCategory: "Groceries"),
+            .init(key: "small", name: "Small", amount: 310_000, visits: 64, usualCategory: "Groceries"),
+            .init(key: "coffee boom", name: "Coffee Boom", amount: 145_000, visits: 58, usualCategory: "Restaurants"),
+        ],
+        subscriptionsTotal: 142_000,
+        subscriptionsCount: 4,
+        habit: .init(records: 1_284, days: 301, longestStreak: 47),
+        biggestExpense: .init(amount: 640_000, title: "Air Astana", categoryKey: "Transport", date: "2026-07-14"),
+        usedStaleFallback: false
+    )
+
+    private static let demoCategories = [
+        CustomCategory(name: "Groceries", iconSource: .sfSymbol("cart.fill"), colorHex: "#34C759", type: .expense),
+        CustomCategory(name: "Rent", iconSource: .sfSymbol("house.fill"), colorHex: "#5856D6", type: .expense),
+        CustomCategory(name: "Restaurants", iconSource: .sfSymbol("fork.knife"), colorHex: "#FF9500", type: .expense),
+        CustomCategory(name: "Transport", iconSource: .sfSymbol("car.fill"), colorHex: "#007AFF", type: .expense),
+        CustomCategory(name: "Shopping", iconSource: .sfSymbol("bag.fill"), colorHex: "#FF2D55", type: .expense),
+    ]
+
+    /// Every page of the review, one picture each.
+    @Test func yearReviewPages() async throws {
+        let pages = YearReviewPage.pages(for: Self.demoReview)
+        for (index, page) in pages.enumerated() {
+            try await render("year-review-\(index + 1)-\(page.rawValue)") {
+                YearReviewView(review: Self.demoReview, categories: Self.demoCategories, initialPage: index)
+            }
+        }
+    }
+
+    /// Ten's message on Home (Analytics' card is the same NoticeCard with its own words).
+    @Test func yearReviewNotice() async throws {
+        let notice = AssistantNotices.yearReview(year: 2026, now: Date())
+        try await render("year-review-notice", height: 300) {
+            AssistantNoticeCard(notice: notice, onAsk: {}, onHide: {})
+                .screenPadding()
+                .frame(maxHeight: .infinity)
+                .background(AppColors.Background.base)
+        }
+    }
+
+    /// The picture to share, without amounts (the default) and with them.
+    @Test func yearReviewShareCard() async throws {
+        for showsAmounts in [false, true] {
+            try await render("year-review-share-\(showsAmounts ? "amounts" : "plain")", height: 700) {
+                YearReviewShareCard(review: Self.demoReview, showsAmounts: showsAmounts, categories: Self.demoCategories)
+                    .environment(\.colorScheme, .dark)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(AppColors.Background.base)
+            }
+        }
     }
 
     // MARK: - Rendering

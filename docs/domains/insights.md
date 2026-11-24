@@ -170,6 +170,39 @@ All return lightweight value-type structs (`InMemoryMonthlyTotal`, `InMemoryCate
   `allUrgentInsights` list. Feed filtering runs on `InsightsViewModel.selectedFilter:
   InsightFilter` (`.all` / `.urgent` / `.category(_)`).
 
+## Year in review
+
+A calendar year in Tenra, page by page on the whole screen ([plan-release-1.9.md](../plan-release-1.9.md)
+§3). Shown from 15 December (the year that is ending) to 31 January (the one just ended),
+`YearReviewWindow`; nothing for someone with fewer than 30 records in the year or 30 days of
+history. Free, like Analytics.
+
+- **Computing** (`Services/Insights/YearReview.swift`): `YearReviewBuilder.build` is a pure
+  function of plain values, by the feed's money rules: realized rows of the year only, income
+  and expenses by `moneyBucket`, the base currency through a pinned `RateSnapshot` (a row without
+  a rate is skipped and flags `usedStaleFallback`), loan payments and interest under their
+  synthetic keys (`categoryKey`). Records (the habit) leave out a series' charges and deposit
+  interest (`isRecord`). Merchants as the "Top merchant" insight finds them
+  (`normalizedMerchant`, the person's brands and links, `MerchantBrands`), only from three.
+  `isEligible` checks the thresholds in one light pass, for Ten's message.
+- **Loading** (`YearReviewLoader`): the build runs off the main actor on a snapshot of the store
+  and is kept until its key changes: the year, `mutationVersion`, the series, the categories'
+  and the rates' versions, the base currency, the brands and the day.
+- **Pages** (`YearReviewPage`): cover, income and expenses, months (bars; the busiest month and
+  the calmest complete one), top five categories, top three merchants, subscriptions, the habit
+  (records, days, the longest run), the biggest one-off expense, the finale. A page with nothing
+  to show is left out.
+- **Screens** (`Views/Insights/`): `YearReviewView` (the pages, DesignKit parts over a still
+  aurora), `YearReviewScreen` (loads a year and shows it), `YearReviewLink` (the card at the top
+  of Analytics, inside the window only), and Ten's message on Home ([assistant.md](assistant.md)
+  §6).
+- **Sharing** (`YearReviewShareCard`): DesignKit's `ShareCardFrame` in the Stories format through
+  its `ShareCardSheet`. Without amounts by default (shares, the share of income kept, the
+  counters); the "Amounts on the picture" switch on the last page
+  (`yearReview.shareAmounts`) adds what was spent and kept and each category's amount.
+- Pinned by `YearReviewTests`; mockups of every page, the message and the picture in
+  `ScreenMockupTests` while the layout is in review.
+
 ## Signal notifications
 
 - `InsightSignalService` (`Services/Notifications/`) — diff engine: fires local pushes for NEW critical/warning signals only (7-day per-id dedup + 5/week global cap + 2-per-recompute cap; delivery inside a 09:00-21:00 window with randomized spacing (`deliveryDates`; night signals move to next morning 09:00-10:30); pending signals that stop qualifying are cancelled on the next recompute (history kept — no flapping re-push); history in UserDefaults). Pure core `selectSignals` is unit-tested (`InsightSignalServiceTests`). Wired at the END of `loadInsightsBackground` phase 2 (`.month` insights).

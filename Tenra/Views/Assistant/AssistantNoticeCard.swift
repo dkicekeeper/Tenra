@@ -30,8 +30,8 @@ struct AssistantNoticeCard: View {
         NoticeCard(
             title: notice.title,
             message: amountsHidden ? (notice.hiddenBody ?? notice.body) : notice.body,
-            // The setup message opens the Wallet guide, an asset's a new valuation; the rest ask
-            // Ten.
+            // The setup message opens the Wallet guide, an asset's a new valuation, the year's
+            // its review; the rest ask Ten.
             actionTitle: actionTitle,
             actionSystemImage: actionSystemImage,
             action: onAsk,
@@ -71,6 +71,8 @@ struct AssistantNoticesSection: View {
     @State private var assetLoanId: String?
     @State private var showingAssetPaywall = false
     @State private var paywallLoanId: String?
+    /// The year whose review the message opened.
+    @State private var reviewYear: YearReference?
 
     var body: some View {
         // A message about a subscription, a debt or a goal deleted since is not shown; the next
@@ -109,6 +111,9 @@ struct AssistantNoticesSection: View {
         .paywallSheet(isPresented: $showingAssetPaywall, source: .assetAdd) {
             assetLoanId = paywallLoanId
         }
+        .fullScreenCover(item: $reviewYear) { reference in
+            YearReviewScreen(year: reference.id)
+        }
         .sheet(item: $valuingAsset) { asset in
             let assetStore = coordinator.assetStore
             MoneyEntrySheet(
@@ -141,6 +146,9 @@ struct AssistantNoticesSection: View {
                     } else if notice.kind == .asset {
                         inbox.markRead(notice.id)
                         valuingAsset = notice.subjectId.flatMap(coordinator.assetStore.asset(id:))
+                    } else if notice.kind == .yearReview {
+                        inbox.markRead(notice.id)
+                        reviewYear = notice.subjectId.flatMap(Int.init).map(YearReference.init)
                     } else if notice.kind == .loanAsset {
                         inbox.markRead(notice.id)
                         if PremiumManager.shared.isPro {
@@ -176,6 +184,11 @@ struct LoanReference: Identifiable {
     let id: String
 }
 
+/// A year as a full-screen cover's item.
+struct YearReference: Identifiable {
+    let id: Int
+}
+
 extension AssistantNoticeCard {
     private var actionTitle: String {
         switch notice.kind {
@@ -183,6 +196,7 @@ extension AssistantNoticeCard {
         case .asset: String(localized: "asset.updateValue")
         case .loanAsset: String(localized: "loan.asset.add")
         case .feedback: String(localized: "feedback.notice.action")
+        case .yearReview: String(localized: "yearReview.notice.action")
         default: String(localized: "assistant.notice.goThrough")
         }
     }
@@ -193,6 +207,7 @@ extension AssistantNoticeCard {
         case .asset: "chart.line.uptrend.xyaxis"
         case .loanAsset: "house"
         case .feedback: "square.and.pencil"
+        case .yearReview: "gift"
         default: "sparkles"
         }
     }

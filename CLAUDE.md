@@ -200,6 +200,7 @@ New file needed?
 | The app's usage counts: `Services/Analytics/**` (`UsageEvents`), `/v1/events`, `app-stats`, the statistics switch | [docs/domains/analytics.md](docs/domains/analytics.md) |
 | The product, Tenra Pro prices, release prep, ASC versions/metadata, ASO, downloads/MRR analytics, ratings, ads | [docs/promotion-plan.md](docs/promotion-plan.md) — living doc, UPDATE it in the same session (releases §1, metrics §6, open tasks §7) |
 | TestFlight builds from the cloud, reading App Store Connect (`appstore/asc.py`, `testflight.yml`, `asc.yml`), Apple Ads reports and keywords (`appstore/ads.py`, `ads.yml`) | [docs/asc.md](docs/asc.md) |
+| The Tenra account on Threads: replies to people asking for an expense tracker, posts (`social/threads.json`, `scripts/threads.py`, `threads.yml`), Tenra's voice in public | [docs/threads.md](docs/threads.md) |
 | TransactionStore CRUD, FRC, addBatch, NSBatchDeleteRequest | [docs/domains/transactions.md](docs/domains/transactions.md) |
 | Categories, subcategories, budgets, category/subcategory indexes, style cache, reorder | [docs/domains/categories.md](docs/domains/categories.md) |
 | Accounts indexes (accountAggregatesByAccountId, transactionsBySeriesId, parsedDateByDateString), AccountDetailView, ranking | [docs/domains/accounts.md](docs/domains/accounts.md) |

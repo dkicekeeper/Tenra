@@ -108,6 +108,10 @@ class AppCoordinator {
     /// once taken.
     private(set) var pendingStatementPick = false
 
+    /// The year whose review a link asked for (`tenra://year-review`, the App Store's in-app
+    /// event): MainTabView opens it over the whole app. Cleared once taken.
+    private(set) var pendingYearReview: Int?
+
     nonisolated struct QuickAdd: Equatable, Sendable {
         /// An expense category's name; nil opens the assistant.
         let category: String?
@@ -325,10 +329,26 @@ class AppCoordinator {
     /// The app's URL scheme (Info.plist CFBundleURLTypes).
     nonisolated static let urlScheme = "tenra"
 
-    /// `tenra://add` and `tenra://add?category=<name>`; anything else is ignored.
+    /// `tenra://add`, `tenra://add?category=<name>` and `tenra://year-review`; anything else
+    /// is ignored.
     func handleDeepLink(_ url: URL) {
-        guard let request = Self.quickAdd(from: url) else { return }
-        pendingQuickAdd = request
+        if let request = Self.quickAdd(from: url) {
+            pendingQuickAdd = request
+        } else if let year = Self.yearReview(from: url, now: Date()) {
+            pendingYearReview = year
+        }
+    }
+
+    /// `tenra://year-review`: the year whose review shows today (YearReviewWindow, 15 December
+    /// to 31 January), nil outside that window, where the link only opens the app.
+    nonisolated static func yearReview(from url: URL, now: Date, calendar: Calendar = .current) -> Int? {
+        guard url.scheme == urlScheme, url.host() == "year-review" else { return nil }
+        return YearReviewWindow.year(on: now, calendar: calendar)
+    }
+
+    func consumePendingYearReview() -> Int? {
+        defer { pendingYearReview = nil }
+        return pendingYearReview
     }
 
     nonisolated static func quickAdd(from url: URL) -> QuickAdd? {

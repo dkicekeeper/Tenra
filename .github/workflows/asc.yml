@@ -15,6 +15,8 @@ name: App Store Connect
 # storefront at N times a subscription's price there: --product, --of, --times, --apply;
 # push-tier prices the three products in the high-price storefronts from US prices: --monthly,
 # --annual, --lifetime, --territory, --apply),
+# push-app-event writes the in-app events of appstore/app-events.json (args: --event NAME, --apply;
+# --submit sends them for review), app-events lists them;
 # push-nomination saves the featuring nomination of appstore/nomination.json as a draft
 # (--submit sends it to Apple), nominations lists them, review-notes the version's App Review notes, prepare-review
 # a draft review submission with the version and the custom pages, never submitted.
@@ -34,7 +36,7 @@ on:
       command:
         description: "What to show"
         type: choice
-        options: [status, builds, certificates, reviews, sales, availability, crashes, prepare-version, keywords, metadata, push-metadata, custom-pages, push-custom-pages, push-experiment, age-rating, push-version-screenshots, store-pages, push-creatives, review-submissions, subscription-prices, iap-prices, push-price, push-iap-multiple, push-tier, nominations, push-nomination, retention-messages, push-retention-message, review-notes, prepare-review]
+        options: [status, builds, certificates, reviews, sales, availability, crashes, prepare-version, keywords, metadata, push-metadata, custom-pages, push-custom-pages, push-experiment, age-rating, push-version-screenshots, store-pages, push-creatives, review-submissions, subscription-prices, iap-prices, push-price, push-iap-multiple, push-tier, nominations, push-nomination, app-events, push-app-event, retention-messages, push-retention-message, review-notes, prepare-review]
         default: status
       build:
         description: "Build number (crashes: empty = all recent; prepare-version: the build to select)"

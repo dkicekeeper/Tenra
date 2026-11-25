@@ -1,0 +1,26 @@
+{
+  "comment": "The Tenra account on Threads (scripts/threads.py, .github/workflows/threads.yml, docs/threads.md). posts: published in order, the next approved one once a day. replies: answers to other people's questions asking for an expense tracker, published as soon as they are approved; replyToId is the Threads id of the post answered, replyTo its URL. approved: true only after the founder said so. notBefore: YYYY-MM-DD (Almaty), optional. image: a path in this public repository, optional. Voice: Tenra's team, Russian, вы, plain and adult, says who it is, claims true (what is in Tenra Pro said so), no emoji, no em dashes, 500 characters at most.",
+  "profile": {
+    "name": "Tenra",
+    "bio": "Учёт денег на iPhone без входа в банк: автозапись Apple Pay, выписки Kaspi, вклады и кредиты с графиком.",
+    "avatar": "social/tenra-avatar.png"
+  },
+  "posts": [
+    {
+      "id": "base-01-intro",
+      "approved": false,
+      "text": "Мы делаем Tenra, приложение для учёта денег на iPhone. Без входа в банк: оплата Apple Pay записывается сама, остальное одной фразой помощнику или парой касаний.\n\nЕсть то, чего обычно нет в трекерах: вклады с капитализацией, кредиты с графиком платежей, разные валюты на одном экране. Учёт бесплатный; выписки, вклады, кредиты и голосовой ввод в Tenra Pro.\n\nЗдесь пишем, что нового в приложении, и отвечаем на вопросы про учёт."
+    },
+    {
+      "id": "base-02-subscriptions-year",
+      "approved": false,
+      "text": "Подписки стоит считать за год, а не за месяц.\n\n2 990 ₸ в месяц звучит как мелочь. За год это 35 880 ₸. А подписок обычно не одна, и про пару из них давно забыли.\n\nПроверьте в настройках App Store и в выписке, что списывается каждый месяц. В Tenra все подписки на одном экране, с календарём списаний и напоминанием накануне."
+    },
+    {
+      "id": "base-03-deposit-rate",
+      "approved": false,
+      "text": "Вклад под 15% годовых с ежемесячной капитализацией приносит за год не 15%, а около 16,1%. Проценты каждый месяц добавляются к сумме, и следующие начисляются уже на неё.\n\nЭто и есть эффективная ставка. Банки пишут её мелким шрифтом, а сравнивать вклады стоит именно по ней.\n\nВ Tenra проценты по вкладу считаются по дням, с капитализацией, так что видно, сколько он уже принёс."
+    }
+  ],
+  "replies": []
+}

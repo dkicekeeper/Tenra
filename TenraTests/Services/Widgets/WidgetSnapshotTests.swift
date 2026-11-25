@@ -59,4 +59,19 @@ struct WidgetSnapshotTests {
         #expect(AppCoordinator.quickAdd(from: try #require(URL(string: "tenra://settings"))) == nil)
         #expect(AppCoordinator.quickAdd(from: URL(fileURLWithPath: "/tmp/statement.pdf")) == nil)
     }
+
+    @Test("tenra://year-review opens the year that shows today, nothing outside its window")
+    func yearReviewLink() throws {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = try #require(TimeZone(identifier: "Asia/Almaty"))
+        let link = try #require(URL(string: "tenra://year-review"))
+        func day(_ year: Int, _ month: Int, _ day: Int) throws -> Date {
+            try #require(calendar.date(from: DateComponents(year: year, month: month, day: day, hour: 12)))
+        }
+        #expect(AppCoordinator.yearReview(from: link, now: try day(2026, 12, 20), calendar: calendar) == 2026)
+        #expect(AppCoordinator.yearReview(from: link, now: try day(2027, 1, 10), calendar: calendar) == 2026)
+        #expect(AppCoordinator.yearReview(from: link, now: try day(2026, 11, 30), calendar: calendar) == nil)
+        #expect(AppCoordinator.yearReview(from: try #require(URL(string: "tenra://add")), now: try day(2026, 12, 20), calendar: calendar) == nil)
+        #expect(AppCoordinator.quickAdd(from: link) == nil)
+    }
 }

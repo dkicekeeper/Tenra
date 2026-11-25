@@ -8,6 +8,7 @@ on:
       - 'docs/**'
       - '**.md'
       - 'server/**' # the assistant Worker has its own workflow (assistant.yml)
+      - 'social/**' # Ten's Threads posts (threads.yml), nothing the app builds
   workflow_dispatch:
 
 jobs:

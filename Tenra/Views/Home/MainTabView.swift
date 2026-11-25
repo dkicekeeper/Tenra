@@ -54,6 +54,8 @@ struct MainTabView: View {
     /// Remembers which "real" tab was active before expanding,
     /// so we can restore it when the user taps [×].
     @State private var previousTab: AppTab = .home
+    /// The year review a link opened (`tenra://year-review`, AppCoordinator.pendingYearReview).
+    @State private var linkedYearReview: YearReference?
 
     /// Stable, TabView-owned control of the tab bar's visibility. Pushed views
     /// (e.g. `TransactionAddModal`) toggle `isHidden` instead of relying on a
@@ -362,6 +364,15 @@ struct MainTabView: View {
                 selectedTab = .home
                 previousTab = .home
             }
+        }
+        // The App Store's in-app event "Your year in Tenra" (tenra://year-review): the year
+        // review over the whole app, whatever tab is open.
+        .onChange(of: coordinator.pendingYearReview, initial: true) { _, year in
+            guard year != nil else { return }
+            linkedYearReview = coordinator.consumePendingYearReview().map(YearReference.init)
+        }
+        .fullScreenCover(item: $linkedYearReview) { reference in
+            YearReviewScreen(year: reference.id)
         }
         // "Ask Ten" on a screen (an account, a deposit, a loan, a subscription, a category, an
         // insight, …): the assistant's tab, which opens a new chat about it (AssistantView).

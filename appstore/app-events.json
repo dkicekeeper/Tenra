@@ -1,0 +1,187 @@
+{
+  "comment": "In-app events (asc.py push-app-event; docs/asc.md «События в App Store»). Limits: name 30, shortDescription 50, longDescription 120 characters; an event runs 31 days at most and is shown up to 14 days before it starts; times in UTC (Almaty is UTC+5). en-GB carries the Russian texts (D9). The art comes from scripts/compose_event_art.py. Free events: purchaseRequirement NO_COST_ASSOCIATED.",
+  "events": [
+    {
+      "referenceName": "Year in review 2026",
+      "badge": "SPECIAL_EVENT",
+      "purpose": "KEEP_ACTIVE_USERS_INFORMED",
+      "priority": "HIGH",
+      "primaryLocale": "en-US",
+      "purchaseRequirement": "NO_COST_ASSOCIATED",
+      "deepLink": "tenra://year-review",
+      "schedule": {
+        "publishStart": "2026-11-30T19:00:00Z",
+        "eventStart": "2026-12-14T19:00:00Z",
+        "eventEnd": "2027-01-13T19:00:00Z",
+        "territories": "available"
+      },
+      "art": {
+        "card": "screenshots/art/events/year-review/card.png",
+        "details": "screenshots/art/events/year-review/details.png"
+      },
+      "localizations": {
+        "en-US": {
+          "name": "Your year in Tenra",
+          "shortDescription": "Where your money went in 2026",
+          "longDescription": "From December 15 in Analytics: your year month by month, top categories and places, subscriptions and a picture."
+        },
+        "ru": {
+          "name": "Ваш год в Tenra",
+          "shortDescription": "Куда ушли деньги в 2026 году",
+          "longDescription": "С 15 декабря в Аналитике: ваш год по месяцам, главные категории и места, подписки и картинка для сторис."
+        },
+        "uk": {
+          "name": "Ваш рік у Tenra",
+          "shortDescription": "Куди пішли гроші у 2026 році",
+          "longDescription": "З 15 грудня в Аналітиці: ваш рік по місяцях, головні категорії та місця, підписки й картинка для сторіс."
+        },
+        "de-DE": {
+          "name": "Ihr Jahr in Tenra",
+          "shortDescription": "Wohin Ihr Geld 2026 geflossen ist",
+          "longDescription": "Ab 15. Dezember in Analyse: Ihr Jahr nach Monaten, Top-Kategorien und Orte, Abos und ein Bild zum Teilen."
+        },
+        "es-ES": {
+          "name": "Tu año en Tenra",
+          "shortDescription": "A dónde fue tu dinero en 2026",
+          "longDescription": "Desde el 15 de diciembre en Análisis: tu año mes a mes, categorías y lugares top, suscripciones y una imagen."
+        },
+        "es-MX": {
+          "name": "Tu año en Tenra",
+          "shortDescription": "A dónde se fue tu dinero en 2026",
+          "longDescription": "Desde el 15 de diciembre en Análisis: tu año mes a mes, categorías y lugares top, suscripciones y una imagen."
+        },
+        "fr-FR": {
+          "name": "Votre année dans Tenra",
+          "shortDescription": "Où est passé votre argent en 2026",
+          "longDescription": "Dès le 15 décembre dans Analyse : votre année mois par mois, catégories et lieux phares, abonnements et une image."
+        },
+        "fr-CA": {
+          "name": "Votre année dans Tenra",
+          "shortDescription": "Où est passé votre argent en 2026",
+          "longDescription": "Dès le 15 décembre dans Analyse : votre année mois par mois, catégories et lieux phares, abonnements et une image."
+        },
+        "it": {
+          "name": "Il tuo anno in Tenra",
+          "shortDescription": "Dove sono finiti i soldi nel 2026",
+          "longDescription": "Dal 15 dicembre in Analisi: il tuo anno mese per mese, categorie e luoghi principali, abbonamenti e un'immagine."
+        },
+        "pt-BR": {
+          "name": "Seu ano no Tenra",
+          "shortDescription": "Para onde foi seu dinheiro em 2026",
+          "longDescription": "A partir de 15 de dezembro em Análises: seu ano mês a mês, categorias e lugares, assinaturas e uma imagem."
+        },
+        "tr": {
+          "name": "Tenra'da yılın",
+          "shortDescription": "2026'da paran nereye gitti",
+          "longDescription": "15 Aralık'tan itibaren Analiz'de: ay ay yılın, öne çıkan kategoriler ve yerler, abonelikler ve bir görsel."
+        },
+        "ja": {
+          "name": "Tenraでの1年",
+          "shortDescription": "2026年、お金はどこへ行った？",
+          "longDescription": "12月15日から分析タブで：月ごとのあなたの1年、主なカテゴリと場所、サブスク、シェア用の画像。"
+        },
+        "ko": {
+          "name": "Tenra와 함께한 한 해",
+          "shortDescription": "2026년, 돈은 어디로 갔을까",
+          "longDescription": "12월 15일부터 분석에서: 월별로 보는 한 해, 주요 카테고리와 장소, 구독, 공유용 이미지."
+        },
+        "en-GB": {
+          "name": "Ваш год в Tenra",
+          "shortDescription": "Куда ушли деньги в 2026 году",
+          "longDescription": "С 15 декабря в Аналитике: ваш год по месяцам, главные категории и места, подписки и картинка для сторис."
+        }
+      }
+    },
+    {
+      "referenceName": "January record streak 2027",
+      "badge": "CHALLENGE",
+      "purpose": "ATTRACT_NEW_USERS",
+      "priority": "HIGH",
+      "primaryLocale": "en-US",
+      "purchaseRequirement": "NO_COST_ASSOCIATED",
+      "deepLink": "tenra://add",
+      "schedule": {
+        "publishStart": "2026-12-17T19:00:00Z",
+        "eventStart": "2026-12-31T19:00:00Z",
+        "eventEnd": "2027-01-31T19:00:00Z",
+        "territories": "available"
+      },
+      "art": {
+        "card": "screenshots/art/events/record-streak/card.png",
+        "details": "screenshots/art/events/record-streak/details.png"
+      },
+      "localizations": {
+        "en-US": {
+          "name": "30 days of tracking",
+          "shortDescription": "Log your spending every day in January",
+          "longDescription": "Start the year with order in your money: 7 days in a row earn Ten, your assistant, sunglasses, and 30 days a sleep mask."
+        },
+        "ru": {
+          "name": "30 дней учёта",
+          "shortDescription": "Записывайте траты каждый день января",
+          "longDescription": "Начните год с порядка в деньгах: за 7 дней подряд с записью помощник Тэн получит очки, за 30 дней маску для сна."
+        },
+        "uk": {
+          "name": "30 днів обліку",
+          "shortDescription": "Записуйте витрати щодня в січні",
+          "longDescription": "Почніть рік із порядку в грошах: за 7 днів поспіль із записом помічник Тен отримає окуляри, за 30 днів маску для сну."
+        },
+        "de-DE": {
+          "name": "30 Tage Haushaltsbuch",
+          "shortDescription": "Erfassen Sie im Januar jeden Tag Ihre Ausgaben",
+          "longDescription": "Starten Sie geordnet ins Jahr: 7 Tage in Folge bringen Ten, Ihrem Assistenten, eine Sonnenbrille, 30 eine Schlafmaske."
+        },
+        "es-ES": {
+          "name": "30 días de registro",
+          "shortDescription": "Anota tus gastos cada día de enero",
+          "longDescription": "Empieza el año con orden: 7 días seguidos dan a Ten, tu asistente, gafas de sol, y 30 días un antifaz para dormir."
+        },
+        "es-MX": {
+          "name": "30 días de registro",
+          "shortDescription": "Anota tus gastos todos los días de enero",
+          "longDescription": "Empieza el año con orden: 7 días seguidos dan a Ten, tu asistente, lentes de sol, y 30 días un antifaz para dormir."
+        },
+        "fr-FR": {
+          "name": "30 jours de suivi",
+          "shortDescription": "Notez vos dépenses chaque jour de janvier",
+          "longDescription": "Commencez l'année en ordre : 7 jours d'affilée offrent à Ten des lunettes de soleil, 30 jours un masque de sommeil."
+        },
+        "fr-CA": {
+          "name": "30 jours de suivi",
+          "shortDescription": "Notez vos dépenses chaque jour de janvier",
+          "longDescription": "Commencez l'année en ordre : 7 jours d'affilée offrent à Ten des lunettes de soleil, 30 jours un masque de sommeil."
+        },
+        "it": {
+          "name": "30 giorni di registro",
+          "shortDescription": "Registra le spese ogni giorno di gennaio",
+          "longDescription": "Inizia l'anno con ordine: 7 giorni di fila regalano a Ten occhiali da sole, 30 giorni una mascherina per dormire."
+        },
+        "pt-BR": {
+          "name": "30 dias de registro",
+          "shortDescription": "Anote seus gastos todos os dias de janeiro",
+          "longDescription": "Comece o ano com ordem: 7 dias seguidos dão ao Ten, seu assistente, óculos de sol, e 30 dias uma máscara de dormir."
+        },
+        "tr": {
+          "name": "30 gün kayıt",
+          "shortDescription": "Ocak'ta her gün harcamalarını kaydet",
+          "longDescription": "Yıla düzenle başla: üst üste 7 gün kayıt asistan Ten'e güneş gözlüğü, 30 gün uyku maskesi kazandırır."
+        },
+        "ja": {
+          "name": "30日間の記録チャレンジ",
+          "shortDescription": "1月は毎日、支出を記録しよう",
+          "longDescription": "整ったお金で新年を：7日連続の記録でアシスタントのテンにサングラス、30日でアイマスクが届きます。"
+        },
+        "ko": {
+          "name": "30일 기록 챌린지",
+          "shortDescription": "1월 한 달, 매일 지출을 기록해요",
+          "longDescription": "정돈된 돈으로 새해 시작: 7일 연속 기록하면 도우미 텐이 선글라스를, 30일이면 수면 안대를 받아요."
+        },
+        "en-GB": {
+          "name": "30 дней учёта",
+          "shortDescription": "Записывайте траты каждый день января",
+          "longDescription": "Начните год с порядка в деньгах: за 7 дней подряд с записью помощник Тэн получит очки, за 30 дней маску для сна."
+        }
+      }
+    }
+  ]
+}

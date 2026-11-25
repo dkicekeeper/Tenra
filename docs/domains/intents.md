@@ -597,7 +597,10 @@ APIs an extension may not): system fonts, the accent from its own asset catalog,
   Center, the Lock Screen and the Action button.
 - **Links**: `tenra://add` opens the assistant (Home where it does not run), `tenra://add?category=
   <name>` Home's add form for that expense category (`AppCoordinator.handleDeepLink` →
-  `pendingQuickAdd`; MainTabView and ContentView take it). The scheme is in Info.plist
+  `pendingQuickAdd`; MainTabView and ContentView take it); `tenra://year-review` (the App Store
+  event "Your year in Tenra", [asc.md](../asc.md) §События в App Store) the year review over the
+  whole app (`pendingYearReview`, MainTabView), from 15 December to 31 January
+  (`YearReviewWindow`), outside that window only the app. The scheme is in Info.plist
   `CFBundleURLTypes`; any other URL is a file handed over (`openAttachment`).
 - **Signing**: the cloud archive registers the extension's id and the App Group through
   `-allowProvisioningUpdates` with the ASC key ([asc.md](../asc.md)).

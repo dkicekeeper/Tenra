@@ -1,7 +1,8 @@
 // Counts what Ten is asked and how it goes, never the words (docs/domains/assistant.md §8 "Turn
 // statistics"). The model labels each finished turn in render_reply (topic, outcome, language);
 // the server adds the tools the turn called, how many model calls it took, the reply's mood, the
-// plan, the country and the app's build, and writes one data point to Workers Analytics Engine.
+// plan and the app's build, and writes one data point to Workers Analytics Engine. No country:
+// App Analytics has it, and the App Privacy label then needs no location (owner, 2026-11-25).
 // The app's <draft_status> lines (sent with the next question) count the drafts saved or undone,
 // by tool. Every value written is an enum value, a tool name, a number or a two-letter code: no
 // question, answer, amount, name or user id can reach the dataset. Off unless
@@ -41,7 +42,6 @@ export interface TurnStat {
   steps: number;
   mood: string;
   tier: string;
-  country: string;
   /** The app's build from its User-Agent ("Tenra/93 CFNetwork/..."), "0" when absent. */
   build: string;
 }
@@ -53,7 +53,7 @@ export interface TurnStat {
 export function turnStat(
   messages: Message[],
   final: Pick<Anthropic.Beta.BetaMessage, "content">,
-  context: { mood: string; tier: string; country?: string; userAgent?: string | null },
+  context: { mood: string; tier: string; userAgent?: string | null },
 ): TurnStat | null {
   const uses = final.content.filter((b): b is Anthropic.Beta.BetaToolUseBlock => b.type === "tool_use");
   const [reply] = uses;
@@ -78,7 +78,6 @@ export function turnStat(
     steps,
     mood: context.mood,
     tier: context.tier,
-    country: /^[A-Z]{2}$/.test(context.country ?? "") ? (context.country as string) : "XX",
     build: /^Tenra\/(\d{1,6})\b/.exec(context.userAgent ?? "")?.[1] ?? "0",
   };
 }
@@ -143,7 +142,7 @@ function draftTool(messages: Message[], draftId: string): string | undefined {
 export function writeTurn(dataset: AnalyticsEngineDataset | undefined, stat: TurnStat): void {
   dataset?.writeDataPoint({
     indexes: [stat.topic],
-    blobs: ["turn", stat.topic, stat.outcome, stat.language, stat.tools.join(","), stat.mood, stat.tier, stat.country, stat.build],
+    blobs: ["turn", stat.topic, stat.outcome, stat.language, stat.tools.join(","), stat.mood, stat.tier, stat.build],
     doubles: [1, stat.steps, stat.tools.length],
   });
 }

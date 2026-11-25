@@ -575,18 +575,18 @@ What Ten is asked and how it goes, as counts, never as words (the owner's decisi
 goals_debts, subscriptions, accounts, assets, planning, advice, app_help, tidy, feedback, other),
 `outcome` (done, partial, unsupported, clarify, declined) and `language` (ISO 639-1). On the
 call that finishes a turn, `turnStat` adds the tools the turn called (render_reply aside, from
-the thread after the question), its model calls, the reply's mood, the plan, the request's
-country and the app's build from its User-Agent, and `writeTurn` writes one point to the Workers
+the thread after the question), its model calls, the reply's mood, the plan and the app's build
+from its User-Agent (no country: App Analytics has it, and the label needs no location), and `writeTurn` writes one point to the Workers
 Analytics Engine dataset `tenra_assistant_turns` (binding `TURNS`). With a new question,
 `draftStats` reads the app's `<draft_status>` lines (saved, undone, edited, made on the phone)
 and names each draft's tool through its `tool_result`; `writeDrafts` writes a point each. Only
 enum values, tool names, two-letter codes and numbers are written: a label outside its list is
-`unlabeled`, a language that is not two letters `xx`. Off unless `ASSISTANT_TURN_STATS` is `on`
-(`wrangler.toml`; `off` until the App Privacy label says it, §12). Read with Actions → Assistant
+`unlabeled`, a language that is not two letters `xx`. On since 2026-11-25 (`ASSISTANT_TURN_STATS`
+in `wrangler.toml`; the App Privacy label already lists Product Interaction for Analytics). Read with Actions → Assistant
 server → `turn-stats` (`scripts/turn_stats.py`, the SQL API, the token needs Account Analytics:
 Read; `days` back, up to 90, the dataset keeps three months): topics, topics by outcome, what Ten
 could not do with the tools it tried, tool sets, languages, plans, countries, builds, moods and
-the drafts by tool and status. The eval's `labels` check holds every reply to the lists and to
+the drafts by tool and status. The Saturday session reads it ([promotion-plan.md](../promotion-plan.md) §7). The eval's `labels` check holds every reply to the lists and to
 the case's language. Pinned by `test/stats.test.ts` (no word of the thread reaches a point).
 
 ### Valuation from listings (`POST /v1/valuation`)
@@ -693,10 +693,10 @@ quests, slots and other looks: [plan-ten-gamification.md](../plan-ten-gamificati
   The privacy policy has its line (2026-11-12). The server's "logs no content" holds for turns
   and valuations; feedback is stored by design.
 - **Counts, not words** (§8 "Turn statistics"): each finished turn is counted by the labels the
-  model gives it, the tools, the plan, the country and the build, without the question, the
-  answer or any id; the privacy policy says so ("What Tenra's server counts", 2026-11-25), and
-  the App Privacy label lists Usage Data › Product Interaction, Analytics, not linked to the
-  person, before `ASSISTANT_TURN_STATS` is turned on.
+  model gives it, the tools, the plan and the build, without the question, the answer, the
+  country or any id; the privacy policy says so ("What Tenra's server counts", 2026-11-25), and
+  the App Privacy label lists Usage Data › Product Interaction for Analytics (checked by the
+  founder 2026-11-25).
 - **Minimisation**: the cloud gets tool results, never the database; files and photos never leave
   the phone (§7). A record drafted on the phone before the person agreed to the cloud is never
   reported to the model (`draftsBeforeConsent`, skipped by `draftStatus`), so the words typed then
@@ -783,11 +783,9 @@ quests, slots and other looks: [plan-ten-gamification.md](../plan-ten-gamificati
   `eval` (models, effort, cases; a failed case's calls and blocks are printed in the log, the
   fixture's data being invented), `eval-valuation` (the same inputs) or `turn-stats` (`days`;
   §8 "Turn statistics").
-- **Turning the turn statistics on**: the App Privacy label in App Store Connect (App Privacy →
-  Usage Data → Product Interaction: Analytics, not linked to the user, not used for tracking)
-  and the policy's "What Tenra's server counts" line first, then `ASSISTANT_TURN_STATS = "on"`
-  in `wrangler.toml` and `deploy`. `CLOUDFLARE_API_TOKEN` needs Account Analytics: Read for
-  `turn-stats`.
+- **Turn statistics** are on (`ASSISTANT_TURN_STATS = "on"` in `wrangler.toml`, 2026-11-25).
+  Anything new they count needs its line in the policy and, for a new kind of data, the App
+  Privacy label first. `CLOUDFLARE_API_TOKEN` needs Account Analytics: Read for `turn-stats`.
 - **Pro for a person on the server**: the server sees only RevenueCat, so a Founding User (kept on
   the phone) needs `pro` granted there (Actions → RevenueCat → `grant`).
 - **Eval** (`server/assistant/eval/`): a synthetic user (`fixture.ts`; never real statements), a

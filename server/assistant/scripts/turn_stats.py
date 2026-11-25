@@ -3,7 +3,7 @@
 
 Reads the Workers Analytics Engine dataset `tenra_assistant_turns` through Cloudflare's SQL API
 and prints Markdown tables: topics by outcome, the topics Ten could not serve, the tools turns
-call, languages, plans, model calls per turn and what happened to the drafts. Every value in the
+call, languages, plans, builds, model calls per turn and what happened to the drafts. Every value in the
 dataset is a label, a tool name, a code or a number, so the output may go to a public log.
 
     CLOUDFLARE_API_TOKEN=... CLOUDFLARE_ACCOUNT_ID=... python3 scripts/turn_stats.py --days 7
@@ -85,8 +85,7 @@ def main() -> None:
     table("Tool sets", query(f"SELECT blob5 AS tools, {count} AS turns {turns} GROUP BY tools ORDER BY turns DESC LIMIT 40"), ["tools", "turns"])
     table("Languages", query(f"SELECT blob4 AS language, {count} AS turns {turns} GROUP BY language ORDER BY turns DESC"), ["language", "turns"])
     table("Plans", query(f"SELECT blob7 AS plan, {count} AS turns {turns} GROUP BY plan ORDER BY turns DESC"), ["plan", "turns"])
-    table("Countries", query(f"SELECT blob8 AS country, {count} AS turns {turns} GROUP BY country ORDER BY turns DESC LIMIT 20"), ["country", "turns"])
-    table("Builds", query(f"SELECT blob9 AS build, {count} AS turns {turns} GROUP BY build ORDER BY turns DESC LIMIT 10"), ["build", "turns"])
+    table("Builds", query(f"SELECT blob8 AS build, {count} AS turns {turns} GROUP BY build ORDER BY turns DESC LIMIT 10"), ["build", "turns"])
     table("Moods", query(f"SELECT blob6 AS mood, {count} AS turns {turns} GROUP BY mood ORDER BY turns DESC"), ["mood", "turns"])
     table(
         "Drafts reported with the next question",

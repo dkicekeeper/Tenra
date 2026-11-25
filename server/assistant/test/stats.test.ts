@@ -24,7 +24,7 @@ const reply = (input: Record<string, unknown>): Pick<Anthropic.Beta.BetaMessage,
   content: [{ type: "tool_use", id: "final", name: "render_reply", input } as Anthropic.Beta.BetaToolUseBlock],
 });
 
-const context = { mood: "concerned", tier: "free", country: "KZ", userAgent: "Tenra/93 CFNetwork/3860.100.1 Darwin/27.0.0" };
+const context = { mood: "concerned", tier: "free", userAgent: "Tenra/93 CFNetwork/3860.100.1 Darwin/27.0.0" };
 
 describe("turnStat", () => {
   it("labels a finished turn with the model's topic, outcome and language and the turn's tools", () => {
@@ -37,7 +37,6 @@ describe("turnStat", () => {
       steps: 3,
       mood: "concerned",
       tier: "free",
-      country: "KZ",
       build: "93",
     });
   });
@@ -48,11 +47,10 @@ describe("turnStat", () => {
   });
 
   it("keeps only enum values and codes: anything else is unlabeled", () => {
-    const stat = turnStat(thread(), reply({ topic: QUESTION, outcome: "great", language: "русский" }), { mood: "idle", tier: "pro", country: "kz1", userAgent: QUESTION });
+    const stat = turnStat(thread(), reply({ topic: QUESTION, outcome: "great", language: "русский" }), { mood: "idle", tier: "pro", userAgent: QUESTION });
     expect(stat?.topic).toBe("unlabeled");
     expect(stat?.outcome).toBe("unlabeled");
     expect(stat?.language).toBe("xx");
-    expect(stat?.country).toBe("XX");
     expect(stat?.build).toBe("0");
   });
 });
@@ -92,7 +90,7 @@ describe("writing", () => {
     expect(points).toHaveLength(2);
     const written = JSON.stringify(points);
     for (const word of ["Magnum", "45 000", "кафе", "кофе", "октябр"]) expect(written).not.toContain(word);
-    expect(points[0]?.blobs).toEqual(["turn", "spending", "partial", "ru", "get_budgets,get_spending_summary", "concerned", "free", "KZ", "93"]);
+    expect(points[0]?.blobs).toEqual(["turn", "spending", "partial", "ru", "get_budgets,get_spending_summary", "concerned", "free", "93"]);
     expect(points[1]?.blobs).toEqual(["draft", "unknown", "phone"]);
   });
 

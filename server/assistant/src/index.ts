@@ -148,7 +148,7 @@ export default {
           // What was asked and how it went, as labels and counts (stats.ts).
           if (config.turnStats) {
             writeDrafts(env.TURNS, draftStats(turn.messages));
-            const stat = mood ? turnStat(turn.messages, message, { mood, tier, country, userAgent: request.headers.get("user-agent") }) : null;
+            const stat = mood ? turnStat(turn.messages, message, { mood, tier, userAgent: request.headers.get("user-agent") }) : null;
             if (stat) writeTurn(env.TURNS, stat);
           }
         } catch (error) {

@@ -11,13 +11,6 @@ with the commit of every fix, are in
 
 ## Open
 
-- **Ten's turn statistics: turn them on** (the owner's decision 2026-11-25; code since then,
-  off: [domains/assistant.md](domains/assistant.md) §8 "Turn statistics"). The founder: App Store
-  Connect → App Privacy → Usage Data › Product Interaction (Analytics, not linked to the user,
-  not for tracking); check that `CLOUDFLARE_API_TOKEN` has Account Analytics: Read. Then
-  `ASSISTANT_TURN_STATS = "on"` in `server/assistant/wrangler.toml`, deploy, and the Saturday
-  session reads Actions → Assistant server → `turn-stats` ([promotion-plan.md](promotion-plan.md) §7).
-
 - **Assistant attachments after a relaunch.** A receipt or statement attached in the chat lives
   in memory: after a relaunch its card is gone from the kept thread (drafts too, by design).
   Plan §3.8 keeps the file in the app's container with the thread; only worth it if people come
@@ -137,5 +130,6 @@ Left by the action audit of 2026-11-08 (the rules: [design-system.md](design-sys
   Xcode Organizer, TestFlight and on-device Diagnostics; the App Privacy label lists what Ten
   sends (since 1.6). One exception, on Tenra's own server (2026-11-25): Ten's answers are counted
   by labels, never words, to see what to improve ([domains/assistant.md](domains/assistant.md) §8
-  "Turn statistics"); the label adds Usage Data › Product Interaction when it is turned on.
+  "Turn statistics", on since then; the label's Usage Data › Product Interaction for Analytics
+  covers them).
   Screen-level analytics (TelemetryDeck or Aptabase) only once traffic makes it meaningful.

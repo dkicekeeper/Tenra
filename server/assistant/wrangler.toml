@@ -57,9 +57,10 @@ PRO_MONTHLY_VALUATIONS = "10"
 VALUATION_CALL_WEIGHT = "40"
 # Counts of what Ten is asked and how it went, by the model's labels (topic, outcome, language),
 # the tools a turn called and its drafts saved or undone, never the words (src/stats.ts, the
-# TURNS dataset below). "on" only once the privacy policy and the App Privacy label say so
-# (docs/domains/assistant.md §8 "Turn statistics").
-ASSISTANT_TURN_STATS = "off"
+# TURNS dataset below). On since 2026-11-25: the privacy policy says so, and the App Privacy
+# label already lists Usage Data › Product Interaction for Analytics (docs/domains/assistant.md
+# §8 "Turn statistics").
+ASSISTANT_TURN_STATS = "on"
 
 # The KV namespace `tenra-assistant-quota` (Cloudflare → Storage & databases → Workers KV).
 [[kv_namespaces]]

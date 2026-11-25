@@ -210,6 +210,19 @@ async function main() {
   const summary = summarize(results.map((r) => r.outcome));
   writeFileSync(`${outDir}/summary.md`, summary);
   console.log(`\n${summary}\n\nTranscripts: ${outDir}`);
+  // What a failed case did, in the log too: the artifact's host is not always reachable, and the
+  // fixture's data is invented, so the public log may show it.
+  for (const { outcome } of results.filter((r) => !r.outcome.pass)) {
+    const record = outcome.record;
+    console.log(`\n### ${outcome.model} / ${outcome.effort} / ${outcome.case.id}`);
+    for (const call of record.calls) {
+      console.log(`call ${call.name} ${JSON.stringify(call.input).slice(0, 300)}${call.error ? ` -> error ${call.error.slice(0, 200)}` : ""}`);
+    }
+    for (const block of record.reply?.blocks ?? []) {
+      console.log(`block ${JSON.stringify(block).slice(0, 400)}`);
+    }
+    if (record.error) console.log(`error ${record.error.slice(0, 300)}`);
+  }
 }
 
 main().catch((error) => {

@@ -69,6 +69,7 @@ this file is the full index.
 | [promotion-plan.md](promotion-plan.md) | The product, Tenra Pro and the growth plan: facts, releases, decisions, channels, weekly metrics. Living doc |
 | [release-notes.md](release-notes.md) | The next version in preparation: its What's New, what `main` already carries for it, the phone checks carried over from 1.8.3, the submission checklist |
 | [asc.md](asc.md) | App Store Connect, TestFlight and Apple Ads from a cloud session (`appstore/asc.py`, `appstore/ads.py`, workflows) |
+| [threads.md](threads.md) | Ten's account on Threads: posts in `social/threads.json`, published one a day by Actions after the founder's yes (`scripts/threads.py`, `threads.yml`), Ten's voice, the one-time setup, the token, how to measure |
 | [backlog.md](backlog.md) | Open items, ideas not planned yet, decisions that stand |
 | [plan-assistant-ios27.md](plan-assistant-ios27.md) | Plan, not started: Ten on Apple's models (Private Cloud Compute, on device) behind a router, and Siri on iOS 27 |
 | [plan-ten-agent.md](plan-ten-agent.md) | Plan in flight (decisions A1-A7 taken 2026-11-12): Ten as an agent for the whole app. In the store with 1.8.3: knowing the app, buttons and prefilled forms, the app's state, help with a complaint, editing what is saved, one-tap actions on Ten's messages, order in the data; in `main` for the next version: direct requests (feedback, reminders, account changes); stage 3 and the rest of stage 4 ahead |

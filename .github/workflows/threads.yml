@@ -1,0 +1,79 @@
+name: Threads
+
+# Ten's account on Threads (docs/threads.md): scripts/threads.py publishes the next approved post of
+# social/threads.json once a day, in the evening in Almaty at a slightly different time each day,
+# and commits social/threads-posted.json; once a week it refreshes the 60-day token and writes it
+# back to the THREADS_ACCESS_TOKEN secret (GH_SECRETS_TOKEN, a fine-grained token with this
+# repository's Secrets: read and write). Run by hand: check, me, post-next (args: --dry-run),
+# refresh, stats (args: --days 30). Until THREADS_ACCESS_TOKEN is set the scheduled runs skip.
+
+on:
+  schedule:
+    - cron: "17 13 * * *"   # every day, 18:17 Almaty, then up to 50 minutes later
+    - cron: "41 3 * * 1"    # Mondays: refresh the token
+  workflow_dispatch:
+    inputs:
+      command:
+        description: "What to do"
+        type: choice
+        options: [check, me, post-next, refresh, stats]
+        default: check
+      args:
+        description: "Extra arguments, e.g. --dry-run (post-next) or --days 14 (stats)"
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+
+concurrency:
+  group: threads
+  cancel-in-progress: false
+
+jobs:
+  threads:
+    runs-on: ubuntu-latest
+    timeout-minutes: 70
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Posts file
+        run: python3 scripts/threads.py check
+
+      - name: Threads
+        env:
+          THREADS_ACCESS_TOKEN: ${{ secrets.THREADS_ACCESS_TOKEN }}
+          GH_SECRETS_TOKEN: ${{ secrets.GH_SECRETS_TOKEN }}
+          EVENT: ${{ github.event_name }}
+          SCHEDULE: ${{ github.event.schedule }}
+          COMMAND: ${{ inputs.command }}
+          ARGS: ${{ inputs.args }}
+        run: |
+          if [ -z "$THREADS_ACCESS_TOKEN" ]; then
+            echo "::notice::No THREADS_ACCESS_TOKEN yet: nothing to do (docs/threads.md)."
+            exit 0
+          fi
+          if [ "$EVENT" = "schedule" ]; then
+            if [ "$SCHEDULE" = "41 3 * * 1" ]; then COMMAND=refresh; else COMMAND=post-next; fi
+            if [ "$COMMAND" = "post-next" ]; then
+              # A fixed minute every day reads as a bot: wait up to 50 minutes.
+              sleep $(( RANDOM % 3000 ))
+            fi
+          fi
+          python3 -m venv "$RUNNER_TEMP/threadsenv"
+          "$RUNNER_TEMP/threadsenv/bin/pip" install --quiet pynacl
+          read -ra extra <<< "$ARGS"
+          "$RUNNER_TEMP/threadsenv/bin/python" scripts/threads.py "$COMMAND" "${extra[@]}"
+
+      - name: Record what was posted
+        run: |
+          if git diff --quiet -- social/threads-posted.json; then exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add social/threads-posted.json
+          git commit -m "chore(threads): a post of Ten published"
+          for i in 1 2 3 4; do
+            git pull --rebase origin "${GITHUB_REF_NAME}" && git push origin "HEAD:${GITHUB_REF_NAME}" && exit 0
+            sleep $(( i * 5 ))
+          done
+          exit 1

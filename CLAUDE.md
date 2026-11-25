@@ -199,6 +199,7 @@ New file needed?
 | Sales and retention: the app's usage events and their reports (`/v1/events`, `app-stats`), first-run, habit and trial mechanisms | [docs/plan-sales.md](docs/plan-sales.md) |
 | The product, Tenra Pro prices, release prep, ASC versions/metadata, ASO, downloads/MRR analytics, ratings, ads | [docs/promotion-plan.md](docs/promotion-plan.md) — living doc, UPDATE it in the same session (releases §1, metrics §6, open tasks §7) |
 | TestFlight builds from the cloud, reading App Store Connect (`appstore/asc.py`, `testflight.yml`, `asc.yml`), Apple Ads reports and keywords (`appstore/ads.py`, `ads.yml`) | [docs/asc.md](docs/asc.md) |
+| Ten's posts on Threads (`social/threads.json`, `scripts/threads.py`, `threads.yml`), Ten's voice in public | [docs/threads.md](docs/threads.md) |
 | TransactionStore CRUD, FRC, addBatch, NSBatchDeleteRequest | [docs/domains/transactions.md](docs/domains/transactions.md) |
 | Categories, subcategories, budgets, category/subcategory indexes, style cache, reorder | [docs/domains/categories.md](docs/domains/categories.md) |
 | Accounts indexes (accountAggregatesByAccountId, transactionsBySeriesId, parsedDateByDateString), AccountDetailView, ranking | [docs/domains/accounts.md](docs/domains/accounts.md) |

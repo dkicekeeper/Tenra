@@ -1,10 +1,11 @@
 # Tenra 1.10: What's New and the checklist
 
 1.9 is in the store since 2026-11-25 (build 93; its notes:
-[archive/release-notes-1.9.md](archive/release-notes-1.9.md)). **The next version is 1.10**, the
-update the featuring nomination promises for the last week of December: build in TestFlight by
-15.12, sent by 19.12 with a manual release on 26.12 (proposed, the founder's word pending,
-[plan-release-1.9.md](plan-release-1.9.md) §6-7). What's New is written once the version is
+[archive/release-notes-1.9.md](archive/release-notes-1.9.md)). **The next version is 1.10**, out
+early in December with the app's own usage counting (the founder's decision of 2026-11-25,
+[plan-sales.md](plan-sales.md) §7): build in TestFlight around 02.12, sent around 05.12, released
+on approval. The update the featuring nomination promises for the last week of December is
+**1.11** (build 15.12, sent by 19.12, manual release on 26.12). What's New is written once the version is
 assembled; no em dashes (user rule).
 
 ## In this version (in `main`)

@@ -33,11 +33,18 @@ struct AssistantReplyReportSheet: View {
         ) {
             ScrollView {
                 VStack(alignment: .leading, spacing: AppSpacing.lg) {
-                    ChipPicker(
-                        options: AgentFeedbackMessage.ReplyReason.allCases,
-                        selection: $reason,
-                        label: AgentReplyReport.title(of:)
-                    )
+                    // Four long reasons: rows with a check read whole, chips would scroll off.
+                    FormSection {
+                        ForEach(AgentFeedbackMessage.ReplyReason.allCases) { option in
+                            UniversalRow(
+                                AgentReplyReport.title(of: option),
+                                accessory: .checkmark(isSelected: reason == option) {
+                                    HapticManager.selection()
+                                    reason = option
+                                }
+                            )
+                        }
+                    }
                     .screenPadding()
 
                     FormSection(footer: String(localized: "assistant.report.commentFooter")) {
@@ -77,7 +84,8 @@ struct AssistantReplyReportSheet: View {
             Text(title)
                 .font(AppTypography.caption)
                 .foregroundStyle(AppColors.textSecondary)
-            Text(text)
+            // Ten's words as the chat shows them (bold and lists), the asterisks sent as they are.
+            Text(Self.rendered(text))
                 .font(AppTypography.bodySmall)
                 .foregroundStyle(AppColors.Text.primary)
                 .lineLimit(8)
@@ -85,6 +93,12 @@ struct AssistantReplyReportSheet: View {
         }
         .padding(.vertical, AppSpacing.md)
         .accessibilityElement(children: .combine)
+    }
+
+    /// Markdown's inline marks drawn, line breaks kept; the plain text when it does not parse.
+    private static func rendered(_ text: String) -> AttributedString {
+        (try? AttributedString(markdown: text, options: .init(interpretedSyntax: .inlineOnlyPreservingWhitespace)))
+            ?? AttributedString(text)
     }
 
     private func send() {

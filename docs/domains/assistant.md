@@ -460,9 +460,9 @@ once every store has loaded), and
 decision 2026-11-25, 1.10): under the latest answer the model wrote (`Entry.fromModel`, never a
 line the phone wrote itself, not during the feedback talk, not while a turn runs;
 `AssistantViewModel.reportableReply`), where feedback can be sent (`AppCoordinator.feedbackTransport`).
-The sheet asks what was wrong (chips: wrong answer, not what I asked, my request was not done,
-something else), takes optional words and shows exactly what goes: the question and Ten's words
-(`reportExchange`); the cards go only as their kinds, their figures, labels and drafts stay on the
+The sheet asks what was wrong (rows with a check: wrong answer, not what I asked, my request was
+not done, something else), takes optional words and shows exactly what goes: the question and Ten's words, their bold and
+lists drawn as in the chat (`reportExchange`); the cards go only as their kinds, their figures, labels and drafts stay on the
 phone. Sent as feedback (`source` `reply`, `reason`, `exchange`, §8 Feedback), kept a year and
 shown in Telegram with the prompt version; the button then reads "Sent to the developer". The
 point: failed answers to turn into eval cases. Pinned by `AgentReplyReportTests`.

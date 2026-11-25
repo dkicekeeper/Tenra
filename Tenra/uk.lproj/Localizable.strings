@@ -2091,6 +2091,8 @@
 "assistant.wardrobe.lock.goalReached" = "Досягніть цілі";
 "assistant.wardrobe.lock.nauryz" = "Відкриється на Наурыз";
 "assistant.wardrobe.locked" = "Закрито";
+"assistant.wardrobe.progress" = "%1$lld з %2$lld";
+"assistant.wardrobe.titleNew" = "Гардероб Тена, є нове";
 
 /* Ten in empty lists (DesignKit 4.13) */
 "assistant.empty.goals" = "Накопичимо на щось?";
@@ -2511,6 +2513,8 @@
 "moment.budget.title" = "Місяць у межах бюджетів";
 "moment.budget.text" = "Минулого місяця жоден бюджет не перевищено.";
 "moment.budget.line" = "Так тримати!";
+"budgetMonth.notice.text" = "Минулого місяця жоден бюджет не перевищено. Подивимося, де вдалося заощадити найбільше?";
+"budgetMonth.question" = "Як я вклався в бюджети минулого місяця? Де вдалося заощадити найбільше?";
 "moment.capture.title" = "Записалося само";
 "moment.capture.text" = "Перша оплата записалася без вас. Далі так і буде.";
 "moment.capture.line" = "Само!";

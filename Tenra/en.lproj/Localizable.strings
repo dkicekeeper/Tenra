@@ -2091,6 +2091,8 @@
 "assistant.wardrobe.lock.goalReached" = "Reach a goal";
 "assistant.wardrobe.lock.nauryz" = "Opens on Nauryz";
 "assistant.wardrobe.locked" = "Locked";
+"assistant.wardrobe.progress" = "%1$lld of %2$lld";
+"assistant.wardrobe.titleNew" = "Ten's wardrobe, something new";
 
 /* Ten in empty lists (DesignKit 4.13) */
 "assistant.empty.goals" = "Shall we save for something?";
@@ -2511,6 +2513,8 @@
 "moment.budget.title" = "A month inside the budgets";
 "moment.budget.text" = "Last month, every budget held.";
 "moment.budget.line" = "Keep it up!";
+"budgetMonth.notice.text" = "Last month, every budget held. Shall we look at where you saved the most?";
+"budgetMonth.question" = "How did I do with my budgets last month? Where did I save the most?";
 "moment.capture.title" = "It recorded itself";
 "moment.capture.text" = "Your first payment was recorded without you. From now on it works like this.";
 "moment.capture.line" = "On its own!";

@@ -2091,6 +2091,8 @@
 "assistant.wardrobe.lock.goalReached" = "목표 달성";
 "assistant.wardrobe.lock.nauryz" = "나우르즈에 열림";
 "assistant.wardrobe.locked" = "잠김";
+"assistant.wardrobe.progress" = "%1$lld/%2$lld";
+"assistant.wardrobe.titleNew" = "텐의 옷장, 새 아이템 있음";
 
 /* Ten in empty lists (DesignKit 4.13) */
 "assistant.empty.goals" = "뭔가를 위해 모아 볼까요?";
@@ -2511,6 +2513,8 @@
 "moment.budget.title" = "예산 안에서 한 달";
 "moment.budget.text" = "지난달 어떤 예산도 넘지 않았어요.";
 "moment.budget.line" = "계속 이렇게!";
+"budgetMonth.notice.text" = "지난달 어떤 예산도 넘지 않았어요. 어디서 가장 많이 아꼈는지 볼까요?";
+"budgetMonth.question" = "지난달 예산은 어땠어? 어디서 가장 많이 아꼈어?";
 "moment.capture.title" = "자동으로 기록됨";
 "moment.capture.text" = "첫 결제가 자동으로 기록됐어요. 앞으로도 이렇게 돼요.";
 "moment.capture.line" = "자동으로!";

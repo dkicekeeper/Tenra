@@ -301,7 +301,11 @@ action spent: quicker than a chat, though Ten reads and values assets too), and 
 asset is bought with (`Kind.loanAsset`, `AssistantNotices.loansWithoutAsset`: an annuity of
 `loanAssetMinMonths` or more still owed, no asset linking it; once a loan, ever, the owner's
 decision D7; its button is "Add asset" and opens a new asset with the loan, the paywall first
-without Pro). Each has a key and never repeats. They show only on Home
+without Pro), and last month inside every monthly budget (`Kind.budgetMonth`, in the first week
+of the next month, from the same check as Ten's moment, `TenMoments.checkNoticed`; Ten
+celebrating). Last week's summary shows Ten proud of a week more than 20% cheaper than the one
+before (`AssistantNotices.digestMood`), pleased with a cheaper one, concerned by a much dearer
+one. A mood a later version wrote reads as the plain face. Each has a key and never repeats. They show only on Home
 (`AssistantNoticesSection`, under the accounts): the newest unread one with Ten in its mood and the
 count of the rest; "Go through it" opens the assistant with a question and a `<notice>` block (one
 free action), "Hide" shows the next. Works without notification permission. A push of an insight
@@ -683,7 +687,17 @@ wears, what is open (never closes again), the crown day and the record streak
 `TransactionStore.onOwnRecords`, which leaves out a CSV and a statement; a series' own payments
 and deposit interest are not the person's; one missed day a week is a day off). It is kept in
 UserDefaults and copied into every backup as `ten.json` (`CloudBackupService` `extraFiles`),
-merged on restore so nothing earned is lost. Touch parts the particles. At 22 pt (the tab) and under Reduce Motion it is a still glyph: 12 dots and the
+merged on restore so nothing earned is lost. What opens is checked on every return to the app
+and after a first goal or a goal reached (`AppCoordinator.refreshTenWardrobe`, from `MainTabView`
+and `GoalStore.onMilestone`), not only in the wardrobe, so the taqiya opens on Nauryz without a
+visit. A dot on the hanger stays while an accessory opened that the wardrobe has not shown yet
+(`TenWardrobeStore.seen`, `hasUnseen`, `markSeen`; what is open from the start is never news,
+and what was open before the dot counts as seen); a locked accessory of the record streak shows
+the current run against its days ("7 days in a row with a record · 4 of 7",
+`TenWardrobeStore.progress`). On a long piece of work Ten fills with light (`TenWorkingView`,
+DesignKit's `.working(progress:)`): a statement's pages on the Import tab and a backup restored
+from Settings (`CloudSyncViewModel.restoreProgress`, by its steps; the onboarding's restore keeps
+its spinner); without the assistant, the system's bar or spinner. Touch parts the particles. At 22 pt (the tab) and under Reduce Motion it is a still glyph: 12 dots and the
 eyes (`CreatureTabLabel`). Name: Ten (Тэн). Tone: friendly, short, no moralising or shame about
 spending, no em dashes, in all 11 languages. Open work on quests, slots, rewards and other looks:
 [plan-ten-gamification.md](../plan-ten-gamification.md).
@@ -700,7 +714,8 @@ week (`TenMomentRules.budgetMonthKept`: budgets reset on the 1st and set before 
 summed off the main actor), and the first payment that recorded itself while it is a week old.
 Each event's key once (`tenMoments.shown.v1`). Ten comes in his mood with a gesture and, while
 "Ten chats" is on, a line; Settings › Assistant › "Ten's moments" turns them off. Without Ten on
-the device (`AssistantAvailability`) the screens keep their confetti. Pinned by `TenMomentsTests`.
+the device (`AssistantAvailability`) the screens keep their confetti. Last month inside the
+budgets is also a message on Home (below), with the moments off too. Pinned by `TenMomentsTests`.
 
 ## 10. Privacy, consent and safety
 

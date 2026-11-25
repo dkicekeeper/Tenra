@@ -136,6 +136,42 @@ struct AssistantInboxTests {
         #expect(AssistantNotices.digest(weekPoints: [week(0, 5_000)], baseCurrency: "KZT", now: Self.now) == nil)
     }
 
+    @Test("Last week's face: proud of a much cheaper week, pleased with a cheaper one, concerned by a dearer one")
+    func digestMood() {
+        #expect(AssistantNotices.digestMood(change: -35) == .proud)
+        #expect(AssistantNotices.digestMood(change: -20) == .happy)
+        #expect(AssistantNotices.digestMood(change: -5) == .happy)
+        #expect(AssistantNotices.digestMood(change: 0) == .idle)
+        #expect(AssistantNotices.digestMood(change: 25) == .concerned)
+    }
+
+    @Test("A month inside the budgets is a celebration on Home, once, about that month")
+    func budgetMonth() {
+        let notice = AssistantNotices.budgetMonth(key: "budgetMonth:2026-12", now: Self.now)
+        #expect(notice.id == "budgetMonth:2026-12")
+        #expect(notice.kind == .budgetMonth)
+        #expect(notice.mood == .celebrate)
+        #expect(notice.subjectId == "2026-12")
+        #expect(!notice.question.isEmpty)
+        #expect(notice.modelText.contains("2026-12"))
+        #expect(AssistantNotices.Subjects(subscriptions: [], debts: [], goals: []).contains(notice))
+        let inbox = Self.inbox()
+        inbox.post([notice], now: Self.now)
+        inbox.post([notice], now: Self.now)
+        #expect(inbox.notices.count == 1)
+        #expect(inbox.hasPosted("budgetMonth:2026-12"))
+    }
+
+    @Test("A mood a later version wrote reads as the plain face; the message is kept")
+    func unknownMood() throws {
+        let notice = AssistantNotices.budgetMonth(key: "budgetMonth:2026-12", now: Self.now)
+        var json = try #require(String(data: JSONEncoder().encode(notice), encoding: .utf8))
+        json = json.replacingOccurrences(of: "\"celebrate\"", with: "\"dancing\"")
+        let decoded = try JSONDecoder().decode(AssistantNotice.self, from: Data(json.utf8))
+        #expect(decoded.mood == .idle)
+        #expect(decoded.id == notice.id)
+    }
+
     @Test func aSubscriptionChargedTomorrowIsAMessage() {
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: Self.now)

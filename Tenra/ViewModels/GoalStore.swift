@@ -31,6 +31,9 @@ final class GoalStore {
 
     /// A linked account's live balance; nil when the account is gone. Set by AppCoordinator.
     @ObservationIgnored var accountBalance: (String) -> AccountBalance? = { _ in nil }
+    /// A first goal or a goal reached: what Ten's wardrobe opens for goals may open now
+    /// (AppCoordinator.refreshTenWardrobe). Set by AppCoordinator.
+    @ObservationIgnored var onMilestone: () -> Void = {}
 
     @ObservationIgnored private let repository: GoalRepository?
     @ObservationIgnored private var loading: Task<Void, Never>?
@@ -118,6 +121,7 @@ final class GoalStore {
         goal.order = (goals.map(\.order).max() ?? -1) + 1
         goals.append(goal)
         await writes.run { [repository] in await repository?.save(goal) }
+        onMilestone()
     }
 
     /// Writes the goal over its earlier copy.
@@ -197,6 +201,7 @@ final class GoalStore {
         case (true, nil):
             goal.reachedAt = now
             await update(goal)
+            onMilestone()
             return true
         case (false, _?):
             goal.reachedAt = nil

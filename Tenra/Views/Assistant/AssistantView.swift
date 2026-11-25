@@ -137,11 +137,22 @@ struct AssistantView: View {
                         }
                     }
                 }
-                // Ten's wardrobe: what it wears and what is still to open.
+                // Ten's wardrobe: what it wears and what is still to open. A dot while
+                // something opened that the wardrobe has not shown yet.
                 ToolbarItem(placement: .topBarTrailing) {
                     NavigationLink(value: AssistantPage.wardrobe) {
-                        Label(String(localized: "assistant.wardrobe.title"), systemImage: "hanger")
-                            .labelStyle(.iconOnly)
+                        Image(systemName: "hanger")
+                            .overlay(alignment: .topTrailing) {
+                                if coordinator.tenWardrobe.hasUnseen {
+                                    Circle()
+                                        .fill(AppColors.accent)
+                                        .frame(width: AppSpacing.sm, height: AppSpacing.sm)
+                                        .offset(x: AppSpacing.xs, y: -AppSpacing.xxs)
+                                }
+                            }
+                            .accessibilityLabel(coordinator.tenWardrobe.hasUnseen
+                                ? String(localized: "assistant.wardrobe.titleNew")
+                                : String(localized: "assistant.wardrobe.title"))
                     }
                 }
             }

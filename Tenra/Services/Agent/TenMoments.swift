@@ -229,16 +229,24 @@ final class TenMoments {
     }
 
     /// What Ten notices on his own when the app comes to the front: last month inside the
-    /// budgets (its spending summed off the main actor) and the first capture.
-    func checkNoticed(coordinator: AppCoordinator, now: Date = Date()) {
-        guard isOn, !coordinator.needsOnboarding, coordinator.isFullyInitialized else { return }
-        // A moment that found no window (the app went to the background) shows now.
-        tries = 0
-        showNext(after: TenMomentRules.settle)
-        if TenMomentRules.firstCaptureIsNew(WalletCaptureStore.shared.firstCaptureAt, now: now) {
-            celebrate(.firstCapture, key: "firstCapture", now: now)
+    /// budgets (its spending summed off the main actor) and the first capture. Last month
+    /// inside the budgets is also a message on Home ("Ten writes", AssistantInbox), with the
+    /// moments switched off too.
+    func checkNoticed(coordinator: AppCoordinator, inbox: AssistantInbox = .shared, now: Date = Date()) {
+        guard available(), !coordinator.needsOnboarding, coordinator.isFullyInitialized else { return }
+        let momentsOn = isOn
+        if momentsOn {
+            // A moment that found no window (the app went to the background) shows now.
+            tries = 0
+            showNext(after: TenMomentRules.settle)
+            if TenMomentRules.firstCaptureIsNew(WalletCaptureStore.shared.firstCaptureAt, now: now) {
+                celebrate(.firstCapture, key: "firstCapture", now: now)
+            }
         }
-        guard let key = TenMomentRules.budgetMonthKey(now: now), !hasShown(key) else { return }
+        guard let key = TenMomentRules.budgetMonthKey(now: now) else { return }
+        let wantsMoment = momentsOn && !hasShown(key)
+        let wantsNotice = !inbox.hasPosted(key)
+        guard wantsMoment || wantsNotice else { return }
         let categories = coordinator.transactionStore.categories
         let transactions = coordinator.transactionStore.transactions
         let base = coordinator.transactionsViewModel.appSettings.baseCurrency
@@ -247,7 +255,9 @@ final class TenMoments {
             let kept = await Task.detached(priority: .utility) {
                 TenMomentRules.budgetMonthKept(categories: categories, transactions: transactions, baseCurrency: base, now: now, rates: rates)
             }.value
-            if kept { celebrate(.budgetMonth, key: key, now: now) }
+            guard kept else { return }
+            if wantsNotice { inbox.post([AssistantNotices.budgetMonth(key: key, now: now)], now: now) }
+            if wantsMoment { celebrate(.budgetMonth, key: key, now: now) }
         }
     }
 

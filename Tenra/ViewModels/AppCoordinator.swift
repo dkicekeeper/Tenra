@@ -363,6 +363,16 @@ class AppCoordinator {
         return pendingStatementPick
     }
 
+    /// Opens what Ten's wardrobe has earned now: the record streak, the goals, a holiday
+    /// (plan-ten-gamification.md §7.3). Runs on every return to the app, after a first goal or a
+    /// goal reached, and when the wardrobe opens, so the taqiya opens on Nauryz without a visit
+    /// to the wardrobe that day.
+    func refreshTenWardrobe() async {
+        await goalStore.load()
+        tenWardrobe.refreshUnlocks(hasGoal: !goalStore.goals.isEmpty,
+                                   hasReachedGoal: goalStore.goals.contains { $0.reachedAt != nil })
+    }
+
     /// Ten writes first about the subscriptions charged tomorrow, the debts due tomorrow, the
     /// goals behind their schedule, the assets whose valuation is out of date, the long loans
     /// without an asset and auto-capture
@@ -778,6 +788,11 @@ class AppCoordinator {
         // The person's own records (no imports) move Ten's record streak.
         transactionStore.onOwnRecords = { [weak wardrobe = tenWardrobe] transactions in
             wardrobe?.noteRecords(transactions)
+        }
+        // A first goal or one reached opens Ten's party hat or crown at once, not on the next
+        // visit to the wardrobe.
+        goalStore.onMilestone = { [weak self] in
+            Task { await self?.refreshTenWardrobe() }
         }
 
         // A fact Ten forgot (Settings or a saved draft) leaves every kept chat that mentions it:

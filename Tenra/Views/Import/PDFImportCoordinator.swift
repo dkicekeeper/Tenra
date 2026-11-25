@@ -199,17 +199,21 @@ struct PDFImportCoordinator: View {
     @ViewBuilder
     private var loadingOverlay: some View {
         VStack(spacing: AppSpacing.md) {
+            // Ten fills with light page by page as the text is recognized; before the pages are
+            // counted he is thinking.
             if let progress = ocrProgress {
-                ProgressView(value: Double(progress.current), total: Double(progress.total)) {
-                    Text(String(localized: "progress.recognizingText", defaultValue: "Recognizing text..."))
-                        .font(AppTypography.bodySmall)
-                        .foregroundStyle(.secondary)
-                }
+                TenWorkingView(progress: Double(progress.current) / Double(max(progress.total, 1)))
+                Text(String(localized: "progress.recognizingText", defaultValue: "Recognizing text..."))
+                    .font(AppTypography.bodySmall)
+                    .foregroundStyle(.secondary)
                 Text(String(format: String(localized: "progress.page", defaultValue: "Page %d of %d"), progress.current, progress.total))
                     .font(AppTypography.caption)
                     .foregroundStyle(.secondary)
             } else {
-                ProgressView(String(localized: "progress.processingPDF", defaultValue: "Processing PDF..."))
+                TenWorkingView(progress: nil)
+                Text(String(localized: "progress.processingPDF", defaultValue: "Processing PDF..."))
+                    .font(AppTypography.bodySmall)
+                    .foregroundStyle(.secondary)
             }
         }
         .padding(AppSpacing.lg)

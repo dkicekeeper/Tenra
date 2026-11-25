@@ -228,3 +228,90 @@ struct TenRecordWiringTests {
         #expect(own.isEmpty)
     }
 }
+
+@MainActor
+@Suite("Ten's wardrobe news")
+struct TenWardrobeNewsTests {
+
+    private func defaults() -> UserDefaults {
+        UserDefaults(suiteName: "tests.\(UUID().uuidString)")!
+    }
+
+    private func expense(createdAt: Date) -> Transaction {
+        Transaction(id: UUID().uuidString, date: "2026-10-10", description: "coffee", amount: 1500, currency: "KZT",
+                    type: .expense, category: "Food", createdAt: createdAt.timeIntervalSince1970)
+    }
+
+    @Test("A newly opened accessory puts a dot on the hanger until the wardrobe shows it")
+    func dot() {
+        let defaults = defaults()
+        let store = TenWardrobeStore(defaults: defaults)
+        store.refreshUnlocks(hasGoal: false, hasReachedGoal: false, at: noon(2026, 10, 10), calendar: utc)
+        // What is open from the start is never news.
+        #expect(!store.hasUnseen)
+        store.refreshUnlocks(hasGoal: true, hasReachedGoal: false, at: noon(2026, 10, 10), calendar: utc)
+        #expect(store.hasUnseen)
+        #expect(TenWardrobeStore(defaults: defaults).hasUnseen)
+        store.markSeen()
+        #expect(!store.hasUnseen)
+        #expect(!TenWardrobeStore(defaults: defaults).hasUnseen)
+    }
+
+    @Test("Nauryz opens the taqiya on the day, without a visit to the wardrobe")
+    func nauryz() {
+        let store = TenWardrobeStore(defaults: defaults())
+        store.refreshUnlocks(hasGoal: false, hasReachedGoal: false, at: noon(2027, 3, 22), calendar: utc)
+        #expect(store.unlocked.contains("taqiya"))
+        #expect(store.hasUnseen)
+    }
+
+    @Test("What was open before the dot is not news; what opens after it is")
+    func before() {
+        let defaults = defaults()
+        defaults.set("glasses,partyHat", forKey: AssistantWardrobe.unlockedKey)
+        let store = TenWardrobeStore(defaults: defaults)
+        #expect(!store.hasUnseen)
+        store.refreshUnlocks(hasGoal: true, hasReachedGoal: true, at: noon(2026, 10, 10), calendar: utc)
+        #expect(store.hasUnseen)
+        #expect(TenWardrobeStore(defaults: defaults).hasUnseen)
+    }
+
+    @Test("A locked accessory shows how far the current run is; an open one or a goal's, nothing")
+    func progress() {
+        let store = TenWardrobeStore(defaults: defaults())
+        for day in 1...4 {
+            let now = noon(2026, 10, day)
+            store.noteRecords([expense(createdAt: now)], now: now, calendar: utc)
+        }
+        let day = noon(2026, 10, 4)
+        #expect(store.progress(.sunglasses, at: day, calendar: utc)?.days == 4)
+        #expect(store.progress(.sunglasses, at: day, calendar: utc)?.of == 7)
+        #expect(store.progress(.sleepMask, at: day, calendar: utc)?.of == 30)
+        // The run broken: back to nothing.
+        #expect(store.progress(.sunglasses, at: noon(2026, 10, 9), calendar: utc)?.days == 0)
+        #expect(store.progress(.crown, at: day, calendar: utc) == nil)
+        #expect(store.progress(.glasses, at: day, calendar: utc) == nil)
+        // The tile's words: the condition, then the count.
+        #expect(AssistantWardrobeView.condition(.sunglasses, progress: nil) == AssistantWardrobe.condition(.sunglasses))
+        let withCount = AssistantWardrobeView.condition(.sunglasses, progress: (days: 4, of: 7))
+        #expect(withCount.hasPrefix(AssistantWardrobe.condition(.sunglasses)))
+        #expect(withCount.contains("4") && withCount.contains("7"))
+    }
+
+    @Test("A backup keeps what was seen; one made before the dot counts what it opened as seen")
+    func backup() throws {
+        let made = TenWardrobeStore(defaults: defaults())
+        made.refreshUnlocks(hasGoal: true, hasReachedGoal: false, at: noon(2026, 10, 10), calendar: utc)
+        let unseen = try #require(made.backupData())
+        let phone = TenWardrobeStore(defaults: defaults())
+        phone.merge(backup: unseen)
+        #expect(phone.hasUnseen)
+
+        let old = try JSONEncoder().encode(TenWardrobeStore.Snapshot(choice: "", crownDay: "", unlocked: ["partyHat"],
+                                                                     streak: TenRecordStreak()))
+        let other = TenWardrobeStore(defaults: defaults())
+        other.merge(backup: old)
+        #expect(other.unlocked.contains("partyHat"))
+        #expect(!other.hasUnseen)
+    }
+}

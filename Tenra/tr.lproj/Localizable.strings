@@ -2091,6 +2091,8 @@
 "assistant.wardrobe.lock.goalReached" = "Bir hedefe ulaşın";
 "assistant.wardrobe.lock.nauryz" = "Nevruz'da açılır";
 "assistant.wardrobe.locked" = "Kilitli";
+"assistant.wardrobe.progress" = "%1$lld/%2$lld";
+"assistant.wardrobe.titleNew" = "Ten'in gardırobu, yeni bir şey var";
 
 /* Ten in empty lists (DesignKit 4.13) */
 "assistant.empty.goals" = "Bir şey için birikim yapalım mı?";
@@ -2511,6 +2513,8 @@
 "moment.budget.title" = "Bütçe içinde bir ay";
 "moment.budget.text" = "Geçen ay hiçbir bütçe aşılmadı.";
 "moment.budget.line" = "Böyle devam!";
+"budgetMonth.notice.text" = "Geçen ay hiçbir bütçe aşılmadı. En çok nerede tasarruf ettiğine bakalım mı?";
+"budgetMonth.question" = "Geçen ay bütçelerimde nasıl gittim? En çok nerede tasarruf ettim?";
 "moment.capture.title" = "Kendiliğinden kaydedildi";
 "moment.capture.text" = "İlk ödemen sen olmadan kaydedildi. Artık böyle olacak.";
 "moment.capture.line" = "Kendiliğinden!";

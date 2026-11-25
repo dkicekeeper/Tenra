@@ -210,6 +210,7 @@ extension AssistantNoticeCard {
         case .feedback: "square.and.pencil"
         case .yearReview: "gift"
         case .januaryPlan: "calendar"
+        case .budgetMonth: "checkmark.seal"
         default: "sparkles"
         }
     }
@@ -223,6 +224,7 @@ extension AssistantNotice.Mood {
         case .concerned: .worried
         case .celebrate: .celebrating
         case .surprised: .surprised
+        case .proud: .proud
         }
     }
 }

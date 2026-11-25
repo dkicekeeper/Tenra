@@ -117,7 +117,10 @@ struct CloudBackupsView: View {
             isPresented: cloudSyncViewModel.isRestoringBackup,
             title: String(localized: "settings.cloud.restoring"),
             message: String(localized: "settings.cloud.restoringSubtitle")
-        )
+        ) {
+            // Ten fills with light step by step, in the spinner's place.
+            TenWorkingView(progress: cloudSyncViewModel.restoreProgress)
+        }
         .animation(AppAnimation.gentleSpring, value: cloudSyncViewModel.isRestoringBackup)
         .overlay {
             // Toast messages

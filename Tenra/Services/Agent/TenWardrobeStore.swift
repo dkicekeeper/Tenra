@@ -22,6 +22,8 @@ final class TenWardrobeStore {
     nonisolated static let legacyStreakKeys = ["streak.lastDay", "streak.count", "streak.best"]
     /// Its file in a backup's folder.
     nonisolated static let backupFileName = "ten.json"
+    /// The opened accessories the person has seen in the wardrobe, raw values joined by commas.
+    nonisolated static let seenKey = "assistant.wardrobe.seen"
 
     /// The person's choice, a `CreatureAccessory`'s raw value; "" for nothing.
     private(set) var choice: String
@@ -29,6 +31,9 @@ final class TenWardrobeStore {
     private(set) var crownDay: String
     /// The accessories opened so far, raw values. Nothing in it ever closes again.
     private(set) var unlocked: Set<String>
+    /// The opened accessories the wardrobe has shown since they opened: the hanger has a dot
+    /// while one is not among them (plan-ten-gamification.md §7.3).
+    private(set) var seen: Set<String>
     private(set) var streak: TenRecordStreak
 
     @ObservationIgnored private let defaults: UserDefaults
@@ -37,7 +42,16 @@ final class TenWardrobeStore {
         self.defaults = defaults
         choice = defaults.string(forKey: AssistantWardrobe.choiceKey) ?? ""
         crownDay = defaults.string(forKey: AssistantWardrobe.crownDayKey) ?? ""
-        unlocked = AssistantWardrobe.decode(defaults.string(forKey: AssistantWardrobe.unlockedKey) ?? "")
+        let opened = AssistantWardrobe.decode(defaults.string(forKey: AssistantWardrobe.unlockedKey) ?? "")
+        unlocked = opened
+        // Before the dot existed, what was open counts as seen: no dot for old news. Kept at
+        // once, so what opens later is news.
+        if let stored = defaults.string(forKey: Self.seenKey) {
+            seen = AssistantWardrobe.decode(stored)
+        } else {
+            seen = opened
+            defaults.set(AssistantWardrobe.encode(opened), forKey: Self.seenKey)
+        }
         streak = defaults.data(forKey: Self.streakKey)
             .flatMap { try? JSONDecoder().decode(TenRecordStreak.self, from: $0) } ?? TenRecordStreak()
         keepWhatAppOpensOpened()
@@ -64,7 +78,32 @@ final class TenWardrobeStore {
             || unlocked.contains(accessory.rawValue)
     }
 
+    /// Opened and not yet seen in the wardrobe: the dot on the hanger. What is open from the
+    /// start is never news.
+    var hasUnseen: Bool {
+        unlocked.contains { !seen.contains($0) && !Self.isOpenFromStart($0) }
+    }
+
+    /// How far a locked accessory is: the record streak's run against the days it needs. nil for
+    /// one that is open, or that a run does not open.
+    func progress(_ accessory: CreatureAccessory, at date: Date = .now,
+                  calendar: Calendar = .current) -> (days: Int, of: Int)? {
+        guard !isOpen(accessory), case .streak(let days) = AssistantWardrobe.requirement(accessory) else { return nil }
+        return (days: min(streak.current(at: date, calendar: calendar), days), of: days)
+    }
+
+    private static func isOpenFromStart(_ rawValue: String) -> Bool {
+        CreatureAccessory(rawValue: rawValue).map { AssistantWardrobe.requirement($0) == .open } ?? false
+    }
+
     // MARK: - Changes
+
+    /// The wardrobe showed what is open: the hanger's dot goes.
+    func markSeen() {
+        guard !unlocked.isSubset(of: seen) else { return }
+        seen.formUnion(unlocked)
+        save()
+    }
 
     /// Picked in the wardrobe. A locked accessory is only tried on there, never worn.
     func choose(_ accessory: CreatureAccessory?) {
@@ -115,12 +154,14 @@ final class TenWardrobeStore {
         var crownDay: String
         var unlocked: [String]
         var streak: TenRecordStreak
+        /// nil in a backup made before the hanger's dot.
+        var seen: [String]? = nil
     }
 
     /// `ten.json` for a new backup.
     func backupData() -> Data? {
         try? JSONEncoder().encode(Snapshot(choice: choice, crownDay: crownDay, unlocked: unlocked.sorted(),
-                                           streak: streak))
+                                           streak: streak, seen: seen.sorted()))
     }
 
     /// A restored backup's `ten.json`. Nothing earned is lost on either side: what is open
@@ -129,6 +170,8 @@ final class TenWardrobeStore {
     func merge(backup data: Data) {
         guard let saved = try? JSONDecoder().decode(Snapshot.self, from: data) else { return }
         unlocked.formUnion(saved.unlocked)
+        // A backup from before the dot: what it opened was seen on the phone that made it.
+        seen.formUnion(saved.seen ?? saved.unlocked)
         if choice.isEmpty { choice = saved.choice }
         if saved.crownDay > crownDay { crownDay = saved.crownDay }
         var run = saved.streak.lastDay > streak.lastDay ? saved.streak : streak
@@ -157,6 +200,7 @@ final class TenWardrobeStore {
         defaults.set(choice, forKey: AssistantWardrobe.choiceKey)
         defaults.set(crownDay, forKey: AssistantWardrobe.crownDayKey)
         defaults.set(AssistantWardrobe.encode(unlocked), forKey: AssistantWardrobe.unlockedKey)
+        defaults.set(AssistantWardrobe.encode(seen), forKey: Self.seenKey)
         defaults.set(try? JSONEncoder().encode(streak), forKey: Self.streakKey)
     }
 }

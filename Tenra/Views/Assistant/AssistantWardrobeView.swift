@@ -62,7 +62,7 @@ struct AssistantWardrobeView: View {
                     title: { AssistantWardrobe.name($0.accessory) },
                     condition: { option in
                         guard let accessory = option.accessory, !wardrobe.isOpen(accessory) else { return nil }
-                        return AssistantWardrobe.condition(accessory)
+                        return Self.condition(accessory, progress: wardrobe.progress(accessory))
                     },
                     lockedLabel: String(localized: "assistant.wardrobe.locked")
                 ) { option in
@@ -80,19 +80,24 @@ struct AssistantWardrobeView: View {
         .background(AppColors.Background.baseAlt)
         .navigationTitle(String(localized: "assistant.wardrobe.title"))
         .navigationBarTitleDisplayMode(.inline)
-        .task { await refreshUnlocked() }
+        .task {
+            await coordinator.refreshTenWardrobe()
+            // What is open now has been shown: the hanger's dot goes.
+            wardrobe.markSeen()
+        }
         .onChange(of: focused) { _, key in
             HapticManager.selection()
             wardrobe.choose(Self.accessory(key))
         }
     }
 
-    /// What the goals open now joins what was opened before (TenWardrobeStore).
-    private func refreshUnlocked() async {
-        let goals = coordinator.goalStore
-        await goals.load()
-        wardrobe.refreshUnlocks(hasGoal: !goals.goals.isEmpty,
-                                hasReachedGoal: goals.goals.contains { $0.reachedAt != nil })
+    /// What opens a locked accessory, and for a run of days how far the current run is
+    /// ("7 days in a row with a record · 4 of 7").
+    static func condition(_ accessory: CreatureAccessory, progress: (days: Int, of: Int)?) -> String {
+        let condition = AssistantWardrobe.condition(accessory)
+        guard let progress else { return condition }
+        let count = String(format: String(localized: "assistant.wardrobe.progress"), progress.days, progress.of)
+        return "\(condition) · \(count)"
     }
 }
 

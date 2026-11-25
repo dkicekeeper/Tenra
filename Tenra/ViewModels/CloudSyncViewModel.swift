@@ -24,6 +24,9 @@ final class CloudSyncViewModel {
     var backups: [BackupMetadata] = []
     var isCreatingBackup = false
     var isRestoringBackup = false
+    /// How far a restore from Settings is, 0…1, by its steps: the copy back, the data read, the
+    /// balances. Ten fills with light by it (TenWorkingView).
+    var restoreProgress = 0.0
     var storageUsed: Int64 = 0
     var successMessage: String?
     var errorMessage: String?
@@ -211,18 +214,22 @@ final class CloudSyncViewModel {
     }
 
     func restoreBackup(_ metadata: BackupMetadata) async {
+        restoreProgress = RestoreStep.started
         isRestoringBackup = true
 
         do {
             let files = try await backupService.restoreBackup(metadata, extraFiles: [TenWardrobeStore.backupFileName])
             applyTenFiles(files)
+            restoreProgress = RestoreStep.copied
             // swapStore posts storeDidResetNotification (FRC rebuilds) but in-memory
             // stores (TransactionStore, BalanceCoordinator, etc.) need a full reload.
             if let coordinator = appCoordinator {
                 try? await coordinator.transactionStore.loadData()
                 coordinator.syncTransactionStoreToViewModels(batchMode: true)
+                restoreProgress = RestoreStep.read
                 await coordinator.balanceCoordinator.registerAccounts(coordinator.transactionStore.accounts)
             }
+            restoreProgress = 1
             await showSuccess(String(localized: "settings.cloud.restoreSuccess"))
         } catch {
             await showError(error.localizedDescription)
@@ -343,4 +350,12 @@ final class CloudSyncViewModel {
         try? await Task.sleep(for: .seconds(5))
         errorMessage = nil
     }
+}
+
+/// The share of a restore done after each of its steps (CloudSyncViewModel.restoreProgress): the
+/// copy back is the longest.
+private enum RestoreStep {
+    static let started = 0.1
+    static let copied = 0.6
+    static let read = 0.85
 }

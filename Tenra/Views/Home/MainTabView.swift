@@ -267,8 +267,12 @@ struct MainTabView: View {
         .onChange(of: scenePhase, initial: true) { _, phase in
             guard phase == .active else { return }
             coordinator.refreshAssistantInbox()
-            // A goal's reached date, kept even when its screen was not open (GoalStore).
-            Task { await coordinator.goalStore.refreshAllReached() }
+            // A goal's reached date, kept even when its screen was not open (GoalStore), then
+            // what Ten's wardrobe has earned (a holiday, the streak, the goals).
+            Task {
+                await coordinator.goalStore.refreshAllReached()
+                await coordinator.refreshTenWardrobe()
+            }
             // What Ten celebrates on his own: last month inside the budgets, the first capture.
             TenMoments.shared.checkNoticed(coordinator: coordinator)
             // The next statement reminders, scheduled ahead (StatementImportReminder).

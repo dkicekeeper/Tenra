@@ -2091,6 +2091,8 @@
 "assistant.wardrobe.lock.goalReached" = "Atteignez un objectif";
 "assistant.wardrobe.lock.nauryz" = "S'ouvre à Nauryz";
 "assistant.wardrobe.locked" = "Verrouillé";
+"assistant.wardrobe.progress" = "%1$lld sur %2$lld";
+"assistant.wardrobe.titleNew" = "La garde-robe de Ten, il y a du nouveau";
 
 /* Ten in empty lists (DesignKit 4.13) */
 "assistant.empty.goals" = "On économise pour quelque chose ?";
@@ -2511,6 +2513,8 @@
 "moment.budget.title" = "Un mois dans le budget";
 "moment.budget.text" = "Le mois dernier, aucun budget n'a été dépassé.";
 "moment.budget.line" = "Continuez comme ça !";
+"budgetMonth.notice.text" = "Le mois dernier, aucun budget n'a été dépassé. On regarde où vous avez le plus économisé ?";
+"budgetMonth.question" = "Comment se sont passés mes budgets le mois dernier ? Où ai-je le plus économisé ?";
 "moment.capture.title" = "Enregistré tout seul";
 "moment.capture.text" = "Votre premier paiement s'est enregistré sans vous. Désormais, ce sera ainsi.";
 "moment.capture.line" = "Tout seul !";

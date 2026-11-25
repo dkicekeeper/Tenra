@@ -52,12 +52,17 @@ struct AssistantNotice: Codable, Equatable, Identifiable, Sendable {
         /// January's budgets, a goal for the year and the evening reminder. `subjectId` is the
         /// year.
         case januaryPlan
+        /// Last month inside every monthly budget (TenMomentRules.budgetMonthKept), in the first
+        /// week of the next one. `subjectId` is the month, `yyyy-MM`.
+        case budgetMonth
     }
 
     enum Mood: String, Codable, Sendable {
         case idle, happy, concerned, celebrate
         /// An unusually large expense or a sudden jump.
         case surprised
+        /// The person did well: a week much cheaper than the one before.
+        case proud
     }
 
     /// The key that keeps it from posting twice.
@@ -93,6 +98,7 @@ struct AssistantNotice: Codable, Equatable, Identifiable, Sendable {
         case .debt: fields["debt_id"] = subjectId.map(JSONValue.string) ?? .null
         case .goal: fields["goal_id"] = subjectId.map(JSONValue.string) ?? .null
         case .januaryPlan: fields["year"] = subjectId.map(JSONValue.string) ?? .null
+        case .budgetMonth: fields["month"] = subjectId.map(JSONValue.string) ?? .null
         default: break
         }
         return "<notice>\n\(JSONValue.object(fields).jsonString())\n</notice>"
@@ -111,7 +117,8 @@ extension AssistantNotice {
         body = try container.decode(String.self, forKey: .body)
         hiddenBody = try container.decodeIfPresent(String.self, forKey: .hiddenBody)
         text = try? container.decodeIfPresent(AssistantNoticeText.self, forKey: .text)
-        mood = try container.decode(Mood.self, forKey: .mood)
+        // A mood a later version added reads as the plain face, not as a broken inbox.
+        mood = (try? container.decode(Mood.self, forKey: .mood)) ?? .idle
         question = try container.decode(String.self, forKey: .question)
         insightId = try container.decodeIfPresent(String.self, forKey: .insightId)
         subjectId = try container.decodeIfPresent(String.self, forKey: .subjectId)
@@ -290,7 +297,7 @@ enum AssistantNotices {
                     format: "notification.weeklyDigest.body.withComparison",
                     values: [.week(start: weekStart), .amount(week.expenses, currency: baseCurrency), .text(String(format: "%+.0f%%", change))]
                 )
-                mood = change <= -5 ? .happy : (change >= 20 ? .concerned : .idle)
+                mood = Self.digestMood(change: change)
             }
         }
         return AssistantNotice(
@@ -459,6 +466,35 @@ extension AssistantNotices {
         )
     }
 
+    /// The face of last week's summary by its change against the week before, in percent: proud
+    /// of a much cheaper week, pleased with a cheaper one, concerned by a much dearer one.
+    static func digestMood(change: Double) -> AssistantNotice.Mood {
+        if change < goodWeekChange { return .proud }
+        if change <= -5 { return .happy }
+        if change >= 20 { return .concerned }
+        return .idle
+    }
+
+    /// A week more than this much cheaper than the one before, in percent, is a good week.
+    static let goodWeekChange = -20.0
+
+    /// Last month inside every monthly budget (plan-ten-gamification.md §11, stage 1): once,
+    /// in the first week of the next month, with Ten celebrating on Home. `key` is
+    /// TenMomentRules.budgetMonthKey's, `budgetMonth:yyyy-MM`.
+    static func budgetMonth(key: String, now: Date) -> AssistantNotice {
+        AssistantNotice(
+            id: key,
+            kind: .budgetMonth,
+            title: String(localized: "moment.budget.title"),
+            body: String(localized: "budgetMonth.notice.text"),
+            mood: .celebrate,
+            question: String(localized: "budgetMonth.question"),
+            insightId: nil,
+            subjectId: key.split(separator: ":").last.map(String.init),
+            createdAt: now
+        )
+    }
+
     /// The plan for January (docs/plan-release-1.9.md §4): once a year, in its first days
     /// (JanuaryPlan.postingYear), for someone with enough expenses to plan from; the year
     /// review's button uses the same message to start the chat. `subjectId` is the year.
@@ -582,7 +618,7 @@ extension AssistantNotices {
                 return feedbackRound.map { notice.id == FeedbackAsk.noticeID(round: $0) } ?? true
             case .yearReview: return reviewYear.map { notice.subjectId == String($0) } ?? false
             case .januaryPlan: return planYear.map { notice.subjectId == String($0) } ?? false
-            case .signal, .digest, .tidy: return true
+            case .signal, .digest, .tidy, .budgetMonth: return true
             }
         }
     }

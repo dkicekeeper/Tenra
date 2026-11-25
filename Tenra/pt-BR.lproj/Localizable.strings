@@ -2091,6 +2091,8 @@
 "assistant.wardrobe.lock.goalReached" = "Alcance uma meta";
 "assistant.wardrobe.lock.nauryz" = "Abre no Nauryz";
 "assistant.wardrobe.locked" = "Bloqueado";
+"assistant.wardrobe.progress" = "%1$lld de %2$lld";
+"assistant.wardrobe.titleNew" = "Guarda-roupa do Ten, tem novidade";
 
 /* Ten in empty lists (DesignKit 4.13) */
 "assistant.empty.goals" = "Vamos juntar para algo?";
@@ -2511,6 +2513,8 @@
 "moment.budget.title" = "Um mês dentro do orçamento";
 "moment.budget.text" = "No mês passado, nenhum orçamento foi ultrapassado.";
 "moment.budget.line" = "Continue assim!";
+"budgetMonth.notice.text" = "No mês passado, nenhum orçamento foi ultrapassado. Vamos ver onde você economizou mais?";
+"budgetMonth.question" = "Como fui com os orçamentos no mês passado? Onde economizei mais?";
 "moment.capture.title" = "Registrado sozinho";
 "moment.capture.text" = "Seu primeiro pagamento foi registrado sem você. Daqui em diante, vai ser assim.";
 "moment.capture.line" = "Sozinho!";

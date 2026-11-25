@@ -2091,6 +2091,8 @@
 "assistant.wardrobe.lock.goalReached" = "Мақсатқа жетіңіз";
 "assistant.wardrobe.lock.nauryz" = "Наурызда ашылады";
 "assistant.wardrobe.locked" = "Жабық";
+"assistant.wardrobe.progress" = "%1$lld/%2$lld";
+"assistant.wardrobe.titleNew" = "Тэннің гардеробы, жаңасы бар";
 
 /* Ten in empty lists (DesignKit 4.13) */
 "assistant.empty.goals" = "Бірдеңеге ақша жинаймыз ба?";
@@ -2511,6 +2513,8 @@
 "moment.budget.title" = "Бюджет ішіндегі ай";
 "moment.budget.text" = "Өткен айда бірде-бір бюджет асып кетпеді.";
 "moment.budget.line" = "Осылай жалғастырыңыз!";
+"budgetMonth.notice.text" = "Өткен айда бірде-бір бюджет асып кетпеді. Қай жерде көбірек үнемдегеніңізді қарайық па?";
+"budgetMonth.question" = "Өткен айда бюджеттерге қалай сыйдым? Қай жерде ең көп үнемдедім?";
 "moment.capture.title" = "Өзі жазылды";
 "moment.capture.text" = "Алғашқы төлем сізсіз жазылды. Енді солай болады.";
 "moment.capture.line" = "Өзі!";

@@ -2471,6 +2471,11 @@
 "yearReview.biggest.title" = "La tua spesa singola più grande";
 "yearReview.finale.title" = "Pronto per il %@?";
 "yearReview.finale.text" = "Condividi il tuo anno con gli amici. L'immagine mostra quote e numeri, non i tuoi soldi, a meno che tu non aggiunga gli importi.";
+"januaryPlan.notice.title" = "Piano per gennaio";
+"januaryPlan.notice.text" = "Un nuovo anno inizia meglio con un piano. Vediamo dove vanno i soldi e fissiamo i limiti per gennaio.";
+"januaryPlan.notice.action" = "Fai un piano";
+"januaryPlan.question" = "Fammi un piano per gennaio";
+"januaryPlan.reviewButton" = "Piano per gennaio";
 "yearReview.share.amounts" = "Importi nell'immagine";
 "yearReview.share.amountsFooter" = "Disattivato: solo quote e numeri. Attivato: quanto hai speso e messo da parte, e l'importo di ogni categoria.";
 "yearReview.share.message" = "Il mio %@ in Tenra";

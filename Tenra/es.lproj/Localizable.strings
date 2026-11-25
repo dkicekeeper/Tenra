@@ -2471,6 +2471,11 @@
 "yearReview.biggest.title" = "Tu mayor gasto puntual";
 "yearReview.finale.title" = "¿Listo para %@?";
 "yearReview.finale.text" = "Comparte tu año con tus amigos. La imagen muestra porcentajes y cifras, no tu dinero, salvo que añadas los importes.";
+"januaryPlan.notice.title" = "Plan para enero";
+"januaryPlan.notice.text" = "Un año nuevo empieza mejor con un plan. Veamos a dónde va el dinero y pongamos límites para enero.";
+"januaryPlan.notice.action" = "Hacer un plan";
+"januaryPlan.question" = "Hazme un plan para enero";
+"januaryPlan.reviewButton" = "Plan para enero";
 "yearReview.share.amounts" = "Importes en la imagen";
 "yearReview.share.amountsFooter" = "Desactivado: solo porcentajes y cifras. Activado: lo que gastaste y te quedó, y el importe de cada categoría.";
 "yearReview.share.message" = "Mi %@ en Tenra";

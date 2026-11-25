@@ -2471,6 +2471,11 @@
 "yearReview.biggest.title" = "Ең ірі бір реттік шығын";
 "yearReview.finale.title" = "%@ жылына дайынсыз ба?";
 "yearReview.finale.text" = "Жылыңызбен достарыңызбен бөлісіңіз. Сомаларды қоспасаңыз, суретте ақшаңыз емес, тек үлестер мен сандар көрінеді.";
+"januaryPlan.notice.title" = "Қаңтарға жоспар";
+"januaryPlan.notice.text" = "Жаңа жылды жоспармен бастаған дұрыс. Ақша қайда кететінін қарап, қаңтарға лимит қояйық.";
+"januaryPlan.notice.action" = "Жоспар құру";
+"januaryPlan.question" = "Маған қаңтарға жоспар құрып бер";
+"januaryPlan.reviewButton" = "Қаңтарға жоспар";
 "yearReview.share.amounts" = "Суреттегі сомалар";
 "yearReview.share.amountsFooter" = "Өшірулі: тек үлестер мен сандар. Қосулы: қанша жұмсалғаны мен қалғаны, санаттардың сомалары.";
 "yearReview.share.message" = "Tenra-дағы менің %@ жылым";

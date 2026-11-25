@@ -2471,6 +2471,11 @@
 "yearReview.biggest.title" = "Seu maior gasto avulso";
 "yearReview.finale.title" = "Pronto para %@?";
 "yearReview.finale.text" = "Compartilhe seu ano com os amigos. A imagem mostra porcentagens e números, não o seu dinheiro, a menos que você adicione os valores.";
+"januaryPlan.notice.title" = "Plano para janeiro";
+"januaryPlan.notice.text" = "Um ano novo começa melhor com um plano. Vamos ver para onde vai o dinheiro e definir limites para janeiro.";
+"januaryPlan.notice.action" = "Fazer um plano";
+"januaryPlan.question" = "Faça um plano para janeiro para mim";
+"januaryPlan.reviewButton" = "Plano para janeiro";
 "yearReview.share.amounts" = "Valores na imagem";
 "yearReview.share.amountsFooter" = "Desligado: só porcentagens e números. Ligado: quanto você gastou e guardou, e o valor de cada categoria.";
 "yearReview.share.message" = "Meu %@ no Tenra";

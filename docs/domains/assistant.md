@@ -373,6 +373,22 @@ shows from the next time Tenra comes to the front after the renewal was turned o
 on the whole screen (`YearReviewScreen`), no model and no action spent. It leaves with the window
 (`Subjects.reviewYear`). Pinned by `YearReviewTests`.
 
+**The plan for January** (`Kind.januaryPlan`, `AssistantNotices.januaryPlan`, `JanuaryPlan`,
+[plan-release-1.9.md](../plan-release-1.9.md) §4): once a year (key `januaryPlan:<year>`), posted
+on 1 to 5 January (`JanuaryPlan.postingYear`) for someone with 30 expenses or more in October to
+December (`JanuaryPlan.isEligible`, one light pass, skipped once the key is posted), kept through
+January (`Subjects.planYear`). Mood `happy`; its button is "Make a plan" and goes through it like
+any message (one free action): the question "Make me a plan for January" with a `<notice>` that
+carries the plan's year. The prompt's January plan rule (the same for the question in words, in
+any app version) has Ten draft in one reply at most three budgets from what is really spent
+(`suggest_budgets`, only with `budget_suggestions` in the reads line), a rainy-day goal for the
+year when there is no goal (three months of spending rounded up, by 31 December), and the evening
+reminder at 21:00 when the state line says it is off; the cards carry the amounts. The year
+review's last page offers the same as "Plan for January" (`AppCoordinator.startJanuaryPlan`,
+from December): the plan's year is the coming January (`JanuaryPlan.year`), and the key counts as
+posted (`AssistantInbox.markPosted`), so January's message does not offer it again. Pinned by
+`JanuaryPlanTests`; eval cases `ru-january-plan` and `en-january-plan-notice`.
+
 Auto-capture not set up (`Kind.setup`, `AssistantNotices.setupNudge`): once, after
 `setupAfterEntries` entries, for someone who hid Home's auto-capture card; its button is "Set
 up" and opens the Wallet guide instead of asking Ten (no action spent), and it leaves once an

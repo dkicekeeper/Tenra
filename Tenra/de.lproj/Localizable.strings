@@ -2471,6 +2471,11 @@
 "yearReview.biggest.title" = "Ihre größte einmalige Ausgabe";
 "yearReview.finale.title" = "Bereit für %@?";
 "yearReview.finale.text" = "Teilen Sie Ihr Jahr mit Freunden. Das Bild zeigt Anteile und Zahlen, nicht Ihr Geld, außer Sie fügen die Beträge hinzu.";
+"januaryPlan.notice.title" = "Plan für Januar";
+"januaryPlan.notice.text" = "Ein neues Jahr beginnt am besten mit einem Plan. Schauen wir, wohin das Geld geht, und setzen wir Limits für Januar.";
+"januaryPlan.notice.action" = "Plan erstellen";
+"januaryPlan.question" = "Erstelle mir einen Plan für Januar";
+"januaryPlan.reviewButton" = "Plan für Januar";
 "yearReview.share.amounts" = "Beträge im Bild";
 "yearReview.share.amountsFooter" = "Aus: nur Anteile und Zahlen. An: was Sie ausgegeben und behalten haben und die Beträge der Kategorien.";
 "yearReview.share.message" = "Mein %@ in Tenra";

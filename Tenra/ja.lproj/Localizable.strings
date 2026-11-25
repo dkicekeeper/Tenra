@@ -2471,6 +2471,11 @@
 "yearReview.biggest.title" = "一度きりの最大の出費";
 "yearReview.finale.title" = "%@年の準備はできましたか？";
 "yearReview.finale.text" = "1年を友だちとシェアしましょう。金額を加えない限り、画像には割合と数だけが表示され、お金は表示されません。";
+"januaryPlan.notice.title" = "1月のプラン";
+"januaryPlan.notice.text" = "新しい年はプランから始めましょう。お金の使い道を見て、1月の上限を決めましょう。";
+"januaryPlan.notice.action" = "プランを作る";
+"januaryPlan.question" = "1月のプランを作って";
+"januaryPlan.reviewButton" = "1月のプラン";
 "yearReview.share.amounts" = "画像に金額を表示";
 "yearReview.share.amountsFooter" = "オフ：割合と数のみ。オン：使った金額と残った金額、カテゴリごとの金額。";
 "yearReview.share.message" = "Tenraでの私の%@年";

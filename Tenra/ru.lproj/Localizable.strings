@@ -2471,6 +2471,11 @@
 "yearReview.biggest.title" = "Самая крупная разовая трата";
 "yearReview.finale.title" = "Готовы к %@?";
 "yearReview.finale.text" = "Поделитесь годом с друзьями. На картинке доли и числа, а не ваши деньги, если не добавить суммы.";
+"januaryPlan.notice.title" = "План на январь";
+"januaryPlan.notice.text" = "Новый год лучше начать с плана. Посмотрим, куда уходят деньги, и поставим лимиты на январь.";
+"januaryPlan.notice.action" = "Составить план";
+"januaryPlan.question" = "Составь мне план на январь";
+"januaryPlan.reviewButton" = "План на январь";
 "yearReview.share.amounts" = "Суммы на картинке";
 "yearReview.share.amountsFooter" = "Выключено: только доли и числа. Включено: сколько потрачено и осталось, и суммы категорий.";
 "yearReview.share.message" = "Мой %@ в Tenra";

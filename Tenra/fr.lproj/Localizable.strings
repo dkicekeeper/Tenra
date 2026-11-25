@@ -2471,6 +2471,11 @@
 "yearReview.biggest.title" = "Votre plus grosse dépense ponctuelle";
 "yearReview.finale.title" = "Prêt pour %@ ?";
 "yearReview.finale.text" = "Partagez votre année avec vos amis. L'image montre des parts et des chiffres, pas votre argent, sauf si vous ajoutez les montants.";
+"januaryPlan.notice.title" = "Plan pour janvier";
+"januaryPlan.notice.text" = "Une nouvelle année commence mieux avec un plan. Voyons où va l'argent et fixons des limites pour janvier.";
+"januaryPlan.notice.action" = "Faire un plan";
+"januaryPlan.question" = "Fais-moi un plan pour janvier";
+"januaryPlan.reviewButton" = "Plan pour janvier";
 "yearReview.share.amounts" = "Montants sur l'image";
 "yearReview.share.amountsFooter" = "Désactivé : seulement des parts et des chiffres. Activé : ce que vous avez dépensé et gardé, et le montant de chaque catégorie.";
 "yearReview.share.message" = "Mon %@ dans Tenra";

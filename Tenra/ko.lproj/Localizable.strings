@@ -2471,6 +2471,11 @@
 "yearReview.biggest.title" = "가장 큰 일회성 지출";
 "yearReview.finale.title" = "%@년 준비됐나요?";
 "yearReview.finale.text" = "친구들과 한 해를 공유해 보세요. 금액을 추가하지 않으면 이미지에는 비율과 숫자만 보이고 돈은 보이지 않아요.";
+"januaryPlan.notice.title" = "1월 계획";
+"januaryPlan.notice.text" = "새해는 계획과 함께 시작해요. 돈이 어디로 가는지 보고 1월 한도를 정해 봐요.";
+"januaryPlan.notice.action" = "계획 세우기";
+"januaryPlan.question" = "1월 계획을 세워 줘";
+"januaryPlan.reviewButton" = "1월 계획";
 "yearReview.share.amounts" = "이미지에 금액 표시";
 "yearReview.share.amountsFooter" = "끔: 비율과 숫자만. 켬: 쓴 돈과 남은 돈, 카테고리별 금액.";
 "yearReview.share.message" = "Tenra와 함께한 나의 %@년";

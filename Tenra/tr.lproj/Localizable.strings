@@ -2471,6 +2471,11 @@
 "yearReview.biggest.title" = "En büyük tek seferlik harcaman";
 "yearReview.finale.title" = "%@ için hazır mısın?";
 "yearReview.finale.text" = "Yılını arkadaşlarınla paylaş. Görselde paylar ve sayılar var, tutarları eklemedikçe paran görünmez.";
+"januaryPlan.notice.title" = "Ocak planı";
+"januaryPlan.notice.text" = "Yeni yıl bir planla daha iyi başlar. Paranın nereye gittiğine bakalım ve ocak için limitler koyalım.";
+"januaryPlan.notice.action" = "Plan yap";
+"januaryPlan.question" = "Bana ocak için bir plan yap";
+"januaryPlan.reviewButton" = "Ocak planı";
 "yearReview.share.amounts" = "Görselde tutarlar";
 "yearReview.share.amountsFooter" = "Kapalı: yalnızca paylar ve sayılar. Açık: ne harcadığın, ne kaldığı ve her kategorinin tutarı.";
 "yearReview.share.message" = "Tenra'da %@ yılım";

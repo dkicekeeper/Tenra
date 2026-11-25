@@ -1606,14 +1606,15 @@ def push_app_event(app: str, only: str | None, apply: bool, submit: bool) -> Non
     """The in-app events of appstore/app-events.json: each event (by reference name), its schedule,
     texts in every locale of the file and its card and details art, placed from the asset library
     on every localization. Without `apply` it only shows what it would write. An event in review,
-    approved or published is left alone. `submit` sends a written event for review (only when the
-    founder said so)."""
+    approved or published is left alone. `submit` sends the written events for review in one
+    submission (only when the founder said so)."""
     events = [e for e in app_events_config() if not only or only.lower() in e["referenceName"].lower()]
     if not events:
         sys.exit(f"No event in appstore/app-events.json matches {only!r}.")
     existing, _ = get_all(f"/v1/apps/{app}/appEvents", {"limit": 50})
     by_name = {e["attributes"].get("referenceName"): e for e in existing}
     library, images = None, None
+    written_events = []
     for event in events:
         name = event["referenceName"]
         schedule = dict(event["schedule"])
@@ -1680,8 +1681,10 @@ def push_app_event(app: str, only: str | None, apply: bool, submit: bool) -> Non
         state = get(f"/v1/appEvents/{event_id}")["data"]["attributes"].get("eventState")
         print(f"{name!r}: {state}, {written} locale(s) written, art placed on {len(placed)}"
               + (f", also in App Store Connect: {', '.join(extra)}" if extra else ""), flush=True)
-        if submit:
-            submit_for_review(app, [("appEvent", event_id)])
+        written_events.append(event_id)
+    if submit and written_events:
+        # One submission for all of them: App Store Connect keeps one submission in review at a time.
+        submit_for_review(app, [("appEvent", event_id) for event_id in written_events])
 
 
 # Review notes and the draft submission ------------------------------------------------------------

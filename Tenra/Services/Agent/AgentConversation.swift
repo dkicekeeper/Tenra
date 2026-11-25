@@ -51,6 +51,10 @@ final class AgentConversation {
     }
 
     private(set) var messages: [AgentWireMessage] = []
+    /// When each of `messages` was added, in step with them: kept with the thread, so the chat
+    /// can say which day a question was asked (DesignKit's `ConversationDivider`). Never sent.
+    /// nil for a message kept before the dates were.
+    private(set) var dates: [Date?] = []
     /// Every tool result of the thread by its `result_id`.
     private(set) var results: [String: JSONValue] = [:]
     /// Results owed for the last assistant message (its `render_reply` and any tool called
@@ -60,28 +64,32 @@ final class AgentConversation {
     private let transport: AgentTransport
     private let toolkit: AgentToolExecuting
     private let maxSteps: Int
+    private let now: () -> Date
 
-    init(transport: AgentTransport, toolkit: AgentToolExecuting, maxSteps: Int = 8) {
+    init(transport: AgentTransport, toolkit: AgentToolExecuting, maxSteps: Int = 8, now: @escaping () -> Date = Date.init) {
         self.transport = transport
         self.toolkit = toolkit
         self.maxSteps = maxSteps
+        self.now = now
     }
 
     /// Starts a new thread: the server keeps nothing, so forgetting the history is all it takes.
     func reset() {
         messages = []
+        dates = []
         results = [:]
         owedResults = []
     }
 
     /// The thread as AgentThreadStore keeps it.
     var body: AgentThreadSnapshot.Body {
-        AgentThreadSnapshot.Body(messages: messages, results: results, owedResults: owedResults)
+        AgentThreadSnapshot.Body(messages: messages, results: results, owedResults: owedResults, dates: dates)
     }
 
     /// Picks up a kept thread where it stopped.
     func restore(_ body: AgentThreadSnapshot.Body) {
         messages = body.messages
+        dates = body.messages.indices.map { body.date(at: $0) }
         results = body.results
         owedResults = body.owedResults
     }
@@ -115,6 +123,7 @@ final class AgentConversation {
         var kept = Array(messages[start...])
         kept[0] = AgentWireMessage(role: .user, content: kept[0].content.filter { $0["type"] != "tool_result" })
         messages = kept
+        dates = Array(dates[start...])
         return true
     }
 
@@ -132,15 +141,22 @@ final class AgentConversation {
         for note in notes { content.append(.object(["type": .string("text"), "text": .string(note)])) }
         content.append(.object(["type": .string("text"), "text": .string(text)]))
         owedResults = []
-        messages.append(AgentWireMessage(role: .user, content: content))
+        append(AgentWireMessage(role: .user, content: content))
         do {
             return try await run(onProgress: onProgress)
         } catch {
             // Roll the failed turn back so a retry sends a valid history.
             messages.removeSubrange(checkpoint...)
+            dates.removeSubrange(checkpoint...)
             owedResults = owed
             throw error
         }
+    }
+
+    /// A message of the thread, with when it was added.
+    private func append(_ message: AgentWireMessage) {
+        messages.append(message)
+        dates.append(now())
     }
 
     private func run(onProgress: ((Progress) -> Void)?) async throws -> AgentTurnOutcome {
@@ -167,7 +183,7 @@ final class AgentConversation {
             if done.refused { throw AgentConversationError.refused }
             if done.truncated { throw AgentConversationError.truncated }
 
-            messages.append(AgentWireMessage(role: .assistant, content: done.content))
+            append(AgentWireMessage(role: .assistant, content: done.content))
             let uses = done.content.compactMap(AgentToolUse.init(block:))
             guard !uses.isEmpty else { throw AgentConversationError.noReply }
 
@@ -200,7 +216,7 @@ final class AgentConversation {
                 owedResults = resultBlocks
                 return AgentTurnOutcome(reply: reply, results: results, model: done.model)
             }
-            messages.append(AgentWireMessage(role: .user, content: resultBlocks))
+            append(AgentWireMessage(role: .user, content: resultBlocks))
         }
         throw AgentConversationError.tooManySteps
     }

@@ -219,12 +219,8 @@ struct TransactionEditView: View {
                 SubcategorySearchView(
                     categoriesViewModel: coordinator.categoriesViewModel,
                     categoryId: coordinator.categoryId ?? "",
-                    selectedSubcategoryIds: $bindableCoordinator.formData.selectedSubcategoryIds,
-                    searchText: $bindableCoordinator.formData.subcategorySearchText
+                    selectedSubcategoryIds: $bindableCoordinator.formData.selectedSubcategoryIds
                 )
-                .onAppear {
-                    coordinator.formData.subcategorySearchText = ""
-                }
                 .presentationDetents([.medium, .large])
                 .presentationDragIndicator(.visible)
             }

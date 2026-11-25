@@ -315,6 +315,8 @@ final class AccountActionViewModel {
             // are written after the add — same order as TransactionAddCoordinator.
             linkSelectedSubcategories(to: created)
             HapticManager.success()
+            // The sheet closes: VoiceOver hears that it was saved (DesignKit's AccessibilityAnnouncer).
+            AccessibilityAnnouncer.announce(String(localized: "common.saved"))
             shouldDismiss = true
         } catch {
             logger.error("Failed to save income transaction: \(error.localizedDescription)")
@@ -478,6 +480,8 @@ final class AccountActionViewModel {
                 description: finalDescription
             )
             HapticManager.success()
+            // The sheet closes: VoiceOver hears that it was saved (DesignKit's AccessibilityAnnouncer).
+            AccessibilityAnnouncer.announce(String(localized: "common.saved"))
             shouldDismiss = true
         } catch {
             logger.error("Failed to save transfer: \(error.localizedDescription)")

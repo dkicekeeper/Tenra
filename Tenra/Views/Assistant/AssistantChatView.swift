@@ -22,6 +22,8 @@
 //
 //  Sending a question scrolls it to the top of the screen, and its turn is at least a screen
 //  tall, so a long reply is read from its start. A tap on the thread puts the keyboard away.
+//  A thread that is not all from today (a chat kept from another day, picked up again) puts a
+//  day line over the first question of each day (DesignKit's `ConversationDivider`, 8.9.0).
 //
 //  Without Pro, a line over the field counts the free answers once 3 or fewer are left
 //  (docs/domains/assistant.md §11) and opens the paywall; a question over the allowance waits in
@@ -104,21 +106,23 @@ struct AssistantChatView: View {
     }
 
     /// The questions and replies, with the field floating at the bottom. At rest the thread
-    /// starts under Ten; scrolled, it passes beneath.
+    /// starts under Ten; scrolled, it passes beneath. A thread that is not all from today says
+    /// which day each question was asked (DesignKit's `ConversationDivider`).
     private var thread: some View {
-        ScrollView {
+        let days = AssistantViewModel.dayStarts(in: model.entries, now: .now)
+        return ScrollView {
             // A plain stack: a lazy one guessed the heights of replies it had not drawn, and
             // a long reply scrolled the thread into empty space.
             VStack(alignment: .leading, spacing: AppSpacing.lg) {
                 ForEach(earlierEntries) { entry in
-                    entryView(entry)
+                    entryRow(entry, day: days[entry.id])
                         .id(entry.id)
                 }
                 // The latest question and everything after it, at least a screen tall: sending
                 // a question scrolls it to the top, and the reply is read from its start.
                 VStack(alignment: .leading, spacing: AppSpacing.lg) {
                     ForEach(currentTurn) { entry in
-                        entryView(entry)
+                        entryRow(entry, day: days[entry.id])
                             .id(entry.id)
                     }
                     turnFooter
@@ -286,6 +290,19 @@ struct AssistantChatView: View {
             return
         }
         Task { await model.retry() }
+    }
+
+    /// An entry, under the day line when it starts a day: one row, so scrolling to it shows the day.
+    @ViewBuilder
+    private func entryRow(_ entry: AssistantViewModel.Entry, day: Date?) -> some View {
+        if let day {
+            VStack(alignment: .leading, spacing: AppSpacing.lg) {
+                ConversationDivider(date: day)
+                entryView(entry)
+            }
+        } else {
+            entryView(entry)
+        }
     }
 
     @ViewBuilder

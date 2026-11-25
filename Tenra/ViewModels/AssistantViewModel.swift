@@ -94,6 +94,10 @@ final class AssistantViewModel {
 
         let id: UUID
         let content: Content
+        /// When a question or an attachment came into the thread, for the chat's day lines
+        /// (DesignKit's `ConversationDivider`); nil for a reply, and for a question kept before
+        /// the dates were.
+        var date: Date? = nil
 
         var question: String? {
             if case .question(let text) = content { return text }
@@ -245,8 +249,8 @@ final class AssistantViewModel {
     func startDraft(_ operations: [AgentDraftOperation], saying text: String) -> Bool {
         guard let drafts, !operations.isEmpty, startChat(suggesting: []) else { return false }
         let id = drafts.add(operations, madeOnPhoneFrom: text)
-        local.append(AgentThreadSnapshot.LocalExchange(position: conversation.messages.count, question: text, draftId: id))
-        entries.append(Entry(id: UUID(), content: .question(text)))
+        local.append(AgentThreadSnapshot.LocalExchange(position: conversation.messages.count, question: text, draftId: id, date: access.now()))
+        entries.append(Entry(id: UUID(), content: .question(text), date: access.now()))
         entries.append(Entry(id: UUID(), content: .reply(Self.localReply(id), results: [:])))
         replyMood = .happy
         Task { await persist() }
@@ -347,7 +351,7 @@ final class AssistantViewModel {
         var local = body.local[...]
         func appendLocal(upTo position: Int) {
             while let exchange = local.first, exchange.position <= position {
-                entries.append(Entry(id: UUID(), content: .question(exchange.question)))
+                entries.append(Entry(id: UUID(), content: .question(exchange.question), date: exchange.date))
                 entries.append(Entry(id: UUID(), content: .reply(Self.localReply(exchange.draftId), results: [:])))
                 local = local.dropFirst()
             }
@@ -357,7 +361,7 @@ final class AssistantViewModel {
             switch message.role {
             case .user:
                 if let text = message.content.last(where: { $0["type"] == "text" })?["text"]?.stringValue {
-                    entries.append(Entry(id: UUID(), content: .question(text)))
+                    entries.append(Entry(id: UUID(), content: .question(text), date: body.date(at: index)))
                 }
             case .assistant:
                 let uses = message.content.compactMap(AgentToolUse.init(block:))
@@ -368,6 +372,30 @@ final class AssistantViewModel {
         }
         appendLocal(upTo: .max)
         return entries
+    }
+
+    /// The chat's day lines (DesignKit's `ConversationDivider`): the questions and attachments
+    /// that start a day, with when they came. None while the whole thread is from `now`'s day;
+    /// otherwise one before the first of each day. One kept before the dates were has none, and
+    /// the next dated one starts a day.
+    static func dayStarts(in entries: [Entry], now: Date, calendar: Calendar = .current) -> [UUID: Date] {
+        let today = calendar.startOfDay(for: now)
+        var starts: [UUID: Date] = [:]
+        var allToday = true
+        var lastDay: Date?
+        for entry in entries {
+            if case .reply = entry.content { continue }
+            guard let date = entry.date else {
+                allToday = false
+                lastDay = nil
+                continue
+            }
+            let day = calendar.startOfDay(for: date)
+            if day != today { allToday = false }
+            if day != lastDay { starts[entry.id] = date }
+            lastDay = day
+        }
+        return allToday ? [:] : starts
     }
 
     /// The reply to a message the phone answered: its draft's confirm card.
@@ -532,7 +560,7 @@ final class AssistantViewModel {
     }
 
     private func answerFeedback(_ text: String, step: FeedbackStep) async {
-        let entry = Entry(id: UUID(), content: .question(text))
+        let entry = Entry(id: UUID(), content: .question(text), date: access.now())
         entries.append(entry)
         switch step {
         case .mood where text == Self.feedbackLike:
@@ -634,7 +662,7 @@ final class AssistantViewModel {
     /// "That helped" or "Still not solved": the owner hears which (the same words again, with
     /// `resolved`), and Ten answers either way.
     private func answerFollowUp(_ help: FeedbackHelp, helped: Bool) async {
-        entries.append(Entry(id: UUID(), content: .question(helped ? Self.feedbackHelped : Self.feedbackNotHelped)))
+        entries.append(Entry(id: UUID(), content: .question(helped ? Self.feedbackHelped : Self.feedbackNotHelped), date: access.now()))
         _ = try? await feedbackTransport?.feedback(
             AgentFeedbackMessage(text: help.text, mood: help.mood, source: feedbackSource, resolved: helped)
         )
@@ -663,7 +691,7 @@ final class AssistantViewModel {
 
     /// A receipt or a statement read on the phone joins the thread as its summary card.
     func attach(_ attachment: AgentAttachment, summary: AgentAttachmentSummary) {
-        let entry = Entry(id: UUID(), content: .attachment(summary))
+        let entry = Entry(id: UUID(), content: .attachment(summary), date: access.now())
         attachments[entry.id] = attachment
         unsentNotes.append(summary.modelText)
         dropFailedQuestion()
@@ -718,7 +746,7 @@ final class AssistantViewModel {
             if text == Self.feedbackHelp {
                 guard cloudAllowed else { return false }
                 feedbackHelpOffer = nil
-                let entry = Entry(id: UUID(), content: .question(text))
+                let entry = Entry(id: UUID(), content: .question(text), date: access.now())
                 entries.append(entry)
                 await helpWithFeedback(offer, question: text, entry: entry.id)
                 return true
@@ -729,8 +757,8 @@ final class AssistantViewModel {
             dropFailedQuestion()
             let id = drafts.add(operations, madeOnPhoneFrom: text)
             if !cloudAllowed { draftsBeforeConsent.insert(id) }
-            local.append(AgentThreadSnapshot.LocalExchange(position: conversation.messages.count, question: text, draftId: id))
-            entries.append(Entry(id: UUID(), content: .question(text)))
+            local.append(AgentThreadSnapshot.LocalExchange(position: conversation.messages.count, question: text, draftId: id, date: access.now()))
+            entries.append(Entry(id: UUID(), content: .question(text), date: access.now()))
             entries.append(Entry(id: UUID(), content: .reply(Self.localReply(id), results: [:])))
             replyMood = .happy
             phase = .idle
@@ -741,7 +769,7 @@ final class AssistantViewModel {
         // A chat where Ten forgot something goes no further to the model: a new one starts.
         if isSealed { reset() }
         dropFailedQuestion()
-        let entry = Entry(id: UUID(), content: .question(text))
+        let entry = Entry(id: UUID(), content: .question(text), date: access.now())
         entries.append(entry)
         await ask(text, entry: entry.id)
         return true

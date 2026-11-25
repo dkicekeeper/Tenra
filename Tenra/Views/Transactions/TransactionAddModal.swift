@@ -32,7 +32,6 @@ struct TransactionAddModal: View {
     /// calculator keypad is hidden — only one keyboard is shown at a time.
     @FocusState private var descriptionFocused: Bool
     @State private var showingSubcategorySearch = false
-    @State private var subcategorySearchText = ""
     @State private var showingSubcategoryReorder = false
     @State private var showingCategoryHistory = false
     /// The one-time hint on the save buttons (`FeatureTourState.Hint.addFormSave`).
@@ -347,12 +346,8 @@ struct TransactionAddModal: View {
         return SubcategorySearchView(
             categoriesViewModel: coordinator.categoriesViewModel,
             categoryId: categoryId ?? "",
-            selectedSubcategoryIds: $bindableCoordinator.formData.subcategoryIds,
-            searchText: $subcategorySearchText
+            selectedSubcategoryIds: $bindableCoordinator.formData.subcategoryIds
         )
-        .onAppear {
-            subcategorySearchText = ""
-        }
         .presentationDetents([.medium, .large])
         .presentationDragIndicator(.visible)
     }
@@ -410,6 +405,8 @@ struct TransactionAddModal: View {
 
         if result.isValid {
             HapticManager.success()
+            // The sheet closes: VoiceOver hears that it was saved (DesignKit's AccessibilityAnnouncer).
+            AccessibilityAnnouncer.announce(String(localized: "common.saved"))
             onDismiss()
         } else {
             validationError = result.errors.first?.localizedDescription

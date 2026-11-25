@@ -19,7 +19,6 @@ struct AccountActionView: View {
     @State private var showingAccountHistory = false
     @State private var calc = CalculatorInputModel()
     @State private var showingSubcategorySearch = false
-    @State private var subcategorySearchText = ""
     @State private var showingAddIncomeCategory = false
     @FocusState private var descriptionFocused: Bool
 
@@ -106,10 +105,8 @@ struct AccountActionView: View {
                 SubcategorySearchView(
                     categoriesViewModel: categoriesViewModel,
                     categoryId: categoryId,
-                    selectedSubcategoryIds: $viewModel.selectedSubcategoryIds,
-                    searchText: $subcategorySearchText
+                    selectedSubcategoryIds: $viewModel.selectedSubcategoryIds
                 )
-                .onAppear { subcategorySearchText = "" }
                 .presentationDetents([.medium, .large])
                 .presentationDragIndicator(.visible)
             }

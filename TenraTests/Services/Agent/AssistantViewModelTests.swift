@@ -832,7 +832,13 @@ struct AssistantViewModelTests {
         await first.send("Сколько у меня денег?")
         await first.send("кофе 1500")
         let kept = try #require(box.saved)
-        #expect(kept.body.local == [AgentThreadSnapshot.LocalExchange(position: 2, question: "кофе 1500", draftId: "draft_1")])
+        let exchange = try #require(kept.body.local.first)
+        #expect(kept.body.local.count == 1)
+        #expect(exchange.position == 2)
+        #expect(exchange.question == "кофе 1500")
+        #expect(exchange.draftId == "draft_1")
+        // When it was asked, for the chat's day lines.
+        #expect(exchange.date != nil)
 
         let book = Self.book()
         let second = AssistantViewModel(

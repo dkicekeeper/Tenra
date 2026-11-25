@@ -55,7 +55,6 @@ struct LoanEarlyRepaymentView: View {
     @State private var selectedCategory: String? = nil
     @State private var selectedSubcategoryIds: Set<String> = []
     @State private var showingSubcategorySearch: Bool = false
-    @State private var subcategorySearchText: String = ""
     @State private var validationError: String? = nil
 
     private var selectedCategoryId: String? {
@@ -152,10 +151,8 @@ struct LoanEarlyRepaymentView: View {
                     SubcategorySearchView(
                         categoriesViewModel: categoriesVM,
                         categoryId: categoryId,
-                        selectedSubcategoryIds: $selectedSubcategoryIds,
-                        searchText: $subcategorySearchText
+                        selectedSubcategoryIds: $selectedSubcategoryIds
                     )
-                    .onAppear { subcategorySearchText = "" }
                     .presentationDetents([.medium, .large])
                     .presentationDragIndicator(.visible)
                 }

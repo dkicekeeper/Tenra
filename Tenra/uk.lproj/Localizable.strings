@@ -451,7 +451,6 @@
 "transactionForm.accountTopUp" = "Поповнити рахунок";
 "transactionForm.searchSubcategories" = "Пошук підкатегорій";
 "transactionForm.addSubcategory" = "Додати підкатегорію";
-"transactionForm.createSubcategory" = "Створити \"%@\"";
 // MARK: - Recurring Transactions Errors
 "recurring.error.seriesNotFound" = "Регулярну серію не знайдено";
 "recurring.error.invalidFrequency" = "Вибрано некоректну періодичність";
@@ -1809,7 +1808,6 @@
 "assistant.allowance.renews" = "Нові безкоштовні відповіді з %@";
 "assistant.open.missing" = "Цього вже немає в Tenra";
 "assistant.draft.save" = "Зберегти";
-"assistant.draft.saved" = "Збережено";
 "assistant.draft.send" = "Надіслати";
 "assistant.draft.feedbackSent" = "Надіслано розробнику";
 "assistant.draft.reminderOn" = "Увімкнеться, о %@";
@@ -1910,6 +1908,11 @@
 /* DesignKit 8.9.0: RelativeTime, Formatting.relativeTime */
 "time.justNow" = "Щойно";
 "time.dayAndTime" = "%1$@, %2$@";
+/* DesignKit 8.9.0: SearchablePicker (the subcategory picker) */
+"picker.create" = "Створити \"%@\"";
+"picker.noResults" = "Нічого не знайдено";
+/* An outcome said to VoiceOver (AccessibilityAnnouncer) and a draft Ten made, once saved */
+"common.saved" = "Збережено";
 
 /* AI assistant: consent before the first question goes to the cloud (App Review 5.1.2(i)) */
 "assistant.consent.title" = "Асистент працює через хмару";

@@ -97,7 +97,7 @@ There is one model, Claude through the server. A router between `AgentConversati
 | `AgentConversation` | the loop: stream, tools on the phone, `tool_result`, until `render_reply`; a failed turn is rolled back; `reset()` starts a new thread |
 | `FinanceToolkit` (+ `Compute`, `+ Plans`) | the tools (§3); totals through `SummaryCalculator`, sweeps off the main actor |
 | `AgentContextBuilder`, `AgentContextSnapshot+Store` | the `<app_context>` block; its language is the app's |
-| `AgentReply`, `AgentReplyData`, `AgentPartialReply`, `AgentReplyMarkdown` | the reply's blocks and their data by reference (§4) |
+| `AgentReply`, `AgentReplyData`, `AgentPartialReply` | the reply's blocks and their data by reference (§4) |
 | `AgentDrafts` (`AgentDraftBook`), `AgentDraftEditor`, `AgentFastPath` | drafts, editing one before saving, the parser path |
 | `AgentThreadStore`, `AgentMemory` (`AgentFactStore`) | threads and facts (§5) |
 | `AssistantInbox` | "Ten writes" (§6) |
@@ -208,7 +208,9 @@ enum AgentBlock {                // AgentReply.swift; source = a tool result's r
   The eval's `blocks_decode` check keeps models within the schema. Drafts stay strict except goals
   and debts, whose optional fields are simply left out (`tools.test.ts`).
 - Text blocks are Markdown (a bold main point, "- " lists, "1. " steps, rarely "### "):
-  `AgentReplyMarkdown` splits them into DesignKit's `ArticleBody` blocks.
+  DesignKit's `ArticleBody.Block.parse(markdown:)` (8.9.0, the reader of `MessageBubble(markdown:)`)
+  splits them into `ArticleBody` blocks, drawn on the page between the cards, not in a bubble
+  (the chat's look: the person's questions in bubbles, Ten's replies as the app's own page).
 - `AssistantReplyView` maps blocks onto the app's cards: `TransactionCardView`,
   `BudgetProgressRow`, `SubscriptionCard`, `InsightsCardView`, `MetricCard`, `CategoryBreakdownRow`,
   the charts through `PeriodChartAdapters`, drafts as `AssistantDraftCard` (on `AssistantCard` and
@@ -250,7 +252,10 @@ enum AgentBlock {                // AgentReply.swift; source = a tool result's r
   database, and a backup takes only `Tenra.sqlite`. Threads from before 1.6 (27) are plain JSON and
   still read. A thread is written after each reply; the last one reopens with the assistant, its
   questions and answers replayed from the conversation (`AssistantViewModel.entries(replaying:)`);
-  anything started from the assistant's home begins a new one; 100 are kept. Drafts do not come
+  anything started from the assistant's home begins a new one; 100 are kept. Every message keeps
+  when it was added (`AgentConversation.dates` in step with the messages, through a failed turn
+  and a trim; `Body.dates`, never sent to the server), and a question the phone answered its own
+  (`LocalExchange.date`): the chat's day lines (§7). A thread kept before has none. Drafts do not come
   back after a relaunch (their cards are empty). A long history drops its oldest questions whole
   (`trimIfNeeded`: at most 60 messages and 128 KB; the server takes 80 and 256 KB) and the context
   is sent again. "Delete all data" and a restore reset the open thread and Ten's Home notices
@@ -416,7 +421,10 @@ once every store has loaded), and
   in the middle of the navigation bar, 120 pt, on the bar's backing (`safeAreaBar`), its lower half
   over the start of the thread, which scrolls under the hard scroll edge (the owner's choice,
   [design-system.md](../design-system.md) §4); Ten stays on top (thinking, answering, mood). No
-  history, "new chat" or tab bar (`TabBarVisibility`). Reply text is selectable. Ten's follow-up
+  history, "new chat" or tab bar (`TabBarVisibility`). A thread that is not all from today (one
+  kept from another day and picked up again) has a day line, DesignKit's `ConversationDivider`
+  ("Yesterday", "3 November"), over the first question or attachment of each day
+  (`AssistantViewModel.dayStarts`, the dates of §5); a new chat has none. Reply text is selectable. Ten's follow-up
   questions sit in one scrolling row above the composer.
 - **Composer** (DesignKit's `MessageComposer`): the paperclip opens the attachment menu, the
   microphone (while the field is empty) opens `AssistantVoiceSheet` (`EdgeGlow`, live

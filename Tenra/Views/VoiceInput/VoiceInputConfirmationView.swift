@@ -233,8 +233,7 @@ struct VoiceInputConfirmationView: View {
                     SubcategorySearchView(
                         categoriesViewModel: categoriesViewModel,
                         categoryId: category.id,
-                        selectedSubcategoryIds: $selectedSubcategoryIds,
-                        searchText: .constant("")
+                        selectedSubcategoryIds: $selectedSubcategoryIds
                     )
                     .presentationDetents([.medium, .large])
                     .presentationDragIndicator(.visible)

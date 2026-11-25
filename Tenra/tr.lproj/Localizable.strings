@@ -451,7 +451,6 @@
 "transactionForm.accountTopUp" = "Hesaba para yatır";
 "transactionForm.searchSubcategories" = "Alt kategori ara";
 "transactionForm.addSubcategory" = "Alt kategori ekle";
-"transactionForm.createSubcategory" = "\"%@\" oluştur";
 // MARK: - Recurring Transactions Errors
 "recurring.error.seriesNotFound" = "Tekrarlayan seri bulunamadı";
 "recurring.error.invalidFrequency" = "Geçersiz sıklık seçildi";
@@ -1809,7 +1808,6 @@
 "assistant.allowance.renews" = "Yeni ücretsiz yanıtlar %@ tarihinde";
 "assistant.open.missing" = "Bu artık Tenra’da yok";
 "assistant.draft.save" = "Kaydet";
-"assistant.draft.saved" = "Kaydedildi";
 "assistant.draft.send" = "Gönder";
 "assistant.draft.feedbackSent" = "Geliştiriciye gönderildi";
 "assistant.draft.reminderOn" = "Açık, saat %@";
@@ -1910,6 +1908,11 @@
 /* DesignKit 8.9.0: RelativeTime, Formatting.relativeTime */
 "time.justNow" = "Az önce";
 "time.dayAndTime" = "%1$@, %2$@";
+/* DesignKit 8.9.0: SearchablePicker (the subcategory picker) */
+"picker.create" = "\"%@\" oluştur";
+"picker.noResults" = "Sonuç bulunamadı";
+/* An outcome said to VoiceOver (AccessibilityAnnouncer) and a draft Ten made, once saved */
+"common.saved" = "Kaydedildi";
 
 /* AI assistant: consent before the first question goes to the cloud (App Review 5.1.2(i)) */
 "assistant.consent.title" = "Asistan bulutta çalışır";

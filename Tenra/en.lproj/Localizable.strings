@@ -1330,6 +1330,7 @@
 "onboarding.account.title" = "Add your first account";
 "onboarding.account.subtitle" = "It can be a card, cash, or a bank account. You can add more later.";
 "onboarding.account.namePlaceholder" = "e.g., Chase";
+"onboarding.account.defaultName" = "Card";
 "onboarding.account.balanceCaption" = "Starting balance (%@)";
 
 "onboarding.categories.title" = "Choose spending categories";

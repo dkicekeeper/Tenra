@@ -18,6 +18,11 @@ assembled; no em dashes (user rule).
   sends the developer what was wrong, with the question and Ten's words (no figures from the
   cards). The server takes it since 2026-11-25.
 
+- **The ✕ in onboarding leads to a ready app** (the founder's decision 2026-11-25, after the
+  funnel of 11-24.11): the typed account or a card with no money in the chosen currency, and the
+  picked categories (all when none is), so the first expense is one tap away; and the anonymous
+  attribute `onboarding_step` (the furthest screen) to see where people leave onboarding.
+
 Planned, not in `main` yet: Ten's moments (C, waits for DesignKit #105).
 
 ## Phone checks
@@ -31,6 +36,11 @@ Planned, not in `main` yet: Ten's moments (C, waits for DesignKit #105).
   the feedback talk); the sheet's four reasons, the preview with Ten's bold drawn, Send: the
   message arrives in Telegram with the reason, the question, Ten's words and the prompt version;
   the button then reads "Передано разработчику".
+
+- **The ✕ in onboarding** (Settings → Diagnostics → reset onboarding, or a fresh install): the ✕
+  on the currency, account and categories steps lands on Home with one account ("Карта", or the
+  name typed) and the starting categories; a first expense saves at once. Run again with an
+  account already there: no second account.
 
 ## Submission checklist
 

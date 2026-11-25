@@ -1330,6 +1330,7 @@
 "onboarding.account.title" = "最初の口座を追加";
 "onboarding.account.subtitle" = "カード・現金・銀行口座のいずれでもかまいません。あとで追加できます。";
 "onboarding.account.namePlaceholder" = "例: 三菱UFJ";
+"onboarding.account.defaultName" = "カード";
 "onboarding.account.balanceCaption" = "初期残高（%@）";
 
 "onboarding.categories.title" = "支出カテゴリを選択";

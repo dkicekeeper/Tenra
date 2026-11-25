@@ -1330,6 +1330,7 @@
 "onboarding.account.title" = "Aggiungi il tuo primo conto";
 "onboarding.account.subtitle" = "Può essere una carta, contanti o un conto bancario. Puoi aggiungerne altri in seguito.";
 "onboarding.account.namePlaceholder" = "es. Intesa Sanpaolo";
+"onboarding.account.defaultName" = "Carta";
 "onboarding.account.balanceCaption" = "Saldo iniziale (%@)";
 
 "onboarding.categories.title" = "Scegli le categorie di spesa";

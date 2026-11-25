@@ -33,6 +33,8 @@ struct OnboardingFlowView: View {
                 }
         }
         .softScrollEdges()
+        // The funnel's first step (ActivationAttributes.noteOnboardingStep).
+        .onAppear { vm.welcomeShown() }
     }
 }
 

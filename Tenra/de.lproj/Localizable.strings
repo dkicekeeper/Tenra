@@ -1330,6 +1330,7 @@
 "onboarding.account.title" = "Fügen Sie Ihr erstes Konto hinzu";
 "onboarding.account.subtitle" = "Das kann eine Karte, Bargeld oder ein Bankkonto sein. Weitere können Sie später hinzufügen.";
 "onboarding.account.namePlaceholder" = "z. B. Sparkasse";
+"onboarding.account.defaultName" = "Karte";
 "onboarding.account.balanceCaption" = "Startsaldo (%@)";
 
 "onboarding.categories.title" = "Wählen Sie Ihre Ausgabenkategorien";

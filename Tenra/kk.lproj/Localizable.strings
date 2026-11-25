@@ -1330,6 +1330,7 @@
 "onboarding.account.title" = "Алғашқы шотыңызды қосыңыз";
 "onboarding.account.subtitle" = "Бұл карта, қолма-қол ақша немесе банк шоты болуы мүмкін. Қалғанын кейін қоса аласыз.";
 "onboarding.account.namePlaceholder" = "Мысалы, Kaspi";
+"onboarding.account.defaultName" = "Карта";
 "onboarding.account.balanceCaption" = "Бастапқы баланс (%@)";
 
 "onboarding.categories.title" = "Шығыс санаттарын таңдаңыз";

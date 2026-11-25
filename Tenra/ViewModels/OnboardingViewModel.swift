@@ -125,9 +125,15 @@ final class OnboardingViewModel {
 
     // MARK: - Step navigation
 
+    /// The welcome screen is up: the first step of the funnel (ActivationAttributes.noteOnboardingStep).
+    func welcomeShown() {
+        ActivationAttributes.noteOnboardingStep(.welcome)
+    }
+
     func startDataCollection() {
         // NavigationStack root is the welcome screen; push currency as the first data step.
         path = [.currency]
+        ActivationAttributes.noteOnboardingStep(.currency)
         logger.info("onboarding_started")
     }
 
@@ -135,6 +141,7 @@ final class OnboardingViewModel {
         guard let coordinator else { return }
         await coordinator.settingsViewModel.updateBaseCurrency(draftCurrency)
         path.append(.account)
+        ActivationAttributes.noteOnboardingStep(.account)
         logger.info("onboarding_step_completed step=currency currency=\(self.draftCurrency, privacy: .public)")
     }
 
@@ -143,12 +150,14 @@ final class OnboardingViewModel {
         // skipping at any later step creates nothing. We only navigate; the form
         // values live in `draftAccount` and survive back/forward navigation.
         path.append(.categories)
+        ActivationAttributes.noteOnboardingStep(.categories)
         logger.info("onboarding_step_completed step=account")
     }
 
     func advanceToAutoCaptureStep() {
         // The categories stay drafts too: `finish()` on the next step saves everything.
         path.append(.autoCapture)
+        ActivationAttributes.noteOnboardingStep(.capture)
         logger.info("onboarding_step_completed step=categories selectedCount=\(self.selectedPresetCount, privacy: .public)")
     }
 
@@ -180,16 +189,24 @@ final class OnboardingViewModel {
 
     // MARK: - Skip
 
-    /// User tapped the trailing «✕» button. Applies the currently selected
-    /// base currency and completes onboarding immediately — no account, no
-    /// categories. The user starts on an empty Home and can add everything
-    /// later from the main UI.
+    /// User tapped the trailing «✕» button. Applies the currently selected base currency and
+    /// ends onboarding at once, on a ready app: the account drafted, or a card with no money in
+    /// that currency, and the categories picked (all of them when none is), as "Start" would save
+    /// them, without the trial offer. On an empty Home the first expense needed an account and
+    /// categories made by hand: after the ✕ 10% recorded one, after "Start" 42% (11-24.11,
+    /// docs/promotion-plan.md §6). A person who already has accounts (onboarding run again) gets
+    /// no new one.
     func skip() async {
         guard let coordinator, !isFinishing else { return }
         isFinishing = true
         defer { isFinishing = false }
 
         await coordinator.settingsViewModel.updateBaseCurrency(draftCurrency)
+        if !hasCommitted {
+            let hasAccounts = !coordinator.transactionStore.accounts.isEmpty
+            let starter = starterData(fallbackAccount: !hasAccounts, allCategoriesIfNone: true)
+            await commit(account: hasAccounts ? nil : starter.account, categories: starter.categories, coordinator: coordinator)
+        }
         coordinator.completeOnboarding(.skipped)
         adoptICloudBackups(coordinator)
         logger.info("onboarding_skipped")
@@ -213,56 +230,9 @@ final class OnboardingViewModel {
         isFinishing = true
         defer { isFinishing = false }
 
-        // Account — deferred from Step 2 so that skipping any step creates nothing.
-        // Only the final "Done" tap persists the drafted account. Built the same way
-        // as AccountsViewModel.addAccount.
-        let trimmedName = draftAccount.name.trimmingCharacters(in: .whitespacesAndNewlines)
-        let account: Account? = trimmedName.isEmpty ? nil : Account(
-            name: trimmedName,
-            currency: draftCurrency,
-            iconSource: draftAccount.iconSource,
-            shouldCalculateFromTransactions: false,
-            initialBalance: draftAccount.balance,
-            includeInBalance: true
-        )
-
-        var categories: [CustomCategory] = draftCategories
-            .filter(\.isSelected)
-            .map { selectable in
-                let preset = selectable.preset
-                return CustomCategory(
-                    name: String(localized: String.LocalizationValue(preset.nameKey)),
-                    iconSource: preset.iconSource,
-                    colorHex: preset.colorHex,
-                    type: preset.type
-                )
-            }
-
-        // Income categories are not offered in the grid; create them so the first
-        // income can be recorded right away. An existing one (onboarding re-run) is
-        // skipped by the store's name + type dedupe.
-        categories += CategoryPreset.defaultIncome.map { preset in
-            CustomCategory(
-                name: String(localized: String.LocalizationValue(preset.nameKey)),
-                iconSource: preset.iconSource,
-                colorHex: preset.colorHex,
-                type: preset.type
-            )
-        }
-
-        // One synchronous save for everything, finished before Home appears and
-        // the first full load reads CoreData. See TransactionStore+Onboarding.
-        do {
-            try coordinator.transactionStore.commitOnboarding(account: account, categories: categories)
-        } catch {
-            logger.error("onboarding_commit_failed error=\(error.localizedDescription, privacy: .public)")
-        }
-
-        if let account {
-            await coordinator.balanceCoordinator.registerAccounts([account])
-            await coordinator.balanceCoordinator.setInitialBalance(account.initialBalance ?? 0, for: account.id)
-        }
-        hasCommitted = true
+        // The account is deferred from Step 2: only "Start" (or the ✕, `skip`) saves it.
+        let starter = starterData(fallbackAccount: false, allCategoriesIfNone: false)
+        await commit(account: starter.account, categories: starter.categories, coordinator: coordinator)
 
         // Everything is saved first, so a person who leaves on the paywall keeps it all.
         if offersTrial() {
@@ -271,6 +241,50 @@ final class OnboardingViewModel {
             return
         }
         complete(coordinator)
+    }
+
+    /// What onboarding saves: the drafted account (built as AccountsViewModel.addAccount does)
+    /// and the picked expense categories, with the income ones the grid does not offer, so the
+    /// first income can be recorded at once. `fallbackAccount`: without a name typed, a card with
+    /// no money in the chosen currency. `allCategoriesIfNone`: none picked means all of them.
+    func starterData(fallbackAccount: Bool, allCategoriesIfNone: Bool) -> (account: Account?, categories: [CustomCategory]) {
+        let typed = draftAccount.name.trimmingCharacters(in: .whitespacesAndNewlines)
+        let name = typed.isEmpty && fallbackAccount ? String(localized: "onboarding.account.defaultName") : typed
+        let account: Account? = name.isEmpty ? nil : Account(
+            name: name,
+            currency: draftCurrency,
+            iconSource: draftAccount.iconSource,
+            shouldCalculateFromTransactions: false,
+            initialBalance: draftAccount.balance,
+            includeInBalance: true
+        )
+        var picked = draftCategories.filter(\.isSelected).map(\.preset)
+        if picked.isEmpty && allCategoriesIfNone { picked = draftCategories.map(\.preset) }
+        // An existing category (onboarding run again) is skipped by the store's name + type dedupe.
+        let categories = (picked + CategoryPreset.defaultIncome).map { preset in
+            CustomCategory(
+                name: String(localized: String.LocalizationValue(preset.nameKey)),
+                iconSource: preset.iconSource,
+                colorHex: preset.colorHex,
+                type: preset.type
+            )
+        }
+        return (account, categories)
+    }
+
+    /// One synchronous save for everything, finished before Home appears and the first full load
+    /// reads CoreData (TransactionStore+Onboarding), then the account's balance.
+    private func commit(account: Account?, categories: [CustomCategory], coordinator: AppCoordinator) async {
+        do {
+            try coordinator.transactionStore.commitOnboarding(account: account, categories: categories)
+        } catch {
+            logger.error("onboarding_commit_failed error=\(error.localizedDescription, privacy: .public)")
+        }
+        if let account {
+            await coordinator.balanceCoordinator.registerAccounts([account])
+            await coordinator.balanceCoordinator.setInitialBalance(account.initialBalance ?? 0, for: account.id)
+        }
+        hasCommitted = true
     }
 
     /// The trial offer closed (✕, a swipe, a purchase or a restore): onboarding ends. Once.

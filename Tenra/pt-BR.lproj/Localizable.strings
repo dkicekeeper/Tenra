@@ -1330,6 +1330,7 @@
 "onboarding.account.title" = "Adicione sua primeira conta";
 "onboarding.account.subtitle" = "Pode ser um cartão, dinheiro em espécie ou uma conta bancária. Você pode adicionar mais depois.";
 "onboarding.account.namePlaceholder" = "ex.: Nubank";
+"onboarding.account.defaultName" = "Cartão";
 "onboarding.account.balanceCaption" = "Saldo inicial (%@)";
 
 "onboarding.categories.title" = "Escolha as categorias de gastos";

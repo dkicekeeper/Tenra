@@ -1330,6 +1330,7 @@
 "onboarding.account.title" = "Añade tu primera cuenta";
 "onboarding.account.subtitle" = "Puede ser una tarjeta, efectivo o una cuenta bancaria. Podrás añadir más después.";
 "onboarding.account.namePlaceholder" = "p. ej., BBVA";
+"onboarding.account.defaultName" = "Tarjeta";
 "onboarding.account.balanceCaption" = "Saldo inicial (%@)";
 
 "onboarding.categories.title" = "Elige tus categorías de gasto";

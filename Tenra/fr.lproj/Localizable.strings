@@ -1330,6 +1330,7 @@
 "onboarding.account.title" = "Ajoutez votre premier compte";
 "onboarding.account.subtitle" = "Il peut s'agir d'une carte, d'espèces ou d'un compte bancaire. Vous pourrez en ajouter d'autres plus tard.";
 "onboarding.account.namePlaceholder" = "ex. BNP Paribas";
+"onboarding.account.defaultName" = "Carte";
 "onboarding.account.balanceCaption" = "Solde initial (%@)";
 
 "onboarding.categories.title" = "Choisissez vos catégories de dépenses";

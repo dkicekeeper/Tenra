@@ -1330,6 +1330,7 @@
 "onboarding.account.title" = "Додайте перший рахунок";
 "onboarding.account.subtitle" = "Це може бути картка, готівка або банківський рахунок. Більше можна додати згодом.";
 "onboarding.account.namePlaceholder" = "напр., monobank";
+"onboarding.account.defaultName" = "Картка";
 "onboarding.account.balanceCaption" = "Початковий баланс (%@)";
 
 "onboarding.categories.title" = "Оберіть категорії витрат";

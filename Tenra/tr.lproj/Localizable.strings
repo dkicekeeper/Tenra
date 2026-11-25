@@ -1330,6 +1330,7 @@
 "onboarding.account.title" = "İlk hesabını ekle";
 "onboarding.account.subtitle" = "Bir kart, nakit veya banka hesabı olabilir. Daha sonra daha fazlasını ekleyebilirsin.";
 "onboarding.account.namePlaceholder" = "örn. Ziraat";
+"onboarding.account.defaultName" = "Kart";
 "onboarding.account.balanceCaption" = "Başlangıç bakiyesi (%@)";
 
 "onboarding.categories.title" = "Harcama kategorilerini seç";

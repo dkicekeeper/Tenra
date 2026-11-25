@@ -1330,6 +1330,7 @@
 "onboarding.account.title" = "첫 계좌를 추가하세요";
 "onboarding.account.subtitle" = "카드, 현금, 은행 계좌 어느 것이든 좋아요. 나중에 더 추가할 수 있어요.";
 "onboarding.account.namePlaceholder" = "예: 카카오뱅크";
+"onboarding.account.defaultName" = "카드";
 "onboarding.account.balanceCaption" = "시작 잔액 (%@)";
 
 "onboarding.categories.title" = "지출 카테고리를 선택하세요";

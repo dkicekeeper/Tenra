@@ -16,8 +16,16 @@ enum ActivationAttributes {
 
     enum Name: String {
         case onboarding
+        /// The furthest onboarding screen reached, so the 30% who leave it can be placed
+        /// (docs/promotion-plan.md §6, 2026-11-25).
+        case onboardingStep = "onboarding_step"
         case entries
         case tenOpened = "ten_opened"
+    }
+
+    /// Onboarding's screens, in their order.
+    enum OnboardingStepReached: String, CaseIterable {
+        case welcome, currency, account, categories, capture
     }
 
     /// How onboarding ended.
@@ -43,6 +51,15 @@ enum ActivationAttributes {
 
     static func noteOnboarding(_ outcome: OnboardingOutcome, defaults: UserDefaults = .standard) {
         writeIfChanged(.onboarding, outcome.rawValue, defaults: defaults)
+    }
+
+    /// A screen of onboarding came up: written when it is further than any before, so going
+    /// back keeps the furthest one.
+    static func noteOnboardingStep(_ step: OnboardingStepReached, defaults: UserDefaults = .standard) {
+        let order = OnboardingStepReached.allCases
+        let stored = defaults.string(forKey: storageKey(.onboardingStep)).flatMap(OnboardingStepReached.init(rawValue:))
+        if let stored, let before = order.firstIndex(of: stored), let now = order.firstIndex(of: step), now <= before { return }
+        writeIfChanged(.onboardingStep, step.rawValue, defaults: defaults)
     }
 
     static func noteTenOpened(defaults: UserDefaults = .standard) {

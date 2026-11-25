@@ -75,6 +75,21 @@ struct ActivationAttributesTests {
         #expect(written == ["onboarding=finished"])
     }
 
+    @Test("The furthest onboarding screen is kept: going back writes nothing")
+    func onboardingStepFurthest() {
+        let defaults = freshDefaults()
+        let written = capturingWrites {
+            ActivationAttributes.noteOnboardingStep(.welcome, defaults: defaults)
+            ActivationAttributes.noteOnboardingStep(.currency, defaults: defaults)
+            ActivationAttributes.noteOnboardingStep(.account, defaults: defaults)
+            ActivationAttributes.noteOnboardingStep(.currency, defaults: defaults)
+            ActivationAttributes.noteOnboardingStep(.account, defaults: defaults)
+            ActivationAttributes.noteOnboardingStep(.categories, defaults: defaults)
+            ActivationAttributes.noteOnboardingStep(.welcome, defaults: defaults)
+        }
+        #expect(written == ["onboarding_step=welcome", "onboarding_step=currency", "onboarding_step=account", "onboarding_step=categories"])
+    }
+
     @Test("Ten opened is written the first time only")
     func tenOpenedOnce() {
         let defaults = freshDefaults()

@@ -1330,6 +1330,7 @@
 "onboarding.account.title" = "Добавьте первый счёт";
 "onboarding.account.subtitle" = "Это может быть карта, наличные или счёт в банке. Позже добавите остальные.";
 "onboarding.account.namePlaceholder" = "Например, Kaspi";
+"onboarding.account.defaultName" = "Карта";
 "onboarding.account.balanceCaption" = "Стартовый баланс (%@)";
 
 "onboarding.categories.title" = "Выберите категории трат";

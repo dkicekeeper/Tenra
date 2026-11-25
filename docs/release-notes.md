@@ -9,8 +9,10 @@ to an update in the last week of December, which the featuring nomination promis
 `f1cb53ca`, DesignKit 8.16.0) replaces build 91 (1.8.4). In App Store Connect on 2026-11-24:
 version 1.9 created with What's New in all 14 storefronts and build 93 (`prepare-version`), the
 App Review notes below set (`review-notes --apply`), and a draft review submission holds the
-version and the retention message `trial-reminder` (`prepare-review`), **not submitted**: the
-founder sends it. Phone checks on build 93: done by the founder 2026-11-25, all fine. What's New written 2026-11-24.
+version and the retention message `trial-reminder` (`prepare-review`). Phone checks on build 93:
+done by the founder 2026-11-25, all fine. **Submitted for review 2026-11-25 03:20 UTC** on the
+founder's word (`prepare-review --submit`, submission `d0610347`, both items
+WAITING_FOR_REVIEW); released automatically once approved. What's New written 2026-11-24.
 
 `prepare-version` (Actions → App Store Connect, [asc.md](asc.md)) pastes each block below into
 App Store Connect; en-GB (search in Kazakhstan) carries ru's text. No em dashes (user rule).
@@ -308,6 +310,6 @@ Tenra Pro features can be tried with a sandbox purchase on the paywall: Settings
 ```
 
 5. **One submission**: `asc.py prepare-review --version 1.9` (it adds Apple's retention message);
-   the founder sends it, or `--submit` on the founder's word. The draft is ready since 2026-11-24
-   (the version with build 93 and `trial-reminder`, 2 items): App Store Connect → Distribution →
-   the draft submission → Submit for Review.
+   the founder sends it, or `--submit` on the founder's word. Sent 2026-11-25 03:20 UTC with
+   `--submit` on the founder's word: the version with build 93 and `trial-reminder`, submission
+   `d0610347`.

@@ -283,6 +283,7 @@ The allowed lists (one source for the app's enums in Task 3):
   .../v1/events -d '{"events":[]}'` → 400 (`events`), proving the route is live.
 - [ ] **Step 4:** The founder checks App Privacy in App Store Connect: Usage Data › Product
   Interaction, Analytics, not linked, not tracking (no change expected).
-- [ ] **Step 5:** A week after 1.10 is out: the first `app-stats` run, the private metrics page
-  (Artifact "Tenra: метрики") from its output, and the new columns in promotion-plan §6.
+- [ ] **Step 5:** A week after 1.10 is out: the first `app-stats` run, its tables as new datasets
+  of the founder's dashboard "Tenra с запуска" (promotion-plan §7 step 6), and the new columns in
+  promotion-plan §6.
 - [ ] **Step 6: Commit** `docs(analytics): what the app counts, the switch and the report`.

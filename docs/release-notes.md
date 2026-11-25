@@ -10,7 +10,7 @@ to an update in the last week of December, which the featuring nomination promis
 version 1.9 created with What's New in all 14 storefronts and build 93 (`prepare-version`), the
 App Review notes below set (`review-notes --apply`), and a draft review submission holds the
 version and the retention message `trial-reminder` (`prepare-review`), **not submitted**: the
-founder sends it. What's New written 2026-11-24.
+founder sends it. Phone checks on build 93: done by the founder 2026-11-25, all fine. What's New written 2026-11-24.
 
 `prepare-version` (Actions → App Store Connect, [asc.md](asc.md)) pastes each block below into
 App Store Connect; en-GB (search in Kazakhstan) carries ru's text. No em dashes (user rule).
@@ -173,7 +173,8 @@ Tenra의 새로운 기능:
 ## Phone checks
 
 The checks 1.8.3 shipped with were done by the founder on 2026-11-14: all fine (the list is in
-[archive/release-notes-1.8.3.md](archive/release-notes-1.8.3.md)).
+[archive/release-notes-1.8.3.md](archive/release-notes-1.8.3.md)). The checks below were done by the
+founder on 2026-11-25 on build 93: all fine.
 
 - **Trial reminder** (sandbox account, annual with the 14-day trial): after the purchase on the
   paywall iOS asks for notifications (when Tenra had only quiet ones or none); Settings → Tenra
@@ -287,7 +288,8 @@ The checks 1.8.3 shipped with were done by the founder on 2026-11-14: all fine (
 ## Submission checklist
 
 1. **CI green**, then a TestFlight build of 1.9. Build 93 is in TestFlight (2026-11-24).
-2. **The phone checks above**, for what the version adds.
+2. **The phone checks above**, for what the version adds. Done by the founder 2026-11-25 on
+   build 93, all fine.
 3. **What's New** above, then `prepare-version --version 1.9 --build <N>`. Done 2026-11-24 with
    build 93, all 14 storefronts updated.
 4. **App Review notes**, in English, set from this block by

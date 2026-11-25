@@ -174,6 +174,13 @@ python3 appstore/asc.py nominations             # заявки на featuring и
 python3 appstore/asc.py push-nomination [--submit]
                                                 # заявка из appstore/nomination.json черновиком в ASC
                                                 # (Featuring → Nominations); --submit отправляет Apple
+python3 appstore/asc.py app-events              # события в App Store: состояние, даты, языки
+python3 appstore/asc.py push-app-event [--event NAME] [--apply] [--submit]
+                                                # события из appstore/app-events.json (или одно, в
+                                                # названии которого есть NAME): событие, расписание,
+                                                # тексты на всех языках файла, карточка и страница
+                                                # события; без --apply только показывает; --submit
+                                                # отправляет на проверку (по слову основателя)
 python3 appstore/asc.py retention-messages      # удерживающие сообщения Apple: версии, их статус,
                                                 # языки и подписки, к которым привязаны
 python3 appstore/asc.py push-retention-message [--apply]
@@ -213,6 +220,29 @@ python3 appstore/asc.py sales [--days 7]        # продажи и выручк
 
 Нужны `pyjwt` и `cryptography` (в облачном контейнере уже есть; в Actions ставятся в venv).
 Vendor number для отчётов о продажах — 94171379 (`ASC_VENDOR_NUMBER`, если изменится).
+
+## События в App Store
+
+Событие (In-App Event) показывается в поиске App Store, на странице приложения и во вкладке
+«Сегодня»: карточка с картинкой, значком (`CHALLENGE`, `SPECIAL_EVENT` и др.), названием и коротким
+описанием. Новой версии приложения не нужно, проверка у Apple отдельная (около суток).
+
+- **Файл:** `appstore/app-events.json`, по событию на запись: `referenceName` (по нему команда
+  находит событие в App Store Connect), `badge`, `purpose`, `priority`, `purchaseRequirement`,
+  `schedule` (время в UTC; Алматы UTC+5; `territories`: `available`, то есть все витрины, где
+  продаётся приложение), `art` и тексты на 14 языках (en-GB с русскими текстами, D9).
+- **Правила Apple, их проверяет команда до записи:** название до 30 знаков, короткое описание до
+  50, длинное до 120; событие идёт не дольше 31 дня и показывается не раньше чем за 14 дней до
+  начала; без длинных тире.
+- **Картинки:** `python3 scripts/compose_event_art.py` рисует в `screenshots/art/events/<событие>/`
+  карточку 3840×2160 (16:9) и страницу события 2160×3840 (9:16) из фона и Тэна картинок магазина,
+  без слов: название и описание App Store кладёт поверх нижней части сам, на языке зрителя. PNG без
+  прозрачности. Команда загружает их в библиотеку ассетов и ставит на каждый язык события
+  (`EVENT_CARD_ASSET`, `EVENT_DETAILS_PAGE_ASSET`).
+- **Порядок:** `push-app-event` (пробный прогон), `--apply` (черновик в App Store Connect, людям не
+  виден), тексты основателю, после его согласия `--submit`. Событие на проверке, одобренное или
+  опубликованное команда не трогает. В Actions: команда `push-app-event`, поле `args`
+  (`--event year --apply`; название одним словом: `args` делится по пробелам).
 
 ## Скриншоты, специальные страницы и тест страницы
 

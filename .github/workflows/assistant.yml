@@ -34,7 +34,7 @@ on:
       action:
         description: "What to run"
         type: choice
-        options: [test, deploy, feedback-check, telegram-link, eval, eval-valuation]
+        options: [test, deploy, feedback-check, telegram-link, eval, eval-valuation, turn-stats]
         default: test
       models:
         description: "eval, eval-valuation: comma-separated model ids (the valuation eval is usually claude-haiku-5-5,claude-sonnet-5-5)"
@@ -51,6 +51,9 @@ on:
       repeat:
         description: "eval-valuation: how many times each case runs (the search results change between runs)"
         default: "1"
+      days:
+        description: "turn-stats: how many days back to count"
+        default: "7"
 
 defaults:
   run:
@@ -313,3 +316,20 @@ jobs:
           name: valuation-eval
           path: server/assistant/eval/out/
           retention-days: 14
+
+  # What Ten is asked and how it goes, as counts only (src/stats.ts, docs/domains/assistant.md §8
+  # "Turn statistics"): the Analytics Engine dataset through its SQL API. The token needs
+  # Account Analytics: Read. Every value is a label, a tool name, a code or a number, so the
+  # public log may show it.
+  turn-stats:
+    if: github.event_name == 'workflow_dispatch' && inputs.action == 'turn-stats'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Counts of the last days
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          DAYS: ${{ inputs.days }}
+        run: python3 scripts/turn_stats.py --days "$DAYS" | tee -a "$GITHUB_STEP_SUMMARY"

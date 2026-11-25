@@ -1,7 +1,7 @@
 // Grades one assistant turn. Universal checks run on every case; each case adds its own.
 // Every check is mechanical: the numbers the user sees must resolve from tool results.
 
-import type { Mood } from "../src/tools";
+import { OUTCOMES, TOPICS, type Mood } from "../src/tools";
 import { ACCOUNTS, ASSETS, CATEGORIES, DEBTS, GOALS } from "./fixture";
 
 export interface ToolCall {
@@ -23,6 +23,10 @@ export interface Reply {
   blocks: Block[];
   mood: string;
   suggestions: string[];
+  /** The developer's labels (src/stats.ts): checked to be values of their lists. */
+  topic?: string;
+  outcome?: string;
+  language?: string;
 }
 
 export interface RunRecord {
@@ -194,6 +198,17 @@ export function universalChecks(record: RunRecord, locale: "ru" | "en", prompt =
     }
   }
   results.push({ name: "refs_resolve", pass: broken.length === 0, detail: broken.join("; ") || undefined });
+
+  // The turn's labels for the developer's counts: values of their lists, the reply's language.
+  if (record.reply) {
+    const { topic, outcome, language } = record.reply;
+    const problems = [
+      TOPICS.some((t) => t === topic) ? null : `topic ${String(topic)}`,
+      OUTCOMES.some((o) => o === outcome) ? null : `outcome ${String(outcome)}`,
+      language === locale ? null : `language ${String(language)}`,
+    ].filter(Boolean);
+    results.push({ name: "labels", pass: problems.length === 0, detail: problems.join("; ") || undefined });
+  }
 
   const text = textOf(record);
   const digits = (value: string) => value.replace(/\D/g, "");

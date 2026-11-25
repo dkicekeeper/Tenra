@@ -5,6 +5,7 @@ import { readConfig, type Config, type Env } from "./config";
 import { resolveTier, UpstreamError } from "./entitlement";
 import { allowFeedback, notifyOwner, parseFeedbackRequest, storeFeedback, type FeedbackRecord } from "./feedback";
 import { PROMPT_VERSION } from "./prompt";
+import { draftStats, turnStat, writeDrafts, writeTurn } from "./stats";
 import { RENDER_REPLY } from "./tools";
 import { consumeCall, consumeValuation, refund, type Tier } from "./quota";
 import { isValidUserId, parseTurnRequest, PROTOCOL_VERSION, ValidationError } from "./validate";
@@ -35,7 +36,9 @@ import { parseValuationRequest, valuate, VALUATION_PROMPT_VERSION, valuationConf
 // per install.
 //
 // Nothing about the conversation is logged: only status codes, error codes and the mood the
-// reply was shown with ("turn mood celebrate", replyMood in claude.ts). Feedback is the
+// reply was shown with ("turn mood celebrate", replyMood in claude.ts). With
+// ASSISTANT_TURN_STATS on, a finished turn is counted by the labels the model gives it (topic,
+// outcome, language) and the tools it called, never its words (stats.ts). Feedback is the
 // exception by design: its words are stored, because the person wrote them to be read.
 
 const json = (body: unknown, status = 200) =>
@@ -142,6 +145,12 @@ export default {
           // is over (a call that leaves tools for the app to run logs nothing).
           const mood = replyMood(message);
           if (mood) console.log(`turn mood ${mood}`);
+          // What was asked and how it went, as labels and counts (stats.ts).
+          if (config.turnStats) {
+            writeDrafts(env.TURNS, draftStats(turn.messages));
+            const stat = mood ? turnStat(turn.messages, message, { mood, tier, country, userAgent: request.headers.get("user-agent") }) : null;
+            if (stat) writeTurn(env.TURNS, stat);
+          }
         } catch (error) {
           if (disconnected) {
             console.log(`turn stopped: the app left${started ? "" : " before the answer"}`);

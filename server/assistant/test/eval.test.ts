@@ -83,9 +83,17 @@ describe("grader", () => {
     const input = { from: "2026-10-01", to: "2026-10-28", type: "expense", group_by: "none", category_ids: ["cat_cafe"] };
     return {
       calls: [{ id: "toolu_a", ref: "r1", name: "get_spending_summary", input, result: executeTool("get_spending_summary", input) }],
-      reply: { blocks: [{ type: "text", text }, { type: "metric", label: "Кафе, октябрь", source: "r1", path, trend_path: null }], mood: "idle", suggestions: [] },
+      reply: { blocks: [{ type: "text", text }, { type: "metric", label: "Кафе, октябрь", source: "r1", path, trend_path: null }], mood: "idle", suggestions: [], topic: "spending", outcome: "done", language: "ru" },
     };
   };
+
+  it("holds the labels to their lists and the reply's language", () => {
+    const labels = (reply: Partial<RunRecord["reply"]>) =>
+      universalChecks({ calls: [], reply: { blocks: [{ type: "text", text: "Готово." }], mood: "idle", suggestions: [], ...reply } } as RunRecord, "ru").find((c) => c.name === "labels");
+    expect(labels({ topic: "budgets", outcome: "clarify", language: "ru" })?.pass).toBe(true);
+    expect(labels({ topic: "money", outcome: "done", language: "ru" })?.detail).toBe("topic money");
+    expect(labels({ topic: "budgets", outcome: "done", language: "en" })?.detail).toBe("language en");
+  });
 
   it("passes a correct reply", () => {
     const r = record("В октябре кафе заметно выросли.");

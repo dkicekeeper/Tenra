@@ -70,7 +70,6 @@ struct SubcategoryReorderView: View {
                 categoriesViewModel: categoriesViewModel,
                 categoryId: categoryId,
                 selectedSubcategoryIds: .constant([]),
-                searchText: .constant(""),
                 selectionMode: .single,
                 onSingleSelect: { subcategoryId in
                     categoriesViewModel.linkSubcategoryToCategory(

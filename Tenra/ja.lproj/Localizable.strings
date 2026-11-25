@@ -451,7 +451,6 @@
 "transactionForm.accountTopUp" = "口座に入金";
 "transactionForm.searchSubcategories" = "サブカテゴリを検索";
 "transactionForm.addSubcategory" = "サブカテゴリを追加";
-"transactionForm.createSubcategory" = "「%@」を作成";
 // MARK: - Recurring Transactions Errors
 "recurring.error.seriesNotFound" = "定期シリーズが見つかりません";
 "recurring.error.invalidFrequency" = "選択された頻度が無効です";
@@ -1810,7 +1809,6 @@
 "assistant.allowance.renews" = "%@から新しい無料回答";
 "assistant.open.missing" = "これは Tenra にもうありません";
 "assistant.draft.save" = "保存";
-"assistant.draft.saved" = "保存しました";
 "assistant.draft.send" = "送信";
 "assistant.draft.feedbackSent" = "開発者に送信しました";
 "assistant.draft.reminderOn" = "オン、%@";
@@ -1911,6 +1909,11 @@
 /* DesignKit 8.9.0: RelativeTime, Formatting.relativeTime */
 "time.justNow" = "たった今";
 "time.dayAndTime" = "%1$@, %2$@";
+/* DesignKit 8.9.0: SearchablePicker (the subcategory picker) */
+"picker.create" = "「%@」を作成";
+"picker.noResults" = "見つかりませんでした";
+/* An outcome said to VoiceOver (AccessibilityAnnouncer) and a draft Ten made, once saved */
+"common.saved" = "保存しました";
 
 /* AI assistant: consent before the first question goes to the cloud (App Review 5.1.2(i)) */
 "assistant.consent.title" = "アシスタントはクラウドで動作します";

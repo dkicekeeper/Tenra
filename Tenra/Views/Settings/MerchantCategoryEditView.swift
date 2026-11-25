@@ -25,7 +25,6 @@ struct MerchantCategoryEditView: View {
     @State private var selectedCategory: String?
     @State private var selectedSubcategoryIds: Set<String>
     @State private var showingSubcategorySearch = false
-    @State private var subcategorySearchText = ""
     @State private var name: String
     @State private var icon: IconSource?
     /// Off: "no logo", the merchant's rows keep the category icon (MerchantLogoStore.setHidden).
@@ -150,10 +149,8 @@ struct MerchantCategoryEditView: View {
                 SubcategorySearchView(
                     categoriesViewModel: categoriesViewModel,
                     categoryId: categoryId,
-                    selectedSubcategoryIds: $selectedSubcategoryIds,
-                    searchText: $subcategorySearchText
+                    selectedSubcategoryIds: $selectedSubcategoryIds
                 )
-                .onAppear { subcategorySearchText = "" }
                 .presentationDetents([.medium, .large])
                 .presentationDragIndicator(.visible)
             }

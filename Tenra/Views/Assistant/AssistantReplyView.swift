@@ -10,7 +10,7 @@
 //  reference does not resolve is left out. An `open` block is a way into the app's own screen
 //  (AssistantDestinationView); a `confirm` block is the draft card, where the person saves what
 //  the assistant prepared (AgentDraftBook). Text blocks are Markdown, drawn as formatted text
-//  on the page (AssistantText); while the reply streams, its text shows as it is written
+//  on the page, not in a bubble (AssistantText, DesignKit's Markdown reader and ArticleBody); while the reply streams, its text shows as it is written
 //  (AssistantStreamingReply).
 //
 
@@ -83,8 +83,9 @@ private struct AssistantBlockView: View {
 
 // MARK: - Text
 
-/// A text block: its Markdown as headings, paragraphs, lists and notes (AgentReplyMarkdown,
-/// DesignKit's ArticleBody). A long press copies it.
+/// A text block: its Markdown as headings, paragraphs, lists and notes, read by DesignKit's
+/// `ArticleBody.Block.parse(markdown:)` (8.9.0, the reader `MessageBubble(markdown:)` uses) and drawn
+/// by its ArticleBody. A long press copies it.
 struct AssistantText: View {
     let text: String
 
@@ -93,7 +94,7 @@ struct AssistantText: View {
     }
 
     var body: some View {
-        ArticleBody(AgentReplyMarkdown.blocks(text), spacing: AppSpacing.sm)
+        ArticleBody(ArticleBody.Block.parse(markdown: text), spacing: AppSpacing.sm)
             .textSelection(.enabled)
     }
 }
@@ -698,7 +699,7 @@ private struct AssistantDraftCard: View {
                 .padding(.vertical, AppSpacing.md)
         case .saved:
             HStack {
-                InlineStatusText(message: deletes ? String(localized: "assistant.draft.deleted") : String(localized: "assistant.draft.saved"), type: .success)
+                InlineStatusText(message: deletes ? String(localized: "assistant.draft.deleted") : String(localized: "common.saved"), type: .success)
                 Spacer()
                 DSButton(String(localized: "assistant.draft.undo"), appearance: .flat, size: .small) {
                     Task { await book.undo(draft.id) }

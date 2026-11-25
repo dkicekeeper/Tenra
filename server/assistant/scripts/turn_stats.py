@@ -60,13 +60,15 @@ def main() -> None:
     turns = f"FROM {DATASET} WHERE blob1 = 'turn' AND {since}"
     count = "SUM(_sample_interval)"
 
-    total = query(f"SELECT {count} AS turns, SUM(_sample_interval * double2) / SUM(_sample_interval) AS calls {turns}")
+    total = query(f"SELECT {count} AS turns, SUM(_sample_interval * double2) AS calls {turns}")
     print(f"## Ten's turns, the last {days} days\n")
-    if total and total[0].get("turns"):
-        print(f"Turns: {int(total[0]['turns'])}; model calls per turn: {float(total[0]['calls']):.1f}.")
-    else:
+    # The SQL API gives numbers as strings, and a sum over no rows as 0 or null.
+    turn_count = float((total[0].get("turns") if total else None) or 0)
+    if turn_count == 0:
         print("No turns counted (ASSISTANT_TURN_STATS off, or nobody asked).")
         return
+    calls = float(total[0].get("calls") or 0)
+    print(f"Turns: {int(turn_count)}; model calls per turn: {calls / turn_count:.1f}.")
 
     table("Topics", query(f"SELECT blob2 AS topic, {count} AS turns {turns} GROUP BY topic ORDER BY turns DESC"), ["topic", "turns"])
     table(

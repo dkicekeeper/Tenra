@@ -1658,6 +1658,8 @@
 "settings.appLock.touchID" = "Lock with Touch ID";
 "settings.appLock.passcode" = "Lock with passcode";
 "settings.appLock.footer" = "Tenra asks for Face ID, Touch ID or your passcode after you have been away for more than a minute, and hides its screen in the app switcher.";
+"settings.usageStats" = "Anonymous usage statistics";
+"settings.usageStats.footer" = "Counts which steps and screens are reached, never amounts, names or anything that identifies you. Helps make Tenra better.";
 "settings.appLock.unavailable" = "Set up a passcode in iOS Settings to lock Tenra.";
 "appLock.title" = "Tenra is locked";
 "appLock.unlock" = "Unlock";

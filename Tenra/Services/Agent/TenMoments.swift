@@ -224,6 +224,7 @@ final class TenMoments {
         shown[stored] = now
         defaults.set(shown, forKey: Self.storageKey)
         queue.append(TenMoment.make(event, key: stored))
+        UsageEvents.shared.count(.moment(event))
         showNext(after: event.isOwnAction ? TenMomentRules.pause : TenMomentRules.settle)
         return true
     }

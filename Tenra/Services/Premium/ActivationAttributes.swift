@@ -50,12 +50,14 @@ enum ActivationAttributes {
     }
 
     static func noteOnboarding(_ outcome: OnboardingOutcome, defaults: UserDefaults = .standard) {
+        UsageEvents.shared.reach(.onboardingDone(outcome))
         writeIfChanged(.onboarding, outcome.rawValue, defaults: defaults)
     }
 
     /// A screen of onboarding came up: written when it is further than any before, so going
     /// back keeps the furthest one.
     static func noteOnboardingStep(_ step: OnboardingStepReached, defaults: UserDefaults = .standard) {
+        UsageEvents.shared.reach(.onboardingStep(step))
         let order = OnboardingStepReached.allCases
         let stored = defaults.string(forKey: storageKey(.onboardingStep)).flatMap(OnboardingStepReached.init(rawValue:))
         if let stored, let before = order.firstIndex(of: stored), let now = order.firstIndex(of: step), now <= before { return }
@@ -63,6 +65,7 @@ enum ActivationAttributes {
     }
 
     static func noteTenOpened(defaults: UserDefaults = .standard) {
+        UsageEvents.shared.reach(.tenOpened)
         writeIfChanged(.tenOpened, "yes", defaults: defaults)
     }
 
@@ -84,6 +87,7 @@ enum ActivationAttributes {
         defaults: UserDefaults = .standard
     ) {
         guard transactions.contains(where: { SpendingReminderPlan.isUserRecord($0, now: now) }) else { return }
+        UsageEvents.shared.noteOwnRecords(total: total, now: now)
         noteEntries(total, defaults: defaults)
     }
 

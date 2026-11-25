@@ -81,6 +81,7 @@ struct AssistantWardrobeView: View {
         .navigationTitle(String(localized: "assistant.wardrobe.title"))
         .navigationBarTitleDisplayMode(.inline)
         .task {
+            UsageEvents.shared.reach(.firstScreen(.wardrobe))
             await coordinator.refreshTenWardrobe()
             // What is open now has been shown: the hanger's dot goes.
             wardrobe.markSeen()

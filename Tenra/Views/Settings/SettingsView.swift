@@ -59,6 +59,7 @@ struct SettingsView: View {
                 settingsList
             }
         }
+        .usageFirstScreen(.settings)
     }
 
     // MARK: - Main List

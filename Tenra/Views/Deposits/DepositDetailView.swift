@@ -91,6 +91,7 @@ struct DepositDetailView: View {
                 .navigationTitle(String(localized: "deposit.title"))
             }
         }
+        .usageFeature(.deposit)
     }
 
     @ViewBuilder

@@ -1658,6 +1658,8 @@
 "settings.appLock.touchID" = "Touch ID로 잠금";
 "settings.appLock.passcode" = "암호로 잠금";
 "settings.appLock.footer" = "1분 넘게 자리를 비우면 Tenra가 Face ID, Touch ID 또는 암호를 요청하고 앱 전환기에서 화면을 가립니다.";
+"settings.usageStats" = "익명 사용 통계";
+"settings.usageStats.footer" = "어떤 단계와 화면까지 갔는지만 셉니다. 금액, 이름, 사용자를 알아볼 수 있는 정보는 세지 않습니다. Tenra를 더 좋게 만드는 데 도움이 됩니다.";
 "settings.appLock.unavailable" = "Tenra를 잠그려면 iOS 설정에서 암호를 설정하세요.";
 "appLock.title" = "Tenra가 잠겨 있습니다";
 "appLock.unlock" = "잠금 해제";

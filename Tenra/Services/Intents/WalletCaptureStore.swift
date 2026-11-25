@@ -265,7 +265,10 @@ final class WalletCaptureStore {
         guard !capture.id.isEmpty else { return }
         captures = captures.filter { now.timeIntervalSince($0.value.payment.date) <= Self.retention }
         captures[capture.id] = capture
-        if firstCaptureAt == nil { firstCaptureAt = now }
+        if firstCaptureAt == nil {
+            firstCaptureAt = now
+            UsageEvents.shared.reach(.captureFirst)
+        }
         persist()
     }
 

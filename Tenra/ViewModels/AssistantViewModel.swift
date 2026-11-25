@@ -754,6 +754,7 @@ final class AssistantViewModel {
     func send(_ raw: String, spoken: Bool = false, cloudAllowed: Bool = true, phoneMayAnswer: Bool = true) async -> Bool {
         let text = raw.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty, !isWorking, !draftingLocally else { return false }
+        UsageEvents.shared.count(.ten(.asked))
         // In the feedback talk every message is an answer to Ten's question about Tenra: it goes
         // to the owner, never to the model, so it needs no consent and spends no answer.
         if let step = feedbackStep {

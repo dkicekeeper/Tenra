@@ -1658,6 +1658,8 @@
 "settings.appLock.touchID" = "Блокування Touch ID";
 "settings.appLock.passcode" = "Блокування код-паролем";
 "settings.appLock.footer" = "Tenra запитає Face ID, Touch ID або код-пароль, якщо вас не було довше хвилини, і приховає екран у перемикачі програм.";
+"settings.usageStats" = "Анонімна статистика використання";
+"settings.usageStats.footer" = "Рахує, до яких кроків і екранів доходять, без сум, назв і всього, що вказує на вас. Допомагає робити Tenra кращою.";
 "settings.appLock.unavailable" = "Щоб увімкнути блокування, задайте код-пароль у налаштуваннях iOS.";
 "appLock.title" = "Tenra заблоковано";
 "appLock.unlock" = "Розблокувати";

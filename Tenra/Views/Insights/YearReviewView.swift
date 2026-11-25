@@ -197,6 +197,7 @@ struct YearReviewView: View {
                 }
             )
         }
+        .usageFeature(.yearReview)
     }
 
     /// The plan's button for a screen that has the coordinator: Ten's chat with the plan's

@@ -176,6 +176,7 @@ enum SpendingReminder {
     static func setEnabled(_ on: Bool, defaults: UserDefaults = .standard) async {
         defaults.set(on, forKey: enabledKey)
         if on {
+            UsageEvents.shared.reach(.reminderOn)
             if offerState(defaults: defaults) == .notAsked {
                 defaults.set(OfferState.accepted.rawValue, forKey: offerKey)
             }

@@ -40,6 +40,7 @@ class NotificationPermissionManager {
         do {
             let granted = try await center.requestAuthorization(options: [.alert, .sound, .badge])
             hasRequestedPermission = true
+            UsageEvents.shared.reach(.notifications(granted: granted))
             await checkAuthorizationStatus()
 
 

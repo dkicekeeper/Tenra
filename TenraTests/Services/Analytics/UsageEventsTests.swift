@@ -242,4 +242,37 @@ struct UsageEventsTests {
         #expect(!usage.pending.contains { $0.name == "installed" })
         #expect(usage.pending.first?.cohort == UsageEvents.cohort(installedAt: at(1, month: 10)))
     }
+
+    // MARK: - Wiring
+
+    @Test("Own records count an entry and reach the entry milestones their total passes")
+    func ownRecordsReachEntryMilestones() {
+        let usage = make(defaults())
+        usage.noteOwnRecords(total: 5, now: at(1))
+        usage.noteOwnRecords(total: 6, now: at(1))
+        #expect(names(usage.pending.filter { $0.kind == "m" }) == ["installed", "entries:1", "entries:5"])
+        #expect(usage.pending.filter { $0.name == "entry" }.count == 2)
+        #expect(usage.pending.first { $0.value == "1" && $0.name == "entries" }?.furthest0 == "entry")
+    }
+
+    @Test("Ten's turn says stats false only while the switch is off")
+    func theTurnBodySaysStatsFalseWhenOff() throws {
+        let suite = defaults()
+        #expect(!UsageEvents.isTurnedOff(defaults: suite))
+        make(suite).isEnabled = false
+        #expect(UsageEvents.isTurnedOff(defaults: suite))
+
+        let off = try JSONEncoder().encode(AgentTurnRequest(messages: [.userText(["hi"])], stats: false))
+        #expect(String(decoding: off, as: UTF8.self).contains("\"stats\":false"))
+        let on = try JSONEncoder().encode(AgentTurnRequest(messages: [.userText(["hi"])]))
+        #expect(!String(decoding: on, as: UTF8.self).contains("stats"))
+    }
+
+    @Test("A tab's screen; the voice tab is a feature")
+    func tabsMapToScreens() {
+        #expect(UsageScreen(tab: .home) == .home)
+        #expect(UsageScreen(tab: .ocr) == .importTab)
+        #expect(UsageScreen(tab: .plusAction) == .add)
+        #expect(UsageScreen(tab: .voice) == nil)
+    }
 }

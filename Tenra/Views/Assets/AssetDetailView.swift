@@ -108,6 +108,7 @@ struct AssetDetailView: View {
                 .navigationTitle(String(localized: "asset.listTitle"))
             }
         }
+        .usageFeature(.asset)
     }
 
     /// The payments by hand, on the shared `LinkPaymentsView` (search, category and subcategory

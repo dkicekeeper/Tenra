@@ -20,6 +20,19 @@ enum UsageScreen: String, Sendable {
     case home, history, analytics, finances, assistant, add
     case importTab = "import"
     case settings, paywall, wardrobe
+
+    /// A tab's screen; the voice tab is a feature, not a screen.
+    init?(tab: AppTab) {
+        switch tab {
+        case .home: self = .home
+        case .analytics: self = .analytics
+        case .finances: self = .finances
+        case .assistant: self = .assistant
+        case .ocr: self = .importTab
+        case .plusAction: self = .add
+        case .voice: return nil
+        }
+    }
 }
 
 /// Features counted once a day each.
@@ -294,6 +307,22 @@ final class UsageEvents {
         if UsageMilestone.returnDays.contains(day) { reach(.returned(day: day), now: now) }
         if (7...13).contains(day) { reach(.returnedWeek2, now: now) }
         count(.open(cold: cold), now: now)
+    }
+
+    /// The person's own records were added and the app now holds `total`: the entry counter,
+    /// and the entry milestones `total` reaches (ActivationAttributes.noteRecorded's rule).
+    func noteOwnRecords(total: Int, now: Date = .now) {
+        guard isActive else { return }
+        count(.entry, now: now)
+        for milestone in UsageMilestone.entryMilestones where total >= milestone {
+            reach(.entries(milestone), now: now)
+        }
+    }
+
+    /// The switch is off: Ten's turns go with `stats: false` (AgentServerClient). Read off the
+    /// main actor.
+    nonisolated static func isTurnedOff(defaults: UserDefaults = .standard) -> Bool {
+        defaults.object(forKey: enabledKey) as? Bool == false
     }
 
     // MARK: - Sending

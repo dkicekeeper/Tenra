@@ -41,6 +41,11 @@ struct PaywallSheet: ViewModifier {
         content.sheet(isPresented: $isPresented) {
             PaywallSheetContent(isPresented: $isPresented, source: source, onUnlocked: onUnlocked)
                 .onAppear { PremiumManager.shared.notePaywallShown(from: source) }
+                // Closed without Pro (a purchase or a restore leaves it with Pro on).
+                .onDisappear {
+                    guard !PremiumManager.shared.isPro else { return }
+                    UsageEvents.shared.count(.paywall(.closed, source: source, plan: nil))
+                }
         }
     }
 }
@@ -127,8 +132,18 @@ private struct PaywallSheetContent: View {
         // independently, so `isPro` flips even if a call site forgets to react to
         // `onUnlocked`.
         paywallView
+            .onPurchaseStarted { _ in
+                UsageEvents.shared.count(.paywall(.purchaseStarted, source: source, plan: nil))
+            }
+            .onPurchaseCancelled {
+                UsageEvents.shared.count(.paywall(.cancelled, source: source, plan: nil))
+            }
+            .onPurchaseFailure { _ in
+                UsageEvents.shared.count(.paywall(.failed, source: source, plan: nil))
+            }
             .onPurchaseCompleted { customerInfo in
                 premium.applyPaywallResult(customerInfo)
+                UsageEvents.shared.count(.paywall(.purchased, source: source, plan: premium.proStatus?.plan))
                 // The paywall promises a reminder two days before a trial ends: ask for banners
                 // now, while the promise is fresh.
                 let status = premium.proStatus
@@ -147,6 +162,7 @@ private struct PaywallSheetContent: View {
                     showingNothingToRestore = true
                     return
                 }
+                UsageEvents.shared.count(.paywall(.restored, source: source, plan: premium.proStatus?.plan))
                 HapticManager.success()
                 isPresented = false
                 onUnlocked?()

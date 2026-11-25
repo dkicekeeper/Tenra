@@ -185,7 +185,8 @@ nonisolated final class AgentServerClient: AgentTransport, AgentValuationTranspo
             let task = Task {
                 do {
                     guard let user = await userID() else { throw AgentServerError.unauthorized }
-                    let body = try JSONEncoder().encode(AgentTurnRequest(messages: messages, user: user))
+                    let stats: Bool? = UsageEvents.isTurnedOff() ? false : nil
+                    let body = try JSONEncoder().encode(AgentTurnRequest(messages: messages, user: user, stats: stats))
                     var bytes = try await Self.send(body, user: user, baseURL: baseURL, session: session, attestation: attestation)
                     if case .failure(let error) = bytes, error == .attestation(reason: "unknown_key"), let attestation {
                         // The server lost the key (or never had it): register a new one, once.

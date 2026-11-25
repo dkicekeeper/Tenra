@@ -615,6 +615,20 @@ class AppCoordinator {
         self.tenWardrobe = wardrobe
         // Ten wears in a moment what he wears everywhere (TenMoments).
         TenMoments.shared.accessory = { wardrobe.accessory() }
+        // Where the person is, on every usage event (UsageEvents, plan-sales §4): no
+        // identifier, only these labels.
+        let usageStore = transactionStore
+        UsageEvents.shared.traits = { [weak usageStore] in
+            let premium = PremiumManager.shared
+            let plan = premium.isFounder ? "founder" : premium.proStatus?.isTrial == true ? "trial" : premium.isPro ? "pro" : "free"
+            return UsageTraits(
+                plan: plan,
+                entries: usageStore?.transactions.count ?? 0,
+                reminder: SpendingReminder.isEnabled(),
+                capture: WalletCaptureStore.shared.firstCaptureAt != nil,
+                onboarding: UserDefaults.standard.string(forKey: "activation.onboarding") ?? "none"
+            )
+        }
 
         // 7. Setup SettingsViewModel
         let storageService = SettingsStorageService()

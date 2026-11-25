@@ -222,6 +222,7 @@ struct PDFImportCoordinator: View {
 
     // MARK: - PDF Analysis
     private func analyzePDF(url: URL) async {
+        UsageEvents.shared.count(.feature(.statement))
         transactionsViewModel.isLoading = true
         importError = nil
         ocrProgress = nil

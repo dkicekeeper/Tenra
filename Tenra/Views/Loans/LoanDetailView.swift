@@ -234,6 +234,7 @@ struct LoanDetailView: View {
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.significantTimeChangeNotification)) { _ in
             today = Date()
         }
+        .usageFeature(.loan)
     }
 
     /// The accounts on the other leg of the loan's transactions (the banks its payments came

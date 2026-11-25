@@ -189,6 +189,9 @@ final class PremiumManager {
     /// attribute `paywall_source`, so the purchase that follows carries it. Nothing without
     /// RevenueCat (tests, the screenshot demo, no key).
     func notePaywallShown(from source: PaywallSource) {
+        UsageEvents.shared.reach(.paywallFirst(source))
+        UsageEvents.shared.reach(.firstScreen(.paywall))
+        UsageEvents.shared.count(.paywall(.shown, source: source, plan: nil))
         guard isConfigured else { return }
         Purchases.shared.attribution.setAttributes(["paywall_source": source.rawValue])
     }
@@ -312,8 +315,13 @@ final class PremiumManager {
         // renewal-date changes must reach the Settings status block too.
         defaults.set(active, forKey: Key.lastKnownSubscriber)
         guard active != isSubscriber || status != proStatus else { return }
+        let previous = proStatus
         isSubscriber = active
         proStatus = status
+        // A trial started, its renewal turned off, a trial paid (UsageEvents, once each).
+        for milestone in UsageEvents.proMilestones(from: previous, to: status) {
+            UsageEvents.shared.reach(milestone)
+        }
         log.info("pro entitlement active=\(active, privacy: .public)")
         // The reminder two days before a trial ends follows the entitlement: a new trial, renewal
         // turned off or on, a paid period or no Pro each replace or remove it.

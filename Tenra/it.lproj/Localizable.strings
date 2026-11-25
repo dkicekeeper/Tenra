@@ -1658,6 +1658,8 @@
 "settings.appLock.touchID" = "Blocca con Touch ID";
 "settings.appLock.passcode" = "Blocca con codice";
 "settings.appLock.footer" = "Tenra chiede Face ID, Touch ID o il tuo codice dopo più di un minuto di assenza e nasconde la schermata nel selettore delle app.";
+"settings.usageStats" = "Statistiche d'uso anonime";
+"settings.usageStats.footer" = "Conta quali passaggi e schermate vengono raggiunti, mai importi, nomi o altro che ti identifichi. Aiuta a migliorare Tenra.";
 "settings.appLock.unavailable" = "Imposta un codice nelle Impostazioni di iOS per bloccare Tenra.";
 "appLock.title" = "Tenra è bloccato";
 "appLock.unlock" = "Sblocca";

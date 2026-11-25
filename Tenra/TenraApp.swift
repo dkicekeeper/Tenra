@@ -129,6 +129,8 @@ struct TenraApp: App {
                     }
                 }
                 if phase == .background {
+                    // The usage counts left in the buffer (UsageEvents).
+                    Task { await UsageEvents.shared.flush() }
                     // Ask iOS for a background insights recompute while we're away.
                     BackgroundInsightsRefresher.shared.scheduleNextRefresh()
                     // What the widgets show: today's figures as the app leaves them.

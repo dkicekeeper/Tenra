@@ -38,6 +38,7 @@ struct BudgetSettingsSection: View {
                              accessory: .stepper($resetDay, in: 1...31))
             }
         }
+        .usageFeature(.budget)
     }
 }
 

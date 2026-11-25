@@ -38,11 +38,15 @@ nonisolated struct AgentTurnRequest: Sendable, Encodable {
     /// The RevenueCat app user id, inside the body App Attest signs: the server looks Pro up
     /// only for this one, never for the `x-tenra-user` header alone.
     let user: String?
+    /// false while the person has the anonymous statistics off (UsageEvents): the server does
+    /// not count the turn's labels. nil leaves the key out.
+    let stats: Bool?
 
-    init(messages: [AgentWireMessage], user: String? = nil) {
+    init(messages: [AgentWireMessage], user: String? = nil, stats: Bool? = nil) {
         self.`protocol` = AgentProtocol.version
         self.messages = messages
         self.user = user
+        self.stats = stats
     }
 }
 

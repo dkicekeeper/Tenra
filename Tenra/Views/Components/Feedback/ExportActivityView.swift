@@ -16,6 +16,7 @@ struct ExportActivityView: UIViewControllerRepresentable {
     @Environment(\.dismiss) var dismiss
 
     func makeUIViewController(context: Context) -> UIActivityViewController {
+        UsageEvents.shared.count(.feature(.csvExport))
         let csvContent = CSVExporter.exportTransactions(
             transactionsViewModel.allTransactions,
             accounts: transactionsViewModel.accounts,

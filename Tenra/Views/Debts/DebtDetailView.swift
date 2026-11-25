@@ -49,6 +49,7 @@ struct DebtDetailView: View {
                 .navigationTitle(String(localized: "debt.listTitle"))
             }
         }
+        .usageFeature(.debt)
     }
 
     @ViewBuilder

@@ -44,6 +44,7 @@ struct GoalDetailView: View {
                 .navigationTitle(String(localized: "goal.listTitle"))
             }
         }
+        .usageFeature(.goal)
     }
 
     @ViewBuilder

@@ -106,6 +106,7 @@ struct HistoryView: View {
                 .presentationDetents([.medium, .large])
                 .presentationDragIndicator(.visible)
             }
+        .usageFirstScreen(.history)
     }
 
     // The observers below used to be one 9-deep `.onChange` chain on `historyContent`.

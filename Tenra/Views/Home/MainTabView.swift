@@ -14,6 +14,7 @@
 //
 
 import SwiftUI
+import WidgetKit
 
 // MARK: - AppTab
 
@@ -49,6 +50,8 @@ struct MainTabView: View {
     @State private var ratingPrompt = RatingPromptService.shared
 
     @State private var selectedTab: AppTab = .home
+    /// The first `.active` of this launch is a cold open (UsageEvents).
+    @State private var openedOnce = false
     @State private var tabBarMode: TabBarMode = .normal
     /// Remembers which "real" tab was active before expanding,
     /// so we can restore it when the user taps [×].
@@ -172,6 +175,21 @@ struct MainTabView: View {
         .environment(tabBarVisibility)
         .onChange(of: selectedTab) { _, new in
             handleTabSelection(new)
+            if let screen = UsageScreen(tab: new) {
+                UsageEvents.shared.reach(.firstScreen(screen))
+            } else if new == .voice {
+                UsageEvents.shared.count(.feature(.voice))
+            }
+        }
+        // The counts go out 20 s after the app comes to the front, then every 5 minutes while
+        // it stays there; going to the background sends them too (TenraApp).
+        .task(id: scenePhase == .active) {
+            guard scenePhase == .active else { return }
+            try? await Task.sleep(for: .seconds(20))
+            while !Task.isCancelled {
+                await UsageEvents.shared.flush()
+                try? await Task.sleep(for: .seconds(300))
+            }
         }
         // Warm-launch path: notification arrives while the app is already running.
         // We update the coordinator; the .onChange(initial:) below switches the tab.
@@ -266,6 +284,16 @@ struct MainTabView: View {
         // Ten writes first about tomorrow's charges whenever the app comes to the front.
         .onChange(of: scenePhase, initial: true) { _, phase in
             guard phase == .active else { return }
+            // The app's usage counts (UsageEvents, plan-sales §4): the open, the return days,
+            // the screen it opens on, a widget on the phone.
+            UsageEvents.shared.noteOpen(cold: !openedOnce)
+            openedOnce = true
+            if let screen = UsageScreen(tab: selectedTab) { UsageEvents.shared.reach(.firstScreen(screen)) }
+            Task {
+                if let widgets = try? await WidgetCenter.shared.currentConfigurations(), !widgets.isEmpty {
+                    UsageEvents.shared.reach(.widgetOn)
+                }
+            }
             coordinator.refreshAssistantInbox()
             // A goal's reached date, kept even when its screen was not open (GoalStore), then
             // what Ten's wardrobe has earned (a holiday, the streak, the goals).

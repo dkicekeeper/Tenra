@@ -140,6 +140,7 @@ struct AssistantNoticesSection: View {
                 notice: notice,
                 onAsk: {
                     HapticManager.light()
+                    UsageEvents.shared.count(.ten(.noticeOpened))
                     if notice.kind == .setup {
                         inbox.markRead(notice.id)
                         showingWalletGuide = true
@@ -162,7 +163,10 @@ struct AssistantNoticesSection: View {
                         coordinator.goThrough(notice)
                     }
                 },
-                onHide: { inbox.markRead(notice.id) },
+                onHide: {
+                    UsageEvents.shared.count(.ten(.noticeHidden))
+                    inbox.markRead(notice.id)
+                },
                 // What the person can do about it at once: the phone drafts it, Ten's chat
                 // shows the draft to confirm.
                 quickTitle: AssistantNoticeAction.title(for: notice),

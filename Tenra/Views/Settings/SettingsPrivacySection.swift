@@ -4,7 +4,8 @@
 //
 //  Opt-in app lock (Face ID / Touch ID / passcode). Enabling requires one
 //  successful authentication first (AppLockService.setEnabled), so the toggle
-//  simply stays off if the user cancels.
+//  simply stays off if the user cancels. Under it, the anonymous usage statistics
+//  (UsageEvents, docs/plan-sales.md §4): on by default, off sends nothing.
 //
 
 import SwiftUI
@@ -12,8 +13,10 @@ import SwiftUI
 struct SettingsPrivacySection: View {
     @State private var lock = AppLockService.shared
     @State private var biometry: AppLockBiometry = .unavailable
+    @State private var usageOn = UsageEvents.shared.isEnabled
 
     var body: some View {
+        Group {
         FormSection(header: String(localized: "settings.privacy.header"), footer: String(localized: biometry == .unavailable ? "settings.appLock.unavailable" : "settings.appLock.footer")) {
             UniversalRow(
                 toggleTitle,
@@ -26,6 +29,17 @@ struct SettingsPrivacySection: View {
                 ))
             )
             .disabled(biometry == .unavailable && !lock.isEnabled)
+        }
+        FormSection(footer: String(localized: "settings.usageStats.footer")) {
+            UniversalRow(
+                String(localized: "settings.usageStats"),
+                icon: "chart.bar",
+                accessory: .toggle($usageOn)
+            )
+        }
+        }
+        .onChange(of: usageOn) { _, on in
+            UsageEvents.shared.isEnabled = on
         }
         .task {
             biometry = lock.authenticator.biometry()

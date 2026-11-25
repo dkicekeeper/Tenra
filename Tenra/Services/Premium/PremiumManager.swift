@@ -264,7 +264,7 @@ final class PremiumManager {
     /// Test and screenshot runs never configure RevenueCat: every fresh Simulator install
     /// became a new anonymous customer, so CI runs swamped the New Customers and Active Users
     /// charts (docs/promotion-plan.md §6). Release builds always configure.
-    private static var isAutomatedRun: Bool {
+    static var isAutomatedRun: Bool {
         #if DEBUG
         let process = ProcessInfo.processInfo
         return NSClassFromString("XCTestCase") != nil  // unit-test host

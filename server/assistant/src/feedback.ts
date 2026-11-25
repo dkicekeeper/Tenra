@@ -12,6 +12,11 @@ import { ValidationError } from "./validate";
 export const FEEDBACK_LIMITS = {
   bodyBytes: 16 * 1024,
   textChars: 2000,
+  /** "Не то" under a reply: the person's question and Ten's words in it. */
+  questionChars: 2000,
+  answerChars: 4000,
+  /** The kinds of the reply's cards, without what they show. */
+  cards: 20,
   /** Messages a day from one install (one App Attest key). */
   perDay: 5,
   keepSeconds: 365 * 86_400,
@@ -20,8 +25,21 @@ export const FEEDBACK_LIMITS = {
 export type Mood = "good" | "bad";
 
 /** Where in the app the message was written. */
-/** `trial`: Ten's question after Tenra Pro's renewal was turned off during the free trial. */
-const SOURCES = new Set(["notice", "survey", "settings", "chat", "trial"]);
+/** `trial`: Ten's question after Tenra Pro's renewal was turned off during the free trial.
+ *  `reply`: "Не то" under one of Ten's answers, with that exchange when the person sends it. */
+const SOURCES = new Set(["notice", "survey", "settings", "chat", "trial", "reply"]);
+
+/** What was wrong with an answer, as the person picked it under "Не то". */
+export const REPLY_REASONS = ["wrong", "misunderstood", "not_done", "other"] as const;
+export type ReplyReason = (typeof REPLY_REASONS)[number];
+
+/** The answer the person sends with "Не то": their question and Ten's words, never the cards' figures. */
+export interface Exchange {
+  question: string;
+  answer: string;
+  /** Block types beside the words (confirm, metric, budgets, ...). */
+  cards: string[];
+}
 
 export interface FeedbackRequest {
   text: string;
@@ -29,6 +47,9 @@ export interface FeedbackRequest {
   source?: string;
   /** Sent again after Ten tried to help with it: whether the person says it helped. */
   resolved?: boolean;
+  /** With source `reply`. */
+  reason?: ReplyReason;
+  exchange?: Exchange;
   /** The app's version, the system's, and the app's language, as short plain strings. */
   app?: string;
   os?: string;
@@ -43,6 +64,10 @@ export interface FeedbackRecord {
   mood?: Mood;
   source?: string;
   resolved?: boolean;
+  reason?: ReplyReason;
+  exchange?: Exchange;
+  /** The prompt the answer was written with, for an exchange. */
+  prompt?: string;
   app?: string;
   os?: string;
   locale?: string;
@@ -73,11 +98,26 @@ export function parseFeedbackRequest(raw: string): FeedbackRequest {
     mood: body.mood === "good" || body.mood === "bad" ? body.mood : undefined,
     source: typeof body.source === "string" && SOURCES.has(body.source) ? body.source : undefined,
     resolved: typeof body.resolved === "boolean" ? body.resolved : undefined,
+    reason: REPLY_REASONS.find((r) => r === body.reason),
+    exchange: parseExchange(body.exchange),
     app: short(body.app, /^[0-9][0-9A-Za-z.() ]{0,23}$/),
     os: short(body.os, /^[0-9][0-9.]{0,11}$/),
     locale: short(body.locale, /^[A-Za-z]{2,3}([-_][A-Za-z0-9]{2,8}){0,2}$/),
     user: body.user as string | undefined,
   };
+}
+
+/** The exchange "Не то" sends, or undefined; an exchange over the limits is refused, not cut. */
+function parseExchange(value: unknown): Exchange | undefined {
+  if (value === undefined || value === null) return undefined;
+  if (typeof value !== "object" || Array.isArray(value)) throw new ValidationError("exchange");
+  const { question, answer, cards } = value as Record<string, unknown>;
+  if (typeof question !== "string" || typeof answer !== "string") throw new ValidationError("exchange");
+  const q = question.trim();
+  const a = answer.trim();
+  if (q.length > FEEDBACK_LIMITS.questionChars || a.length > FEEDBACK_LIMITS.answerChars) throw new ValidationError("exchange");
+  const kinds = Array.isArray(cards) ? cards.filter((c): c is string => typeof c === "string" && /^[a-z_]{1,24}$/.test(c)).slice(0, FEEDBACK_LIMITS.cards) : [];
+  return { question: q, answer: a, cards: kinds };
 }
 
 const day = (now: Date) => now.toISOString().slice(0, 10);
@@ -111,8 +151,25 @@ export function telegramText(record: FeedbackRecord): string {
     record.tier,
     record.source,
   ].filter(Boolean);
-  return `${mood} ${record.text}\n\n${facts.join(" · ")}`;
+  const exchange = record.exchange
+    ? [
+        "",
+        `${REASON_WORDS[record.reason ?? "other"]}`,
+        `Q: ${record.exchange.question.slice(0, 900)}`,
+        `A: ${record.exchange.answer.slice(0, 1800)}${record.exchange.answer.length > 1800 ? "…" : ""}`,
+        record.exchange.cards.length ? `Cards: ${record.exchange.cards.join(", ")}` : "",
+        record.prompt ? `Prompt ${record.prompt}` : "",
+      ].filter((line, index) => index === 0 || line)
+    : [];
+  return `${mood} ${record.text}${exchange.join("\n")}\n\n${facts.join(" · ")}`;
 }
+
+const REASON_WORDS: Record<ReplyReason, string> = {
+  wrong: "Reason: wrong answer",
+  misunderstood: "Reason: did not understand",
+  not_done: "Reason: did not do it",
+  other: "Reason: other",
+};
 
 /** Sends the message to the owner's chat. A failure is reported by status only, never by text. */
 export async function notifyOwner(token: string, chatId: string, record: FeedbackRecord, send: typeof fetch = fetch): Promise<boolean> {

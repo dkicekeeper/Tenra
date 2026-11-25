@@ -212,6 +212,8 @@ describe("grader", () => {
     expect(universalChecks(say("The interest saved is shown below."), "en").find((c) => c.name === "no_saved_claim")?.pass).toBe(true);
     expect(universalChecks(say("I've saved your lunch."), "en").find((c) => c.name === "no_saved_claim")?.pass).toBe(false);
     expect(universalChecks(say("Your lunch was saved."), "en").find((c) => c.name === "no_saved_claim")?.pass).toBe(false);
+    // Saying the cards wait for the tap claims nothing.
+    expect(universalChecks(say("Nothing is saved until you tap Save on its card."), "en").find((c) => c.name === "no_saved_claim")?.pass).toBe(true);
     // Asking for the tap is not a claim; the same verb after it is.
     expect(universalChecks(say("Чтобы я её запомнил, нажмите Сохранить."), "ru").find((c) => c.name === "no_saved_claim")?.pass).toBe(true);
     expect(universalChecks(say("Чтобы не забыть, я запомнил это."), "ru").find((c) => c.name === "no_saved_claim")?.pass).toBe(false);

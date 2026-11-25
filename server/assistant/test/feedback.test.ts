@@ -30,7 +30,7 @@ const stored = (kv: MemoryKV) => [...kv.store.entries()].filter(([key]) => key.s
 describe("feedback request", () => {
   it("keeps the words and the short facts, and drops what it does not know", () => {
     const parsed = parseFeedbackRequest(payload({ text: "  Нравится  ", mood: "good", source: "notice", app: "1.8.3 (77)", os: "27.0", locale: "ru-KZ", extra: 1 }));
-    expect(parsed).toEqual({ text: "Нравится", mood: "good", source: "notice", resolved: undefined, app: "1.8.3 (77)", os: "27.0", locale: "ru-KZ", user: undefined });
+    expect(parsed).toEqual({ text: "Нравится", mood: "good", source: "notice", resolved: undefined, reason: undefined, exchange: undefined, app: "1.8.3 (77)", os: "27.0", locale: "ru-KZ", user: undefined });
     // A follow-up after Ten's help says whether it settled the complaint.
     expect(parseFeedbackRequest(payload({ text: "Не нашёл депозит", mood: "bad", resolved: true })).resolved).toBe(true);
     expect(parseFeedbackRequest(payload({ resolved: "yes" })).resolved).toBeUndefined();
@@ -39,6 +39,24 @@ describe("feedback request", () => {
     expect(parseFeedbackRequest(payload({ text: "Дорого", mood: "bad", source: "trial" }))?.source).toBe("trial");
     const odd = parseFeedbackRequest(payload({ mood: "meh", source: "elsewhere", app: "<script>", os: "x", locale: "!!" }));
     expect(odd).toMatchObject({ mood: undefined, source: undefined, app: undefined, os: undefined, locale: undefined });
+  });
+
+  it("keeps the exchange \"Не то\" sends, the reply's card kinds without their content", () => {
+    const parsed = parseFeedbackRequest(
+      payload({
+        text: "Не понял вопрос",
+        mood: "bad",
+        source: "reply",
+        reason: "misunderstood",
+        exchange: { question: " Сколько на кафе? ", answer: "Траты на **кафе выросли**.", cards: ["metric", "chart", "<b>", 5] },
+      }),
+    );
+    expect(parsed.source).toBe("reply");
+    expect(parsed.reason).toBe("misunderstood");
+    expect(parsed.exchange).toEqual({ question: "Сколько на кафе?", answer: "Траты на **кафе выросли**.", cards: ["metric", "chart"] });
+    expect(parseFeedbackRequest(payload({ reason: "rude" })).reason).toBeUndefined();
+    const text = telegramText({ at: "2026-11-25T10:00:00Z", text: "Не понял вопрос", mood: "bad", source: "reply", reason: "misunderstood", exchange: parsed.exchange, prompt: "2026-11-25.3" });
+    expect(text).toBe("👎 Не понял вопрос\nReason: did not understand\nQ: Сколько на кафе?\nA: Траты на **кафе выросли**.\nCards: metric, chart\nPrompt 2026-11-25.3\n\nreply");
   });
 
   it("refuses an empty, an oversized or a malformed message", () => {
@@ -53,6 +71,8 @@ describe("feedback request", () => {
     expect(code(payload({ text: "x".repeat(FEEDBACK_LIMITS.textChars + 1) }))).toBe("text");
     expect(code(payload({ protocol: 2 }))).toBe("protocol");
     expect(code("not json")).toBe("json");
+    expect(code(payload({ exchange: { question: "q", answer: "x".repeat(FEEDBACK_LIMITS.answerChars + 1) } }))).toBe("exchange");
+    expect(code(payload({ exchange: "q" }))).toBe("exchange");
     expect(code(JSON.stringify({ protocol: 1, text: "x".repeat(FEEDBACK_LIMITS.bodyBytes) }))).toBe("size");
   });
 

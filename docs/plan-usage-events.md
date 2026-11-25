@@ -2,8 +2,9 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-> Status 2026-11-25: approved by the founder with its spec, [plan-sales.md](plan-sales.md) §4;
-> being built for 1.10 (build around 02.12). Moves to `archive/plans/` once 1.10 ships; the rules
+> Status 2026-11-25: approved by the founder with its spec, [plan-sales.md](plan-sales.md) §4.
+> Tasks 1-5 written for 1.10 (build around 02.12); the server deploy and the first `app-stats`
+> run follow the merge and 1.10's release (Task 5 steps 3-5). Moves to `archive/plans/` once 1.10 ships; the rules
 > settle in `domains/analytics.md` (Task 5).
 
 **Goal:** Tenra counts how far new people get and whether they come back, anonymously and

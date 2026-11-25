@@ -28,6 +28,10 @@ assembled; no em dashes (user rule).
   app when a goal is reached, a debt settled, a loan paid off, an asset sold at a profit, last
   month stayed inside the budgets, or the first payment recorded itself; Settings › Assistant ›
   "Ten's moments" turns them off. DesignKit 8.18.0.
+- **Anonymous usage statistics** ([domains/analytics.md](domains/analytics.md)): the app counts
+  how far people get (setup steps, first visits, records, reminder, paywall, trial, return days)
+  without any identifier, on Tenra's own server; Settings › Privacy turns it off (and Ten's
+  answer labels with it). The privacy policy says so.
 - **Ten's wardrobe and faces** ([domains/assistant.md](domains/assistant.md) §6, §9): accessories
   open on every return to the app and right after a first goal or a goal reached (the taqiya on
   Nauryz without a visit to the wardrobe); a dot on the hanger while something new is open; a
@@ -58,6 +62,11 @@ assembled; no em dashes (user rule).
   price: the same. With "Моменты Тэна" off: only the screen's confetti. Check over a sheet and the
   tab bar, VoiceOver (focus, the line, escape), dark mode.
 
+- **Usage statistics**: a fresh install (or reset onboarding on a test phone): go through
+  onboarding, record an expense, open the paywall and close it, leave the app; a day later
+  Actions → Assistant server → `app-stats` with `days` 7 shows the install week with
+  `installed`, the onboarding steps, `entries:1` and the paywall. Settings › Privacy: the switch
+  "Анонимная статистика использования" is on; off, nothing more is counted.
 - **Ten's wardrobe**: a new goal, then the assistant's tab: a dot on the hanger at once; the
   wardrobe shows the party hat open; back on the tab, no dot. A locked pair of sunglasses reads
   "7 дней подряд с записью · N из 7" with today's run. VoiceOver on the hanger: "Гардероб Тэна,

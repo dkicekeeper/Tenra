@@ -44,6 +44,7 @@ this file is the full index.
 
 | File | Purpose |
 |------|---------|
+| [domains/analytics.md](domains/analytics.md) | The app's usage counts: milestones once per install and counters, no identifier, `/v1/events`, the `app-stats` report, the statistics switch |
 | [domains/accounts.md](domains/accounts.md) | Account, series and parsed-date indexes, AccountDetailView read contract, ranking |
 | [domains/assets.md](domains/assets.md) | Assets (homes, cars): storage (v17-v19), characteristics, value, gain, growth a year, share and loan, rent and upkeep, the sale, net worth, the Pro gate, screens |
 | [domains/assistant.md](domains/assistant.md) | Ten, the AI assistant: architecture, tools, reply blocks, threads and facts, "Ten writes", the server and its protocol, App Attest, limits, privacy, setup and eval |

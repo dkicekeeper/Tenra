@@ -11,7 +11,9 @@ name: Apple Ads
 # Account Manager.
 #
 # The repository is public, so its Actions logs are too: ads.py never prints spend, CPT, CPI,
-# bids or budgets in Actions; Claude reads them from a cloud session instead.
+# bids or budgets in Actions. A Claude session that needs them passes its public key in seal_to
+# (appstore/seal.py keygen): ads.py then runs as outside Actions, all of its output goes to a file,
+# and the log gets only that file sealed to the key, which only that session can open.
 
 on:
   workflow_dispatch:
@@ -39,6 +41,10 @@ on:
         default: "7"
       args:
         description: 'Extra arguments, e.g. --add "учет расходов, бюджет" --match EXACT --apply (negatives, add-keywords; --bid 0.40)'
+        required: false
+        default: ""
+      seal_to:
+        description: "Public key from appstore/seal.py keygen: money is shown and the whole report is sealed to this key (a Claude session opens it); empty: money hidden"
         required: false
         default: ""
 
@@ -71,6 +77,7 @@ jobs:
           ACCOUNT: ${{ inputs.account }}
           DAYS: ${{ inputs.days }}
           ARGS: ${{ inputs.args }}
+          SEAL_TO: ${{ inputs.seal_to }}
         run: |
           if [ -z "$ADS_CLIENT_ID" ] || [ -z "$ADS_TEAM_ID" ] || [ -z "$ADS_KEY_ID" ] || [ -z "$ADS_PRIVATE_KEY" ]; then
             echo "::error::Add the ADS_CLIENT_ID, ADS_TEAM_ID, ADS_KEY_ID and ADS_PRIVATE_KEY repository secrets (docs/asc.md, Apple Ads API)."
@@ -88,5 +95,17 @@ jobs:
             split=$(python3 -c 'import os, shlex; print("\n".join(shlex.split(os.environ["ARGS"])))')
             mapfile -t extra <<< "$split"
             args+=("${extra[@]}")
+          fi
+          if [ -n "$SEAL_TO" ]; then
+            # Sealed: ads.py runs as outside Actions (money shown), every line of it goes to a file,
+            # and only the file sealed to SEAL_TO reaches the public log (appstore/seal.py).
+            set -o pipefail
+            out="$RUNNER_TEMP/report.txt"
+            status=0
+            env -u GITHUB_ACTIONS -u GITHUB_STEP_SUMMARY "$RUNNER_TEMP/adsenv/bin/python" appstore/ads.py "${args[@]}" > "$out" 2>&1 || status=$?
+            "$RUNNER_TEMP/adsenv/bin/python" appstore/seal.py seal --to "$SEAL_TO" < "$out"
+            rm -f "$out"
+            echo "ads.py exit status: $status; the report is sealed above (appstore/seal.py open)." | tee -a "$GITHUB_STEP_SUMMARY"
+            exit "$status"
           fi
           "$RUNNER_TEMP/adsenv/bin/python" appstore/ads.py "${args[@]}"

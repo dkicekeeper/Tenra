@@ -14,12 +14,30 @@
 | Выдать или забрать Tenra Pro (`pro`) одному покупателю, посмотреть, что о нём знает RevenueCat | GitHub Actions, `.github/workflows/revenuecat.yml`, секрет `REVENUECAT_SECRET_KEY` | Actions → RevenueCat: `grant` / `revoke` / `status`, `app_user_id`, `days`; id в логе скрыт |
 | Пробные, подписки, MRR, выручка из графиков RevenueCat (для §6 [promotion-plan.md](promotion-plan.md)) | локальная сессия Claude Code с плагином RevenueCat (MCP), проект `proj3c40e272`; из облака: окружение «Tenra» (с 10.11.2026), в нём ключ API v2 для `mcp.revenuecat.ai` подставляет прокси, вызовы JSON-RPC через `curl` (`initialize`, взять заголовок `Mcp-Session-Id`, дальше `tools/call`; пейволлы: `get-paywall`, `render-paywall-screenshot`, `edit-paywall-ai`, `publish-paywall`). В окружении Default ключа нет | Claude вызывает `get-chart-data` сам; установки берутся из ASC, New Customers и Active Users до 23.10 раздуты прогонами симулятора в CI |
 | Исходные скриншоты стора на симуляторе без Mac | GitHub Actions, `.github/workflows/screenshots.yml` (macOS) | Actions → Screenshots: языки, `frames` = `all`, `cpp`, `ten`, `autocapture` или `home`; `art` рисует Тэна для шапки |
-| Продажи и выручка по дням, плюс всё из строки выше | облачная сессия Claude, `appstore/asc.py` | Claude запускает сам, если ключ есть в переменных окружения |
-| Apple Ads: кампании и группы, отчёт по ним, поисковые запросы, ключи, минус-слова; добавить минус-слова и ключи | GitHub Actions, `.github/workflows/ads.yml` (`appstore/ads.py`); с деньгами из облачной сессии Claude | Actions → Apple Ads (выбрать команду); пишет только с `--apply` в `args`. Ждёт API-пользователя и секретов ([Apple Ads API](#apple-ads-api)) |
+| Продажи и выручка по дням | облачная сессия Claude: `asc.yml` с командой `sales` и полем `seal_to` (зашифрованный запуск, ниже) или `appstore/asc.py`, если ключ есть в переменных окружения | Claude запускает сам |
+| Apple Ads: кампании и группы, отчёт по ним, поисковые запросы, ключи, минус-слова; добавить минус-слова и ключи | GitHub Actions, `.github/workflows/ads.yml` (`appstore/ads.py`); с деньгами: тот же workflow с полем `seal_to` (зашифрованный запуск, ниже) | Actions → Apple Ads (выбрать команду); пишет только с `--apply` в `args`. Ждёт API-пользователя и секретов ([Apple Ads API](#apple-ads-api)) |
 
 Репозиторий Tenra публичный, поэтому логи Actions видны всем. Продажи и выручку `asc.py` в Actions
-не показывает, траты, ставки и бюджеты Apple Ads `ads.py` тоже: их Claude смотрит только из
-облачной сессии.
+не показывает, траты, ставки и бюджеты Apple Ads `ads.py` тоже. Облачная сессия Claude видит их
+через зашифрованный запуск: ключи остаются в секретах GitHub, а в лог попадает только шифр.
+
+### Зашифрованный запуск (`seal_to`)
+
+`ads.yml` и `asc.yml` принимают поле `seal_to`: открытый ключ сессии. С ним скрипт работает как вне
+Actions (деньги, продажи и ключевые слова видны), весь его вывод уходит в файл, а в лог
+попадают только строки `SEALED n/N …`: файл, зашифрованный этим ключом (AES-256-GCM, ключ AES
+запечатан RSA-OAEP, RSA от 3072 бит; `appstore/seal.py`, тесты `python3 -I appstore/test_seal.py`).
+Закрытый ключ остаётся в черновиках сессии и в репозиторий не попадает.
+
+```bash
+python3 -I appstore/seal.py keygen --out <черновики>/sealkey   # печатает открытый ключ для seal_to
+# run_workflow ads.yml: command report, days 28, seal_to <ключ>; asc.yml: command sales, args --days 40, seal_to <ключ>
+# лог задания (get_job_logs, return_content) сохранить в файл, затем:
+python3 -I appstore/seal.py open --key <черновики>/sealkey/seal-key.pem < job.log
+```
+
+`sales` в `asc.yml` работает только так: без `seal_to` скрипт отказывается. Workflow из ветки
+запускается с `ref` этой ветки, секреты те же.
 
 ## Один раз: настройка
 
@@ -184,7 +202,7 @@ python3 appstore/asc.py prepare-review --version 1.7 [--build N] [--submit]
 python3 appstore/asc.py reviews [--limit 20]    # отзывы с текстом (оценки без текста API не отдаёт)
 python3 appstore/asc.py availability            # в скольких странах доступно, статус DSA в ЕС
 python3 appstore/asc.py crashes [--build 12]    # отчёты о сбоях из TestFlight, без данных тестировщика
-python3 appstore/asc.py sales [--days 7]        # продажи и выручка по дням; только не в Actions
+python3 appstore/asc.py sales [--days 7]        # продажи и выручка по дням; в Actions только с seal_to
 ```
 
 **Цены: правила** ([promotion-plan.md](promotion-plan.md) §2 «Цены по витринам», там же таблица
@@ -384,8 +402,8 @@ python3 -I appstore/test_ads.py                 # тесты без сети: п
 `--add "учет расходов, бюджет" --apply` (кавычки как в терминале).
 
 **Деньги в публичном логе.** В Actions скрипт не печатает траты, цену тапа, CPI, ставки и бюджеты
-(в таблице `hidden`). Токен, client secret и ключ не печатаются нигде. Деньги Claude смотрит из
-облачной сессии.
+(в таблице `hidden`). Токен, client secret и ключ не печатаются нигде. Деньги Claude смотрит
+зашифрованным запуском (`seal_to`, выше) или из облачной сессии с ключами в окружении.
 
 **Каждую субботу** (§7 [promotion-plan.md](promotion-plan.md)): `search-terms --campaign
 KZ-Discovery`; удачные запросы `add-keywords --campaign KZ-Category --adgroup Общие --add "…"

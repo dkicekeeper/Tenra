@@ -456,6 +456,17 @@ once every store has loaded), and
   assistant's tab (without the assistant, the import tab); the copy in `Documents/Inbox` is deleted
   after reading. A Share Extension would need an App Group, which the app does not have.
 
+**"Не то" under an answer** (`AgentReplyReport`, `AssistantReplyReportSheet`, the owner's
+decision 2026-11-25, 1.10): under the latest answer the model wrote (`Entry.fromModel`, never a
+line the phone wrote itself, not during the feedback talk, not while a turn runs;
+`AssistantViewModel.reportableReply`), where feedback can be sent (`AppCoordinator.feedbackTransport`).
+The sheet asks what was wrong (chips: wrong answer, not what I asked, my request was not done,
+something else), takes optional words and shows exactly what goes: the question and Ten's words
+(`reportExchange`); the cards go only as their kinds, their figures, labels and drafts stay on the
+phone. Sent as feedback (`source` `reply`, `reason`, `exchange`, §8 Feedback), kept a year and
+shown in Telegram with the prompt version; the button then reads "Sent to the developer". The
+point: failed answers to turn into eval cases. Pinned by `AgentReplyReportTests`.
+
 ## 8. Server and protocol (`server/assistant/`)
 
 A Cloudflare Worker (Workers Paid). It hides the Anthropic key, checks Pro through RevenueCat,
@@ -538,9 +549,11 @@ The app runs the agent loop, because the tools run on the phone: one server call
 
 What a person wrote to Ten about the app (`src/feedback.ts`, the app's `AgentFeedbackTransport`).
 The one place where the server keeps words, because they are written to be read. Body:
-`{"protocol": 1, "text", "mood"?: "good"|"bad", "source"?: "notice"|"survey"|"settings"|"chat"|"trial",
+`{"protocol": 1, "text", "mood"?: "good"|"bad", "source"?: "notice"|"survey"|"settings"|"chat"|"trial"|"reply",
 "resolved"?: bool (a follow-up after Ten's help: the same text, and whether it helped; Telegram
-shows "Ten helped" or "Ten did not help"), "app", "os", "locale", "user"?}`, signed by App Attest like a turn. No model is called, so neither
+shows "Ten helped" or "Ten did not help"), "reason"?: "wrong"|"misunderstood"|"not_done"|"other"
+and "exchange"?: {"question", "answer", "cards"} ("Не то" under an answer, §7: up to 2 000 and
+4 000 characters and 20 card kinds, kept with the prompt version), "app", "os", "locale", "user"?}`, signed by App Attest like a turn. No model is called, so neither
 `ASSISTANT_ENABLED` nor `BLOCKED_COUNTRIES` applies, and the App Attest routes are open the same
 way (an install in Russia registers its key to send feedback; its turns still answer 451).
 Limits: 16 KB, a text of 2 000 characters, 5 messages a day per App Attest key (429 `quota`).

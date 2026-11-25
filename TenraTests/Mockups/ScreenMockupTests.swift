@@ -270,6 +270,45 @@ struct ScreenMockupTests {
         }
     }
 
+    // MARK: - "Не то" under an answer (AgentReplyReport, docs/domains/assistant.md §7)
+
+    /// An answer of Ten's with "Не то" under it.
+    @Test func replyReportButton() async throws {
+        let model = AssistantViewModel(
+            conversation: AgentConversation(
+                transport: ScriptedTransport([[AgentScript.done([AgentScript.render("toolu_1", source: "r1")])]]),
+                toolkit: FakeToolkit()
+            ),
+            context: { "" }
+        )
+        await model.send("Сколько у меня денег?")
+        let coordinator = AppCoordinator()
+        try await render("reply-report-button") {
+            NavigationStack {
+                AssistantChatView(model: model, wardrobe: coordinator.tenWardrobe, reportTransport: AcceptingFeedback())
+            }
+            .environment(coordinator)
+            .environment(PremiumManager.shared)
+        }
+    }
+
+    /// The sheet: what was wrong, a few words, and what the developer gets.
+    @Test func replyReportSheet() async throws {
+        let reply = AgentReply(
+            blocks: [
+                .text("Траты на **кафе выросли** на треть по сравнению с сентябрём."),
+                .metric(label: "Кафе, октябрь", source: "r1", path: "total", trendPath: nil),
+                .text("Можно поставить лимит на ноябрь."),
+            ],
+            mood: .concerned,
+            suggestions: []
+        )
+        let exchange = AgentReplyReport.exchange(question: "Почему я так много трачу на кафе?", reply: reply)
+        try await render("reply-report-sheet") {
+            AssistantReplyReportSheet(exchange: exchange, transport: AcceptingFeedback()) {}
+        }
+    }
+
     /// "Write" opens Ten's chat: Ten asks, the two answers sit over the field.
     @Test func feedbackChatAsks() async throws {
         let model = await feedbackChat { _ in }

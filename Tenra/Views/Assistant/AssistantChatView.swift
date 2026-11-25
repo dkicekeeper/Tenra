@@ -35,12 +35,17 @@ struct AssistantChatView: View {
     let model: AssistantViewModel
     /// What Ten wears; a celebrated reply puts the crown on.
     let wardrobe: TenWardrobeStore
+    /// Where "Не то" sends a report (AgentReplyReport); nil hides the button (no server, no App
+    /// Attest, the screenshot demo).
+    var reportTransport: AgentFeedbackTransport? = nil
 
     @Environment(PremiumManager.self) private var premium
     /// Optional so a preview without the tab bar's owner does not trap.
     @Environment(TabBarVisibility.self) private var tabBarVisibility: TabBarVisibility?
     @State private var draft = ""
     @State private var showingVoice = false
+    /// The answer whose "Не то" sheet is open.
+    @State private var reporting: ReportedReply?
     @State private var attachmentSource: AssistantAttachmentSource?
     @State private var readingAttachment = false
     /// How far a statement being read has got (0...1), for Ten's light.
@@ -90,6 +95,13 @@ struct AssistantChatView: View {
             }
             .sheet(isPresented: $showingVoice) {
                 AssistantVoiceSheet { send($0, spoken: true) }
+            }
+            .sheet(item: $reporting) { target in
+                if let transport = reportTransport {
+                    AssistantReplyReportSheet(exchange: target.exchange, transport: transport) {
+                        model.markReported(target.id)
+                    }
+                }
             }
             .assistantConsent(
                 isPresented: $showingConsent,
@@ -301,8 +313,38 @@ struct AssistantChatView: View {
             .transition(openedWith.contains(entry.id) ? .identity : AnyTransition(MessageBubbleTransition(.outgoing)))
         case .reply(let reply, let results):
             AssistantReplyView(reply: reply, results: results, drafts: model.drafts)
+            reportButton(for: entry.id)
         case .attachment(let summary):
             AssistantAttachmentCard(model: model, entryId: entry.id, summary: summary)
+        }
+    }
+
+    /// "Не то" under the latest answer, and "Sent to the developer" under one reported.
+    @ViewBuilder
+    private func reportButton(for entryId: UUID) -> some View {
+        if reportTransport != nil {
+            if model.reportedReplies.contains(entryId) {
+                DSButton(
+                    String(localized: "assistant.report.done"),
+                    systemImage: "checkmark",
+                    appearance: .flat,
+                    role: .neutral,
+                    size: .small,
+                    isDisabled: true
+                ) {}
+            } else if model.reportableReply == entryId, let exchange = model.reportExchange(for: entryId) {
+                DSButton(
+                    String(localized: "assistant.report.button"),
+                    systemImage: "hand.thumbsdown",
+                    appearance: .flat,
+                    role: .neutral,
+                    size: .small
+                ) {
+                    HapticManager.light()
+                    reporting = ReportedReply(id: entryId, exchange: exchange)
+                }
+                .transition(.opacity)
+            }
         }
     }
 
@@ -398,4 +440,10 @@ struct AssistantChatView: View {
             break
         }
     }
+}
+
+/// An answer and what "Не то" would send about it, as a sheet's item.
+private struct ReportedReply: Identifiable {
+    let id: UUID
+    let exchange: AgentFeedbackMessage.Exchange
 }

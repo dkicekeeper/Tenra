@@ -94,6 +94,9 @@ final class AssistantViewModel {
 
         let id: UUID
         let content: Content
+        /// An answer the model wrote, not a line the phone wrote itself: only these can be
+        /// reported with "Не то".
+        var fromModel = false
 
         var question: String? {
             if case .question(let text) = content { return text }
@@ -109,6 +112,9 @@ final class AssistantViewModel {
     }
 
     private(set) var entries: [Entry] = []
+    /// Ten's answers the person reported with "Не то" in this chat (AgentReplyReport): their
+    /// button says it was sent.
+    private(set) var reportedReplies: Set<UUID> = []
     private(set) var phase: Phase = .idle
     /// The mood of the latest reply, for the mascot.
     private(set) var replyMood: AgentMood = .idle
@@ -323,6 +329,7 @@ final class AssistantViewModel {
         feedbackStep = nil
         feedbackTransport = nil
         feedbackSent = nil
+        reportedReplies = []
         feedbackHelpOffer = nil
         feedbackFollowUp = nil
         feedbackHelping = nil
@@ -363,7 +370,7 @@ final class AssistantViewModel {
                 let uses = message.content.compactMap(AgentToolUse.init(block:))
                 guard uses.count == 1, let use = uses.first, use.name == AgentProtocol.renderReplyTool,
                       let reply = try? use.input.decoded(as: AgentReply.self) else { continue }
-                entries.append(Entry(id: UUID(), content: .reply(reply, results: body.results)))
+                entries.append(Entry(id: UUID(), content: .reply(reply, results: body.results), fromModel: true))
             }
         }
         appendLocal(upTo: .max)
@@ -643,6 +650,28 @@ final class AssistantViewModel {
         } else {
             say(String(localized: "feedback.chat.notHelpedReply"), mood: .sad)
         }
+    }
+
+    // MARK: - "Не то"
+
+    /// The answer "Не то" stands under: the latest of Ten's, once nothing is coming. A talk
+    /// scripted on the phone (the feedback talk) has no answer of Ten's to report.
+    var reportableReply: UUID? {
+        guard !isBusy, feedbackStep == nil, let last = entries.last, last.fromModel else { return nil }
+        return last.id
+    }
+
+    /// What "Не то" under `entryId` would send: the question it answered and Ten's words.
+    func reportExchange(for entryId: UUID) -> AgentFeedbackMessage.Exchange? {
+        guard let index = entries.firstIndex(where: { $0.id == entryId }),
+              case .reply(let reply, _) = entries[index].content,
+              let question = entries[..<index].last(where: { $0.question != nil })?.question
+        else { return nil }
+        return AgentReplyReport.exchange(question: question, reply: reply)
+    }
+
+    func markReported(_ entryId: UUID) {
+        reportedReplies.insert(entryId)
     }
 
     // MARK: - Ten writes first
@@ -928,7 +957,7 @@ final class AssistantViewModel {
                 refreshAllowance()
             }
             access.region.markServed()
-            entries.append(Entry(id: UUID(), content: .reply(outcome.reply, results: outcome.results)))
+            entries.append(Entry(id: UUID(), content: .reply(outcome.reply, results: outcome.results), fromModel: true))
             replyMood = outcome.reply.mood
             failedEntryId = nil
             phase = .idle

@@ -147,7 +147,7 @@ struct AssistantView: View {
             }
             .navigationDestination(for: AssistantPage.self) { page in
                 switch page {
-                case .chat: AssistantChatView(model: model, wardrobe: coordinator.tenWardrobe)
+                case .chat: AssistantChatView(model: model, wardrobe: coordinator.tenWardrobe, reportTransport: coordinator.feedbackTransport)
                 case .wardrobe: AssistantWardrobeView()
                 case .chats: chatsPage
                 }

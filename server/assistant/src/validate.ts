@@ -24,6 +24,8 @@ export interface TurnRequest {
   /** The RevenueCat app user id inside the signed body (apps from 1.6 on); the header alone is
    *  only a claim anyone could copy. */
   user?: string;
+  /** false: the person turned off the anonymous statistics, so this turn is not counted. */
+  stats?: boolean;
 }
 
 export class ValidationError extends Error {
@@ -106,7 +108,10 @@ export function parseTurnRequest(raw: string): TurnRequest {
   const user = body.user;
   if (user !== undefined && (typeof user !== "string" || !isValidUserId(user))) throw new ValidationError("user");
 
-  return { protocol: PROTOCOL_VERSION, messages: messages as Anthropic.Beta.BetaMessageParam[], user };
+  const stats = body.stats;
+  if (stats !== undefined && typeof stats !== "boolean") throw new ValidationError("stats");
+
+  return { protocol: PROTOCOL_VERSION, messages: messages as Anthropic.Beta.BetaMessageParam[], user, ...(stats === undefined ? {} : { stats }) };
 }
 
 // RevenueCat app user ids: `$RCAnonymousID:<hex>` or an id the app sets.

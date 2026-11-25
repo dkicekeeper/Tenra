@@ -5,7 +5,8 @@ import { readConfig, type Config, type Env } from "./config";
 import { resolveTier, UpstreamError } from "./entitlement";
 import { allowFeedback, notifyOwner, parseFeedbackRequest, storeFeedback, type FeedbackRecord } from "./feedback";
 import { PROMPT_VERSION } from "./prompt";
-import { draftStats, turnStat, writeDrafts, writeTurn } from "./stats";
+import { parseEventsBatch, writeEvents, EVENT_LIMITS } from "./events";
+import { draftStats, turnCounted, turnStat, writeDrafts, writeTurn } from "./stats";
 import { RENDER_REPLY } from "./tools";
 import { consumeCall, consumeValuation, refund, type Tier } from "./quota";
 import { isValidUserId, parseTurnRequest, PROTOCOL_VERSION, ValidationError } from "./validate";
@@ -28,6 +29,10 @@ import { parseValuationRequest, valuate, VALUATION_PROMPT_VERSION, valuationConf
 // POST /v1/feedback — what a person wrote to Ten about the app, kept for the owner
 // (src/feedback.ts). No model call, so neither the off switch nor the country gate applies; the
 // App Attest routes are open the same way, since an install must register its key to send it.
+//
+// POST /v1/events — the app's milestones and counters (src/events.ts, plan-sales §4): no App
+// Attest (it would give every install a lasting key), no identifier, no model call; every value
+// on a fixed list, a rate limit by address that keeps no address. Off until APP_EVENTS is on.
 //
 // Every turn must come from the real app: it carries an App Attest assertion over its body
 // (x-tenra-key, x-tenra-assertion). The user id counts only inside that signed body, so a
@@ -53,7 +58,7 @@ export default {
       const valuation = readConfig(env).valuationEnabled ? VALUATION_PROMPT_VERSION : null;
       return json({ ok: true, protocol: PROTOCOL_VERSION, prompt: PROMPT_VERSION, valuation });
     }
-    const routes = ["/v1/turn", "/v1/valuation", "/v1/feedback", "/v1/attest", "/v1/attest/challenge"];
+    const routes = ["/v1/turn", "/v1/valuation", "/v1/feedback", "/v1/events", "/v1/attest", "/v1/attest/challenge"];
     if (!routes.includes(url.pathname)) return fail(404, "not_found");
 
     const config = readConfig(env);
@@ -70,6 +75,11 @@ export default {
       if (request.method !== "POST") return fail(405, "method");
       return attest(request, env, config.appId);
     }
+    if (url.pathname === "/v1/events") {
+      if (request.method !== "POST") return fail(405, "method");
+      return events(request, env, config);
+    }
+
     if (url.pathname === "/v1/feedback") {
       if (request.method !== "POST") return fail(405, "method");
       return feedback(request, env, ctx, config, country);
@@ -146,7 +156,7 @@ export default {
           const mood = replyMood(message);
           if (mood) console.log(`turn mood ${mood}`);
           // What was asked and how it went, as labels and counts (stats.ts).
-          if (config.turnStats) {
+          if (turnCounted(config.turnStats, turn.stats)) {
             writeDrafts(env.TURNS, draftStats(turn.messages));
             const stat = mood ? turnStat(turn.messages, message, { mood, tier, userAgent: request.headers.get("user-agent") }) : null;
             if (stat) writeTurn(env.TURNS, stat);
@@ -218,6 +228,25 @@ async function identify(request: Request, env: Env, config: Config, bytes: Uint8
     }
   }
   return { tier, quotaId: tier === "free" ? `key:${keyId}` : userId };
+}
+
+async function events(request: Request, env: Env, config: Config): Promise<Response> {
+  if (!config.appEvents) return new Response(null, { status: 204 });
+  const address = request.headers.get("cf-connecting-ip") ?? "";
+  if (env.EVENTS_LIMIT && address) {
+    const { success } = await env.EVENTS_LIMIT.limit({ key: address });
+    if (!success) return fail(429, "rate_limited");
+  }
+  const raw = await request.text();
+  if (raw.length > EVENT_LIMITS.bodyBytes) return fail(400, "events");
+  let batch;
+  try {
+    batch = parseEventsBatch(JSON.parse(raw));
+  } catch {
+    return fail(400, "events");
+  }
+  writeEvents(env.EVENTS, batch);
+  return new Response(null, { status: 204 });
 }
 
 async function feedback(request: Request, env: Env, ctx: ExecutionContext, config: Config, country: string | undefined): Promise<Response> {

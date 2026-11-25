@@ -61,6 +61,11 @@ VALUATION_CALL_WEIGHT = "40"
 # label already lists Usage Data › Product Interaction for Analytics (docs/domains/assistant.md
 # §8 "Turn statistics").
 ASSISTANT_TURN_STATS = "on"
+# The app's milestones and counters, no identifier of the install, the person or the device
+# (POST /v1/events, src/events.ts, the EVENTS dataset below; docs/plan-sales.md §4). The privacy
+# policy describes them; the App Privacy label's Usage Data › Product Interaction for Analytics
+# covers them. "off" answers 204 and counts nothing.
+APP_EVENTS = "on"
 
 # The KV namespace `tenra-assistant-quota` (Cloudflare → Storage & databases → Workers KV).
 [[kv_namespaces]]
@@ -72,6 +77,19 @@ id = "c509b91968924c0b96deba4ebd1ea187"
 [[analytics_engine_datasets]]
 binding = "TURNS"
 dataset = "tenra_assistant_turns"
+
+# Workers Analytics Engine: one data point per event the app sends (src/events.ts). Read with
+# the SQL API (Actions → Assistant server → app-stats).
+[[analytics_engine_datasets]]
+binding = "EVENTS"
+dataset = "tenra_app_events"
+
+# At most 30 batches a minute from one address to POST /v1/events (the address is the key of the
+# limit, never stored).
+[[ratelimits]]
+name = "EVENTS_LIMIT"
+namespace_id = "1101"
+simple = { limit = 30, period = 60 }
 
 # Secrets (never in this file): `npx wrangler secret put ANTHROPIC_API_KEY`
 # and `npx wrangler secret put REVENUECAT_SECRET_KEY`. Optional: TELEGRAM_BOT_TOKEN and

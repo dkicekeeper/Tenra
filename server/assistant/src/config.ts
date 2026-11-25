@@ -24,6 +24,12 @@ export interface Env {
   ASSISTANT_TURN_STATS?: string;
   /** Workers Analytics Engine dataset for the turn counts (wrangler.toml). */
   TURNS?: AnalyticsEngineDataset;
+  /** "on": count the app's milestones and counters in EVENTS (events.ts, plan-sales §4). */
+  APP_EVENTS?: string;
+  /** Workers Analytics Engine dataset for the app's counts (wrangler.toml). */
+  EVENTS?: AnalyticsEngineDataset;
+  /** Workers Rate Limiting binding for POST /v1/events, keyed by the address (never stored). */
+  EVENTS_LIMIT?: { limit(options: { key: string }): Promise<{ success: boolean }> };
   /** Optional secrets: with both set, each feedback message also goes to the owner's Telegram chat. */
   TELEGRAM_BOT_TOKEN?: string;
   TELEGRAM_CHAT_ID?: string;
@@ -49,6 +55,8 @@ export interface Config {
   appId: string;
   /** Count each finished turn's topic and outcome, never its words (stats.ts). */
   turnStats: boolean;
+  /** Count the app's milestones and counters, no identifier (events.ts). */
+  appEvents: boolean;
   /** POST /v1/valuation: off until the app version that calls it ships (and its privacy note). */
   valuationEnabled: boolean;
   /** Its own model: an eval (eval/valuation.ts) chooses it, apart from the chat's. */
@@ -92,6 +100,7 @@ export function readConfig(env: Partial<Env>): Config {
     ),
     appId: env.APP_ID || "SY2L2VMQP7.dakacom.Tenra",
     turnStats: env.ASSISTANT_TURN_STATS === "on",
+    appEvents: env.APP_EVENTS === "on",
     valuationEnabled: env.VALUATION_ENABLED === "true",
     valuationModel: env.VALUATION_MODEL || "claude-haiku-5-5",
     valuationFallbackModel: env.VALUATION_FALLBACK_MODEL ?? "",

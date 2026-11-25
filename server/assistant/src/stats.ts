@@ -138,6 +138,9 @@ function draftTool(messages: Message[], draftId: string): string | undefined {
   return undefined;
 }
 
+/** Whether a turn is counted: the counts are on and the person did not turn the statistics off. */
+export const turnCounted = (enabled: boolean, stats: boolean | undefined): boolean => enabled && stats !== false;
+
 /** Writes a finished turn: one point, its topic as the index. */
 export function writeTurn(dataset: AnalyticsEngineDataset | undefined, stat: TurnStat): void {
   dataset?.writeDataPoint({

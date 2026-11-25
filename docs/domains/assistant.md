@@ -457,7 +457,7 @@ once every store has loaded), and
   after reading. A Share Extension would need an App Group, which the app does not have.
 
 **"Не то" under an answer** (`AgentReplyReport`, `AssistantReplyReportSheet`, the owner's
-decision 2026-11-25, 1.10): under the latest answer the model wrote (`Entry.fromModel`, never a
+decision 2026-11-25, 1.10; the server takes it since 2026-11-25): under the latest answer the model wrote (`Entry.fromModel`, never a
 line the phone wrote itself, not during the feedback talk, not while a turn runs;
 `AssistantViewModel.reportableReply`), where feedback can be sent (`AppCoordinator.feedbackTransport`).
 The sheet asks what was wrong (rows with a check: wrong answer, not what I asked, my request was

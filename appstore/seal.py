@@ -12,9 +12,11 @@ never leaves the session's scratchpad.
     python3 appstore/seal.py seal --to PUBLIC < report.txt   # in Actions: SEALED lines for the log
     python3 appstore/seal.py open --key DIR/seal-key.pem < job.log   # in the session: the report
 
-Sealing: a fresh AES-256-GCM key encrypts the text, RSA-OAEP (SHA-256) seals that key to the
-public key (RSA, 3072 bits or more). The sealed text is base64 JSON, printed as `SEALED <n>/<total>
-<chunk>` lines, so a log's timestamps and line breaks don't matter to `open`.
+Sealing: the text is compressed (zlib), a fresh AES-256-GCM key encrypts it, and RSA-OAEP
+(SHA-256) seals that key to the public key (RSA, 3072 bits or more). The sealed bytes (`TS2`, the
+sealed key, the nonce, the ciphertext) go out in base64 as `SEALED <n>/<total> <chunk>` lines, so a
+log's timestamps and line breaks don't matter to `open`. Compression keeps a long table to a few
+lines, which matters when a session copies the lines out of a log it cannot download.
 """
 
 import argparse
@@ -23,6 +25,7 @@ import json
 import os
 import re
 import sys
+import zlib
 
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import padding, rsa
@@ -48,16 +51,14 @@ def public_key(text: str) -> rsa.RSAPublicKey:
     return key
 
 
+MAGIC = b"TS2"
+
+
 def seal(text: bytes, key: rsa.RSAPublicKey) -> list[str]:
     aes = AESGCM.generate_key(bit_length=256)
     nonce = os.urandom(12)
-    box = {
-        "v": 1,
-        "key": base64.b64encode(key.encrypt(aes, OAEP)).decode(),
-        "nonce": base64.b64encode(nonce).decode(),
-        "data": base64.b64encode(AESGCM(aes).encrypt(nonce, text, None)).decode(),
-    }
-    blob = base64.b64encode(json.dumps(box).encode()).decode()
+    sealed = MAGIC + key.encrypt(aes, OAEP) + nonce + AESGCM(aes).encrypt(nonce, zlib.compress(text, 9), None)
+    blob = base64.b64encode(sealed).decode()
     chunks = [blob[i:i + CHUNK] for i in range(0, len(blob), CHUNK)]
     return [f"SEALED {n}/{len(chunks)} {chunk}" for n, chunk in enumerate(chunks, 1)]
 
@@ -71,12 +72,22 @@ def unseal(log: str, key) -> list[str]:
             parts, total = {}, of
         parts[n] = chunk
         if total and len(parts) == total:
-            box = json.loads(base64.b64decode("".join(parts[i] for i in range(1, total + 1))))
-            aes = key.decrypt(base64.b64decode(box["key"]), OAEP)
-            text = AESGCM(aes).decrypt(base64.b64decode(box["nonce"]), base64.b64decode(box["data"]), None)
-            reports.append(text.decode("utf-8", errors="replace"))
+            reports.append(open_blob(base64.b64decode("".join(parts[i] for i in range(1, total + 1))), key))
             parts, total = {}, None
     return reports
+
+
+def open_blob(raw: bytes, key) -> str:
+    if raw.startswith(MAGIC):
+        size = key.key_size // 8
+        sealed_key, nonce, data = raw[3:3 + size], raw[3 + size:15 + size], raw[15 + size:]
+        aes = key.decrypt(sealed_key, OAEP)
+        text = zlib.decompress(AESGCM(aes).decrypt(nonce, data, None))
+    else:  # the first form: base64 JSON, uncompressed
+        box = json.loads(raw)
+        aes = key.decrypt(base64.b64decode(box["key"]), OAEP)
+        text = AESGCM(aes).decrypt(base64.b64decode(box["nonce"]), base64.b64decode(box["data"]), None)
+    return text.decode("utf-8", errors="replace")
 
 
 def main(argv: list[str]) -> None:

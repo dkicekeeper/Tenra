@@ -40,7 +40,7 @@ class SealTests(unittest.TestCase):
         self.assertEqual(mode, 0o600)
 
     def test_round_trip_through_a_log_with_timestamps(self):
-        report = ("| Campaign | Spend |\n| KZ-Category | 41.20 USD |\n" + "строка " * 900).encode()
+        report = ("| Campaign | Spend |\n| KZ-Category | 41.20 USD |\nстрока " + os.urandom(3000).hex()).encode()
         lines = seal.seal(report, seal.public_key(self.public))
         self.assertGreater(len(lines), 1)
         log = "\n".join(f"2026-11-25T18:00:0{i % 10}.1234567Z {line}" for i, line in enumerate(lines))
@@ -49,7 +49,20 @@ class SealTests(unittest.TestCase):
     def test_the_log_holds_no_plain_text(self):
         lines = seal.seal(b"KZ-Category 41.20 USD", seal.public_key(self.public))
         self.assertNotIn("41.20", "\n".join(lines))
-        self.assertNotIn("41.20", base64.b64decode("".join(l.split()[2] for l in lines)).decode())
+        self.assertNotIn(b"41.20", base64.b64decode("".join(l.split()[2] for l in lines)))
+
+    def test_a_long_table_takes_few_lines(self):
+        table = "".join(f"| 2026-11-{d:02d} | download | Tenra | KZ | {d} |  |\n" for d in range(1, 31)) * 8
+        self.assertLessEqual(len(seal.seal(table.encode(), seal.public_key(self.public))), 3)
+
+    def test_the_first_form_still_opens(self):
+        aes = seal.AESGCM.generate_key(bit_length=256)
+        nonce = os.urandom(12)
+        box = {"v": 1, "key": base64.b64encode(self.private.public_key().encrypt(aes, seal.OAEP)).decode(),
+               "nonce": base64.b64encode(nonce).decode(),
+               "data": base64.b64encode(seal.AESGCM(aes).encrypt(nonce, b"old", None)).decode()}
+        blob = base64.b64encode(seal.json.dumps(box).encode()).decode()
+        self.assertEqual(seal.unseal(f"SEALED 1/1 {blob}", self.private), ["old"])
 
     def test_two_reports_in_one_log(self):
         key = seal.public_key(self.public)

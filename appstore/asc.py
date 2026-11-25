@@ -85,6 +85,13 @@
                                                     (shown when someone starts to cancel), its
                                                     texts and subscriptions; not submitted:
                                                     prepare-review adds it to the release
+    python3 appstore/asc.py app-events          the in-app events, their state, dates and locales
+    python3 appstore/asc.py push-app-event [--event NAME] [--apply] [--submit]
+                                                    the events of appstore/app-events.json (or the
+                                                    one whose reference name contains NAME): the
+                                                    event, its schedule, texts in every locale and
+                                                    the card and details art; without --apply only
+                                                    shows; --submit sends it for review
     python3 appstore/asc.py iap-prices [--product tenra.pro.lifetime] [--territory KAZ,USA]
                                                     a one-time purchase's base territory, manual
                                                     prices and what the storefronts charge
@@ -650,6 +657,7 @@ def submit_for_review(app: str, items: list[tuple[str, str]], lenient: set[str] 
     types = {"appStoreVersion": "appStoreVersions",
              "appCustomProductPageVersion": "appCustomProductPageVersions",
              "retentionMessageVersion": "retentionMessageVersions",
+             "appEvent": "appEvents",
              "appStoreVersionExperimentV2": "appStoreVersionExperiments",
              "appAssetLibraryImage": "appAssetLibraryImages"}
     added = 0
@@ -1491,6 +1499,191 @@ def push_retention_message(app: str, apply: bool) -> None:
           + ". Not submitted: prepare-review adds it to the release's submission.")
 
 
+# In-app events -----------------------------------------------------------------------------------
+
+EVENTS = Path(__file__).resolve().parent / "app-events.json"
+EVENT_NAME_MAX, EVENT_SHORT_MAX, EVENT_LONG_MAX, EVENT_REFERENCE_MAX = 30, 50, 120, 64
+EVENT_LONGEST = timedelta(days=31)     # an event runs 31 days at most
+EVENT_PROMOTED = timedelta(days=14)    # and is shown up to 14 days before it starts
+# Where metadata can still change; an event in review, approved or published is left alone.
+EVENT_EDITABLE = {"DRAFT", "READY_FOR_REVIEW", "REJECTED", "DEVELOPER_REJECTED"}
+# The art: placement type, aspect ratio (width / height), smallest and largest size.
+EVENT_ART = {
+    "card": ("EVENT_CARD_ASSET", 16 / 9, (1920, 1080), (3840, 2160)),
+    "details": ("EVENT_DETAILS_PAGE_ASSET", 9 / 16, (1080, 1920), (2160, 3840)),
+}
+
+
+def event_time(stamp: str) -> datetime:
+    return datetime.fromisoformat(stamp.replace("Z", "+00:00"))
+
+
+def png_has_alpha(path: Path) -> bool:
+    """A PNG's colour type (IHDR byte 25): 4 and 6 carry an alpha channel, which Apple refuses."""
+    return path.read_bytes()[25] in (4, 6)
+
+
+def app_events_config(path: Path = EVENTS) -> list[dict]:
+    """appstore/app-events.json, checked before anything is written: Apple's lengths (name 30,
+    short description 50, long description 120, reference name 64), no em dash (user rule), the
+    schedule (31 days at most, shown at most 14 days before the start) and the art (16:9 card,
+    9:16 details page, sizes, PNG without alpha)."""
+    events = json.loads(path.read_text(encoding="utf-8"))["events"]
+    problems = []
+    for event in events:
+        name = event["referenceName"]
+        if len(name) > EVENT_REFERENCE_MAX:
+            problems.append(f"{name}: reference name over {EVENT_REFERENCE_MAX} characters")
+        if event.get("primaryLocale") not in event["localizations"]:
+            problems.append(f"{name}: primaryLocale {event.get('primaryLocale')!r} has no texts")
+        for locale, text in event["localizations"].items():
+            for field, limit in (("name", EVENT_NAME_MAX), ("shortDescription", EVENT_SHORT_MAX),
+                                 ("longDescription", EVENT_LONG_MAX)):
+                value = text.get(field, "")
+                if not value:
+                    problems.append(f"{name} {locale}: {field} is empty")
+                elif len(value) > limit:
+                    problems.append(f"{name} {locale}: {field} is {len(value)} characters, Apple takes {limit}")
+                if "\u2014" in value:
+                    problems.append(f"{name} {locale}: {field} has an em dash")
+        schedule = event["schedule"]
+        publish, start, end = (event_time(schedule[key]) for key in ("publishStart", "eventStart", "eventEnd"))
+        if not publish <= start < end:
+            problems.append(f"{name}: the dates must run publishStart <= eventStart < eventEnd")
+        if end - start > EVENT_LONGEST:
+            problems.append(f"{name}: runs {(end - start).days} days, Apple allows {EVENT_LONGEST.days}")
+        if start - publish > EVENT_PROMOTED:
+            problems.append(f"{name}: shown {(start - publish).days} days early, Apple allows {EVENT_PROMOTED.days}")
+        for kind, file in (event.get("art") or {}).items():
+            if kind not in EVENT_ART:
+                problems.append(f"{name}: unknown art {kind!r} (card or details)")
+                continue
+            _, ratio, smallest, largest = EVENT_ART[kind]
+            full = ROOT / file
+            size = png_size(full) if full.exists() else None
+            if not size:
+                problems.append(f"{name}: {file} is missing or not a PNG")
+                continue
+            w, h = size
+            if abs(w / h - ratio) > 0.01 or not (smallest[0] <= w <= largest[0] and smallest[1] <= h <= largest[1]):
+                problems.append(f"{name}: {file} is {w}x{h}, the {kind} takes {smallest[0]}x{smallest[1]} "
+                                f"to {largest[0]}x{largest[1]}")
+            if png_has_alpha(full):
+                problems.append(f"{name}: {file} has an alpha channel, Apple refuses it")
+    if problems:
+        sys.exit("appstore/app-events.json:\n  " + "\n  ".join(problems))
+    return events
+
+
+def available_territories(app: str) -> list[str]:
+    """The storefronts the app is sold in (the EU stays out until the DSA status is verified)."""
+    holder = get(f"/v1/apps/{app}/appAvailabilityV2")["data"]
+    items, _ = get_all(f"/v2/appAvailabilities/{holder['id']}/territoryAvailabilities",
+                       {"limit": 200, "include": "territory"})
+    found = []
+    for item in items:
+        if item["attributes"].get("available"):
+            found.append(((item.get("relationships", {}).get("territory", {}) or {}).get("data") or {}).get("id"))
+    return sorted(t for t in found if t)
+
+
+def app_events(app: str) -> None:
+    """The app's in-app events: state, dates of the first schedule and locales. Read only."""
+    events, _ = get_all(f"/v1/apps/{app}/appEvents", {"limit": 50})
+    rows = []
+    for event in events:
+        attributes = event["attributes"]
+        schedule = (attributes.get("territorySchedules") or [{}])[0]
+        locales, _ = get_all(f"/v1/appEvents/{event['id']}/localizations", {"limit": 50})
+        rows.append([attributes.get("referenceName"), attributes.get("eventState"), attributes.get("badge"),
+                     (schedule.get("publishStart") or "")[:16], (schedule.get("eventStart") or "")[:16],
+                     (schedule.get("eventEnd") or "")[:16], len(schedule.get("territories") or []), len(locales)])
+    table("In-app events", ["Reference name", "State", "Badge", "Shown from", "Starts", "Ends", "Storefronts",
+                            "Locales"], rows)
+
+
+def push_app_event(app: str, only: str | None, apply: bool, submit: bool) -> None:
+    """The in-app events of appstore/app-events.json: each event (by reference name), its schedule,
+    texts in every locale of the file and its card and details art, placed from the asset library
+    on every localization. Without `apply` it only shows what it would write. An event in review,
+    approved or published is left alone. `submit` sends a written event for review (only when the
+    founder said so)."""
+    events = [e for e in app_events_config() if not only or only.lower() in e["referenceName"].lower()]
+    if not events:
+        sys.exit(f"No event in appstore/app-events.json matches {only!r}.")
+    existing, _ = get_all(f"/v1/apps/{app}/appEvents", {"limit": 50})
+    by_name = {e["attributes"].get("referenceName"): e for e in existing}
+    library, images = None, None
+    for event in events:
+        name = event["referenceName"]
+        schedule = dict(event["schedule"])
+        table(f"In-app event {name!r} ({event['badge']}, {schedule['eventStart'][:10]} to {schedule['eventEnd'][:10]}, "
+              f"shown from {schedule['publishStart'][:10]})",
+              ["Locale", "Name", "Short description", "Long (characters)"],
+              [[locale, text["name"], text["shortDescription"], len(text["longDescription"])]
+               for locale, text in event["localizations"].items()])
+        current = by_name.get(name)
+        state = current["attributes"].get("eventState") if current else None
+        if current and state not in EVENT_EDITABLE:
+            print(f"{name!r} is {state}: left alone.")
+            continue
+        if not apply:
+            print(f"Dry run: {'updates' if current else 'creates'} {name!r} with {len(event['localizations'])} "
+                  f"locale(s) and art {', '.join(event.get('art') or {}) or 'none'}. Add --apply to write it.")
+            continue
+        territories = schedule.pop("territories", "available")
+        if territories == "available":
+            territories = available_territories(app)
+        attributes = {key: event[key] for key in ("referenceName", "badge", "purpose", "priority", "primaryLocale",
+                                                  "purchaseRequirement", "deepLink") if event.get(key)}
+        attributes["territorySchedules"] = [{**schedule, "territories": territories}]
+        if current:
+            send("PATCH", f"/v1/appEvents/{current['id']}", {"data": {
+                "type": "appEvents", "id": current["id"], "attributes": attributes}})
+            event_id = current["id"]
+        else:
+            event_id = send("POST", "/v1/appEvents", {"data": {
+                "type": "appEvents", "attributes": attributes,
+                "relationships": {"app": {"data": {"type": "apps", "id": app}}},
+            }})["data"]["id"]
+            print(f"Created {name!r} ({event_id}).", flush=True)
+
+        written, placed = 0, []
+        locales, _ = get_all(f"/v1/appEvents/{event_id}/localizations", {"limit": 50})
+        by_locale = {item["attributes"].get("locale"): item for item in locales}
+        for locale, text in event["localizations"].items():
+            fields = {key: text[key] for key in ("name", "shortDescription", "longDescription")}
+            item = by_locale.get(locale)
+            if item and all(item["attributes"].get(key) == value for key, value in fields.items()):
+                localization_id = item["id"]
+            elif item:
+                send("PATCH", f"/v1/appEventLocalizations/{item['id']}", {"data": {
+                    "type": "appEventLocalizations", "id": item["id"], "attributes": fields}})
+                localization_id = item["id"]
+                written += 1
+            else:
+                localization_id = send("POST", "/v1/appEventLocalizations", {"data": {
+                    "type": "appEventLocalizations", "attributes": {"locale": locale, **fields},
+                    "relationships": {"appEvent": {"data": {"type": "appEvents", "id": event_id}}},
+                }})["data"]["id"]
+                written += 1
+            for kind, file in (event.get("art") or {}).items():
+                if library is None:
+                    library = get(f"/v1/apps/{app}/assetLibrary")["data"]["id"]
+                    found, _ = get_all(f"/v1/appAssetLibraries/{library}/images", {"limit": 200})
+                    images = {i["attributes"].get("referenceName"): i for i in found}
+                image_id = library_image(library, images, ROOT / file)
+                result = place("appEventLocalization", localization_id, EVENT_ART[kind][0], image_id)
+                if result != "unchanged":
+                    placed.append(f"{locale} {kind}")
+        extra = sorted(set(by_locale) - set(event["localizations"]))
+        state = get(f"/v1/appEvents/{event_id}")["data"]["attributes"].get("eventState")
+        print(f"{name!r}: {state}, {written} locale(s) written, art placed on {len(placed)}"
+              + (f", also in App Store Connect: {', '.join(extra)}" if extra else ""), flush=True)
+        if submit:
+            submit_for_review(app, [("appEvent", event_id)])
+
+
 # Review notes and the draft submission ------------------------------------------------------------
 
 def review_notes_text(path: Path = NOTES) -> str:
@@ -2245,6 +2438,10 @@ def main(argv: list[str]) -> None:
         retention_messages(app)
     elif command == "push-retention-message":
         push_retention_message(app, "--apply" in args)
+    elif command == "app-events":
+        app_events(app)
+    elif command == "push-app-event":
+        push_app_event(app, option("--event"), "--apply" in args, "--submit" in args)
     elif command == "iap-prices":
         iap_prices(app, option("--product", "tenra.pro.lifetime"), option("--territory", "KAZ,USA").split(","))
     elif command == "review-notes":

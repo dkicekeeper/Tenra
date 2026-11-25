@@ -154,7 +154,9 @@ noise.
 - **Saving.** `ImportCommitPlanner` (pure) turns row decisions into add / add-as-transfer / convert
   operations; `ImportCommitter` runs them, batch-writes subcategory links and calls
   `ImportBalanceCompensation.apply(saved:convertedLegs:)`, which covers a transfer's target
-  account too and, for a conversion, only the statement account's new leg.
+  account too and, for a conversion, only the statement account's new leg. The review then
+  closes, and VoiceOver hears "Import complete, N operations" (DesignKit's
+  `AccessibilityAnnouncer`, `ImportTransactionPreviewView.importedAnnouncement`).
 - **Guards against wrong matches.** A saved row with a real category is a transfer counterpart only
   when its description reads like a money movement (a salary under "Зарплата" never becomes half of
   a transfer). Loan payments recorded through the loans screen (`accountId` = the paying account)

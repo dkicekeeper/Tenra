@@ -29,7 +29,6 @@ struct EditTransactionFormData {
     // UI-only state
     var showingSubcategorySearch: Bool = false
     var showingSubcategoryReorder: Bool = false
-    var subcategorySearchText: String = ""
     var showingRecurringDisableDialog: Bool = false
 }
 
@@ -384,6 +383,8 @@ final class TransactionEditCoordinator {
             }
 
             HapticManager.success()
+            // The sheet closes: VoiceOver hears that it was saved (DesignKit's AccessibilityAnnouncer).
+            AccessibilityAnnouncer.announce(String(localized: "common.saved"))
             if let proposal = await makeBulkCategoryProposal(saved: updatedTransaction) {
                 pendingSuccess = onSuccess
                 bulkCategoryProposal = proposal

@@ -787,9 +787,20 @@ struct ImportTransactionPreviewView: View {
             )
             RatingPromptService.shared.recordTransactionAdded(count: saved)
             // A statement came in: the reminder to import the next one starts over.
-            if saved > 0 { StatementImportReminder.recordImport() }
+            if saved > 0 {
+                StatementImportReminder.recordImport()
+                // The sheet closes with nothing on screen to say so: VoiceOver hears the count
+                // (DesignKit's AccessibilityAnnouncer).
+                AccessibilityAnnouncer.announce(Self.importedAnnouncement(saved))
+            }
             dismiss()
         }
+    }
+
+    /// "Import complete, 120 operations": the import result's title and History's plural count.
+    static func importedAnnouncement(_ count: Int) -> String {
+        let total = String(format: NSLocalizedString("history.count", comment: "Transaction count"), count)
+        return String(localized: "csvImport.result.title") + ", " + total
     }
 }
 

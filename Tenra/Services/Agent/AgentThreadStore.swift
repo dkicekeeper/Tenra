@@ -26,18 +26,23 @@ nonisolated struct AgentThreadSnapshot: Equatable, Sendable {
         /// Ten forgot a fact this thread mentions (AgentMemory.onForget): it can be read on the
         /// phone, and goes no further to the model; a question from it starts a new thread.
         var sealed: Bool
+        /// When each of `messages` was added, in step with them (AgentConversation.dates): the
+        /// chat's day lines. Empty for a thread kept before the dates were.
+        var dates: [Date?]
 
-        init(messages: [AgentWireMessage], results: [String: JSONValue], owedResults: [JSONValue], local: [LocalExchange] = [], sealed: Bool = false) {
+        init(messages: [AgentWireMessage], results: [String: JSONValue], owedResults: [JSONValue], local: [LocalExchange] = [], sealed: Bool = false, dates: [Date?] = []) {
             self.messages = messages
             self.results = results
             self.owedResults = owedResults
             self.local = local
             self.sealed = sealed
+            self.dates = dates
         }
 
-        private enum CodingKeys: String, CodingKey { case messages, results, owedResults, local, sealed }
+        private enum CodingKeys: String, CodingKey { case messages, results, owedResults, local, sealed, dates }
 
-        /// A thread kept before the phone answered by itself has no `local`.
+        /// A thread kept before the phone answered by itself has no `local`, one kept before the
+        /// day lines no `dates`.
         init(from decoder: Decoder) throws {
             let c = try decoder.container(keyedBy: CodingKeys.self)
             messages = try c.decode([AgentWireMessage].self, forKey: .messages)
@@ -45,6 +50,14 @@ nonisolated struct AgentThreadSnapshot: Equatable, Sendable {
             owedResults = try c.decode([JSONValue].self, forKey: .owedResults)
             local = try c.decodeIfPresent([LocalExchange].self, forKey: .local) ?? []
             sealed = try c.decodeIfPresent(Bool.self, forKey: .sealed) ?? false
+            dates = try c.decodeIfPresent([Date?].self, forKey: .dates) ?? []
+        }
+
+        /// When the message at `index` was added; nil when the thread does not say (kept before
+        /// the dates were).
+        func date(at index: Int) -> Date? {
+            guard dates.count == messages.count, dates.indices.contains(index) else { return nil }
+            return dates[index]
         }
 
         /// Whether any of `texts` appears anywhere in the thread (the context's facts, the
@@ -52,7 +65,10 @@ nonisolated struct AgentThreadSnapshot: Equatable, Sendable {
         /// the thread is kept as, each text escaped the same way.
         func mentions(_ texts: [String]) -> Bool {
             let encoder = JSONEncoder()
-            guard let data = try? encoder.encode(self), let json = String(data: data, encoding: .utf8) else { return false }
+            // The words, not when they were said: a date's digits are no mention.
+            var words = self
+            words.dates = []
+            guard let data = try? encoder.encode(words), let json = String(data: data, encoding: .utf8) else { return false }
             return texts.contains { text in
                 guard !text.isEmpty, let quoted = try? encoder.encode(text),
                       let escaped = String(data: quoted, encoding: .utf8)?.dropFirst().dropLast(),
@@ -68,6 +84,8 @@ nonisolated struct AgentThreadSnapshot: Equatable, Sendable {
         var position: Int
         var question: String
         var draftId: String
+        /// When it was asked; nil for one kept before the chat's day lines.
+        var date: Date? = nil
     }
 
     var id: String

@@ -451,7 +451,6 @@
 "transactionForm.accountTopUp" = "Шотты толықтыру";
 "transactionForm.searchSubcategories" = "Ішкі санаттарды іздеу";
 "transactionForm.addSubcategory" = "Ішкі санат қосу";
-"transactionForm.createSubcategory" = "«%@» құру";
 // MARK: - Recurring Transactions Errors
 "recurring.error.seriesNotFound" = "Тұрақты төлем табылмады";
 "recurring.error.invalidFrequency" = "Жиілік дұрыс таңдалмады";
@@ -1809,7 +1808,6 @@
 "assistant.allowance.renews" = "Тегін жауаптар %@ күні жаңарады";
 "assistant.open.missing" = "Бұл Tenra-да енді жоқ";
 "assistant.draft.save" = "Сақтау";
-"assistant.draft.saved" = "Сақталды";
 "assistant.draft.send" = "Жіберу";
 "assistant.draft.feedbackSent" = "Әзірлеушіге жіберілді";
 "assistant.draft.reminderOn" = "Қосылады, %@";
@@ -1910,6 +1908,11 @@
 /* DesignKit 8.9.0: RelativeTime, Formatting.relativeTime */
 "time.justNow" = "Жаңа ғана";
 "time.dayAndTime" = "%1$@, %2$@";
+/* DesignKit 8.9.0: SearchablePicker (the subcategory picker) */
+"picker.create" = "«%@» құру";
+"picker.noResults" = "Ештеңе табылмады";
+/* An outcome said to VoiceOver (AccessibilityAnnouncer) and a draft Ten made, once saved */
+"common.saved" = "Сақталды";
 
 /* AI assistant: consent before the first question goes to the cloud (App Review 5.1.2(i)) */
 "assistant.consent.title" = "Ассистент бұлт арқылы жұмыс істейді";

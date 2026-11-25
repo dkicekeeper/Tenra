@@ -451,7 +451,6 @@
 "transactionForm.accountTopUp" = "Ricarica conto";
 "transactionForm.searchSubcategories" = "Cerca sottocategorie";
 "transactionForm.addSubcategory" = "Aggiungi sottocategoria";
-"transactionForm.createSubcategory" = "Crea \"%@\"";
 // MARK: - Recurring Transactions Errors
 "recurring.error.seriesNotFound" = "Serie ricorrente non trovata";
 "recurring.error.invalidFrequency" = "Frequenza selezionata non valida";
@@ -1809,7 +1808,6 @@
 "assistant.allowance.renews" = "Nuove risposte gratuite dal %@";
 "assistant.open.missing" = "Questo non è più in Tenra";
 "assistant.draft.save" = "Salva";
-"assistant.draft.saved" = "Salvato";
 "assistant.draft.send" = "Invia";
 "assistant.draft.feedbackSent" = "Inviato allo sviluppatore";
 "assistant.draft.reminderOn" = "Attivo, alle %@";
@@ -1910,6 +1908,11 @@
 /* DesignKit 8.9.0: RelativeTime, Formatting.relativeTime */
 "time.justNow" = "Proprio ora";
 "time.dayAndTime" = "%1$@, %2$@";
+/* DesignKit 8.9.0: SearchablePicker (the subcategory picker) */
+"picker.create" = "Crea \"%@\"";
+"picker.noResults" = "Nessun risultato";
+/* An outcome said to VoiceOver (AccessibilityAnnouncer) and a draft Ten made, once saved */
+"common.saved" = "Salvato";
 
 /* AI assistant: consent before the first question goes to the cloud (App Review 5.1.2(i)) */
 "assistant.consent.title" = "L’assistente lavora nel cloud";

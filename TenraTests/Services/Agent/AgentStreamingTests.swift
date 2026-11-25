@@ -5,7 +5,8 @@
 //  The reply's text while it streams (AgentPartialReply): render_reply's unfinished input JSON
 //  is closed where it was cut and its text blocks read out; a cut that cannot be read yields
 //  nothing. The conversation reports each new state of the text, and the server's "reply"
-//  event decodes. Text blocks are Markdown, split into ArticleBody blocks (AgentReplyMarkdown).
+//  event decodes. Text blocks are Markdown, split into ArticleBody blocks by DesignKit's reader
+//  (`ArticleBody.Block.parse(markdown:)`): the shapes Ten's prompt asks for.
 //
 
 import Foundation
@@ -78,7 +79,7 @@ struct AgentStreamingTests {
         2) Выбрать кафе
         > Бюджет можно поменять в любой день.
         """
-        #expect(AgentReplyMarkdown.blocks(text) == [
+        #expect(ArticleBody.Block.parse(markdown: text) == [
             .heading("План на месяц", level: 3),
             .paragraph("Траты на **кафе** выросли.\nЭто заметно."),
             .bullets(["Готовить дома", "Поставить бюджет"]),
@@ -88,9 +89,9 @@ struct AgentStreamingTests {
     }
 
     @Test func plainTextStaysOneParagraph() {
-        #expect(AgentReplyMarkdown.blocks("Всё в порядке, бюджет не превышен.") == [.paragraph("Всё в порядке, бюджет не превышен.")])
-        #expect(AgentReplyMarkdown.blocks("**Важно**: проверь счёт") == [.paragraph("**Важно**: проверь счёт")])
-        #expect(AgentReplyMarkdown.blocks("#хэштег без пробела") == [.paragraph("#хэштег без пробела")])
-        #expect(AgentReplyMarkdown.blocks("") == [])
+        #expect(ArticleBody.Block.parse(markdown: "Всё в порядке, бюджет не превышен.") == [.paragraph("Всё в порядке, бюджет не превышен.")])
+        #expect(ArticleBody.Block.parse(markdown: "**Важно**: проверь счёт") == [.paragraph("**Важно**: проверь счёт")])
+        #expect(ArticleBody.Block.parse(markdown: "#хэштег без пробела") == [.paragraph("#хэштег без пробела")])
+        #expect(ArticleBody.Block.parse(markdown: "") == [])
     }
 }

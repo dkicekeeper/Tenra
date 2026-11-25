@@ -1614,7 +1614,7 @@ def push_app_event(app: str, only: str | None, apply: bool, submit: bool) -> Non
     existing, _ = get_all(f"/v1/apps/{app}/appEvents", {"limit": 50})
     by_name = {e["attributes"].get("referenceName"): e for e in existing}
     library, images = None, None
-    written_events = []
+    written_events, used_images = [], set()
     for event in events:
         name = event["referenceName"]
         schedule = dict(event["schedule"])
@@ -1674,6 +1674,7 @@ def push_app_event(app: str, only: str | None, apply: bool, submit: bool) -> Non
                     found, _ = get_all(f"/v1/appAssetLibraries/{library}/images", {"limit": 200})
                     images = {i["attributes"].get("referenceName"): i for i in found}
                 image_id = library_image(library, images, ROOT / file)
+                used_images.add(image_id)
                 result = place("appEventLocalization", localization_id, EVENT_ART[kind][0], image_id)
                 if result != "unchanged":
                     placed.append(f"{locale} {kind}")
@@ -1683,8 +1684,13 @@ def push_app_event(app: str, only: str | None, apply: bool, submit: bool) -> Non
               + (f", also in App Store Connect: {', '.join(extra)}" if extra else ""), flush=True)
         written_events.append(event_id)
     if submit and written_events:
-        # One submission for all of them: App Store Connect keeps one submission in review at a time.
-        submit_for_review(app, [("appEvent", event_id) for event_id in written_events])
+        # One submission for the events and their art that App Review has not taken yet (as
+        # push-creatives): App Store Connect keeps one submission in review at a time.
+        waiting = [("appAssetLibraryImage", image_id) for image_id in sorted(used_images)
+                   if get(f"/v1/appAssetLibraryImages/{image_id}")["data"]["attributes"].get("state")
+                   in ("COMPLETE", "PREPARE_FOR_SUBMISSION", "READY_FOR_REVIEW", "REJECTED")]
+        submit_for_review(app, waiting + [("appEvent", event_id) for event_id in written_events],
+                          lenient={"appAssetLibraryImage"})
 
 
 # Review notes and the draft submission ------------------------------------------------------------

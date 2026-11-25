@@ -77,7 +77,8 @@ struct YearReviewLink: View {
                     review: review,
                     categories: store.categories,
                     series: store.recurringSeries,
-                    accessory: coordinator.tenWardrobe.accessory()
+                    accessory: coordinator.tenWardrobe.accessory(),
+                    onPlan: YearReviewView.januaryPlan(coordinator)
                 )
             }
         }

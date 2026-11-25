@@ -1,7 +1,7 @@
 // Grades one assistant turn. Universal checks run on every case; each case adds its own.
 // Every check is mechanical: the numbers the user sees must resolve from tool results.
 
-import type { Mood } from "../src/tools";
+import { OUTCOMES, TOPICS, type Mood } from "../src/tools";
 import { ACCOUNTS, ASSETS, CATEGORIES, DEBTS, GOALS } from "./fixture";
 
 export interface ToolCall {
@@ -23,6 +23,10 @@ export interface Reply {
   blocks: Block[];
   mood: string;
   suggestions: string[];
+  /** The developer's labels (src/stats.ts): checked to be values of their lists. */
+  topic?: string;
+  outcome?: string;
+  language?: string;
 }
 
 export interface RunRecord {
@@ -93,7 +97,7 @@ const TYPED_SCALE = /(\d[\d\s\u00a0\u202f]*(?:[.,]\d+)?)\s?(тыс(?:яч[аи]?
 const YEAR = /^(?:19|20)\d{2}$/;
 // JS \b is ASCII-only even with /u: Cyrillic words are bounded with \p{L} lookarounds.
 // "ничего не записано" (the spending reminder comes on such days) is not a claim: no "не" before it.
-const SAVED_CLAIM = /(?<!\p{L})(?<!не )(сохранил[аи]?|записал[аи]?|добавил[аи]?|создал[аи]?|запомнил[аи]?|сохранено|записано|запомнено)(?!\p{L})|\bI(?:'ve| have)? (?:saved|recorded|added|logged|remembered)\b|\b(?:is|was|has been|have been) (?:saved|recorded|logged|remembered)\b/iu;
+const SAVED_CLAIM = /(?<!\p{L})(?<!не )(сохранил[аи]?|записал[аи]?|добавил[аи]?|создал[аи]?|запомнил[аи]?|сохранено|записано|запомнено)(?!\p{L})|\bI(?:'ve| have)? (?:saved|recorded|added|logged|remembered)\b|\b(?<!nothing )(?<!not )(?:is|was|has been|have been) (?:saved|recorded|logged|remembered)\b/iu;
 const PURPOSE_CLAUSE = /(?<!\p{L})чтобы(?!\p{L})[^.!?,\n]*/giu;
 
 // A reply that turns a money question away. A one-line "picking specific products needs a
@@ -194,6 +198,17 @@ export function universalChecks(record: RunRecord, locale: "ru" | "en", prompt =
     }
   }
   results.push({ name: "refs_resolve", pass: broken.length === 0, detail: broken.join("; ") || undefined });
+
+  // The turn's labels for the developer's counts: values of their lists, the reply's language.
+  if (record.reply) {
+    const { topic, outcome, language } = record.reply;
+    const problems = [
+      TOPICS.some((t) => t === topic) ? null : `topic ${String(topic)}`,
+      OUTCOMES.some((o) => o === outcome) ? null : `outcome ${String(outcome)}`,
+      language === locale ? null : `language ${String(language)}`,
+    ].filter(Boolean);
+    results.push({ name: "labels", pass: problems.length === 0, detail: problems.join("; ") || undefined });
+  }
 
   const text = textOf(record);
   const digits = (value: string) => value.replace(/\D/g, "");

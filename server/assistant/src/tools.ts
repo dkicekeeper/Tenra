@@ -685,6 +685,28 @@ export const RENDER_REPLY_TOO_EARLY =
 export const MOODS = ["idle", "happy", "concerned", "celebrate", "proud", "surprised", "love", "playful", "empty"] as const;
 export type Mood = (typeof MOODS)[number];
 
+/** What the user's latest message was about (render_reply.topic). */
+export const TOPICS = [
+  "record",
+  "spending",
+  "budgets",
+  "goals_debts",
+  "subscriptions",
+  "accounts",
+  "assets",
+  "planning",
+  "advice",
+  "app_help",
+  "tidy",
+  "feedback",
+  "other",
+] as const;
+export type Topic = (typeof TOPICS)[number];
+
+/** How the turn went (render_reply.outcome). */
+export const OUTCOMES = ["done", "partial", "unsupported", "clarify", "declined"] as const;
+export type Outcome = (typeof OUTCOMES)[number];
+
 // Not strict: the API compiles strict schemas into one grammar and refuses this block union
 // ("compiled grammar is too large"), failing every request. The app decodes each block on
 // its own and shows nothing for one it cannot read (AgentReply.swift); the eval's
@@ -753,6 +775,10 @@ const renderReply: Tool = {
     },
     mood: { type: "string", enum: [...MOODS] },
     suggestions: { type: "array", items: { type: "string" } },
+    // Labels for the developer's counts (stats.ts), never shown in the app.
+    topic: { type: "string", enum: [...TOPICS] },
+    outcome: { type: "string", enum: [...OUTCOMES] },
+    language: { type: "string", description: "ISO 639-1 code of the user's latest message, such as ru or en" },
   }),
 };
 

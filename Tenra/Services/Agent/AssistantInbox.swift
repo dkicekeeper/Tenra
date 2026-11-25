@@ -48,6 +48,10 @@ struct AssistantNotice: Codable, Equatable, Identifiable, Sendable {
         /// "Your year in review is ready" (YearReview, 15 December to 31 January): its action
         /// opens the review, not Ten.
         case yearReview
+        /// The plan for January (JanuaryPlan, 1 to 5 January): "Make a plan" has Ten draft
+        /// January's budgets, a goal for the year and the evening reminder. `subjectId` is the
+        /// year.
+        case januaryPlan
     }
 
     enum Mood: String, Codable, Sendable {
@@ -88,6 +92,7 @@ struct AssistantNotice: Codable, Equatable, Identifiable, Sendable {
         switch kind {
         case .debt: fields["debt_id"] = subjectId.map(JSONValue.string) ?? .null
         case .goal: fields["goal_id"] = subjectId.map(JSONValue.string) ?? .null
+        case .januaryPlan: fields["year"] = subjectId.map(JSONValue.string) ?? .null
         default: break
         }
         return "<notice>\n\(JSONValue.object(fields).jsonString())\n</notice>"
@@ -454,6 +459,24 @@ extension AssistantNotices {
         )
     }
 
+    /// The plan for January (docs/plan-release-1.9.md §4): once a year, in its first days
+    /// (JanuaryPlan.postingYear), for someone with enough expenses to plan from; the year
+    /// review's button uses the same message to start the chat. `subjectId` is the year.
+    static func januaryPlan(year: Int, now: Date) -> AssistantNotice {
+        let yearText = String(year)
+        return AssistantNotice(
+            id: "januaryPlan:\(yearText)",
+            kind: .januaryPlan,
+            title: String(localized: "januaryPlan.notice.title"),
+            body: String(localized: "januaryPlan.notice.text"),
+            mood: .happy,
+            question: String(localized: "januaryPlan.question"),
+            insightId: nil,
+            subjectId: yearText,
+            createdAt: now
+        )
+    }
+
     /// Held assets whose valuation is out of date (AssetValuationMath.isStale): once a half-year
     /// each, until a new valuation.
     static func staleAssets(
@@ -537,6 +560,9 @@ extension AssistantNotices {
         /// The year whose review shows now (YearReviewWindow); nil outside the window, when the
         /// review's message has had its time.
         var reviewYear: Int? = nil
+        /// The year whose January it is (JanuaryPlan.shownYear); nil outside January, when the
+        /// plan's message has had its time.
+        var planYear: Int? = nil
 
         func contains(_ notice: AssistantNotice) -> Bool {
             switch notice.kind {
@@ -555,6 +581,7 @@ extension AssistantNotices {
                 if FeedbackAsk.isTrialNotice(notice.id) { return true }
                 return feedbackRound.map { notice.id == FeedbackAsk.noticeID(round: $0) } ?? true
             case .yearReview: return reviewYear.map { notice.subjectId == String($0) } ?? false
+            case .januaryPlan: return planYear.map { notice.subjectId == String($0) } ?? false
             case .signal, .digest, .tidy: return true
             }
         }
@@ -621,6 +648,15 @@ final class AssistantInbox {
         if let horizon = calendar.date(byAdding: .day, value: -Self.rememberDays, to: now) {
             posted = posted.filter { $0.value >= horizon }
         }
+        save()
+    }
+
+    /// Remembers a key as posted without showing its message: what it offers was started
+    /// another way (the year review's "Plan for January" before the message's days), so it
+    /// does not come up again.
+    func markPosted(_ id: String, now: Date = Date()) {
+        guard posted[id] == nil else { return }
+        posted[id] = now
         save()
     }
 

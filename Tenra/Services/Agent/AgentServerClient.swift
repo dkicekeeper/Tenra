@@ -51,6 +51,26 @@ nonisolated struct AgentFeedbackMessage: Sendable, Equatable {
         case chat
         /// Ten's question after Tenra Pro's renewal was turned off during the free trial.
         case trial
+        /// "Не то" under one of Ten's answers, with that exchange (AgentReplyReport).
+        case reply
+    }
+
+    /// What was wrong with an answer, as the person picked it under "Не то".
+    enum ReplyReason: String, Sendable, CaseIterable, Identifiable {
+        case wrong
+        case misunderstood
+        case notDone = "not_done"
+        case other
+
+        var id: String { rawValue }
+    }
+
+    /// The answer "Не то" sends: the person's question and Ten's words, with only the kinds of
+    /// the cards beside them (their figures stay on the phone).
+    struct Exchange: Sendable, Equatable, Encodable {
+        var question: String
+        var answer: String
+        var cards: [String]
     }
 
     var text: String
@@ -58,6 +78,9 @@ nonisolated struct AgentFeedbackMessage: Sendable, Equatable {
     var source: Source
     /// Sent again after Ten tried to help with the complaint: whether the person says it helped.
     var resolved: Bool? = nil
+    /// With source `reply`.
+    var reason: ReplyReason? = nil
+    var exchange: Exchange? = nil
 }
 
 /// The body of `POST /v1/feedback`: the words, and the versions that tell the owner where a
@@ -68,6 +91,8 @@ nonisolated struct AgentFeedbackRequest: Sendable, Encodable {
     let mood: String?
     let source: String
     let resolved: Bool?
+    let reason: String?
+    let exchange: AgentFeedbackMessage.Exchange?
     let app: String
     let os: String
     let locale: String
@@ -202,6 +227,8 @@ nonisolated final class AgentServerClient: AgentTransport, AgentValuationTranspo
             mood: message.mood?.rawValue,
             source: message.source.rawValue,
             resolved: message.resolved,
+            reason: message.reason?.rawValue,
+            exchange: message.exchange,
             app: AgentFeedbackRequest.appVersion,
             os: AgentFeedbackRequest.systemVersion,
             locale: AgentFeedbackRequest.appLanguage,

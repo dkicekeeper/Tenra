@@ -12,7 +12,8 @@
 //
 //  YearReviewScreen loads the review for a year and shows it: what Analytics' card and Ten's
 //  message open. The last page shares a picture of the year (YearReviewShareCard), without
-//  amounts unless the person turns them on.
+//  amounts unless the person turns them on, and, where Ten is, opens the plan for January in
+//  Ten's chat (JanuaryPlan, docs/plan-release-1.9.md §4).
 //
 
 import SwiftUI
@@ -35,7 +36,8 @@ struct YearReviewScreen: View {
                     review: review,
                     categories: coordinator.transactionStore.categories,
                     series: coordinator.transactionStore.recurringSeries,
-                    accessory: coordinator.tenWardrobe.accessory()
+                    accessory: coordinator.tenWardrobe.accessory(),
+                    onPlan: YearReviewView.januaryPlan(coordinator)
                 )
             } else {
                 NavigationStack {
@@ -84,6 +86,9 @@ struct YearReviewView: View {
     let series: [RecurringSeries]
     /// What Ten wears today (TenWardrobeStore).
     let accessory: CreatureAccessory?
+    /// "Plan for January" on the last page: the review closes and Ten's chat opens with the
+    /// plan's question. nil hides the button (no Ten in this region).
+    let onPlan: (() -> Void)?
 
     @Environment(\.dismiss) private var dismiss
     /// The page in front: the paging scroll's position.
@@ -106,12 +111,14 @@ struct YearReviewView: View {
         categories: [CustomCategory] = [],
         series: [RecurringSeries] = [],
         accessory: CreatureAccessory? = nil,
+        onPlan: (() -> Void)? = nil,
         initialPage: Int = 0
     ) {
         self.review = review
         self.categories = categories
         self.series = series
         self.accessory = accessory
+        self.onPlan = onPlan
         let pages = YearReviewPage.pages(for: review)
         let start = pages.indices.contains(initialPage) ? initialPage : 0
         _current = State(initialValue: pages.isEmpty ? nil : pages[start])
@@ -192,16 +199,37 @@ struct YearReviewView: View {
         }
     }
 
+    /// The plan's button for a screen that has the coordinator: Ten's chat with the plan's
+    /// question (AppCoordinator.startJanuaryPlan); nil where Ten is not available.
+    static func januaryPlan(_ coordinator: AppCoordinator) -> (() -> Void)? {
+        guard AssistantAvailability.isAvailable else { return nil }
+        return { coordinator.startJanuaryPlan() }
+    }
+
     @ViewBuilder
     private func bottomButton(isLast: Bool, next: YearReviewPage?) -> some View {
         if isLast {
-            DSButton(
-                String(localized: "yearReview.share"),
-                systemImage: "square.and.arrow.up",
-                fullWidth: true
-            ) {
-                HapticManager.light()
-                sharing = true
+            VStack(spacing: AppSpacing.sm) {
+                if let onPlan {
+                    DSButton(
+                        String(localized: "januaryPlan.reviewButton"),
+                        systemImage: "calendar",
+                        appearance: .secondary,
+                        fullWidth: true
+                    ) {
+                        HapticManager.light()
+                        dismiss()
+                        onPlan()
+                    }
+                }
+                DSButton(
+                    String(localized: "yearReview.share"),
+                    systemImage: "square.and.arrow.up",
+                    fullWidth: true
+                ) {
+                    HapticManager.light()
+                    sharing = true
+                }
             }
         } else {
             DSButton(String(localized: "onboarding.cta.next"), fullWidth: true) {

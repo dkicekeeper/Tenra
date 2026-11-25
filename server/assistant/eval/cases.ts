@@ -1019,6 +1019,38 @@ export const CASES: EvalCase[] = [
     ],
   },
   {
+    // The plan for January (docs/plan-release-1.9.md §4). The fixture has goals and the evening
+    // reminder off: budgets and the reminder are drafted, no new goal, no amounts in the text.
+    id: "ru-january-plan",
+    locale: "ru",
+    prompt: "Составь мне план на январь",
+    checks: [
+      { kind: "called", anyOf: ["suggest_budgets"] },
+      { kind: "called", anyOf: ["draft_spending_reminder"] },
+      { kind: "block", type: "confirm" },
+      { kind: "notCalled", tools: ["draft_goal", "draft_transactions", "draft_category_change"] },
+    ],
+  },
+  {
+    // Ten's message on Home in the first days of January (AssistantNotices.januaryPlan).
+    id: "en-january-plan-notice",
+    locale: "en",
+    prompt: "Make me a plan for January",
+    notes: [
+      [
+        "<notice>",
+        JSON.stringify({ insight_id: null, kind: "januaryPlan", text: "A new month, a new year. Shall we look at what goes on the main things and set limits for January?", title: "Plan for January", year: "2027" }),
+        "</notice>",
+      ].join("\n"),
+    ],
+    checks: [
+      { kind: "called", anyOf: ["suggest_budgets"] },
+      { kind: "called", anyOf: ["draft_spending_reminder"] },
+      { kind: "block", type: "confirm" },
+      { kind: "notCalled", tools: ["draft_goal", "draft_transactions"] },
+    ],
+  },
+  {
     id: "ru-find-duplicates",
     locale: "ru",
     prompt: "Проверь, нет ли у меня записей, внесённых дважды",

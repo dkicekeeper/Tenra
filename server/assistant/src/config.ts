@@ -20,6 +20,10 @@ export interface Env {
   FREE_MONTHLY_VALUATIONS?: string;
   PRO_MONTHLY_VALUATIONS?: string;
   VALUATION_CALL_WEIGHT?: string;
+  /** "on": count each finished turn's topic and outcome in TURNS (stats.ts); off by default. */
+  ASSISTANT_TURN_STATS?: string;
+  /** Workers Analytics Engine dataset for the turn counts (wrangler.toml). */
+  TURNS?: AnalyticsEngineDataset;
   /** Optional secrets: with both set, each feedback message also goes to the owner's Telegram chat. */
   TELEGRAM_BOT_TOKEN?: string;
   TELEGRAM_CHAT_ID?: string;
@@ -43,6 +47,8 @@ export interface Config {
   blockedCountries: Set<string>;
   /** TEAMID.bundle-id, the app App Attest assertions must come from. */
   appId: string;
+  /** Count each finished turn's topic and outcome, never its words (stats.ts). */
+  turnStats: boolean;
   /** POST /v1/valuation: off until the app version that calls it ships (and its privacy note). */
   valuationEnabled: boolean;
   /** Its own model: an eval (eval/valuation.ts) chooses it, apart from the chat's. */
@@ -85,6 +91,7 @@ export function readConfig(env: Partial<Env>): Config {
         .filter(Boolean),
     ),
     appId: env.APP_ID || "SY2L2VMQP7.dakacom.Tenra",
+    turnStats: env.ASSISTANT_TURN_STATS === "on",
     valuationEnabled: env.VALUATION_ENABLED === "true",
     valuationModel: env.VALUATION_MODEL || "claude-haiku-5-5",
     valuationFallbackModel: env.VALUATION_FALLBACK_MODEL ?? "",

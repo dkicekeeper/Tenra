@@ -411,7 +411,31 @@ class AppCoordinator {
         if let review = yearReviewNotice(now: now) {
             candidates.append(review)
         }
+        if let plan = januaryPlanNotice(now: now) {
+            candidates.append(plan)
+        }
         return candidates
+    }
+
+    /// "The plan for January", once a year in its first days (JanuaryPlan) for someone with
+    /// enough expenses to plan from. Skipped once its key is posted (by the message itself or by
+    /// the year review's button).
+    private func januaryPlanNotice(now: Date) -> AssistantNotice? {
+        guard isFullyInitialized, let year = JanuaryPlan.postingYear(on: now) else { return nil }
+        let notice = AssistantNotices.januaryPlan(year: year, now: now)
+        guard !AssistantInbox.shared.hasPosted(notice.id),
+              JanuaryPlan.isEligible(year: year, transactions: transactionStore.transactions)
+        else { return nil }
+        return notice
+    }
+
+    /// The year review's "Plan for January": Ten's chat with the plan's question, as the message
+    /// on Home would open it. Its key counts as posted, so January's message does not offer the
+    /// plan again.
+    func startJanuaryPlan(now: Date = Date()) {
+        let notice = AssistantNotices.januaryPlan(year: JanuaryPlan.year(on: now), now: now)
+        AssistantInbox.shared.markPosted(notice.id, now: now)
+        goThrough(notice)
     }
 
     /// "Your year in review is ready", once a year in its window (YearReviewWindow) for someone
@@ -459,7 +483,8 @@ class AppCoordinator {
             staleAssets: Set(assetStore.staleAssets().map(\.id)),
             loansWithoutAsset: Set(AssistantNotices.loansWithoutAsset(transactionStore.accounts, assets: assetStore.assets, now: Date()).compactMap(\.subjectId)),
             feedbackRound: feedbackRound(now: Date()),
-            reviewYear: YearReviewWindow.year(on: Date())
+            reviewYear: YearReviewWindow.year(on: Date()),
+            planYear: JanuaryPlan.shownYear(on: Date())
         )
     }
 

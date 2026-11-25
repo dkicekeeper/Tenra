@@ -270,6 +270,45 @@ struct ScreenMockupTests {
         }
     }
 
+    // MARK: - "Не то" under an answer (AgentReplyReport, docs/domains/assistant.md §7)
+
+    /// An answer of Ten's with "Не то" under it.
+    @Test func replyReportButton() async throws {
+        let model = AssistantViewModel(
+            conversation: AgentConversation(
+                transport: ScriptedTransport([[AgentScript.done([AgentScript.render("toolu_1", source: "r1")])]]),
+                toolkit: FakeToolkit()
+            ),
+            context: { "" }
+        )
+        await model.send("Сколько у меня денег?")
+        let coordinator = AppCoordinator()
+        try await render("reply-report-button") {
+            NavigationStack {
+                AssistantChatView(model: model, wardrobe: coordinator.tenWardrobe, reportTransport: AcceptingFeedback())
+            }
+            .environment(coordinator)
+            .environment(PremiumManager.shared)
+        }
+    }
+
+    /// The sheet: what was wrong, a few words, and what the developer gets.
+    @Test func replyReportSheet() async throws {
+        let reply = AgentReply(
+            blocks: [
+                .text("Траты на **кафе выросли** на треть по сравнению с сентябрём."),
+                .metric(label: "Кафе, октябрь", source: "r1", path: "total", trendPath: nil),
+                .text("Можно поставить лимит на ноябрь."),
+            ],
+            mood: .concerned,
+            suggestions: []
+        )
+        let exchange = AgentReplyReport.exchange(question: "Почему я так много трачу на кафе?", reply: reply)
+        try await render("reply-report-sheet") {
+            AssistantReplyReportSheet(exchange: exchange, transport: AcceptingFeedback()) {}
+        }
+    }
+
     /// "Write" opens Ten's chat: Ten asks, the two answers sit over the field.
     @Test func feedbackChatAsks() async throws {
         let model = await feedbackChat { _ in }
@@ -368,8 +407,19 @@ struct ScreenMockupTests {
         let pages = YearReviewPage.pages(for: Self.demoReview)
         for (index, page) in pages.enumerated() {
             try await render("year-review-\(index + 1)-\(page.rawValue)") {
-                YearReviewView(review: Self.demoReview, categories: Self.demoCategories, series: Self.demoSeries, initialPage: index)
+                YearReviewView(review: Self.demoReview, categories: Self.demoCategories, series: Self.demoSeries, onPlan: {}, initialPage: index)
             }
+        }
+    }
+
+    /// Ten's message on Home in the first days of January: the plan for January.
+    @Test func januaryPlanNotice() async throws {
+        let notice = AssistantNotices.januaryPlan(year: 2027, now: Date())
+        try await render("january-plan-notice", height: 300) {
+            AssistantNoticeCard(notice: notice, onAsk: {}, onHide: {})
+                .screenPadding()
+                .frame(maxHeight: .infinity)
+                .background(AppColors.Background.base)
         }
     }
 

@@ -139,6 +139,9 @@ Left by the action audit of 2026-11-08 (the rules: [design-system.md](design-sys
 - **Minimum iOS stays 26** (2026-08-26): older iOS would add 15-18% installs at the cost of a
   second UI path.
 - **No behavioural analytics SDK** (2026-10-12): crashes and usage come from App Analytics,
-  Xcode Organizer, TestFlight and on-device Diagnostics; the App Privacy label lists only what Ten
-  sends (since 1.6), no analytics.
+  Xcode Organizer, TestFlight and on-device Diagnostics; the App Privacy label lists what Ten
+  sends (since 1.6). One exception, on Tenra's own server (2026-11-25): Ten's answers are counted
+  by labels, never words, to see what to improve ([domains/assistant.md](domains/assistant.md) §8
+  "Turn statistics", on since then; the label's Usage Data › Product Interaction for Analytics
+  covers them).
   Screen-level analytics (TelemetryDeck or Aptabase) only once traffic makes it meaningful.

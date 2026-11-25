@@ -378,6 +378,22 @@ shows from the next time Tenra comes to the front after the renewal was turned o
 on the whole screen (`YearReviewScreen`), no model and no action spent. It leaves with the window
 (`Subjects.reviewYear`). Pinned by `YearReviewTests`.
 
+**The plan for January** (`Kind.januaryPlan`, `AssistantNotices.januaryPlan`, `JanuaryPlan`,
+[plan-release-1.9.md](../plan-release-1.9.md) §4): once a year (key `januaryPlan:<year>`), posted
+on 1 to 5 January (`JanuaryPlan.postingYear`) for someone with 30 expenses or more in October to
+December (`JanuaryPlan.isEligible`, one light pass, skipped once the key is posted), kept through
+January (`Subjects.planYear`). Mood `happy`; its button is "Make a plan" and goes through it like
+any message (one free action): the question "Make me a plan for January" with a `<notice>` that
+carries the plan's year. The prompt's January plan rule (the same for the question in words, in
+any app version) has Ten draft in one reply at most three budgets from what is really spent
+(`suggest_budgets`, only with `budget_suggestions` in the reads line), a rainy-day goal for the
+year when there is no goal (three months of spending rounded up, by 31 December), and the evening
+reminder at 21:00 when the state line says it is off; the cards carry the amounts. The year
+review's last page offers the same as "Plan for January" (`AppCoordinator.startJanuaryPlan`,
+from December): the plan's year is the coming January (`JanuaryPlan.year`), and the key counts as
+posted (`AssistantInbox.markPosted`), so January's message does not offer it again. Pinned by
+`JanuaryPlanTests`; eval cases `ru-january-plan` and `en-january-plan-notice`.
+
 Auto-capture not set up (`Kind.setup`, `AssistantNotices.setupNudge`): once, after
 `setupAfterEntries` entries, for someone who hid Home's auto-capture card; its button is "Set
 up" and opens the Wallet guide instead of asking Ten (no action spent), and it leaves once an
@@ -447,6 +463,17 @@ once every store has loaded), and
   `LSSupportsOpeningDocumentsInPlace = NO`, `onOpenURL` → `AppCoordinator.pendingAttachment` → the
   assistant's tab (without the assistant, the import tab); the copy in `Documents/Inbox` is deleted
   after reading. A Share Extension would need an App Group, which the app does not have.
+
+**"Не то" under an answer** (`AgentReplyReport`, `AssistantReplyReportSheet`, the owner's
+decision 2026-11-25, 1.10; the server takes it since 2026-11-25): under the latest answer the model wrote (`Entry.fromModel`, never a
+line the phone wrote itself, not during the feedback talk, not while a turn runs;
+`AssistantViewModel.reportableReply`), where feedback can be sent (`AppCoordinator.feedbackTransport`).
+The sheet asks what was wrong (rows with a check: wrong answer, not what I asked, my request was
+not done, something else), takes optional words and shows exactly what goes: the question and Ten's words, their bold and
+lists drawn as in the chat (`reportExchange`); the cards go only as their kinds, their figures, labels and drafts stay on the
+phone. Sent as feedback (`source` `reply`, `reason`, `exchange`, §8 Feedback), kept a year and
+shown in Telegram with the prompt version; the button then reads "Sent to the developer". The
+point: failed answers to turn into eval cases. Pinned by `AgentReplyReportTests`.
 
 ## 8. Server and protocol (`server/assistant/`)
 
@@ -530,9 +557,11 @@ The app runs the agent loop, because the tools run on the phone: one server call
 
 What a person wrote to Ten about the app (`src/feedback.ts`, the app's `AgentFeedbackTransport`).
 The one place where the server keeps words, because they are written to be read. Body:
-`{"protocol": 1, "text", "mood"?: "good"|"bad", "source"?: "notice"|"survey"|"settings"|"chat"|"trial",
+`{"protocol": 1, "text", "mood"?: "good"|"bad", "source"?: "notice"|"survey"|"settings"|"chat"|"trial"|"reply",
 "resolved"?: bool (a follow-up after Ten's help: the same text, and whether it helped; Telegram
-shows "Ten helped" or "Ten did not help"), "app", "os", "locale", "user"?}`, signed by App Attest like a turn. No model is called, so neither
+shows "Ten helped" or "Ten did not help"), "reason"?: "wrong"|"misunderstood"|"not_done"|"other"
+and "exchange"?: {"question", "answer", "cards"} ("Не то" under an answer, §7: up to 2 000 and
+4 000 characters and 20 card kinds, kept with the prompt version), "app", "os", "locale", "user"?}`, signed by App Attest like a turn. No model is called, so neither
 `ASSISTANT_ENABLED` nor `BLOCKED_COUNTRIES` applies, and the App Attest routes are open the same
 way (an install in Russia registers its key to send feedback; its turns still answer 451).
 Limits: 16 KB, a text of 2 000 characters, 5 messages a day per App Attest key (429 `quota`).
@@ -545,6 +574,28 @@ write anything to the bot, then run Actions → Assistant server → `telegram-l
 the chat, sends it a test line and stores its id on the Worker. `feedback-check` says how many
 messages the server keeps and what Telegram answers to a test line. Reading without Telegram: `npx wrangler kv key list --binding QUOTA --prefix
 feedback:` and `kv key get`, never through Actions (its logs are public).
+
+### Turn statistics (`src/stats.ts`)
+
+What Ten is asked and how it goes, as counts, never as words (the owner's decision, 2026-11-25:
+"what people write and ask", without breaking "the server keeps no questions and no answers").
+`render_reply` carries three labels the app never shows: `topic` (record, spending, budgets,
+goals_debts, subscriptions, accounts, assets, planning, advice, app_help, tidy, feedback, other),
+`outcome` (done, partial, unsupported, clarify, declined) and `language` (ISO 639-1). On the
+call that finishes a turn, `turnStat` adds the tools the turn called (render_reply aside, from
+the thread after the question), its model calls, the reply's mood, the plan and the app's build
+from its User-Agent (no country: App Analytics has it, and the label needs no location), and `writeTurn` writes one point to the Workers
+Analytics Engine dataset `tenra_assistant_turns` (binding `TURNS`). With a new question,
+`draftStats` reads the app's `<draft_status>` lines (saved, undone, edited, made on the phone)
+and names each draft's tool through its `tool_result`; `writeDrafts` writes a point each. Only
+enum values, tool names, two-letter codes and numbers are written: a label outside its list is
+`unlabeled`, a language that is not two letters `xx`. On since 2026-11-25 (`ASSISTANT_TURN_STATS`
+in `wrangler.toml`; the App Privacy label already lists Product Interaction for Analytics). Read with Actions → Assistant
+server → `turn-stats` (`scripts/turn_stats.py`, the SQL API, the token needs Account Analytics:
+Read; `days` back, up to 90, the dataset keeps three months): topics, topics by outcome, what Ten
+could not do with the tools it tried, tool sets, languages, plans, countries, builds, moods and
+the drafts by tool and status. The Saturday session reads it ([promotion-plan.md](../promotion-plan.md) §7). The eval's `labels` check holds every reply to the lists and to
+the case's language. Pinned by `test/stats.test.ts` (no word of the thread reaches a point).
 
 ### Valuation from listings (`POST /v1/valuation`)
 
@@ -649,6 +700,11 @@ quests, slots and other looks: [plan-ten-gamification.md](../plan-ten-gamificati
   question to Ten, only with the cloud allowed (owner's decision A1, 2026-11-12).
   The privacy policy has its line (2026-11-12). The server's "logs no content" holds for turns
   and valuations; feedback is stored by design.
+- **Counts, not words** (§8 "Turn statistics"): each finished turn is counted by the labels the
+  model gives it, the tools, the plan and the build, without the question, the answer, the
+  country or any id; the privacy policy says so ("What Tenra's server counts", 2026-11-25), and
+  the App Privacy label lists Usage Data › Product Interaction for Analytics (checked by the
+  founder 2026-11-25).
 - **Minimisation**: the cloud gets tool results, never the database; files and photos never leave
   the phone (§7). A record drafted on the phone before the person agreed to the cloud is never
   reported to the model (`draftsBeforeConsent`, skipped by `draftStatus`), so the words typed then
@@ -732,7 +788,12 @@ quests, slots and other looks: [plan-ten-gamification.md](../plan-ten-gamificati
   (`TenraAssistantURL`).
 - **Workflow** `Assistant server` (`.github/workflows/assistant.yml`): typecheck and unit tests on
   every push to `server/assistant/**`; by hand, `deploy` (uploads the secrets to the Worker),
-  `eval` (models, effort, cases) or `eval-valuation` (the same inputs).
+  `eval` (models, effort, cases; a failed case's calls and blocks are printed in the log, the
+  fixture's data being invented), `eval-valuation` (the same inputs) or `turn-stats` (`days`;
+  §8 "Turn statistics").
+- **Turn statistics** are on (`ASSISTANT_TURN_STATS = "on"` in `wrangler.toml`, 2026-11-25).
+  Anything new they count needs its line in the policy and, for a new kind of data, the App
+  Privacy label first. `CLOUDFLARE_API_TOKEN` needs Account Analytics: Read for `turn-stats`.
 - **Pro for a person on the server**: the server sees only RevenueCat, so a Founding User (kept on
   the phone) needs `pro` granted there (Actions → RevenueCat → `grant`).
 - **Eval** (`server/assistant/eval/`): a synthetic user (`fixture.ts`; never real statements), a

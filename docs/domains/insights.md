@@ -207,6 +207,10 @@ history. Free, like Analytics (owner's decision, 2026-11-24: never behind the pa
   picture says which app it is from. Without amounts by default (owner's decision, 2026-11-24: shares, the share
   of income kept, the counters); the "Amounts on the picture" switch on the last page
   (`yearReview.shareAmounts`) adds what was spent and kept and each category's amount.
+- **The plan for January** on the last page, over "Share", where Ten is
+  (`YearReviewView(onPlan:)`, `YearReviewView.januaryPlan`): the review closes and Ten's chat
+  opens with the plan's question (`AppCoordinator.startJanuaryPlan`, [assistant.md](assistant.md)
+  §6 «The plan for January»). The same from Home's message, Analytics' card and Diagnostics.
 - Pinned by `YearReviewTests`; mockups of every page, the message and the picture in
   `ScreenMockupTests` while the layout is in review.
 

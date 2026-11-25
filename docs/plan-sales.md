@@ -93,7 +93,6 @@
 | `onboarding_done:<итог>` | finished, skipped, restored |
 | `first_screen:<экран>` | впервые за установку открыт экран: home, history, analytics, finances, assistant, add, import, settings, paywall, wardrobe |
 | `entries:<n>` | своих записей стало 1, 5, 10, 50 (`TransactionStore.onOwnRecords`) |
-| `first_entry_source:<источник>` | источник первой записи: manual, voice, ten, wallet, notification, receipt |
 | `reminder_on`, `notifications:<ответ>` | вечернее напоминание включено; ответ на разрешение уведомлений |
 | `capture_first` | первая автозапись (Apple Pay или уведомление банка) |
 | `widget_on` | виджет Tenra впервые найден на устройстве (`WidgetCenter` при открытии) |
@@ -107,7 +106,7 @@
 | Счётчик | Значение |
 |---|---|
 | `open` | холодный или из фона |
-| `entry` | источник записи (как выше) |
+| `entry` | своя запись (без источника: запись не хранит, откуда пришла, и источник потребовал бы правки каждого пути записи; голос, Тэн и автозапись видны счётчиками `feature` и рубежом `capture_first`) |
 | `paywall` | shown, closed, purchase_started, purchased, cancelled, failed, restored; гейт; тариф: monthly, annual, lifetime |
 | `feature` | первое использование за день: budget, goal, debt, loan, deposit, asset, csv_export, year_review, voice, statement |
 | `ten` | asked, notice_opened, notice_hidden |
@@ -191,9 +190,9 @@
   субботней сессии из отчёта `app-stats`: воронка, удержание, где уходят, пейволл, пробные.
 - [promotion-plan.md](promotion-plan.md) §6: недельная строка получает столбцы D1, D7, первая
   трата, установка → пробный.
-- **App Store Connect:** удаления и сессии через Analytics Reports API (`asc.py analytics`,
-  отчёты App Store Installation and Deletion, App Sessions): удаления в день против установок, как
-  проверка своего учёта.
+- **App Store Connect:** число установок из отчёта Sales (уже читается в субботней сессии) против
+  рубежа `installed`: проверка своего учёта. Удаления из Analytics Reports API отложены, пока
+  своих данных не хватает для ответа.
 
 ## 5. Механизмы удержания и продаж
 

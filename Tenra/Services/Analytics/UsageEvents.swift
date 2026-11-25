@@ -248,12 +248,13 @@ final class UsageEvents {
 
     init(
         defaults: UserDefaults = .standard,
-        isSilent: Bool = PremiumManager.isAutomatedRun,
+        // nil: silent in tests, UI tests and the screenshot demo (PremiumManager.isAutomatedRun).
+        isSilent: Bool? = nil,
         transport: (any UsageEventsTransport)? = HTTPUsageTransport.make(),
         traits: @escaping () -> UsageTraits = { UsageTraits() }
     ) {
         self.defaults = defaults
-        self.isSilent = isSilent
+        self.isSilent = isSilent ?? PremiumManager.isAutomatedRun
         self.transport = transport
         self.traits = traits
         sent = Set(defaults.stringArray(forKey: Key.sent) ?? [])

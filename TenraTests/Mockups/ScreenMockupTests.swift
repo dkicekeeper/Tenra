@@ -270,6 +270,38 @@ struct ScreenMockupTests {
         }
     }
 
+    // MARK: - Ten's moments (TenMoments, docs/plan-ten-gamification.md §6)
+
+    /// A goal reached: Ten over the app, the screen behind dimmed and blurred.
+    @Test func tenMomentGoal() async throws {
+        let moment = TenMoment.make(.goalReached(name: "Велосипед"), key: "mockup")
+        try await render("ten-moment-goal") {
+            ZStack {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: AppSpacing.md) {
+                        SectionHeader("Цели")
+                        FormSection {
+                            UniversalRow("Велосипед", icon: "bicycle", accessory: .navigation { EmptyView() })
+                            UniversalRow("Отпуск", icon: "airplane", accessory: .navigation { EmptyView() })
+                            UniversalRow("Подушка безопасности", icon: "umbrella", accessory: .navigation { EmptyView() })
+                        }
+                    }
+                    .screenPadding()
+                    .padding(.vertical, AppSpacing.lg)
+                }
+                .background(AppColors.Background.base)
+                MomentOverlay(
+                    title: moment.title,
+                    message: moment.message,
+                    celebrates: moment.celebrates,
+                    dismissTitle: String(localized: "moment.dismiss")
+                ) {
+                    TenMomentHero(moment: moment, accessory: nil, chats: true)
+                }
+            }
+        }
+    }
+
     // MARK: - "Не то" under an answer (AgentReplyReport, docs/domains/assistant.md §7)
 
     /// An answer of Ten's with "Не то" under it.

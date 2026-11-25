@@ -269,6 +269,8 @@ struct MainTabView: View {
             coordinator.refreshAssistantInbox()
             // A goal's reached date, kept even when its screen was not open (GoalStore).
             Task { await coordinator.goalStore.refreshAllReached() }
+            // What Ten celebrates on his own: last month inside the budgets, the first capture.
+            TenMoments.shared.checkNoticed(coordinator: coordinator)
             // The next statement reminders, scheduled ahead (StatementImportReminder).
             Task { await StatementImportReminder.reschedule() }
             // Ten's evening reminders start over from today (SpendingReminder).

@@ -677,8 +677,22 @@ and deposit interest are not the person's; one missed day a week is a day off). 
 UserDefaults and copied into every backup as `ten.json` (`CloudBackupService` `extraFiles`),
 merged on restore so nothing earned is lost. Touch parts the particles. At 22 pt (the tab) and under Reduce Motion it is a still glyph: 12 dots and the
 eyes (`CreatureTabLabel`). Name: Ten (Тэн). Tone: friendly, short, no moralising or shame about
-spending, no em dashes, in all 11 languages. Open work on its emotions in the app's big moments,
-quests, slots and other looks: [plan-ten-gamification.md](../plan-ten-gamification.md).
+spending, no em dashes, in all 11 languages. Open work on quests, slots, rewards and other looks:
+[plan-ten-gamification.md](../plan-ten-gamification.md).
+
+**Ten's moments** (`TenMoments`, `Services/Agent/`, 1.10; DesignKit 8.18.0's `MomentOverlay` in
+`MomentPresenter`'s own window, over sheets, the tab bar and navigation): only good news. The
+person's own action shows at once, after a 0.6 s pause: a goal reached (`GoalDetailView`), a debt
+settled (`DebtDetailView`), a loan paid off (`LoanDetailView`), an asset sold for more than it cost
+(`AssetDetailView`); these four screens play their own confetti only when no moment shows. What
+Ten notices shows when the app comes to the front (`checkNoticed`, from `MainTabView`), at most
+two a day and never before onboarding is done: last month inside every monthly budget in its first
+week (`TenMomentRules.budgetMonthKept`: budgets reset on the 1st and set before the month began,
+10 expenses or more, each within its limit by `CategoryBudgetService.spent`, the budgets' own rule,
+summed off the main actor), and the first payment that recorded itself while it is a week old.
+Each event's key once (`tenMoments.shown.v1`). Ten comes in his mood with a gesture and, while
+"Ten chats" is on, a line; Settings › Assistant › "Ten's moments" turns them off. Without Ten on
+the device (`AssistantAvailability`) the screens keep their confetti. Pinned by `TenMomentsTests`.
 
 ## 10. Privacy, consent and safety
 

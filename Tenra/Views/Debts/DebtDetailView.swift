@@ -264,7 +264,8 @@ struct DebtDetailView: View {
         guard amount > 0 else { return }
         Task {
             await debtStore.addRepayment(DebtRepayment(amount: amount, date: date, note: note), to: debtId)
-            if debtStore.debt(id: debtId)?.isSettled == true {
+            if let debt = debtStore.debt(id: debtId), debt.isSettled,
+               !TenMoments.shared.celebrate(.debtSettled(name: debt.person), key: "debt:\(debtId)") {
                 celebrations += 1
             }
         }

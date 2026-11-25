@@ -194,9 +194,27 @@ extension CategoryBudgetService {
         baseCurrency: String?,
         rates: RateSnapshot? = nil
     ) -> Double {
-        let periodStart = legacyBudgetPeriodStart(for: category)
-        let periodEnd = Date()
+        spent(
+            for: category,
+            transactions: transactions,
+            baseCurrency: baseCurrency,
+            from: legacyBudgetPeriodStart(for: category),
+            through: Date(),
+            rates: rates
+        )
+    }
 
+    /// What `category` spent from `periodStart` through `periodEnd` (both inclusive), in base currency: the
+    /// same filter and conversion as the current period's, for a period that is over (Ten's
+    /// "month inside the budgets", TenMomentRules.budgetMonthKept).
+    nonisolated static func spent(
+        for category: CustomCategory,
+        transactions: [Transaction],
+        baseCurrency: String?,
+        from periodStart: Date,
+        through periodEnd: Date,
+        rates: RateSnapshot? = nil
+    ) -> Double {
         var spent = 0.0
         for tx in transactions where tx.category == category.name && tx.type == .expense {
             guard let d = FastDateParser.date(from: tx.date),

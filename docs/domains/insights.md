@@ -203,7 +203,7 @@ history. Free, like Analytics (owner's decision, 2026-11-24: never behind the pa
   §6).
 - **Sharing** (`YearReviewShareCard`): DesignKit's `ShareCardFrame` in the Stories format through
   its `ShareCardSheet`, the cover's aurora as its photo, at the foot the app's icon (`LaunchIcon`)
-  and "Tenra" in Inter (`brandIcon:`, `brandTypeface: .inter`, DesignKit 8.16.0), so a shared
+  and "Tenra" in Inter (`brandIcon:`, `brandTypeface: .inter`, DesignKit 8.16.0 and later), so a shared
   picture says which app it is from. Without amounts by default (owner's decision, 2026-11-24: shares, the share
   of income kept, the counters); the "Amounts on the picture" switch on the last page
   (`yearReview.shareAmounts`) adds what was spent and kept and each category's amount.

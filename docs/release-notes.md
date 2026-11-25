@@ -23,7 +23,10 @@ assembled; no em dashes (user rule).
   picked categories (all when none is), so the first expense is one tap away; and the anonymous
   attribute `onboarding_step` (the furthest screen) to see where people leave onboarding.
 
-Planned, not in `main` yet: Ten's moments (C, waits for DesignKit #105).
+- **Ten's moments** ([domains/assistant.md](domains/assistant.md) §9): Ten comes out over the
+  app when a goal is reached, a debt settled, a loan paid off, an asset sold at a profit, last
+  month stayed inside the budgets, or the first payment recorded itself; Settings › Assistant ›
+  "Ten's moments" turns them off. DesignKit 8.18.0.
 
 ## Phone checks
 
@@ -41,6 +44,12 @@ Planned, not in `main` yet: Ten's moments (C, waits for DesignKit #105).
   on the currency, account and categories steps lands on Home with one account ("Карта", or the
   name typed) and the starting categories; a first expense saves at once. Run again with an
   account already there: no second account.
+
+- **Ten's moments**: a contribution that reaches a goal: Ten over the screen (the sheet gone
+  first), confetti, "Цель достигнута", "Отлично" closes, a tap outside and a swipe down too;
+  touches reach the app after. Settling a debt, the last loan payment, selling an asset above its
+  price: the same. With "Моменты Тэна" off: only the screen's confetti. Check over a sheet and the
+  tab bar, VoiceOver (focus, the line, escape), dark mode.
 
 ## Submission checklist
 

@@ -214,8 +214,14 @@ struct LoanDetailView: View {
         // stays quiet — the banner marks the moment the debt was cleared, not the state.
         .onChange(of: liveAccount?.isPaidOffLoan) { wasPaidOff, isPaidOff in
             guard wasPaidOff == false, isPaidOff == true else { return }
-            HapticManager.success()
-            payoffCelebrations += 1
+            // Ten's moment over the app, or the confetti and its haptic where Ten is not.
+            if let account = liveAccount,
+               TenMoments.shared.celebrate(.loanPaidOff(name: account.name), key: "loan:\(account.id)") {
+                // The moment's own haptic.
+            } else {
+                HapticManager.success()
+                payoffCelebrations += 1
+            }
             payoffMessage = String(
                 localized: "loan.payoffCelebration",
                 defaultValue: "Loan paid off. Nice work."

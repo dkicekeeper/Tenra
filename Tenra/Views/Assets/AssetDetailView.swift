@@ -406,7 +406,10 @@ struct AssetDetailView: View {
             ) { amount, date, note in
                 Task {
                     await assetStore.sell(assetId: asset.id, price: amount, date: date, note: note)
-                    if let price = asset.purchasePrice, amount > price { celebrations += 1 }
+                    if let price = asset.purchasePrice, amount > price,
+                       !TenMoments.shared.celebrate(.assetSold(name: asset.name), key: "asset:\(asset.id)") {
+                        celebrations += 1
+                    }
                 }
             }
         }

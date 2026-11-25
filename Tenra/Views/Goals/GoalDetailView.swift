@@ -243,11 +243,15 @@ struct GoalDetailView: View {
 
     // MARK: - Helpers
 
-    /// Celebrates a goal that has just been reached; true when it was.
+    /// Celebrates a goal that has just been reached: Ten's moment over the app, or the
+    /// confetti where Ten is not (TenMoments); true when it was reached.
     @discardableResult
     private func checkReached() async -> Bool {
         guard await goalStore.refreshReached(goalId: goalId) else { return false }
-        celebrations += 1
+        let name = goalStore.goal(id: goalId)?.name ?? ""
+        if !TenMoments.shared.celebrate(.goalReached(name: name), key: "goal:\(goalId)") {
+            celebrations += 1
+        }
         return true
     }
 

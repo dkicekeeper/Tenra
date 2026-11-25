@@ -601,7 +601,10 @@ class AppCoordinator {
         self.goalStore = GoalStore(repository: keepsInStore ? GoalRepository() : nil)
         self.debtStore = DebtStore(repository: keepsInStore ? DebtRepository() : nil)
         self.assetStore = AssetStore(repository: keepsInStore ? AssetRepository() : nil)
-        self.tenWardrobe = TenWardrobeStore()
+        let wardrobe = TenWardrobeStore()
+        self.tenWardrobe = wardrobe
+        // Ten wears in a moment what he wears everywhere (TenMoments).
+        TenMoments.shared.accessory = { wardrobe.accessory() }
 
         // 7. Setup SettingsViewModel
         let storageService = SettingsStorageService()

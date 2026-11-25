@@ -17,6 +17,7 @@ import SwiftUI
 struct SettingsAssistantSection: View {
     @AppStorage(AssistantMetrics.consentKey) private var hasConsent = false
     @AppStorage(AssistantChatter.enabledKey) private var chatterOn = true
+    @AppStorage(TenMoments.enabledKey) private var momentsOn = true
     @State private var memory = AgentMemory.shared
     @State private var showingConsent = false
     @Environment(AppCoordinator.self) private var coordinator
@@ -54,6 +55,12 @@ struct SettingsAssistantSection: View {
                     String(localized: "settings.assistant.chatter"),
                     icon: "text.bubble",
                     accessory: .toggle($chatterOn)
+                )
+                UniversalRow(
+                    String(localized: "settings.assistant.moments"),
+                    icon: "sparkles",
+                    hint: String(localized: "settings.assistant.moments.hint"),
+                    accessory: .toggle($momentsOn)
                 )
                 UniversalRow(
                     String(localized: "assistant.memory.title"),

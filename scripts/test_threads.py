@@ -36,6 +36,29 @@ class NextPostTests(unittest.TestCase):
         self.assertIsNone(threads.next_post([post("a", approved=False)], {}, "2026-12-01"))
 
 
+def reply(rid, approved=True, to="1790000000000000001", text="Мы делаем Tenra, посмотрите."):
+    return {"id": rid, "replyToId": to, "text": text, "approved": approved}
+
+
+class ReplyTests(unittest.TestCase):
+    def test_approved_and_unpublished_in_order(self):
+        replies = [reply("a"), reply("b", approved=False), reply("c")]
+        self.assertEqual([r["id"] for r in threads.waiting_replies(replies, {"a": {}})], ["c"])
+
+    def test_a_few_per_run(self):
+        replies = [reply(str(i)) for i in range(10)]
+        self.assertEqual(len(threads.waiting_replies(replies, {})), threads.REPLIES_PER_RUN)
+
+    def test_needs_the_post_it_answers(self):
+        self.assertTrue(threads.problems([], [reply("a", to="")]))
+
+    def test_ids_unique_across_posts_and_replies(self):
+        self.assertTrue(threads.problems([post("a")], [reply("a")]))
+
+    def test_reply_text_rules(self):
+        self.assertTrue(threads.problems([], [reply("a", text="Tenra — это")]))
+
+
 class ProblemTests(unittest.TestCase):
     def test_clean_post(self):
         self.assertEqual(threads.problems([post("a")]), [])
@@ -55,7 +78,7 @@ class ProblemTests(unittest.TestCase):
 
     def test_the_posts_file(self):
         data = json.loads((threads.ROOT / "social" / "threads.json").read_text(encoding="utf-8"))
-        self.assertEqual(threads.problems(data["posts"]), [])
+        self.assertEqual(threads.problems(data["posts"], data.get("replies", [])), [])
 
 
 if __name__ == "__main__":

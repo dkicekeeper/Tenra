@@ -1,16 +1,19 @@
 #!/usr/bin/env python3
-"""Ten's account on Threads: posts from social/threads.json, published one a day by Actions.
+"""The Tenra account on Threads: posts and replies from social/threads.json, published by Actions.
 
-    python3 scripts/threads.py check                 # the posts file: lengths, rules, ids
+    python3 scripts/threads.py check                 # the file: lengths, rules, ids
     python3 scripts/threads.py me                    # whose token it is (username, id)
     python3 scripts/threads.py post-next [--dry-run] # the next approved post not yet published
+    python3 scripts/threads.py replies [--dry-run]   # every approved reply not yet published
     python3 scripts/threads.py refresh               # a new 60-day token; stored as the secret
     python3 scripts/threads.py stats [--days 30]     # views, likes, replies and the account's clicks
 
-Posts are written in Ten's voice (docs/threads.md) and published only once the founder approved
-them (`"approved": true`). `post-next` publishes the first approved post that is not in
-social/threads-posted.json and whose `notBefore` date (Almaty) has come, then records it there;
-the workflow commits that file. One post per run: the workflow runs once a day.
+Everything is written in Tenra's voice (docs/threads.md) and published only once the founder
+approved it (`"approved": true`). `post-next` publishes the first approved post that is not in
+social/threads-posted.json and whose `notBefore` date (Almaty) has come: one post a day.
+`replies` publishes the approved answers to other people's questions (`replyToId`, the Threads id
+of the post answered), at most REPLIES_PER_RUN a run: a question is answered within the day. Both
+record what went out in social/threads-posted.json; the workflow commits that file.
 
 The token is THREADS_ACCESS_TOKEN (a long-lived Threads user token: 60 days, refreshed while it is
 at least a day old). `refresh` writes the token Meta returns back into the repository secret when
@@ -36,6 +39,7 @@ REFRESH = "https://graph.threads.net/refresh_access_token"
 REPO = "dkicekeeper/Tenra"
 SECRET = "THREADS_ACCESS_TOKEN"
 TEXT_MAX = 500
+REPLIES_PER_RUN = 3     # Meta treats a burst of replies with links as spam
 ALMATY = timezone(timedelta(hours=5))
 EMOJI = range(0x1F300, 0x1FAFF + 1)
 
@@ -74,14 +78,22 @@ def load_posts(path: Path = POSTS) -> list[dict]:
     return json.loads(path.read_text(encoding="utf-8"))["posts"]
 
 
+def load_replies(path: Path = POSTS) -> list[dict]:
+    return json.loads(path.read_text(encoding="utf-8")).get("replies", [])
+
+
 def load_posted(path: Path = POSTED) -> dict:
     return json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
 
 
-def problems(posts: list[dict]) -> list[str]:
-    """Threads takes 500 characters; Ten writes without emoji and without em dashes."""
+def problems(posts: list[dict], replies: list[dict] | None = None) -> list[str]:
+    """Threads takes 500 characters; Tenra writes without emoji and without em dashes. Ids are
+    unique across posts and replies (both are recorded in one file); a reply names its post."""
     found, seen = [], set()
-    for post in posts:
+    for reply in replies or []:
+        if not str(reply.get("replyToId", "")).strip():
+            found.append(f"{reply.get('id', '?')}: a reply without replyToId (the post it answers)")
+    for post in [*posts, *(replies or [])]:
         pid = post.get("id", "?")
         if pid in seen:
             found.append(f"{pid}: the id is used twice")
@@ -112,12 +124,13 @@ def next_post(posts: list[dict], posted: dict, today: str) -> dict | None:
 
 
 def check() -> None:
-    posts = load_posts()
-    found = problems(posts)
-    posted = load_posted()
-    waiting = [p for p in posts if p.get("approved") and p["id"] not in posted]
-    drafts = [p for p in posts if not p.get("approved")]
-    print(f"{len(posts)} posts: {len(posted)} published, {len(waiting)} approved and waiting, {len(drafts)} drafts.")
+    posts, replies, posted = load_posts(), load_replies(), load_posted()
+    for kind, items in (("posts", posts), ("replies", replies)):
+        out = [i for i in items if i["id"] in posted]
+        waiting = [i for i in items if i.get("approved") and i["id"] not in posted]
+        drafts = [i for i in items if not i.get("approved")]
+        print(f"{len(items)} {kind}: {len(out)} published, {len(waiting)} approved and waiting, {len(drafts)} drafts.")
+    found = problems(posts, replies)
     if found:
         sys.exit("social/threads.json:\n  " + "\n  ".join(found))
 
@@ -129,19 +142,26 @@ def me() -> None:
     print(f"Threads account: @{profile.get('username')} ({profile.get('name')}), id {profile.get('id')}")
 
 
-def publish(text: str, image_url: str | None) -> str:
+def publish(text: str, image_url: str | None, reply_to: str | None = None) -> str:
     params = {"media_type": "IMAGE" if image_url else "TEXT", "text": text, "access_token": token()}
     if image_url:
         params["image_url"] = image_url
+    if reply_to:
+        params["reply_to_id"] = reply_to
     container = call("POST", f"{API}/me/threads", params)["id"]
     # Meta asks to give the container time to process before publishing (an image takes longer).
     time.sleep(30 if image_url else 5)
     return call("POST", f"{API}/me/threads_publish", {"creation_id": container, "access_token": token()})["id"]
 
 
+def record(posted: dict, item_id: str, media_id: str) -> None:
+    posted[item_id] = {"media": media_id, "at": datetime.now(timezone.utc).isoformat(timespec="seconds")}
+    POSTED.write_text(json.dumps(posted, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+
 def post_next(dry_run: bool) -> None:
     posts = load_posts()
-    found = problems(posts)
+    found = problems(posts, load_replies())
     if found:
         sys.exit("social/threads.json:\n  " + "\n  ".join(found))
     posted = load_posted()
@@ -159,9 +179,33 @@ def post_next(dry_run: bool) -> None:
               + (f", image {post['image']}" if image_url else "") + ").")
         return
     media_id = publish(post["text"], image_url)
-    posted[post["id"]] = {"media": media_id, "at": datetime.now(timezone.utc).isoformat(timespec="seconds")}
-    POSTED.write_text(json.dumps(posted, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    record(posted, post["id"], media_id)
     print(f"Posted {post['id']} (media {media_id}).")
+
+
+def waiting_replies(replies: list[dict], posted: dict) -> list[dict]:
+    """The approved replies not published yet, in the file's order, REPLIES_PER_RUN at most."""
+    return [r for r in replies if r.get("approved") and r["id"] not in posted][:REPLIES_PER_RUN]
+
+
+def publish_replies(dry_run: bool) -> None:
+    replies = load_replies()
+    found = problems(load_posts(), replies)
+    if found:
+        sys.exit("social/threads.json:\n  " + "\n  ".join(found))
+    posted = load_posted()
+    batch = waiting_replies(replies, posted)
+    if not batch:
+        print("No approved reply is waiting.")
+        return
+    for reply in batch:
+        if dry_run:
+            print(f"Dry run: would reply {reply['id']} to {reply.get('replyTo') or reply['replyToId']} "
+                  f"({len(reply['text'])} characters).")
+            continue
+        media_id = publish(reply["text"], None, reply_to=str(reply["replyToId"]))
+        record(posted, reply["id"], media_id)
+        print(f"Replied {reply['id']} (media {media_id}).")
 
 
 def store_secret(value: str) -> None:
@@ -244,6 +288,8 @@ def main(argv: list[str]) -> None:
             me()
         elif command == "post-next":
             post_next("--dry-run" in args)
+        elif command == "replies":
+            publish_replies("--dry-run" in args)
         elif command == "refresh":
             refresh()
         elif command == "stats":

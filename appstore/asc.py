@@ -1536,6 +1536,10 @@ def app_events_config(path: Path = EVENTS) -> list[dict]:
             problems.append(f"{name}: reference name over {EVENT_REFERENCE_MAX} characters")
         if event.get("primaryLocale") not in event["localizations"]:
             problems.append(f"{name}: primaryLocale {event.get('primaryLocale')!r} has no texts")
+        # App Store Connect refuses an event without its deep link at review (HTTP 409): the
+        # app's own scheme, which AppCoordinator.handleDeepLink routes.
+        if not str(event.get("deepLink", "")).startswith("tenra://"):
+            problems.append(f"{name}: deepLink must be a tenra:// link (App Store Connect requires one)")
         for locale, text in event["localizations"].items():
             for field, limit in (("name", EVENT_NAME_MAX), ("shortDescription", EVENT_SHORT_MAX),
                                  ("longDescription", EVENT_LONG_MAX)):

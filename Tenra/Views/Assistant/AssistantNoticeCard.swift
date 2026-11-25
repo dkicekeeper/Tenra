@@ -197,6 +197,7 @@ extension AssistantNoticeCard {
         case .loanAsset: String(localized: "loan.asset.add")
         case .feedback: String(localized: "feedback.notice.action")
         case .yearReview: String(localized: "yearReview.notice.action")
+        case .januaryPlan: String(localized: "januaryPlan.notice.action")
         default: String(localized: "assistant.notice.goThrough")
         }
     }
@@ -208,6 +209,7 @@ extension AssistantNoticeCard {
         case .loanAsset: "house"
         case .feedback: "square.and.pencil"
         case .yearReview: "gift"
+        case .januaryPlan: "calendar"
         default: "sparkles"
         }
     }

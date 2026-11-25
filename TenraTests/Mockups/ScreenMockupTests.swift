@@ -368,8 +368,19 @@ struct ScreenMockupTests {
         let pages = YearReviewPage.pages(for: Self.demoReview)
         for (index, page) in pages.enumerated() {
             try await render("year-review-\(index + 1)-\(page.rawValue)") {
-                YearReviewView(review: Self.demoReview, categories: Self.demoCategories, series: Self.demoSeries, initialPage: index)
+                YearReviewView(review: Self.demoReview, categories: Self.demoCategories, series: Self.demoSeries, onPlan: {}, initialPage: index)
             }
+        }
+    }
+
+    /// Ten's message on Home in the first days of January: the plan for January.
+    @Test func januaryPlanNotice() async throws {
+        let notice = AssistantNotices.januaryPlan(year: 2027, now: Date())
+        try await render("january-plan-notice", height: 300) {
+            AssistantNoticeCard(notice: notice, onAsk: {}, onHide: {})
+                .screenPadding()
+                .frame(maxHeight: .infinity)
+                .background(AppColors.Background.base)
         }
     }
 

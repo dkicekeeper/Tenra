@@ -1684,13 +1684,26 @@ def push_app_event(app: str, only: str | None, apply: bool, submit: bool) -> Non
               + (f", also in App Store Connect: {', '.join(extra)}" if extra else ""), flush=True)
         written_events.append(event_id)
     if submit and written_events:
-        # One submission for the events and their art that App Review has not taken yet (as
-        # push-creatives): App Store Connect keeps one submission in review at a time.
-        waiting = [("appAssetLibraryImage", image_id) for image_id in sorted(used_images)
-                   if get(f"/v1/appAssetLibraryImages/{image_id}")["data"]["attributes"].get("state")
-                   in ("COMPLETE", "PREPARE_FOR_SUBMISSION", "READY_FOR_REVIEW", "REJECTED")]
-        submit_for_review(app, waiting + [("appEvent", event_id) for event_id in written_events],
-                          lenient={"appAssetLibraryImage"})
+        # The event takes its art to review itself: an image added as an item of its own ("a
+        # standalone review") locks the asset, and App Store Connect then refuses the event. Such
+        # items of the event's art come out of the open draft first. One submission for all the
+        # events: App Store Connect keeps one submission in review at a time.
+        drop_standalone_images(app, used_images)
+        submit_for_review(app, [("appEvent", event_id) for event_id in written_events])
+
+
+def drop_standalone_images(app: str, image_ids: set[str]) -> None:
+    """Take these asset library images out of the open draft submission, if they are items of it."""
+    open_ones, _ = get_all("/v1/reviewSubmissions",
+                           {"filter[app]": app, "filter[platform]": "IOS", "filter[state]": "READY_FOR_REVIEW"})
+    for submission in open_ones:
+        items, _ = get_all(f"/v1/reviewSubmissions/{submission['id']}/items",
+                           {"limit": 200, "include": "appAssetLibraryImage"})
+        for item in items:
+            image = (((item.get("relationships") or {}).get("appAssetLibraryImage") or {}).get("data") or {})
+            if image.get("id") in image_ids:
+                request(f"/v1/reviewSubmissionItems/{item['id']}", method="DELETE")
+                print(f"  took the image {image['id']} out of the draft submission: it goes with its event", flush=True)
 
 
 # Review notes and the draft submission ------------------------------------------------------------

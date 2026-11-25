@@ -802,6 +802,8 @@ class AppCoordinator {
         // The person's own records (no imports) move Ten's record streak.
         transactionStore.onOwnRecords = { [weak wardrobe = tenWardrobe] transactions in
             wardrobe?.noteRecords(transactions)
+            // The usage counts' own entries: no statement's rows, no series payments.
+            UsageEvents.shared.noteOwnRecords(transactions)
         }
         // A first goal or one reached opens Ten's party hat or crown at once, not on the next
         // visit to the wardrobe.

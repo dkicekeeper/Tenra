@@ -13,6 +13,18 @@ nonisolated protocol UsageEventsTransport: Sendable {
     func send(_ events: [UsageEvent]) async throws
 }
 
+/// The server answered and refused the batch.
+nonisolated enum UsageSendError: Error, Equatable {
+    case rejected(status: Int)
+
+    /// A refusal that will not change by waiting: not the rate limit.
+    var dropsBatch: Bool {
+        switch self {
+        case .rejected(let status): status != 429
+        }
+    }
+}
+
 nonisolated struct HTTPUsageTransport: UsageEventsTransport {
     let url: URL
     let session: URLSession
@@ -28,8 +40,7 @@ nonisolated struct HTTPUsageTransport: UsageEventsTransport {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = try JSONEncoder().encode(["events": events])
         let (_, response) = try await session.data(for: request)
-        guard let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode) else {
-            throw URLError(.badServerResponse)
-        }
+        guard let http = response as? HTTPURLResponse else { throw URLError(.badServerResponse) }
+        guard (200..<300).contains(http.statusCode) else { throw UsageSendError.rejected(status: http.statusCode) }
     }
 }

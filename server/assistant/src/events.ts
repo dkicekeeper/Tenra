@@ -52,6 +52,9 @@ const MILESTONES: Record<string, readonly string[]> = {
   renewal_off: [""],
   converted: [""],
   returned: ["1", "2", "3", "7", "14", "30", "week2"],
+  /** Every step of the first day's path passed, skipped ones included, so their counts only
+   * fall along the path (the report's drop-off and retention bases). */
+  path: ["welcome", "currency", "account", "categories", "capture", "onboarding_done", "entry", "reminder"],
 };
 
 /** Counters (kind "c"): name → its values. The paywall's is `step:gate:plan`. */

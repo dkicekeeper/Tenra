@@ -76,6 +76,9 @@ enum UsageMilestone: Hashable, Sendable {
     case returned(day: Int)
     /// An open on any day from 7 to 13.
     case returnedWeek2
+    /// A step of the first day's path passed, a skipped one included (`UsageEvents.path`), so
+    /// the report's steps only fall along the path.
+    case path(String)
 
     /// The entry counts worth a milestone.
     static let entryMilestones = [1, 5, 10, 50]
@@ -100,6 +103,7 @@ enum UsageMilestone: Hashable, Sendable {
         case .converted: ("converted", "")
         case .returned(let day): ("returned", String(day))
         case .returnedWeek2: ("returned", "week2")
+        case .path(let step): ("path", step)
         }
     }
 
@@ -232,7 +236,12 @@ final class UsageEvents {
         static let dayCount = "usage.dayCount"
         static let featureDays = "usage.featureDays"
         static let buffer = "usage.buffer"
+        static let ownEntries = "usage.ownEntries"
+        static let proPhase = "usage.proPhase"
     }
+
+    /// The highest day since install the server takes: older installs say 400.
+    nonisolated static let maxDay = 400
 
     /// The first day's path, in order (`furthest0`).
     nonisolated static let path = ["none", "welcome", "currency", "account", "categories", "capture", "onboarding_done", "entry", "reminder"]
@@ -278,11 +287,12 @@ final class UsageEvents {
         ensureInstalled(now)
         let key = milestone.onceKey
         guard !sent.contains(key) else { return }
+        let day = dayIndex(now)
+        if day == 0, let step = milestone.pathStep { advanceFurthest(to: step, now: now) }
+        // Milestones are few and once each: the day's cap is for counters only.
+        append(kind: "m", wire: milestone.wire, day: day, now: now, capped: false)
         sent.insert(key)
         defaults.set(Array(sent), forKey: Key.sent)
-        let day = dayIndex(now)
-        if day == 0, let step = milestone.pathStep { advanceFurthest(to: step) }
-        append(kind: "m", wire: milestone.wire, day: day, now: now)
     }
 
     /// A counter; a feature once a day.
@@ -309,10 +319,16 @@ final class UsageEvents {
         count(.open(cold: cold), now: now)
     }
 
-    /// The person's own records were added and the app now holds `total`: the entry counter,
-    /// and the entry milestones `total` reaches (ActivationAttributes.noteRecorded's rule).
-    func noteOwnRecords(total: Int, now: Date = .now) {
+    /// Records were added without an import (TransactionStore.onOwnRecords): the person's own
+    /// ones (SpendingReminderPlan.isUserRecord, as the record streak) count one entry and move
+    /// the own-entry count to its milestones 1, 5, 10 and 50. A series' payments, deposit
+    /// interest and a statement's rows count nothing.
+    func noteOwnRecords(_ transactions: [Transaction], now: Date = .now) {
         guard isActive else { return }
+        let own = transactions.filter { SpendingReminderPlan.isUserRecord($0, now: now) }.count
+        guard own > 0 else { return }
+        let total = defaults.integer(forKey: Key.ownEntries) + own
+        defaults.set(total, forKey: Key.ownEntries)
         count(.entry, now: now)
         for milestone in UsageMilestone.entryMilestones where total >= milestone {
             reach(.entries(milestone), now: now)
@@ -327,7 +343,8 @@ final class UsageEvents {
 
     // MARK: - Sending
 
-    /// Sends the oldest batch. A failure keeps it; the third in a row drops it.
+    /// Sends the oldest batch. Without a network it waits; one the server refuses three times in
+    /// a row is dropped.
     func flush() async {
         guard isActive, !isFlushing, let transport, !buffer.isEmpty else { return }
         isFlushing = true
@@ -338,29 +355,54 @@ final class UsageEvents {
             try await transport.send(batch.map(\.event))
             failures = 0
             buffer.removeAll { ids.contains($0.id) }
-        } catch {
+        } catch let error as UsageSendError where error.dropsBatch {
+            // The server refused it: a batch it refuses three times in a row would block the rest.
             failures += 1
             if failures >= Self.maxFailures {
                 failures = 0
                 buffer.removeAll { ids.contains($0.id) }
             }
+        } catch {
+            // Offline, timed out, cancelled, rate limited: the batch waits for the next send.
         }
         saveBuffer()
     }
 
     // MARK: - Pro
 
-    /// The milestones a change of the Pro entitlement reaches.
-    static func proMilestones(from old: ProStatus?, to new: ProStatus?) -> [UsageMilestone] {
-        guard let new else { return [] }
-        var milestones: [UsageMilestone] = []
-        if new.isTrial {
-            if old?.isTrial != true { milestones.append(.trialStarted) }
-            if !new.willRenew, old?.isTrial != true || old?.willRenew == true { milestones.append(.renewalOff) }
-        } else if old?.isTrial == true {
-            milestones.append(.converted)
+    /// Where the Pro entitlement stands, as the counts need it.
+    enum ProPhase: String {
+        case none, trialRenewing, trialOff, paid
+    }
+
+    static func phase(of status: ProStatus?) -> ProPhase {
+        guard let status else { return .none }
+        if status.isTrial { return status.willRenew ? .trialRenewing : .trialOff }
+        return .paid
+    }
+
+    /// The milestones a move between phases reaches.
+    static func proMilestones(from old: ProPhase, to new: ProPhase) -> [UsageMilestone] {
+        let wasTrial = old == .trialRenewing || old == .trialOff
+        switch new {
+        case .trialRenewing: return wasTrial ? [] : [.trialStarted]
+        case .trialOff:
+            if old == .trialRenewing { return [.renewalOff] }
+            return old == .trialOff ? [] : [.trialStarted, .renewalOff]
+        case .paid: return wasTrial ? [.converted] : []
+        case .none: return []
         }
-        return milestones
+    }
+
+    /// The entitlement as RevenueCat gives it now (PremiumManager): compared with the phase
+    /// kept on the phone, so a trial that was paid while the app was closed still counts as
+    /// converted on the next launch.
+    func notePro(_ status: ProStatus?, now: Date = .now) {
+        let new = Self.phase(of: status)
+        let old = defaults.string(forKey: Key.proPhase).flatMap(ProPhase.init(rawValue:)) ?? .none
+        guard new != old else { return }
+        defaults.set(new.rawValue, forKey: Key.proPhase)
+        for milestone in Self.proMilestones(from: old, to: new) { reach(milestone, now: now) }
     }
 
     // MARK: - Helpers
@@ -431,25 +473,30 @@ final class UsageEvents {
         guard let installedAt else { return 0 }
         let calendar = Self.calendar
         let days = calendar.dateComponents([.day], from: calendar.startOfDay(for: installedAt), to: calendar.startOfDay(for: now)).day ?? 0
-        return max(0, days)
+        return min(max(0, days), Self.maxDay)
     }
 
     private var furthest0: String {
         defaults.string(forKey: Key.furthest0) ?? "none"
     }
 
-    private func advanceFurthest(to step: String) {
+    /// The first day went further: every step passed on the way, skipped ones included, is a
+    /// `path` milestone.
+    private func advanceFurthest(to step: String, now: Date) {
         guard let new = Self.path.firstIndex(of: step), let old = Self.path.firstIndex(of: furthest0), new > old else { return }
         defaults.set(step, forKey: Key.furthest0)
+        for passed in Self.path[(old + 1)...new] { reach(.path(passed), now: now) }
     }
 
-    private func append(kind: String, wire: (name: String, value: String), day: Int, now: Date) {
-        // The day's cap: past it, events of that day are dropped.
-        let today = Self.dayKey(now)
-        let stored = defaults.string(forKey: Key.dayCount)?.split(separator: "|").map(String.init) ?? []
-        let countToday = stored.count == 2 && stored[0] == today ? Int(stored[1]) ?? 0 : 0
-        guard countToday < Self.dailyLimit else { return }
-        defaults.set("\(today)|\(countToday + 1)", forKey: Key.dayCount)
+    private func append(kind: String, wire: (name: String, value: String), day: Int, now: Date, capped: Bool = true) {
+        // The day's cap for counters: past it, that day's counters are dropped.
+        if capped {
+            let today = Self.dayKey(now)
+            let stored = defaults.string(forKey: Key.dayCount)?.split(separator: "|").map(String.init) ?? []
+            let countToday = stored.count == 2 && stored[0] == today ? Int(stored[1]) ?? 0 : 0
+            guard countToday < Self.dailyLimit else { return }
+            defaults.set("\(today)|\(countToday + 1)", forKey: Key.dayCount)
+        }
 
         let person = self.traits()
         let event = UsageEvent(

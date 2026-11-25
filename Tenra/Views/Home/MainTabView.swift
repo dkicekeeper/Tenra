@@ -50,8 +50,6 @@ struct MainTabView: View {
     @State private var ratingPrompt = RatingPromptService.shared
 
     @State private var selectedTab: AppTab = .home
-    /// The first `.active` of this launch is a cold open (UsageEvents).
-    @State private var openedOnce = false
     @State private var tabBarMode: TabBarMode = .normal
     /// Remembers which "real" tab was active before expanding,
     /// so we can restore it when the user taps [×].
@@ -284,10 +282,8 @@ struct MainTabView: View {
         // Ten writes first about tomorrow's charges whenever the app comes to the front.
         .onChange(of: scenePhase, initial: true) { _, phase in
             guard phase == .active else { return }
-            // The app's usage counts (UsageEvents, plan-sales §4): the open, the return days,
-            // the screen it opens on, a widget on the phone.
-            UsageEvents.shared.noteOpen(cold: !openedOnce)
-            openedOnce = true
+            // The app's usage counts (UsageEvents, plan-sales §4): the screen it opens on, a
+            // widget on the phone (the open and the return days are TenraApp's, onboarding too).
             if let screen = UsageScreen(tab: selectedTab) { UsageEvents.shared.reach(.firstScreen(screen)) }
             Task {
                 if let widgets = try? await WidgetCenter.shared.currentConfigurations(), !widgets.isEmpty {

@@ -87,7 +87,6 @@ enum ActivationAttributes {
         defaults: UserDefaults = .standard
     ) {
         guard transactions.contains(where: { SpendingReminderPlan.isUserRecord($0, now: now) }) else { return }
-        UsageEvents.shared.noteOwnRecords(total: total, now: now)
         noteEntries(total, defaults: defaults)
     }
 

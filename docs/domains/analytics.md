@@ -16,6 +16,12 @@ identifier and no third-party analytics (the founder's decisions of 2026-11-25,
   the phone, Ten opened, the first paywall's gate, a trial started, its renewal off, a trial paid,
   and the return days 1, 2, 3, 7, 14 and 30 plus "second week" (any day 7-13). Since each goes
   once, a milestone's count in an install week is the number of installs that reached it.
+  **`path:<step>`**: when the first day goes further (`furthest0`), every step passed on the way
+  is a milestone, skipped ones included (✕ in onboarding passes the rest of its steps), so these
+  counts only fall along the path and the report's drop-off and retention bases add up to the
+  installs. Own entries count the person's own records only (`TransactionStore.onOwnRecords` and
+  `SpendingReminderPlan.isUserRecord`: no statement's rows, no series payments), kept in
+  `usage.ownEntries`.
 - **Counters**: opens (cold or warm), own records, the paywall's steps by gate and plan, Ten's
   questions and notices, Ten's moments, and features used (once a day each: budget, goal, debt,
   loan, deposit, asset, CSV export, year review, voice, statement).
@@ -33,9 +39,11 @@ A phone that used Tenra before 1.10 keeps its first day (`rating.installDate`) a
 ## Where it is called
 
 The milestones sit next to the activation attributes sent to RevenueCat
-(`ActivationAttributes`: onboarding, records, Ten opened), in `MainTabView` (open, return days,
-tabs, widgets, the periodic send), `PremiumManager` (paywall shown, Pro transitions through
-`UsageEvents.proMilestones`), `PaywallSheet` (the paywall's outcomes), `SpendingReminder`,
+(`ActivationAttributes`: onboarding, Ten opened), in `AppCoordinator` (own records), `TenraApp`
+(the open and the return days, in onboarding too; an open counts after the app was in the
+background, not after Face ID or a system sheet), `MainTabView` (tabs, widgets, the periodic
+send), `PremiumManager` (paywall shown; the Pro phase, `UsageEvents.notePro`, compared with the
+phase kept on the phone so a trial paid while the app was closed counts as converted), `PaywallSheet` (the paywall's outcomes), `SpendingReminder`,
 `NotificationPermissionManager`, `WalletCaptureStore`, `AssistantViewModel.send`, Ten's notices,
 `TenMoments`, and `.usageFeature(_:)` / `.usageFirstScreen(_:)` (`Extensions/View+Usage.swift`)
 on the feature screens. A new event is added to the server's list (`server/assistant/src/events.ts`)
@@ -44,9 +52,10 @@ with any value it does not know.
 
 ## Sending
 
-A buffer of at most 500 (oldest dropped), at most 300 events a day, batches of 100 to
-`POST /v1/events` 20 s after the app comes to the front, every 5 minutes while it stays and when it
-leaves (`TenraApp`). A failed batch is kept; the third failure in a row drops it. Silent in unit
+A buffer of at most 500 (oldest dropped), at most 300 counters a day (milestones pass the cap),
+batches of 100 to `POST /v1/events` 20 s after the app comes to the front, every 5 minutes while
+it stays and when it leaves (`TenraApp`). Offline, timed out or rate limited, a batch waits; one
+the server refuses three times in a row is dropped. The day since install is at most 400. Silent in unit
 tests, UI tests and `-ScreenshotDemo` (`PremiumManager.isAutomatedRun`).
 
 **The switch**: Settings › Privacy › "Anonymous usage statistics" (`usage.enabled`, on by

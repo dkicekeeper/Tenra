@@ -24,17 +24,19 @@ from turn_stats import query, table  # noqa: E402
 
 DATASET = "tenra_app_events"
 
-# The funnel, in order: (name, value); value None sums every value of the name.
+# The funnel, in order: (name, value); value None sums every value of the name. The first day's
+# steps come from the app's `path` milestones, which count a skipped step as passed, so a step is
+# never above the one before it.
 FUNNEL = [
     ("installed", ""),
-    ("onboarding", "welcome"),
-    ("onboarding", "currency"),
-    ("onboarding", "account"),
-    ("onboarding", "categories"),
-    ("onboarding", "capture"),
-    ("onboarding_done", None),
-    ("entries", "1"),
-    ("reminder_on", ""),
+    ("path", "welcome"),
+    ("path", "currency"),
+    ("path", "account"),
+    ("path", "categories"),
+    ("path", "capture"),
+    ("path", "onboarding_done"),
+    ("path", "entry"),
+    ("path", "reminder"),
     ("entries", "5"),
     ("entries", "10"),
     ("paywall_first", None),
@@ -42,17 +44,19 @@ FUNNEL = [
     ("converted", ""),
 ]
 
-# The first day's path, as the app's `furthest0` names it, with the milestone that marks it.
+# The first day's path, as the app's `furthest0` names it, with the milestone that marks it: the
+# app sends `path:<step>` for every step passed on day 0, skipped ones included, so these counts
+# only fall along the path and base(X) = passed X minus passed the next step.
 PATH = [
     ("none", ("installed", "")),
-    ("welcome", ("onboarding", "welcome")),
-    ("currency", ("onboarding", "currency")),
-    ("account", ("onboarding", "account")),
-    ("categories", ("onboarding", "categories")),
-    ("capture", ("onboarding", "capture")),
-    ("onboarding_done", ("onboarding_done", None)),
-    ("entry", ("entries", "1")),
-    ("reminder", ("reminder_on", "")),
+    ("welcome", ("path", "welcome")),
+    ("currency", ("path", "currency")),
+    ("account", ("path", "account")),
+    ("categories", ("path", "categories")),
+    ("capture", ("path", "capture")),
+    ("onboarding_done", ("path", "onboarding_done")),
+    ("entry", ("path", "entry")),
+    ("reminder", ("path", "reminder")),
 ]
 
 RETURNS = ["1", "2", "3", "7", "14", "30", "week2"]
@@ -83,6 +87,8 @@ def _reached(cohort_counts: dict, name: str, value) -> int:
 
 
 def _label(name: str, value) -> str:
+    if name == "path":
+        return value
     return name if not value else f"{name}:{value}"
 
 

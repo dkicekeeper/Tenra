@@ -314,14 +314,12 @@ final class PremiumManager {
         // Compare the full snapshot, not just `active` — plan switches and
         // renewal-date changes must reach the Settings status block too.
         defaults.set(active, forKey: Key.lastKnownSubscriber)
+        // A trial started, its renewal turned off, a trial paid (UsageEvents, once each),
+        // against the phase kept on the phone, so a conversion while the app was closed counts.
+        UsageEvents.shared.notePro(status)
         guard active != isSubscriber || status != proStatus else { return }
-        let previous = proStatus
         isSubscriber = active
         proStatus = status
-        // A trial started, its renewal turned off, a trial paid (UsageEvents, once each).
-        for milestone in UsageEvents.proMilestones(from: previous, to: status) {
-            UsageEvents.shared.reach(milestone)
-        }
         log.info("pro entitlement active=\(active, privacy: .public)")
         // The reminder two days before a trial ends follows the entitlement: a new trial, renewal
         // turned off or on, a paid period or no Pro each replace or remove it.

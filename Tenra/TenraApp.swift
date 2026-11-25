@@ -25,6 +25,11 @@ struct TenraApp: App {
     @Environment(\.scenePhase) private var scenePhase
     @State private var timeFilterManager = TimeFilterManager()
     @State private var coordinator: AppCoordinator? = nil
+    /// The usage counts' opens (UsageEvents): the first `.active` is cold; later ones count only
+    /// after the app was in the background, not after Face ID, a sheet of the system or Control
+    /// Center.
+    @State private var usageOpened = false
+    @State private var usageAway = false
     /// A file opened in Tenra before the coordinator exists (a cold launch from "Open in").
     @State private var openedBeforeLaunch: URL?
     /// Set when the database could not be opened: the window shows only the error screen,
@@ -93,6 +98,12 @@ struct TenraApp: App {
             }
             .onChange(of: scenePhase) { _, phase in
                 AppLockService.shared.handleScenePhase(phase)
+                // The open and the return days, in onboarding too.
+                if phase == .active, !usageOpened || usageAway {
+                    UsageEvents.shared.noteOpen(cold: !usageOpened)
+                    usageOpened = true
+                    usageAway = false
+                }
 
                 // Clear app icon badge whenever the app becomes active. SwiftUI's
                 // scenePhase fires reliably for both cold launch and background→foreground;
@@ -130,6 +141,7 @@ struct TenraApp: App {
                 }
                 if phase == .background {
                     // The usage counts left in the buffer (UsageEvents).
+                    usageAway = true
                     Task { await UsageEvents.shared.flush() }
                     // Ask iOS for a background insights recompute while we're away.
                     BackgroundInsightsRefresher.shared.scheduleNextRefresh()

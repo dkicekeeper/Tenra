@@ -16,11 +16,13 @@ import Foundation
 nonisolated private final class RecordingTransport: UsageEventsTransport, @unchecked Sendable {
     var batches: [[UsageEvent]] = []
     var failuresLeft = 0
+    /// What a failing send throws: the server's refusal unless a test says otherwise.
+    var error: any Error = UsageSendError.rejected(status: 400)
 
     func send(_ events: [UsageEvent]) async throws {
         if failuresLeft > 0 {
             failuresLeft -= 1
-            throw URLError(.notConnectedToInternet)
+            throw error
         }
         batches.append(events)
     }
@@ -121,13 +123,15 @@ struct UsageEventsTests {
         #expect(usage.pending.last?.day == 1)
     }
 
-    @Test("A day stops at 300 events")
+    @Test("A day stops at 300 counters; milestones pass the cap")
     func aDayStopsAt300() {
         let usage = make(defaults(), transport: nil)
         for _ in 0..<400 { usage.count(.entry, now: at(1)) }
-        #expect(usage.pending.count == UsageEvents.dailyLimit)
+        #expect(usage.pending.filter { $0.kind == "c" }.count == UsageEvents.dailyLimit)
+        usage.reach(.tenOpened, now: at(1))
+        #expect(usage.pending.contains { $0.name == "ten_opened" })
         usage.count(.entry, now: at(2))
-        #expect(usage.pending.count == UsageEvents.dailyLimit + 1)
+        #expect(usage.pending.filter { $0.kind == "c" }.count == UsageEvents.dailyLimit + 1)
     }
 
     @Test("Once means the first outcome, gate and answer; each screen once")
@@ -139,7 +143,7 @@ struct UsageEventsTests {
         usage.reach(.firstScreen(.history), now: at(1))
         usage.reach(.paywallFirst(.voice), now: at(1))
         usage.reach(.paywallFirst(.loanAdd), now: at(1))
-        #expect(names(usage.pending) == ["installed", "onboarding_done:finished", "first_screen:home", "first_screen:history", "paywall_first:voice"])
+        #expect(names(usage.pending.filter { $0.name != "path" }) == ["installed", "onboarding_done:finished", "first_screen:home", "first_screen:history", "paywall_first:voice"])
     }
 
     @Test("Off empties the buffer and sends nothing; on again, sent milestones stay sent")
@@ -172,17 +176,52 @@ struct UsageEventsTests {
         #expect(usage.pending.isEmpty)
     }
 
+    private func status(trial: Bool, renews: Bool, plan: ProStatus.Plan = .annual) -> ProStatus {
+        ProStatus(plan: plan, expirationDate: at(15), willRenew: renews, managementURL: nil, isTrial: trial)
+    }
+
     @Test("Pro: a trial starts, its renewal is turned off, it converts")
     func proTransitions() {
-        func status(trial: Bool, renews: Bool, plan: ProStatus.Plan = .annual) -> ProStatus {
-            ProStatus(plan: plan, expirationDate: at(15), willRenew: renews, managementURL: nil, isTrial: trial)
-        }
-        #expect(UsageEvents.proMilestones(from: nil, to: status(trial: true, renews: true)) == [.trialStarted])
-        #expect(UsageEvents.proMilestones(from: status(trial: true, renews: true), to: status(trial: true, renews: false)) == [.renewalOff])
-        #expect(UsageEvents.proMilestones(from: nil, to: status(trial: true, renews: false)) == [.trialStarted, .renewalOff])
-        #expect(UsageEvents.proMilestones(from: status(trial: true, renews: true), to: status(trial: false, renews: true)) == [.converted])
-        #expect(UsageEvents.proMilestones(from: status(trial: false, renews: true), to: nil).isEmpty)
-        #expect(UsageEvents.proMilestones(from: status(trial: true, renews: false), to: status(trial: true, renews: false)).isEmpty)
+        #expect(UsageEvents.phase(of: nil) == .none)
+        #expect(UsageEvents.phase(of: status(trial: true, renews: false)) == .trialOff)
+        #expect(UsageEvents.phase(of: status(trial: false, renews: false)) == .paid)
+        #expect(UsageEvents.proMilestones(from: .none, to: .trialRenewing) == [.trialStarted])
+        #expect(UsageEvents.proMilestones(from: .trialRenewing, to: .trialOff) == [.renewalOff])
+        #expect(UsageEvents.proMilestones(from: .none, to: .trialOff) == [.trialStarted, .renewalOff])
+        #expect(UsageEvents.proMilestones(from: .trialRenewing, to: .paid) == [.converted])
+        #expect(UsageEvents.proMilestones(from: .trialOff, to: .paid) == [.converted])
+        #expect(UsageEvents.proMilestones(from: .paid, to: .none).isEmpty)
+        #expect(UsageEvents.proMilestones(from: .trialOff, to: .trialRenewing).isEmpty)
+    }
+
+    @Test("A trial paid while the app was closed counts as converted on the next launch")
+    func convertedAfterRelaunch() {
+        let suite = defaults()
+        make(suite).notePro(status(trial: true, renews: true), now: at(1))
+        // A new launch: RevenueCat's first answer is already the paid plan.
+        let next = make(suite)
+        next.notePro(status(trial: false, renews: true), now: at(15))
+        #expect(names(next.pending.filter { $0.kind == "m" }) == ["installed", "trial_started", "converted"])
+        next.notePro(status(trial: false, renews: true), now: at(16))
+        #expect(next.pending.filter { $0.name == "converted" }.count == 1)
+    }
+
+    @Test("Offline or rate limited, the batch waits however long it takes")
+    func offlineKeepsTheBatch() async {
+        let transport = RecordingTransport()
+        transport.error = URLError(.notConnectedToInternet)
+        transport.failuresLeft = 5
+        let usage = make(defaults(), transport: transport)
+        usage.reach(.tenOpened, now: at(1))
+        for _ in 0..<5 { await usage.flush() }
+        #expect(usage.pending.count == 2)
+        transport.error = UsageSendError.rejected(status: 429)
+        transport.failuresLeft = 4
+        for _ in 0..<4 { await usage.flush() }
+        #expect(usage.pending.count == 2)
+        await usage.flush()
+        #expect(usage.pending.isEmpty)
+        #expect(transport.batches.first.map { names($0) } == ["installed", "ten_opened"])
     }
 
     @Test("A failed send keeps the batch; the third failure in a row drops it")
@@ -245,14 +284,45 @@ struct UsageEventsTests {
 
     // MARK: - Wiring
 
-    @Test("Own records count an entry and reach the entry milestones their total passes")
+    private func record(at date: Date, seriesId: String? = nil) -> Transaction {
+        Transaction(id: UUID().uuidString, date: "2026-12-01", description: "coffee", amount: 1500, currency: "KZT",
+                    type: .expense, category: "Food", recurringSeriesId: seriesId, createdAt: date.timeIntervalSince1970)
+    }
+
+    @Test("Own records count an entry and reach the entry milestones; a series' payments do not")
     func ownRecordsReachEntryMilestones() {
         let usage = make(defaults())
-        usage.noteOwnRecords(total: 5, now: at(1))
-        usage.noteOwnRecords(total: 6, now: at(1))
-        #expect(names(usage.pending.filter { $0.kind == "m" }) == ["installed", "entries:1", "entries:5"])
+        let now = at(1)
+        usage.noteOwnRecords([record(at: now, seriesId: "s1")], now: now)
+        #expect(usage.pending.isEmpty || !usage.pending.contains { $0.name == "entry" })
+        usage.noteOwnRecords((0..<5).map { _ in record(at: now) }, now: now)
+        usage.noteOwnRecords([record(at: now)], now: now)
+        let milestones = usage.pending.filter { $0.kind == "m" && $0.name != "path" }
+        #expect(names(milestones) == ["installed", "entries:1", "entries:5"])
         #expect(usage.pending.filter { $0.name == "entry" }.count == 2)
         #expect(usage.pending.first { $0.value == "1" && $0.name == "entries" }?.furthest0 == "entry")
+    }
+
+    @Test("Skipping onboarding with the cross passes every step on the way")
+    func pathFillsSkippedSteps() {
+        let usage = make(defaults())
+        usage.reach(.onboardingStep(.welcome), now: at(1))
+        usage.reach(.onboardingStep(.currency), now: at(1))
+        usage.reach(.onboardingDone(.skipped), now: at(1))
+        #expect(usage.pending.filter { $0.name == "path" }.map(\.value)
+                == ["welcome", "currency", "account", "categories", "capture", "onboarding_done"])
+        // On a later day the path no longer moves.
+        usage.reach(.reminderOn, now: at(3))
+        #expect(!usage.pending.contains { $0.name == "path" && $0.value == "reminder" })
+    }
+
+    @Test("A day past 400 says 400, the server's highest")
+    func dayIsClamped() {
+        let suite = defaults()
+        suite.set(at(1, month: 1, year: 2025), forKey: "rating.installDate")
+        let usage = make(suite)
+        usage.noteOpen(cold: true, now: at(1))
+        #expect(usage.pending.allSatisfy { $0.day == UsageEvents.maxDay })
     }
 
     @Test("Ten's turn says stats false only while the switch is off")

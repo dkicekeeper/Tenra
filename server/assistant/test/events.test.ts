@@ -81,6 +81,8 @@ describe("events batch", () => {
       ["m", "notifications", "denied"],
       ["m", "paywall_first", "asset_estimate"],
       ["m", "returned", "week2"],
+      ["m", "path", "currency"],
+      ["m", "path", "reminder"],
       ["m", "renewal_off", ""],
       ["c", "paywall", "purchased:loan_add:annual"],
       ["c", "paywall", "closed:onboarding:none"],
@@ -114,6 +116,7 @@ describe("events batch", () => {
     expect(code({ events: [event({ build: "1.10" })] })).toBe("events");
     expect(code({ events: [event({ ios: "26.1" })] })).toBe("events");
     expect(code({ events: [event({ kind: "m", name: "entries", value: "37" })] })).toBe("events");
+    expect(code({ events: [event({ kind: "m", name: "path", value: "none" })] })).toBe("events");
     expect(code({ events: [event({ lang: "pt-BR" })] })).toBe("ok");
   });
 

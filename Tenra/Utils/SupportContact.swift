@@ -12,7 +12,7 @@ import UIKit
 
 enum SupportContact {
 
-    static let email = "dakacom@gmail.com"
+    static let email = "tenraapp@gmail.com"
 
     /// A `mailto:` URL whose body ends with the app version, build and iOS version, after any
     /// `details` (an error code, for example) the user can read before sending.

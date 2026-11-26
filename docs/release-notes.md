@@ -15,6 +15,9 @@ assembled; no em dashes (user rule).
   drafts January's budgets from what is really spent, a rainy-day goal for the year when there is
   none, and the evening reminder when it is off. The rule is on the server since 2026-11-25, so a
   question in words gets the plan in 1.9 too.
+- **Support e-mail is the app's own** (`SupportContact.email`, the founder's decision of
+  2026-11-26): the rating survey's "not really" and the database error screen write to
+  tenraapp@gmail.com, as the support, privacy and terms pages already do.
 - **The year review opens from the App Store** ([domains/intents.md](domains/intents.md)): the
   in-app event "Your year in Tenra" (from 15 December) links to `tenra://year-review`, which
   opens the year review over the whole app; 1.9 only opens the app. 1.10 must be in the store

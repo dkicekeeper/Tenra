@@ -2,7 +2,7 @@
   "comment": "The Tenra account on Threads (scripts/threads.py, .github/workflows/threads.yml, docs/threads.md). posts: published in order, the next approved one once a day. replies: answers to other people's questions asking for an expense tracker, published as soon as they are approved; replyToId is the Threads id of the post answered, replyTo its URL. approved: true only after the founder said so. notBefore: YYYY-MM-DD (Almaty), optional. image: a path in this public repository, optional. Voice: Tenra's team, Russian, вы, plain and adult, says who it is, claims true (what is in Tenra Pro said so), no emoji, no em dashes, 500 characters at most.",
   "profile": {
     "name": "Tenra",
-    "bio": "Учёт денег на iPhone без входа в банк: автозапись Apple Pay, выписки Kaspi, вклады и кредиты с графиком.",
+    "bio": "Учёт расходов и доходов без входа в банк. Автозапись Apple Pay и уведомлений от банков, цели, депозиты и кредиты с графиком.",
     "avatar": "social/tenra-avatar.png"
   },
   "posts": [

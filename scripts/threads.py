@@ -196,7 +196,13 @@ def wait_until_ready(container: str, video: bool) -> None:
     minutes for a video. Polls its status (10 s apart, about 6 minutes at most for a video)."""
     time.sleep(5)
     for _ in range(36 if video else 6):
-        status = call("GET", f"{API}/{container}", {"fields": "status,error_message", "access_token": token()})
+        try:
+            status = call("GET", f"{API}/{container}", {"fields": "status,error_message", "access_token": token()})
+        except ThreadsError as error:
+            # The status read itself failed: wait the way Meta's guide does and let publishing decide.
+            print(f"Container status not readable ({error}); publishing after a fixed wait.")
+            time.sleep(60 if video else 25)
+            return
         state = status.get("status")
         if state in (None, "FINISHED", "PUBLISHED"):
             return

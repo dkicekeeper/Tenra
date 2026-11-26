@@ -287,8 +287,10 @@ extension InsightsService {
             return DonutSlice(
                 id: line.kind.rawValue,
                 amount: line.amount,
-                color: line.kind == .assets ? Color.income
-                    : line.kind == .owedToMe ? Color.transfer
+                // Implicit members: this service imports Foundation, not SwiftUI, so `Color` is
+                // not in scope by name; Tenra's colours (DesignKitBridge) are found through the type.
+                color: line.kind == .assets ? .income
+                    : line.kind == .owedToMe ? .transfer
                     : AppColors.accent,
                 label: String(localized: String.LocalizationValue(labelKey)),
                 percentage: ownedTotal > 0 ? line.amount / ownedTotal * 100 : 0

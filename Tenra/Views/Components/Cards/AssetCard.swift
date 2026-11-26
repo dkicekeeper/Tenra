@@ -34,9 +34,9 @@ struct AssetCard: View {
             isLive: true
         ) {
             if asset.isSold {
-                Badge(String(localized: "asset.soldBadge"), color: AppColors.textSecondary)
+                Badge(String(localized: "asset.soldBadge"), color: AppColors.Text.secondary)
             } else if AssetValuationMath.isStale(asset, today: today) {
-                Badge(String(localized: "asset.staleBadge"), color: AppColors.warning)
+                Badge(String(localized: "asset.staleBadge"), color: AppColors.Status.warning)
             }
         }
     }

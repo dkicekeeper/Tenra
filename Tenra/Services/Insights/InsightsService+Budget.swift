@@ -214,7 +214,7 @@ extension InsightsService {
                 // wealth donut and read as a second donut; the gauge's track +
                 // norm tick reads unambiguously as "arc hasn't reached the limit".
                 cardVisual: underTotalBudget > 0
-                    ? .halfGauge(value: underTotalSpent, norm: underTotalBudget, color: AppColors.success)
+                    ? .halfGauge(value: underTotalSpent, norm: underTotalBudget, color: AppColors.Status.positive)
                     : nil
             ))
         }

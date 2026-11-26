@@ -137,7 +137,7 @@ struct HomeBackgroundPicker<Settings: View>: View {
                     .animation(AppAnimation.gentleSpring, value: blurWallpaper)
             } else {
                 Rectangle()
-                    .fill(AppColors.Background.neutral1)
+                    .fill(AppColors.Background.card)
                     .overlay(
                         Icon("photo", size: AppIconSize.xl)
                             .fontWeight(.ultraLight)

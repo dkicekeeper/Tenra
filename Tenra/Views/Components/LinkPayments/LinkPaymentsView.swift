@@ -147,7 +147,7 @@ struct LinkPaymentsView: View {
                             .font(AppTypography.body.weight(.semibold))
                         Text(String(format: String(localized: "subscription.linkPayments.selectedWithAmount", defaultValue: "%d selected \u{00B7} %@"), selectedIds.count, amountsHidden ? Formatting.hiddenAmount(currency: transactionStore.baseCurrency) : Formatting.formatCurrencySmart(cachedSelectedTotalInBaseCurrency, currency: transactionStore.baseCurrency)))
                             .font(AppTypography.caption)
-                            .foregroundStyle(AppColors.textSecondary)
+                            .foregroundStyle(AppColors.Text.secondary)
                     }
                 }
             }

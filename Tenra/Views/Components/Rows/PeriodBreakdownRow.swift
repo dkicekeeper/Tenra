@@ -34,8 +34,8 @@ enum PeriodListMetric {
 
     var color: Color {
         switch self {
-        case .income: return AppColors.success
-        default:      return AppColors.textPrimary
+        case .income: return AppColors.Status.positive
+        default:      return AppColors.Text.primary
         }
     }
 }
@@ -54,7 +54,7 @@ struct PeriodBreakdownRow: View {
     let netFlow: Double
     let currency: String
     var singleValue: Double? = nil
-    var singleColor: Color = AppColors.textPrimary
+    var singleColor: Color = AppColors.Text.primary
 
     var body: some View {
         NetAmountRow(
@@ -81,7 +81,7 @@ struct PeriodBreakdownRow: View {
 
 #Preview("Single metric") {
     VStack(spacing: 0) {
-        PeriodBreakdownRow(label: "Январь 2026", income: 530_000, expenses: 320_000, netFlow: 210_000, currency: "KZT", singleValue: 320_000, singleColor: AppColors.textPrimary)
-        PeriodBreakdownRow(label: "Декабрь 2025", income: 480_000, expenses: 390_000, netFlow: 90_000, currency: "KZT", singleValue: 390_000, singleColor: AppColors.textPrimary)
+        PeriodBreakdownRow(label: "Январь 2026", income: 530_000, expenses: 320_000, netFlow: 210_000, currency: "KZT", singleValue: 320_000, singleColor: AppColors.Text.primary)
+        PeriodBreakdownRow(label: "Декабрь 2025", income: 480_000, expenses: 390_000, netFlow: 90_000, currency: "KZT", singleValue: 390_000, singleColor: AppColors.Text.primary)
     }
 }

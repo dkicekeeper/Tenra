@@ -14,9 +14,9 @@ import Foundation
 /// Sendable and value-type so it is safe to pass back from `Task.detached`
 /// to the MainActor without any bridging. Colors are intentionally NOT
 /// stored here — they are resolved in the View layer via
-/// `CategoryColors.color(for:customCategories:)` on the MainActor.
+/// `AppColors.Data.color(for:customCategories:)` on the MainActor.
 struct CategoryColorWeight: Sendable, Hashable {
-    /// The category name used to resolve its color via `CategoryColors`.
+    /// The category name used to resolve its color via `AppColors.Data`.
     let category: String
     /// Proportion of total expenses: `categoryAmount / totalExpenses`.
     /// Ranges from 0.0 (no spend) to 1.0 (100 % of spend).

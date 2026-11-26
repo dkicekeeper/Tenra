@@ -179,7 +179,7 @@ struct GoalDetailView: View {
                 value: status.isOverdue
                     ? String(localized: "goal.overdue")
                     : DateFormatters.displayDateOmittingCurrentYear(deadline),
-                iconColor: status.isOverdue ? AppColors.destructive : AppColors.accent
+                iconColor: status.isOverdue ? AppColors.Status.negative : AppColors.accent
             ))
         }
         if let monthly = status.monthly {

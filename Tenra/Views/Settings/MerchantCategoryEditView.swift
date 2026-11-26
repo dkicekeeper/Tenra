@@ -117,7 +117,7 @@ struct MerchantCategoryEditView: View {
 
                     Text(String(localized: "settings.merchants.editFooter"))
                         .font(AppTypography.bodySmall)
-                        .foregroundStyle(AppColors.textSecondary)
+                        .foregroundStyle(AppColors.Text.secondary)
                         .screenPadding()
 
                     DSButton(

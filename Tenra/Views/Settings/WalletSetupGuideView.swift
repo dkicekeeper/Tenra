@@ -196,7 +196,7 @@ private struct StepPage: View {
                     }
                     Text(step.title)
                         .font(AppTypography.h3)
-                        .foregroundStyle(AppColors.textPrimary)
+                        .foregroundStyle(AppColors.Text.primary)
                         .accessibilityAddTraits(.isHeader)
                     ArticleBody(blocks)
                 }

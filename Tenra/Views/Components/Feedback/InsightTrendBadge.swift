@@ -70,7 +70,7 @@ extension TrendDirection {
             InsightTrendBadge(trend: downTrend, style: .changeIndicator)
             InsightTrendBadge(trend: flatTrend, style: .changeIndicator)
             // With color override (expense context: up = bad)
-            InsightTrendBadge(trend: upTrend, style: .changeIndicator, colorOverride: AppColors.destructive)
+            InsightTrendBadge(trend: upTrend, style: .changeIndicator, colorOverride: AppColors.Status.negative)
         }
     }
     .screenPadding()

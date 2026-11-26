@@ -35,7 +35,7 @@ struct DebtCard: View {
             progressColor: .income
         ) {
             if debt.isOverdue(today: today) {
-                Badge(String(localized: "debt.overdue"), color: AppColors.destructive)
+                Badge(String(localized: "debt.overdue"), color: AppColors.Status.negative)
             }
         }
     }

@@ -202,15 +202,15 @@ struct InsightDeepDiveView: View {
 
                     Text(item.name)
                         .font(AppTypography.body)
-                        .foregroundStyle(AppColors.textPrimary)
+                        .foregroundStyle(AppColors.Text.primary)
 
                     Spacer()
 
                     VStack(alignment: .trailing, spacing: AppSpacing.xxs) {
-                        FormattedAmountText(amount: item.amount, currency: displayCurrency, color: AppColors.textPrimary)
+                        FormattedAmountText(amount: item.amount, currency: displayCurrency, color: AppColors.Text.primary)
                         Text(NumberDisplay.percent(item.percentage, fractionDigits: 1))
                             .font(AppTypography.bodySmall)
-                            .foregroundStyle(AppColors.textSecondary)
+                            .foregroundStyle(AppColors.Text.secondary)
                     }
                 }
                 .padding(.vertical, AppSpacing.md)
@@ -300,7 +300,7 @@ struct InsightDeepDiveView: View {
     return NavigationStack {
         InsightDeepDiveView(
             categoryName: "Food",
-            color: AppColors.warning,
+            color: AppColors.Status.warning,
             iconSource: .sfSymbol("fork.knife"),
             currency: "KZT",
             pages: pages,

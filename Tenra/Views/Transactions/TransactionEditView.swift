@@ -209,7 +209,7 @@ struct TransactionEditView: View {
             .safeAreaInset(edge: .bottom) {
                 if !descriptionFocused {
                     CalculatorKeypad(model: calc)
-                        .background(AppColors.bgBase)
+                        .background(AppColors.Background.page)
                 }
             }
             .onChange(of: calc.amountText) { _, newValue in

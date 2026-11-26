@@ -95,7 +95,7 @@ struct MerchantDetailView: View {
         if let category = usualCategory {
             return (category.iconSource, .monochrome(category.color))
         }
-        return (.sfSymbol("storefront"), .monochrome(AppColors.textSecondary))
+        return (.sfSymbol("storefront"), .monochrome(AppColors.Text.secondary))
     }
 
     private var refreshKey: RefreshKey {
@@ -280,7 +280,7 @@ struct MerchantDetailView: View {
             Button {
                 unlinking = tx.id
             } label: {
-                Icon("link", size: AppIconSize.sm, tint: .monochrome(AppColors.textSecondary))
+                Icon("link", size: AppIconSize.sm, tint: .monochrome(AppColors.Text.secondary))
             }
             .buttonStyle(.plain)
             .accessibilityLabel(String(localized: "merchant.link.linked"))

@@ -662,7 +662,7 @@ struct LoanDetailView: View {
                     VStack(alignment: .leading, spacing: AppSpacing.xs) {
                         Text(String(localized: "loan.principalPortion", defaultValue: "Principal"))
                             .font(AppTypography.bodySmall)
-                            .foregroundStyle(AppColors.textSecondary)
+                            .foregroundStyle(AppColors.Text.secondary)
                         FormattedAmountText(
                             amount: NSDecimalNumber(decimal: breakdown.principal).doubleValue,
                             currency: account.currency,
@@ -674,7 +674,7 @@ struct LoanDetailView: View {
                     VStack(alignment: .leading, spacing: AppSpacing.xs) {
                         Text(String(localized: "loan.interestPortion", defaultValue: "Interest"))
                             .font(AppTypography.bodySmall)
-                            .foregroundStyle(AppColors.textSecondary)
+                            .foregroundStyle(AppColors.Text.secondary)
                         FormattedAmountText(
                             amount: NSDecimalNumber(decimal: breakdown.interest).doubleValue,
                             currency: account.currency,
@@ -700,7 +700,7 @@ struct LoanDetailView: View {
                 // Installment — no interest
                 Text(String(localized: "loan.noInterest", defaultValue: "Installment — no interest charged"))
                     .font(AppTypography.bodySmall)
-                    .foregroundStyle(AppColors.textSecondary)
+                    .foregroundStyle(AppColors.Text.secondary)
             }
         }
     }
@@ -794,7 +794,7 @@ struct LoanDetailView: View {
             if schedule.isEmpty {
                 Text(String(localized: "loan.noSchedule", defaultValue: "No schedule available"))
                     .font(AppTypography.bodySmall)
-                    .foregroundStyle(AppColors.textSecondary)
+                    .foregroundStyle(AppColors.Text.secondary)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.vertical, AppSpacing.md)
             } else {

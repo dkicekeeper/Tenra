@@ -68,7 +68,7 @@ struct TimeFilterView: View {
                                 if selectedPreset == .custom {
                                     Text(customRangeDescription)
                                         .font(AppTypography.caption)
-                                        .foregroundStyle(AppColors.textSecondary)
+                                        .foregroundStyle(AppColors.Text.secondary)
                                 }
                             }
                         } trailing: {

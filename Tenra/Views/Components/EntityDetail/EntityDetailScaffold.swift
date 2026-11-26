@@ -211,7 +211,7 @@ struct EntityDetailScaffold<Hero: View, CustomSections: View, MenuContent: View,
                                 prefix: display.prefix,
                                 fontSize: AppTypography.bodyEmphasis,
                                 fontWeight: .semibold,
-                                color: AppColors.textPrimary
+                                color: AppColors.Text.primary
                             )
                         } else if let custom = row.valueContent {
                             custom

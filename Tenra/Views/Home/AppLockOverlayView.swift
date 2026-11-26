@@ -17,7 +17,7 @@ struct AppLockOverlayView: View {
 
     var body: some View {
         ZStack {
-            AppColors.bgBase.ignoresSafeArea()
+            AppColors.Background.page.ignoresSafeArea()
 
             VStack(spacing: AppSpacing.lg) {
                 // A tile from 44 pt (DesignKit 7.0.0): the lock on its pale disc.
@@ -25,12 +25,12 @@ struct AppLockOverlayView: View {
 
                 Text("Tenra")
                     .font(AppTypography.h4)
-                    .foregroundStyle(AppColors.textPrimary)
+                    .foregroundStyle(AppColors.Text.primary)
 
                 if lock.isLocked {
                     Text(String(localized: "appLock.title"))
                         .font(AppTypography.bodySmall)
-                        .foregroundStyle(AppColors.textSecondary)
+                        .foregroundStyle(AppColors.Text.secondary)
 
                     Button {
                         Task { await lock.unlock() }

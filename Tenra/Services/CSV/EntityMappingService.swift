@@ -135,7 +135,7 @@ class EntityMappingService: EntityMappingServiceProtocol {
             type: type,
             customCategories: transactionStore.categories
         )
-        let colorHex = CategoryColors.color(
+        let colorHex = AppColors.Data.color(
             for: name,
             customCategories: transactionStore.categories
         )

@@ -136,7 +136,7 @@ struct TransactionAddModal: View {
             // field is focused so its system keyboard takes the bottom instead.
             if !descriptionFocused {
                 CalculatorKeypad(model: calc)
-                    .background(AppColors.bgBase)
+                    .background(AppColors.Background.page)
             }
         }
         .onChange(of: calc.amountText) { _, newValue in

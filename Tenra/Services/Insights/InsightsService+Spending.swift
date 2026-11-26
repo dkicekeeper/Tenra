@@ -356,8 +356,8 @@ extension InsightsService {
                     cardVisual: .barPair(
                         previous: prevTotal,
                         current: thisTotal,
-                        color: direction == .up ? AppColors.destructive
-                             : direction == .down ? AppColors.success
+                        color: direction == .up ? AppColors.Status.negative
+                             : direction == .down ? AppColors.Status.positive
                              : AppColors.accent,
                         isProjection: false
                     )
@@ -416,8 +416,8 @@ extension InsightsService {
                         cardVisual: .barPair(
                             previous: prevMonthTotal,
                             current: thisMonthTotal,
-                            color: direction == .up ? AppColors.destructive
-                                 : direction == .down ? AppColors.success
+                            color: direction == .up ? AppColors.Status.negative
+                                 : direction == .down ? AppColors.Status.positive
                                  : AppColors.accent,
                             isProjection: false
                         )
@@ -710,7 +710,7 @@ extension InsightsService {
             cardVisual: .halfGauge(
                 value: spikeAmount,
                 norm: spikeAmount / spikeMultiplier,
-                color: spikeMultiplier > 2 ? AppColors.destructive : AppColors.warning
+                color: spikeMultiplier > 2 ? AppColors.Status.negative : AppColors.Status.warning
             )
         )
     }
@@ -800,7 +800,7 @@ extension InsightsService {
             cardVisual: .halfGauge(
                 value: candidate.amountBase,
                 norm: avgTx,
-                color: multiplier >= 8 ? AppColors.destructive : AppColors.warning
+                color: multiplier >= 8 ? AppColors.Status.negative : AppColors.Status.warning
             )
         )
     }
@@ -894,7 +894,7 @@ extension InsightsService {
             id: "checkGrowth_\(best.key)",
             titleKey: "insights.formula.checkGrowth.title",
             icon: "receipt",
-            color: AppColors.warning,
+            color: AppColors.Status.warning,
             heroValueText: Formatting.formatCurrencySmart(after, currency: baseCurrency),
             heroLabelKey: "insights.formula.checkGrowth.heroLabel",
             formulaHeaderKey: "insights.formula.checkGrowth.formulaHeader",
@@ -932,7 +932,7 @@ extension InsightsService {
             category: .spending,
             detailData: .formulaBreakdown(model),
             // Was / now: the average check of the 90 days before against the last 90.
-            cardVisual: .barPair(previous: before, current: after, color: AppColors.warning, isProjection: false)
+            cardVisual: .barPair(previous: before, current: after, color: AppColors.Status.warning, isProjection: false)
         )
     }
 
@@ -1032,7 +1032,7 @@ extension InsightsService {
             id: "categoryTrend",
             titleKey: "insights.formula.categoryTrend.title",
             icon: "chart.line.uptrend.xyaxis",
-            color: AppColors.warning,
+            color: AppColors.Status.warning,
             heroValueText: catName,
             heroLabelKey: "insights.formula.categoryTrend.heroLabel",
             formulaHeaderKey: "insights.formula.categoryTrend.formulaHeader",

@@ -28,7 +28,7 @@ struct SelectablePreset: Identifiable, Hashable {
 
 extension CategoryPreset {
     /// 15 expense-category presets. Names resolved via `String(localized:)` at commit time.
-    /// Hex colours: first 12 from `CategoryColors` palette; last 3 are neutrals chosen
+    /// Hex colours: first 12 from `AppColors.Data` palette; last 3 are neutrals chosen
     /// outside the palette (brown / slate / light grey) — see spec §4.4.
     static let defaultExpense: [CategoryPreset] = [
         .init(id: "groceries",     nameKey: "onboarding.preset.groceries",     iconSource: .sfSymbol("cart.fill"),                     colorHex: "#22c55e", type: .expense),

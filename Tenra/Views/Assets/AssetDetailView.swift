@@ -626,7 +626,7 @@ struct AssetDetailView: View {
                 amount: abs(gain),
                 currency: asset.currency,
                 prefix: direction == .up ? "+" : direction == .down ? "\u{2212}" : "",
-                iconColor: direction == .down ? AppColors.destructive : Color.income
+                iconColor: direction == .down ? AppColors.Status.negative : Color.income
             ))
         }
         if let growth = summary.annualGrowthPercent {
@@ -634,7 +634,7 @@ struct AssetDetailView: View {
                 icon: "chart.line.uptrend.xyaxis",
                 label: String(localized: "asset.annualGrowth"),
                 value: TrendBadge.format(growth),
-                iconColor: growth < 0 ? AppColors.destructive : Color.income
+                iconColor: growth < 0 ? AppColors.Status.negative : Color.income
             ))
         }
         if let rate = AssetValuationMath.depreciationRate(of: asset), !asset.isSold {
@@ -642,7 +642,7 @@ struct AssetDetailView: View {
                 icon: "chart.line.downtrend.xyaxis",
                 label: String(localized: "asset.depreciation"),
                 value: String(format: String(localized: "asset.depreciationValue"), Self.percentText(rate)),
-                iconColor: AppColors.textSecondary
+                iconColor: AppColors.Text.secondary
             ))
             if let forecast = AssetValuationMath.forecast(of: asset, today: today) {
                 rows.append(InfoRowConfig(
@@ -651,7 +651,7 @@ struct AssetDetailView: View {
                     amount: forecast.value,
                     currency: asset.currency,
                     prefix: "\u{2248} ",
-                    iconColor: AppColors.textSecondary
+                    iconColor: AppColors.Text.secondary
                 ))
             }
         }
@@ -664,7 +664,7 @@ struct AssetDetailView: View {
             ))
         }
         if let remaining = summary.loanRemaining {
-            rows.append(InfoRowConfig(icon: "building.columns", label: String(localized: "asset.loanLeft"), amount: remaining, currency: asset.currency, iconColor: AppColors.destructive))
+            rows.append(InfoRowConfig(icon: "building.columns", label: String(localized: "asset.loanLeft"), amount: remaining, currency: asset.currency, iconColor: AppColors.Status.negative))
             if let equity = summary.equity {
                 rows.append(InfoRowConfig(icon: "key", label: String(localized: "asset.equity"), amount: equity, currency: asset.currency))
             }
@@ -680,7 +680,7 @@ struct AssetDetailView: View {
                 icon: "percent",
                 label: String(localized: "asset.yield"),
                 value: Self.percentText(yield / 100, fractionDigits: 1),
-                iconColor: yield < 0 ? AppColors.destructive : Color.income
+                iconColor: yield < 0 ? AppColors.Status.negative : Color.income
             ))
         }
         if let result = income.fullResult {
@@ -691,7 +691,7 @@ struct AssetDetailView: View {
                 amount: abs(result),
                 currency: asset.currency,
                 prefix: direction == .up ? "+" : direction == .down ? "\u{2212}" : "",
-                iconColor: direction == .down ? AppColors.destructive : Color.income
+                iconColor: direction == .down ? AppColors.Status.negative : Color.income
             ))
         }
         if let soldAt = asset.soldAt {
@@ -707,11 +707,11 @@ struct AssetDetailView: View {
                 icon: "chart.pie",
                 label: String(localized: "asset.includeInNetWorth"),
                 value: String(localized: "asset.attr.no"),
-                iconColor: AppColors.textSecondary
+                iconColor: AppColors.Text.secondary
             ))
         }
         if let note = asset.note, !note.isEmpty {
-            rows.append(InfoRowConfig(icon: "text.alignleft", label: String(localized: "asset.note"), value: note, iconColor: AppColors.textSecondary))
+            rows.append(InfoRowConfig(icon: "text.alignleft", label: String(localized: "asset.note"), value: note, iconColor: AppColors.Text.secondary))
         }
         return rows
     }
@@ -727,7 +727,7 @@ struct AssetDetailView: View {
             return number
         }
         func row(_ field: Field, _ text: String) -> InfoRowConfig {
-            InfoRowConfig(icon: AssetAttributesSection.icon(of: field), label: AssetAttributesSection.title(of: field), value: text, iconColor: AppColors.textSecondary)
+            InfoRowConfig(icon: AssetAttributesSection.icon(of: field), label: AssetAttributesSection.title(of: field), value: text, iconColor: AppColors.Text.secondary)
         }
         var rows: [InfoRowConfig] = []
         if let area = number(.areaM2) {

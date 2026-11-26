@@ -75,7 +75,7 @@ struct CSVPreviewView: View {
             }
         }
         .cardContentPadding()
-        .background(AppColors.bgCard)
+        .background(AppColors.Background.card)
         .clipShape(.rect(cornerRadius: AppRadius.card))
     }
 
@@ -121,7 +121,7 @@ struct CSVPreviewView: View {
         HStack(alignment: .top) {
             Text("\(index + 1).")
                 .font(AppTypography.caption)
-                .foregroundStyle(AppColors.textSecondary)
+                .foregroundStyle(AppColors.Text.secondary)
                 .frame(width: 30, alignment: .leading)
 
             UniversalCarousel(config: .compact) {
@@ -129,7 +129,7 @@ struct CSVPreviewView: View {
                     VStack(alignment: .leading, spacing: AppSpacing.xxs) {
                         Text(csvFile.headers[safe: colIndex] ?? "?")
                             .font(AppTypography.caption2)
-                            .foregroundStyle(AppColors.textSecondary)
+                            .foregroundStyle(AppColors.Text.secondary)
                         Text(value.isEmpty
                             ? String(localized: "csv.emptyCell")
                             : value
@@ -139,7 +139,7 @@ struct CSVPreviewView: View {
                     }
                     .padding(AppSpacing.sm)
                     .frame(width: 120, alignment: .leading)
-                    .background(AppColors.bgCard)
+                    .background(AppColors.Background.card)
                     .clipShape(.rect(cornerRadius: AppRadius.xs))
                 }
             }

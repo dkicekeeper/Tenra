@@ -92,12 +92,12 @@ struct ImportTransactionPreviewView: View {
                                 .font(AppTypography.h4)
                             Text(String(localized: "transactionPreview.selectHint"))
                                 .font(AppTypography.bodySmall)
-                                .foregroundStyle(AppColors.textSecondary)
+                                .foregroundStyle(AppColors.Text.secondary)
                             if !regularAccounts.isEmpty {
                                 HStack(spacing: AppSpacing.xs) {
                                     Text(String(localized: "transactionPreview.statementAccount"))
                                         .font(AppTypography.bodySmall)
-                                        .foregroundStyle(AppColors.textSecondary)
+                                        .foregroundStyle(AppColors.Text.secondary)
                                     Picker(String(localized: "transactionPreview.statementAccount"), selection: $statementAccountId) {
                                         ForEach(regularAccounts) { account in
                                             Text("\(account.name) (\(Formatting.currencySymbol(for: account.currency)))").tag(account.id)
@@ -126,7 +126,7 @@ struct ImportTransactionPreviewView: View {
                                         .controlSize(.small)
                                     Text(String(localized: "transactionPreview.intelligence.progress"))
                                         .font(AppTypography.caption)
-                                        .foregroundStyle(AppColors.textSecondary)
+                                        .foregroundStyle(AppColors.Text.secondary)
                                 }
                                 .transition(.opacity)
                             }
@@ -209,8 +209,8 @@ struct ImportTransactionPreviewView: View {
                         Text("bulk.deselectAll")
                             .frame(maxWidth: .infinity)
                             .padding(AppSpacing.md)
-                            .background(AppColors.bgMuted)
-                            .foregroundStyle(AppColors.textSecondary)
+                            .background(AppColors.Background.containerStrong)
+                            .foregroundStyle(AppColors.Text.secondary)
                             .clipShape(.rect(cornerRadius: AppRadius.button))
                     }
                     .accessibilityLabel(String(localized: "bulk.deselectAll"))
@@ -224,7 +224,7 @@ struct ImportTransactionPreviewView: View {
                     Text(String(format: String(localized: "transactionPreview.addSelected"), selectedTransactions.count))
                         .frame(maxWidth: .infinity)
                         .padding(AppSpacing.md)
-                        .background(selectedTransactions.isEmpty ? AppColors.bgMuted : AppColors.accent)
+                        .background(selectedTransactions.isEmpty ? DesignKitTheme.surface.containerStrong : AppColors.accent)
                         .foregroundStyle(.white)
                         .clipShape(.rect(cornerRadius: AppRadius.button))
                 }
@@ -346,34 +346,34 @@ struct ImportTransactionPreviewView: View {
                             DateFormatters.displayString(from: check.asOf)))
                 Spacer()
                 FormattedAmountText(amount: check.statement, currency: check.currency,
-                                    fontSize: AppTypography.bodySmall, color: AppColors.textSecondary)
+                                    fontSize: AppTypography.bodySmall, color: AppColors.Text.secondary)
             }
             HStack {
                 Text(String(localized: "transactionPreview.reconcile.tenra"))
                 Spacer()
                 FormattedAmountText(amount: check.projected, currency: check.currency,
-                                    fontSize: AppTypography.bodySmall, color: AppColors.textSecondary)
+                                    fontSize: AppTypography.bodySmall, color: AppColors.Text.secondary)
             }
             if abs(difference) < 0.5 {
                 Label(String(localized: "transactionPreview.reconcile.match"), systemImage: "checkmark.circle.fill")
-                    .foregroundStyle(AppColors.success)
+                    .foregroundStyle(AppColors.Status.positive)
                     .frame(maxWidth: .infinity, alignment: .leading)
             } else {
                 HStack {
                     Label(String(localized: difference < 0 ? "transactionPreview.reconcile.less" : "transactionPreview.reconcile.more"),
                           systemImage: "exclamationmark.triangle.fill")
-                        .foregroundStyle(AppColors.warning)
+                        .foregroundStyle(AppColors.Status.warning)
                     Spacer()
                     FormattedAmountText(amount: abs(difference), currency: check.currency,
-                                        fontSize: AppTypography.bodySmall, color: AppColors.warning)
+                                        fontSize: AppTypography.bodySmall, color: AppColors.Status.warning)
                 }
                 Text(String(localized: "transactionPreview.reconcile.hint"))
-                    .foregroundStyle(AppColors.textSecondary)
+                    .foregroundStyle(AppColors.Text.secondary)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
         .font(AppTypography.bodySmall)
-        .foregroundStyle(AppColors.textSecondary)
+        .foregroundStyle(AppColors.Text.secondary)
         .padding(.top, AppSpacing.xs)
     }
 
@@ -986,8 +986,8 @@ struct ImportTransactionPreviewRow: View {
                         size: AppIconSize.md
                     )
                         .foregroundStyle(hasNoMatchingAccount
-                            ? AppColors.warning
-                            : (isSelected ? AppColors.accent : AppColors.textSecondary)
+                            ? AppColors.Status.warning
+                            : (isSelected ? AppColors.accent : AppColors.Text.secondary)
                         )
                         .animation(AppAnimation.contentSpring, value: isSelected)
                 }
@@ -1031,14 +1031,14 @@ struct ImportTransactionPreviewRow: View {
             if hasNoMatchingAccount {
                 Text(String(localized: "transactionPreview.noMatchingAccount"))
                     .font(AppTypography.caption)
-                    .foregroundStyle(AppColors.warning)
+                    .foregroundStyle(AppColors.Status.warning)
                     .padding(.leading, AppSpacing.xl)
             }
 
             if isIntelligenceSuggestion && transferAccount == nil && !category.isEmpty {
                 Label(String(localized: "transactionPreview.intelligence.suggested"), systemImage: "sparkles")
                     .font(AppTypography.caption)
-                    .foregroundStyle(AppColors.textSecondary)
+                    .foregroundStyle(AppColors.Text.secondary)
                     .padding(.leading, AppSpacing.xl)
             }
 
@@ -1046,7 +1046,7 @@ struct ImportTransactionPreviewRow: View {
             if let notice {
                 Text(notice.text)
                     .font(AppTypography.caption)
-                    .foregroundStyle(notice.isWarning ? AppColors.warning : AppColors.textSecondary)
+                    .foregroundStyle(notice.isWarning ? AppColors.Status.warning : AppColors.Text.secondary)
                     .padding(.leading, AppSpacing.xl)
             }
 

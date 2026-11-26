@@ -44,7 +44,7 @@ struct CategoryBreakdownRow: View {
         ScrollView {
             VStack(spacing: 0) {
                 CategoryBreakdownRow(
-                    item: .preview(name: "Food", color: AppColors.warning, icon: "fork.knife", amount: 85_000, pct: 42),
+                    item: .preview(name: "Food", color: AppColors.Status.warning, icon: "fork.knife", amount: 85_000, pct: 42),
                     currency: "KZT",
                     showsChevron: true
                 )

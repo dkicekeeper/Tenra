@@ -141,7 +141,7 @@ private struct AssistantMetricCard: View {
         let direction: TrendBadge.Direction = change > 0 ? .up : change < 0 ? .down : .flat
         // Spending that grows is bad news: red up, green down.
         let color: Color? = metric.isExpense
-            ? (change > 0 ? AppColors.destructive : change < 0 ? Color.income : nil)
+            ? (change > 0 ? AppColors.Status.negative : change < 0 ? Color.income : nil)
             : nil
         return MetricCardTrend(direction: direction, changePercent: change, color: color)
     }
@@ -213,7 +213,7 @@ private struct AssistantChartCard: View {
         return .keyed(
             Self.seriesId,
             name: title,
-            coloring: signed ? .signed(positive: Color.income, negative: AppColors.destructive) : .solid(AppColors.accent),
+            coloring: signed ? .signed(positive: Color.income, negative: AppColors.Status.negative) : .solid(AppColors.accent),
             baseline: signed ? .signed : .zero
         )
     }

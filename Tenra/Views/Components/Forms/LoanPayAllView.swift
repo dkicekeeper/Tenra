@@ -63,10 +63,10 @@ struct LoanPayAllView: View {
                                     VStack(alignment: .leading, spacing: AppSpacing.xxs) {
                                         Text(loan.name)
                                             .font(AppTypography.body)
-                                            .foregroundStyle(AppColors.textPrimary)
+                                            .foregroundStyle(AppColors.Text.primary)
                                         Text(loanInfo.bankName)
                                             .font(AppTypography.caption)
-                                            .foregroundStyle(AppColors.textSecondary)
+                                            .foregroundStyle(AppColors.Text.secondary)
                                     }
                                 } trailing: {
                                     FormTextField(
@@ -107,7 +107,7 @@ struct LoanPayAllView: View {
                             ) {
                                 Text(String(localized: "loan.noSourceAccounts", defaultValue: "No accounts"))
                                     .font(AppTypography.bodySmall)
-                                    .foregroundStyle(AppColors.textSecondary)
+                                    .foregroundStyle(AppColors.Text.secondary)
                             }
                         } else {
                             UniversalRow(

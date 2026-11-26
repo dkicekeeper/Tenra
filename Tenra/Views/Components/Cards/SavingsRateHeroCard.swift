@@ -58,18 +58,18 @@ struct SavingsRateHeroCard: View {
 
 #Preview("Below target") {
     ScrollView {
-        SavingsRateHeroCard(rate: 12.4, color: AppColors.warning, subtitle: "66 000 ₸, September 2026")
+        SavingsRateHeroCard(rate: 12.4, color: AppColors.Status.warning, subtitle: "66 000 ₸, September 2026")
     }
 }
 
 #Preview("On target") {
     ScrollView {
-        SavingsRateHeroCard(rate: 27.8, color: AppColors.success, subtitle: "148 000 ₸, September 2026")
+        SavingsRateHeroCard(rate: 27.8, color: AppColors.Status.positive, subtitle: "148 000 ₸, September 2026")
     }
 }
 
 #Preview("Deficit") {
     ScrollView {
-        SavingsRateHeroCard(rate: -6.2, color: AppColors.destructive, subtitle: "0 ₸, September 2026")
+        SavingsRateHeroCard(rate: -6.2, color: AppColors.Status.negative, subtitle: "0 ₸, September 2026")
     }
 }

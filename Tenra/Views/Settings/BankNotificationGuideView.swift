@@ -151,7 +151,7 @@ private struct GuidePage: View {
                     }
                     Text(page.title)
                         .font(AppTypography.h3)
-                        .foregroundStyle(AppColors.textPrimary)
+                        .foregroundStyle(AppColors.Text.primary)
                         .accessibilityAddTraits(.isHeader)
                     ArticleBody(page.blocks)
                 }
@@ -176,11 +176,11 @@ struct BankNotificationCheckPage: View {
                 VStack(alignment: .leading, spacing: AppSpacing.sm) {
                     Text(String(localized: "bankSetup.page.check"))
                         .font(AppTypography.h3)
-                        .foregroundStyle(AppColors.textPrimary)
+                        .foregroundStyle(AppColors.Text.primary)
                         .accessibilityAddTraits(.isHeader)
                     Text(String(localized: "bankSetup.check.text"))
                         .font(AppTypography.body)
-                        .foregroundStyle(AppColors.textSecondary)
+                        .foregroundStyle(AppColors.Text.secondary)
                 }
                 FormSection {
                     TextField(String(localized: "bankSetup.check.placeholder"), text: $text, axis: .vertical)

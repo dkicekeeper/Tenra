@@ -33,7 +33,7 @@ struct InsightsTotalsCard: View {
                     title: String(localized: "insights.income"),
                     amount: income,
                     previous: previousIncome,
-                    color: AppColors.success,
+                    color: AppColors.Status.positive,
                     increaseIsGood: true
                 ),
                 .init(
@@ -41,7 +41,7 @@ struct InsightsTotalsCard: View {
                     title: String(localized: "insights.expenses"),
                     amount: expenses,
                     previous: previousExpenses,
-                    color: AppColors.destructive,
+                    color: AppColors.Status.negative,
                     increaseIsGood: false
                 ),
                 .init(
@@ -49,7 +49,7 @@ struct InsightsTotalsCard: View {
                     title: String(localized: "insights.netFlow"),
                     amount: netFlow,
                     previous: previousNetFlow,
-                    color: netFlow >= 0 ? AppColors.textPrimary : AppColors.destructive,
+                    color: netFlow >= 0 ? AppColors.Text.primary : AppColors.Status.negative,
                     increaseIsGood: true
                 ),
             ],

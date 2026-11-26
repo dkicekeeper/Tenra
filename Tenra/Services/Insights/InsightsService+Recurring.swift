@@ -114,7 +114,7 @@ extension InsightsService {
                     DonutSlice(
                         id: item.id,
                         amount: item.monthlyEquivalent,
-                        color: CategoryColors.color(for: item.name),
+                        color: AppColors.Data.color(for: item.name),
                         label: item.name,
                         percentage: item.monthlyEquivalent / totalMonthly * 100
                     )
@@ -124,7 +124,7 @@ extension InsightsService {
                     segments.append(DonutSlice(
                         id: "other",
                         amount: rest,
-                        color: AppColors.textTertiary,
+                        color: AppColors.Text.tertiary,
                         label: String(localized: "insights.other"),
                         percentage: rest / totalMonthly * 100
                     ))
@@ -290,7 +290,7 @@ extension InsightsService {
                 cardVisual: .barPair(
                     previous: baseline,
                     current: newCharge.amount,
-                    color: AppColors.warning,
+                    color: AppColors.Status.warning,
                     isProjection: false
                 ),
                 // One push per series + new amount: the same increase never pushes
@@ -417,7 +417,7 @@ extension InsightsService {
             cardVisual: .barPair(
                 previous: prevTotal,
                 current: currentTotal,
-                color: changePercent > 0 ? AppColors.warning : AppColors.success,
+                color: changePercent > 0 ? AppColors.Status.warning : AppColors.Status.positive,
                 isProjection: false
             )
         )

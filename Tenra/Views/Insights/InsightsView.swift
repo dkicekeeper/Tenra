@@ -251,7 +251,7 @@ struct InsightsView: View {
             if !insightsViewModel.currentBucketLabel.isEmpty {
                 Text(insightsViewModel.currentBucketLabel)
                     .font(AppTypography.bodyEmphasis)
-                    .foregroundStyle(AppColors.textPrimary)
+                    .foregroundStyle(AppColors.Text.primary)
             }
             LazyVGrid(columns: columns, spacing: AppSpacing.md) {
                 // Balance is a point-in-time figure, so it drills into the wealth
@@ -261,7 +261,7 @@ struct InsightsView: View {
                         title: String(localized: "insights.availableBalance"),
                         amount: insightsViewModel.availableBalance,
                         currency: currency,
-                        color: insightsViewModel.availableBalance >= 0 ? AppColors.textPrimary : AppColors.destructive,
+                        color: insightsViewModel.availableBalance >= 0 ? AppColors.Text.primary : AppColors.Status.negative,
                         trendPoints: insightsViewModel.balanceTrendPoints,
                         trendSeries: .wealth
                     )
@@ -271,7 +271,7 @@ struct InsightsView: View {
                         title: String(localized: "insights.netFlow"),
                         amount: netFlow,
                         currency: currency,
-                        color: netFlow >= 0 ? AppColors.textPrimary : AppColors.destructive,
+                        color: netFlow >= 0 ? AppColors.Text.primary : AppColors.Status.negative,
                         previous: insightsViewModel.previousBucketNetFlow,
                         upIsGood: true,
                         trendPoints: insightsViewModel.periodDataPoints,
@@ -283,7 +283,7 @@ struct InsightsView: View {
                         title: String(localized: "insights.expenses"),
                         amount: insightsViewModel.currentBucketExpenses,
                         currency: currency,
-                        color: AppColors.destructive,
+                        color: AppColors.Status.negative,
                         previous: insightsViewModel.previousBucketExpenses,
                         upIsGood: false,
                         trendPoints: insightsViewModel.periodDataPoints,
@@ -295,7 +295,7 @@ struct InsightsView: View {
                         title: String(localized: "insights.income"),
                         amount: insightsViewModel.currentBucketIncome,
                         currency: currency,
-                        color: AppColors.success,
+                        color: AppColors.Status.positive,
                         previous: insightsViewModel.previousBucketIncome,
                         upIsGood: true,
                         trendPoints: insightsViewModel.periodDataPoints,

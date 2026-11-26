@@ -49,7 +49,7 @@ struct GoalEditView: View {
                         )
                         Text(String(localized: "goal.targetHint"))
                             .font(AppTypography.caption)
-                            .foregroundStyle(AppColors.textSecondary)
+                            .foregroundStyle(AppColors.Text.secondary)
                             .multilineTextAlignment(.center)
                     }
 

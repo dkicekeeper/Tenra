@@ -43,14 +43,14 @@ struct SettingsPurchaseSection: View {
         ) {
             Text(String(localized: "settings.pro.restore"))
                 .font(AppTypography.body)
-                .foregroundStyle(AppColors.textPrimary)
+                .foregroundStyle(AppColors.Text.primary)
         } trailing: {
             if isRestoring {
                 ProgressView()
             } else if let restoreOutcome {
                 Text(label(for: restoreOutcome))
                     .font(AppTypography.bodySmall)
-                    .foregroundStyle(restoreOutcome == .failed ? AppColors.destructive : AppColors.textSecondary)
+                    .foregroundStyle(restoreOutcome == .failed ? AppColors.Status.negative : AppColors.Text.secondary)
             }
         }
         .actionRow { restorePurchases() }

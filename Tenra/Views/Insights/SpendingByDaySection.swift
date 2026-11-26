@@ -39,7 +39,7 @@ struct SpendingByDaySection: View {
                 CalendarHeatmap(
                     values: detail.days,
                     weeks: detail.weeks,
-                    color: AppColors.destructive,
+                    color: AppColors.Status.negative,
                     valueFormat: .currency(currency),
                     calendar: AppCalendar.current
                 )
@@ -57,7 +57,7 @@ struct SpendingByDaySection: View {
                     series: ChartSeries<ChartValuePoint>.keyed(
                         Self.seriesId,
                         name: String(localized: "insights.byDay.weekdaysHeader"),
-                        coloring: .solid(AppColors.destructive),
+                        coloring: .solid(AppColors.Status.negative),
                         better: .lower
                     ),
                     valueFormat: .currency(currency),
@@ -83,7 +83,7 @@ struct SpendingByDaySection: View {
 
             Text(String(localized: "insights.byDay.footnote"))
                 .font(AppTypography.caption)
-                .foregroundStyle(AppColors.textSecondary)
+                .foregroundStyle(AppColors.Text.secondary)
                 .screenPadding()
         }
     }
@@ -92,7 +92,7 @@ struct SpendingByDaySection: View {
     private var averageLine: [ChartReferenceLine] {
         guard !detail.weekdays.isEmpty else { return [] }
         let average = detail.weekdays.reduce(0) { $0 + $1.average } / Double(detail.weekdays.count)
-        return [.value(average, label: String(localized: "chart.average", defaultValue: "Average"), color: AppColors.textSecondary)]
+        return [.value(average, label: String(localized: "chart.average", defaultValue: "Average"), color: AppColors.Text.secondary)]
     }
 
     /// The weekdays as chart points: the short name on the axis, the full one in the banner.

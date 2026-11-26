@@ -26,7 +26,7 @@ struct LoanTypeBadge: View {
 
     private var tint: Color {
         if isPaidOff { return Color.income }
-        return loanType == .annuity ? AppColors.Text.primary : AppColors.planned
+        return loanType == .annuity ? AppColors.Text.primary : AppColors.Status.info
     }
 
     var body: some View {

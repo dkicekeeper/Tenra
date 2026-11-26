@@ -382,7 +382,7 @@ extension FinancialHealthScore {
         FinancialHealthScore(
             score: 72,
             grade: "Good",
-            gradeColor: AppColors.success,
+            gradeColor: AppColors.Status.positive,
             savingsRateScore: 75,
             budgetAdherenceScore: 80,
             recurringRatioScore: 65,
@@ -411,7 +411,7 @@ extension FinancialHealthScore {
         FinancialHealthScore(
             score: 38,
             grade: "Needs Attention",
-            gradeColor: AppColors.destructive,
+            gradeColor: AppColors.Status.negative,
             savingsRateScore: 20,
             budgetAdherenceScore: 40,
             recurringRatioScore: 50,

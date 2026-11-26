@@ -72,7 +72,7 @@ struct InsightFormulaCard: View {
         id: "savingsRate",
         titleKey: "insights.formula.savingsRate.title",
         icon: "banknote.fill",
-        color: AppColors.success,
+        color: AppColors.Status.positive,
         heroValueText: "12.4%",
         heroLabelKey: "insights.formula.savingsRate.heroLabel",
         formulaHeaderKey: "insights.formula.savingsRate.formulaHeader",

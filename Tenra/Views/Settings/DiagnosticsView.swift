@@ -40,7 +40,7 @@ struct DiagnosticsView: View {
                         ) {
                             Text(String(localized: "diagnostics.share"))
                                 .font(AppTypography.body)
-                                .foregroundStyle(AppColors.textPrimary)
+                                .foregroundStyle(AppColors.Text.primary)
                         } trailing: {
                             EmptyView()
                         }
@@ -121,7 +121,7 @@ struct DiagnosticsView: View {
                 UniversalRow {
                     Text(String(localized: "diagnostics.checking"))
                         .font(AppTypography.body)
-                        .foregroundStyle(AppColors.textSecondary)
+                        .foregroundStyle(AppColors.Text.secondary)
                 } trailing: {
                     ProgressView()
                 }
@@ -194,11 +194,11 @@ struct DiagnosticsView: View {
             VStack(alignment: .leading, spacing: AppSpacing.xxs) {
                 Text(title(for: result.item))
                     .font(AppTypography.body)
-                    .foregroundStyle(AppColors.textPrimary)
+                    .foregroundStyle(AppColors.Text.primary)
                 if let detail = detail(for: result.finding) {
                     Text(detail)
                         .font(AppTypography.caption)
-                        .foregroundStyle(AppColors.textSecondary)
+                        .foregroundStyle(AppColors.Text.secondary)
                 }
             }
         } trailing: {
@@ -212,15 +212,15 @@ struct DiagnosticsView: View {
         switch status {
         case .passed:
             Icon("checkmark.circle.fill", size: AppIconSize.md)
-                .foregroundStyle(AppColors.success)
+                .foregroundStyle(AppColors.Status.positive)
                 .accessibilityLabel(String(localized: "diagnostics.status.passed"))
         case .failed:
             Icon("exclamationmark.triangle.fill", size: AppIconSize.md)
-                .foregroundStyle(AppColors.destructive)
+                .foregroundStyle(AppColors.Status.negative)
                 .accessibilityLabel(String(localized: "diagnostics.status.failed"))
         case .skipped:
             Icon("minus.circle", size: AppIconSize.md)
-                .foregroundStyle(AppColors.textSecondary)
+                .foregroundStyle(AppColors.Text.secondary)
                 .accessibilityLabel(String(localized: "diagnostics.status.skipped"))
         }
     }
@@ -273,24 +273,24 @@ struct DiagnosticsView: View {
             if payloads.isEmpty {
                 Text(String(localized: "diagnostics.reports.empty"))
                     .font(AppTypography.body)
-                    .foregroundStyle(AppColors.textSecondary)
+                    .foregroundStyle(AppColors.Text.secondary)
                     .padding(.vertical, AppSpacing.md)
             } else {
                 ForEach(payloads) { payload in
                     UniversalRow(
                         leadingIcon: .sfSymbol(
                             payload.counts.crashes > 0 ? "exclamationmark.octagon" : "doc.text",
-                            color: payload.counts.crashes > 0 ? AppColors.destructive : AppColors.accent,
+                            color: payload.counts.crashes > 0 ? AppColors.Status.negative : AppColors.accent,
                             size: AppIconSize.lg
                         )
                     ) {
                         VStack(alignment: .leading, spacing: AppSpacing.xxs) {
                             Text(payload.periodEnd.formatted(date: .abbreviated, time: .shortened))
                                 .font(AppTypography.body)
-                                .foregroundStyle(AppColors.textPrimary)
+                                .foregroundStyle(AppColors.Text.primary)
                             Text(countsLine(payload.counts))
                                 .font(AppTypography.caption)
-                                .foregroundStyle(AppColors.textSecondary)
+                                .foregroundStyle(AppColors.Text.secondary)
                         }
                     } trailing: {
                         EmptyView()

@@ -42,6 +42,12 @@
       "video": "docs/public/media/threads/v-deposit.mp4",
       "approved": false,
       "text": "Депозит в Tenra растёт каждый день, как в банке: проценты по дням, с капитализацией. Видно, сколько он уже принёс."
+    },
+    {
+      "id": "v-loan",
+      "video": "docs/public/media/threads/v-loan.mp4",
+      "approved": false,
+      "text": "Внесли по кредиту досрочно? Tenra пересчитает график: меньше платёж или меньше срок, на выбор."
     }
   ],
   "replies": []

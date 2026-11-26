@@ -140,6 +140,7 @@ struct LoansListView: View {
                                 LoanCard(loan: loan, monthStatus: monthStatuses[loan.id])
                             }
                             .buttonStyle(.plain)
+                            .accessibilityIdentifier("loans.card")
                             .contextMenu { loanMenu(loan) }
                         }
                         .screenPadding()

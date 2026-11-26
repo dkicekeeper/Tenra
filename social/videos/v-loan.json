@@ -1,0 +1,53 @@
+{
+ "comment": "The loan: the new schedule first (the result), then the loan with its schedule, an early repayment on the keypad, reduce the term or the payment, and the schedule unfolding with the lower payment. Cuts picked from the frames: a 2-minute take drifts ~4 s behind the marks by its end. scripts/threads_video.py, docs/plan-threads-videos.md.",
+ "test": "testLoan",
+ "segments": [
+  {
+   "from": "schedule-2@+1.11",
+   "to": "schedule-2@+3.11",
+   "caption": "Tenra пересчитает кредит за вас"
+  },
+  {
+   "from": "loan@-2.59",
+   "to": "loan@-1.09",
+   "caption": "Видно, сколько уйдёт на проценты"
+  },
+  {
+   "from": "schedule@-3.32",
+   "to": "schedule@-0.72",
+   "caption": null
+  },
+  {
+   "from": "actions@+0.36",
+   "to": "actions@+1.96",
+   "caption": "Меньше срок или меньше платёж"
+  },
+  {
+   "from": "sheet@+0.56",
+   "to": "sheet@+4.56",
+   "speed": 1.5,
+   "caption": null
+  },
+  {
+   "from": "term@-4.64",
+   "to": "term@-1.84",
+   "caption": null
+  },
+  {
+   "from": "strategy@-0.68",
+   "to": "strategy@+1.73",
+   "caption": null
+  },
+  {
+   "from": "payment@-4.83",
+   "to": "payment@-2.23",
+   "caption": null
+  },
+  {
+   "from": "schedule-2@-0.69",
+   "to": "schedule-2@+3.11",
+   "caption": "И новый график уже готов"
+  }
+ ],
+ "endcard": 2.5
+}

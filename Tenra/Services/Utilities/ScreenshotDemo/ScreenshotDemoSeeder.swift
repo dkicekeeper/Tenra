@@ -408,7 +408,7 @@ struct ScreenshotDemoDataset {
             )
 
             let loanStart = monthStartString(daysAgo: 240)
-            let loanInfo = LoanInfo(
+            var loanInfo = LoanInfo(
                 bankName: lexicon.bank,
                 loanType: .annuity,
                 originalPrincipal: Decimal(local(6000)),
@@ -420,6 +420,11 @@ struct ScreenshotDemoDataset {
                 paymentsMade: 8,
                 lastPaymentDate: lastDateString(withDayOfMonth: 15)
             )
+            // The interest the payments made took, as the schedule splits them: the loan's
+            // "Interest paid" read 0 after eight payments.
+            loanInfo.totalInterestPaid = LoanPaymentService.generateAmortizationSchedule(loanInfo: loanInfo)
+                .prefix(loanInfo.paymentsMade)
+                .reduce(Decimal(0)) { $0 + $1.interest }
 
             accounts = [
                 Account(
@@ -480,10 +485,9 @@ struct ScreenshotDemoDataset {
                 case 12:
                     addExpense(daysAgo: daysAgo, eurBase: 80, description: "Zara", presetId: "clothing")
                 case 15:
-                    addLoanPayment(daysAgo: daysAgo, amount: ScreenshotDemoCurrency.niceRound(
-                        monthlyLoanPayment,
-                        decimals: ScreenshotDemoCurrency.profile(for: currency).decimals
-                    ))
+                    // The payment to the cent, as the bank takes it: a rounded one left a few
+                    // units unpaid, so the month read "Not paid" (frame 12, the Threads videos).
+                    addLoanPayment(daysAgo: daysAgo, amount: (monthlyLoanPayment * 100).rounded() / 100)
                 case 8:
                     // About what the cash coffee takes in a month, so the wallet does not pile up.
                     addTransfer(daysAgo: daysAgo, eurBase: 60, targetId: cashId,

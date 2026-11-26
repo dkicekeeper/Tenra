@@ -338,13 +338,13 @@ struct LoansListView: View {
                 HStack(spacing: AppSpacing.md) {
                     Text(String(localized: "loan.closedSection", defaultValue: "Closed"))
                         .font(AppTypography.h4)
-                        .foregroundStyle(AppColors.textPrimary)
+                        .foregroundStyle(AppColors.Text.primary)
                     Text("\(filteredClosedLoans.count)")
                         .font(AppTypography.h4)
-                        .foregroundStyle(AppColors.textSecondary)
+                        .foregroundStyle(AppColors.Text.secondary)
                     Spacer()
                     Icon("chevron.right", size: AppIconSize.sm)
-                        .foregroundStyle(AppColors.textSecondary)
+                        .foregroundStyle(AppColors.Text.secondary)
                         .rotationEffect(.degrees(isClosedSectionExpanded ? 90 : 0))
                 }
                 .contentShape(Rectangle())
@@ -396,7 +396,7 @@ struct LoansListView: View {
                 VStack(alignment: .leading, spacing: AppSpacing.xs) {
                     Text(String(localized: "loan.totalDebt", defaultValue: "Total Debt"))
                         .font(AppTypography.bodySmall)
-                        .foregroundStyle(AppColors.textSecondary)
+                        .foregroundStyle(AppColors.Text.secondary)
                     FormattedAmountText(
                         amount: totals.debt,
                         currency: summaryCurrency,
@@ -407,7 +407,7 @@ struct LoansListView: View {
                 VStack(alignment: .trailing, spacing: AppSpacing.xs) {
                     Text(String(localized: "loan.monthlyTotal", defaultValue: "Monthly"))
                         .font(AppTypography.bodySmall)
-                        .foregroundStyle(AppColors.textSecondary)
+                        .foregroundStyle(AppColors.Text.secondary)
                     FormattedAmountText(
                         amount: totals.monthly,
                         currency: summaryCurrency,
@@ -421,20 +421,20 @@ struct LoansListView: View {
                 HStack {
                     Text(String(localized: "loan.unpaidThisMonth", defaultValue: "Unpaid this month"))
                         .font(AppTypography.bodySmall)
-                        .foregroundStyle(AppColors.textSecondary)
+                        .foregroundStyle(AppColors.Text.secondary)
                     Spacer()
                     FormattedAmountText(
                         amount: unpaidThisMonth,
                         currency: baseCurrency,
                         fontSize: AppTypography.bodyEmphasis,
-                        color: unpaidThisMonth > 0 ? AppColors.warning : Color.income
+                        color: unpaidThisMonth > 0 ? AppColors.Status.warning : Color.income
                     )
                 }
             }
 
             Text(String(format: NSLocalizedString("loan.activeCount", comment: "Count with plural forms in Localizable.stringsdict"), active.count))
                 .font(AppTypography.bodySmall)
-                .foregroundStyle(AppColors.textSecondary)
+                .foregroundStyle(AppColors.Text.secondary)
         }
         .padding(AppSpacing.lg)
         .cardStyle()

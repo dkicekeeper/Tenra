@@ -198,7 +198,7 @@ struct InsightRankedPeriodList: View {
                     netFlow: point.netFlow,
                     currency: currency,
                     singleValue: point.netFlow,
-                    singleColor: point.netFlow >= 0 ? AppColors.success : AppColors.destructive
+                    singleColor: point.netFlow >= 0 ? AppColors.Status.positive : AppColors.Status.negative
                 )
             }
         }
@@ -220,7 +220,7 @@ struct InsightAccountBreakdownList: View {
                     leading: account.iconSource.map(AmountRow.Leading.icon) ?? AmountRow.Leading.none,
                     value: .amount(
                         account.balance,
-                        color: account.balance >= 0 ? AppColors.textPrimary : AppColors.destructive
+                        color: account.balance >= 0 ? AppColors.Text.primary : AppColors.Status.negative
                     ),
                     currency: currency
                 )
@@ -242,13 +242,13 @@ struct InsightDormantAccountList: View {
                 AmountRow(
                     account.accountName,
                     leading: account.iconSource.map(AmountRow.Leading.icon) ?? AmountRow.Leading.none,
-                    value: .amount(account.balance, color: AppColors.textSecondary),
+                    value: .amount(account.balance, color: AppColors.Text.secondary),
                     currency: currency
                 ) {
                     if let lastActivity = account.lastActivityDate {
                         RelativeTime(lastActivity)
                             .font(AppTypography.bodySmall)
-                            .foregroundStyle(AppColors.textSecondary)
+                            .foregroundStyle(AppColors.Text.secondary)
                     }
                 }
             }

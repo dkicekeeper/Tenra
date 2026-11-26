@@ -93,12 +93,12 @@ struct AssetEditView: View {
                         )
                         Text(asset?.isSold == true ? String(localized: "asset.salePriceHint") : String(localized: "asset.valueHint"))
                             .font(AppTypography.caption)
-                            .foregroundStyle(AppColors.textSecondary)
+                            .foregroundStyle(AppColors.Text.secondary)
                             .multilineTextAlignment(.center)
                         if showsDollarHint {
                             Text(String(format: String(localized: "asset.dollarHint"), baseCurrency))
                                 .font(AppTypography.caption)
-                                .foregroundStyle(AppColors.textSecondary)
+                                .foregroundStyle(AppColors.Text.secondary)
                                 .multilineTextAlignment(.center)
                         }
                     }

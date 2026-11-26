@@ -81,7 +81,7 @@ extension InsightsService {
             return DonutSlice(
                 id: item.id,
                 amount: amount,
-                color: CategoryColors.color(for: item.accountName),
+                color: AppColors.Data.color(for: item.accountName),
                 label: item.accountName,
                 percentage: totalWealth > 0 ? amount / totalWealth * 100 : 0
             )
@@ -91,7 +91,7 @@ extension InsightsService {
             wealthSlices.append(DonutSlice(
                 id: "other",
                 amount: foldedBalance,
-                color: AppColors.textTertiary,
+                color: AppColors.Text.tertiary,
                 label: String(localized: "insights.other"),
                 percentage: totalWealth > 0 ? foldedBalance / totalWealth * 100 : 0
             ))

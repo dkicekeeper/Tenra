@@ -32,9 +32,9 @@ struct AnimatedTranscriptionText: View {
 
     private static func color(confidence: Double) -> Color {
         switch confidence {
-        case 0.8...1.0: return AppColors.success
-        case 0.5..<0.8: return AppColors.warning
-        default: return AppColors.destructive
+        case 0.8...1.0: return AppColors.Status.positive
+        case 0.5..<0.8: return AppColors.Status.warning
+        default: return AppColors.Status.negative
         }
     }
 }

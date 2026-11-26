@@ -37,7 +37,7 @@ struct GoalCard: View {
 
     /// Past the deadline and not reached (GoalProgress.Status.isOverdue).
     private var overdueBadge: Badge? {
-        status.isOverdue ? Badge(String(localized: "goal.overdue"), color: AppColors.destructive) : nil
+        status.isOverdue ? Badge(String(localized: "goal.overdue"), color: AppColors.Status.negative) : nil
     }
 
     private var phase: PayoffProgressCard<Badge?>.Phase {

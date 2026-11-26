@@ -187,7 +187,7 @@ struct CategoryFilterView: View {
             source: .sfSymbol("folder"),
             style: .circle(
                 size: AppIconSize.Tile.sm,
-                tint: .monochrome(AppColors.textSecondary),
+                tint: .monochrome(AppColors.Text.secondary),
                 backgroundColor: AppColors.Status.neutralPale
             )
         )

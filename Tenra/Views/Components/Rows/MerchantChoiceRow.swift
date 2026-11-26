@@ -29,12 +29,12 @@ struct MerchantChoiceRow: View {
                     Text(title)
                         .font(AppTypography.h4)
                         .fontWeight(.medium)
-                        .foregroundStyle(AppColors.textPrimary)
+                        .foregroundStyle(AppColors.Text.primary)
                         .lineLimit(1)
                     if let count {
                         Text(String(format: String(localized: "merchant.merge.operations"), count))
                             .font(AppTypography.bodySmall)
-                            .foregroundStyle(AppColors.textSecondary)
+                            .foregroundStyle(AppColors.Text.secondary)
                     }
                 }
             } trailing: {
@@ -62,7 +62,7 @@ struct MerchantChoiceRow: View {
             source: .sfSymbol("storefront"),
             style: .circle(
                 size: AppIconSize.Tile.sm,
-                tint: .monochrome(AppColors.textSecondary),
+                tint: .monochrome(AppColors.Text.secondary),
                 backgroundColor: AppColors.Status.neutralPale
             )
         )

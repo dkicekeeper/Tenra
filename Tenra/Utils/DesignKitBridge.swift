@@ -118,7 +118,7 @@ enum DesignKitBridge {
 
 // MARK: - Category colours with Tenra's custom categories
 
-extension CategoryColors {
+extension AppColors.Data {
     /// Custom category colour when the user set one, else DesignKit's palette colour.
     /// Legacy O(N_cat) path — still used in cold/preview contexts. Prefer the
     /// store-backed overload below on the hot path.
@@ -224,7 +224,7 @@ extension InsightsStatCard where Trend == InsightsStatTrend {
         title: String,
         amount: Double,
         currency: String,
-        color: Color = AppColors.textPrimary,
+        color: Color = AppColors.Text.primary,
         previous: Double? = nil,
         upIsGood: Bool = true,
         trendPoints: [PeriodDataPoint],

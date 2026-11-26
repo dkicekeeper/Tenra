@@ -50,7 +50,7 @@ struct TenraApp: App {
             ZStack {
                 // Always present, matches the LaunchScreen background so the cross-fade
                 // into MainTabView lands on a stable colour.
-                AppColors.bgBase.ignoresSafeArea()
+                AppColors.Background.page.ignoresSafeArea()
 
                 if let storeFailure {
                     StoreUnavailableView(failure: storeFailure, onRetry: retryOpeningStore)

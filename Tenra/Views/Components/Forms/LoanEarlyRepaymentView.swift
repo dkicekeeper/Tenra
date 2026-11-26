@@ -139,7 +139,7 @@ struct LoanEarlyRepaymentView: View {
             .safeAreaInset(edge: .bottom) {
                 if !descriptionFocused {
                     CalculatorKeypad(model: calc)
-                        .background(AppColors.bgBase)
+                        .background(AppColors.Background.page)
                 }
             }
             .onChange(of: calc.amountText) { _, newValue in
@@ -197,7 +197,7 @@ struct LoanEarlyRepaymentView: View {
 
                 Text(strategyHint)
                     .font(AppTypography.caption)
-                    .foregroundStyle(AppColors.textSecondary)
+                    .foregroundStyle(AppColors.Text.secondary)
             }
             .screenPadding()
         }
@@ -246,7 +246,7 @@ struct LoanEarlyRepaymentView: View {
                         defaultValue: "Pick a category above to add subcategory tags"
                     ))
                     .font(AppTypography.bodySmall)
-                    .foregroundStyle(AppColors.textSecondary)
+                    .foregroundStyle(AppColors.Text.secondary)
                     .screenPadding()
                 }
             }

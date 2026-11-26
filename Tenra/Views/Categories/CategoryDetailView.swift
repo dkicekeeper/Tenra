@@ -264,7 +264,7 @@ struct CategoryDetailView: View {
         guard liveCategory.type != .income, liveCategory.budgetPeriod == .monthly,
               let budget = liveCategory.budgetAmount, budget > 0 else { return [] }
         return [.value(budget, label: String(localized: "category.detail.budget", defaultValue: "Budget"),
-                       color: AppColors.warning, aboveColor: AppColors.warning)]
+                       color: AppColors.Status.warning, aboveColor: AppColors.Status.warning)]
     }
 
     // MARK: - Delete
@@ -397,12 +397,12 @@ struct CategoryDetailView: View {
                             currency: baseCurrency,
                             font: AppTypography.bodyEmphasis,
                             fontWeight: .semibold,
-                            amountColor: AppColors.textPrimary,
-                            separatorColor: AppColors.textTertiary
+                            amountColor: AppColors.Text.primary,
+                            separatorColor: AppColors.Text.tertiary
                         )
                         Text("(\(pct)%)")
                             .font(AppTypography.bodyEmphasis)
-                            .foregroundStyle(AppColors.textSecondary)
+                            .foregroundStyle(AppColors.Text.secondary)
                     }
                 )
             ))

@@ -36,7 +36,7 @@ struct LoansCardView: View {
                 currency: baseCurrency,
                 fontSize: AppTypography.h2,
                 fontWeight: .bold,
-                color: AppColors.textPrimary
+                color: AppColors.Text.primary
             )
         } trailing: {
             loanIcons

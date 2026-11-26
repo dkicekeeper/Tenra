@@ -213,7 +213,7 @@ struct SubscriptionsListView: View {
                 }
                 Text(String(localized: "subscriptions.candidates.footer"))
                     .font(AppTypography.bodySmall)
-                    .foregroundStyle(AppColors.textSecondary)
+                    .foregroundStyle(AppColors.Text.secondary)
             }
             .screenPadding()
         }

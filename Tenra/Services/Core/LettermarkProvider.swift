@@ -13,9 +13,9 @@ import UIKit
 nonisolated final class LettermarkProvider: LogoProvider {
     let name = "lettermark"
 
-    // DesignKit's category palette (CategoryColors.paletteColors): a lettermark takes the
+    // DesignKit's category palette (AppColors.Data.palette): a lettermark takes the
     // colour its name would have as a category.
-    private static let palette: [UIColor] = CategoryColors.paletteColors.map { UIColor($0) }
+    private static let palette: [UIColor] = AppColors.Data.palette.map { UIColor($0) }
 
     func fetchLogo(domain: String, size: CGFloat) async -> UIImage? {
         // A merchant's logo found by its name: the name's letters, never the scheme's "NA".

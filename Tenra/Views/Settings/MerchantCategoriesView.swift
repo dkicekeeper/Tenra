@@ -66,10 +66,10 @@ struct MerchantCategoriesView: View {
                          ?? MerchantName.displayName(merchant.displayName))
                         .font(AppTypography.h4)
                         .fontWeight(.medium)
-                        .foregroundStyle(AppColors.textPrimary)
+                        .foregroundStyle(AppColors.Text.primary)
                     Text(assignment(of: merchant, category: category))
                         .font(AppTypography.bodySmall)
-                        .foregroundStyle(AppColors.textSecondary)
+                        .foregroundStyle(AppColors.Text.secondary)
                 }
             } trailing: {
                 DisclosureChevron()
@@ -139,7 +139,7 @@ struct MerchantCategoriesView: View {
             source: .sfSymbol("folder"),
             style: .circle(
                 size: AppIconSize.Tile.sm,
-                tint: .monochrome(AppColors.textSecondary),
+                tint: .monochrome(AppColors.Text.secondary),
                 backgroundColor: AppColors.Status.neutralPale
             )
         )

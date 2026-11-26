@@ -30,7 +30,7 @@ struct SettingsProHero: View {
                 subtitle: subtitle
             ) {
                 if let badge = statusBadge {
-                    Badge(badge, systemImage: "checkmark.seal.fill", color: AppColors.success)
+                    Badge(badge, systemImage: "checkmark.seal.fill", color: AppColors.Status.positive)
                         // A holographic foil on the Pro badge: its colours follow the finger (DesignKit).
                         .holographic()
                 }

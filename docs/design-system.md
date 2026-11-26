@@ -90,7 +90,7 @@ exception carries `// section-rows-lint:ignore <reason>`.
   insights' own `InsightTrend.trendColor`. The cards that build them inside (`CashFlowCard`,
   `ComparisonCard`, `HoldingCard`, `MetricCard`) take no colour: their rises and income are the
   system green, the owner's choice of 2026-11-25.
-- **Adapters over Tenra models**, as extensions: `CategoryColors.color(for:opacity:customCategories:)`
+- **Adapters over Tenra models**, as extensions: `AppColors.Data.color(for:opacity:customCategories:)`
   and `(store:)` (custom category colours), the `IconSource` brand registry,
   `DonutSlice.from([CategoryBreakdownItem])` and `.from([SubcategoryBreakdownItem], baseColor:)`,
   `LimitProgress(BudgetProgress)` (a budget as a ring), and `InsightsStatCard where Trend ==
@@ -670,7 +670,7 @@ let styleData = CategoryStyleHelper.cached(
 
 `CategoryStyleCache.shared` holds the results; a category edit drops its entry with
 `invalidateCategory(_:type:)`. Category colours in DesignKit components come through
-`CategoryColors.color(for:opacity:customCategories:)` (§2).
+`AppColors.Data.color(for:opacity:customCategories:)` (§2).
 
 **Transaction amount colour and sign.** `TransactionDisplayHelper.amountColor(for:)` and
 `.amountPrefix(for:)`; the deposit-aware overloads take `targetAccountId`, `depositAccountId` and

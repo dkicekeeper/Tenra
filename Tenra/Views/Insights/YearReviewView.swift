@@ -261,7 +261,7 @@ struct YearReviewView: View {
     private func title(_ text: String, centered: Bool = false) -> some View {
         Text(text)
             .font(AppTypography.h1)
-            .foregroundStyle(AppColors.textPrimary)
+            .foregroundStyle(AppColors.Text.primary)
             .multilineTextAlignment(centered ? .center : .leading)
             .fixedSize(horizontal: false, vertical: true)
             .frame(maxWidth: .infinity, alignment: centered ? .center : .leading)
@@ -275,12 +275,12 @@ struct YearReviewView: View {
                 .accessibilityHidden(true)
             Text(verbatim: String(review.year))
                 .font(AppTypography.display)
-                .foregroundStyle(AppColors.textPrimary)
+                .foregroundStyle(AppColors.Text.primary)
                 .monospacedDigit()
             title(String(localized: "yearReview.cover.title"), centered: true)
             Text(String(localized: "yearReview.cover.text"))
                 .font(AppTypography.body)
-                .foregroundStyle(AppColors.textSecondary)
+                .foregroundStyle(AppColors.Text.secondary)
                 .multilineTextAlignment(.center)
         }
         .frame(maxWidth: .infinity)
@@ -304,17 +304,17 @@ struct YearReviewView: View {
                             progress: rate,
                             size: YearReviewMetrics.ringSize,
                             lineWidth: YearReviewMetrics.ringLine,
-                            overrideColor: AppColors.success,
+                            overrideColor: AppColors.Status.positive,
                             showsTrack: true
                         )
                         Text(NumberDisplay.percent(rate * 100))
                             .font(AppTypography.h3)
-                            .foregroundStyle(AppColors.textPrimary)
+                            .foregroundStyle(AppColors.Text.primary)
                             .monospacedDigit()
                     }
                     Text(String(localized: "yearReview.money.kept"))
                         .font(AppTypography.bodyEmphasis)
-                        .foregroundStyle(AppColors.textPrimary)
+                        .foregroundStyle(AppColors.Text.primary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 .accessibilityElement(children: .combine)
@@ -332,7 +332,7 @@ struct YearReviewView: View {
                             ? String(localized: "yearReview.money.left")
                             : String(localized: "yearReview.money.over"),
                         leading: .tinted(.sfSymbol(review.saved >= 0 ? "banknote.fill" : "exclamationmark.circle.fill"),
-                                         review.saved >= 0 ? AppColors.success : AppColors.warning),
+                                         review.saved >= 0 ? AppColors.Status.positive : AppColors.Status.warning),
                         value: .amount(abs(review.saved)),
                         currency: review.currency
                     )
@@ -360,7 +360,7 @@ struct YearReviewView: View {
                     AmountRow(
                         YearReviewText.monthName(busiest),
                         subtitle: String(localized: "yearReview.months.busiest"),
-                        leading: .tinted(.sfSymbol("flame.fill"), AppColors.warning),
+                        leading: .tinted(.sfSymbol("flame.fill"), AppColors.Status.warning),
                         value: .amount(review.monthlyExpenses[busiest - 1]),
                         currency: review.currency
                     )
@@ -369,7 +369,7 @@ struct YearReviewView: View {
                     AmountRow(
                         YearReviewText.monthName(calmest),
                         subtitle: String(localized: "yearReview.months.calmest"),
-                        leading: .tinted(.sfSymbol("leaf.fill"), AppColors.success),
+                        leading: .tinted(.sfSymbol("leaf.fill"), AppColors.Status.positive),
                         value: .amount(review.monthlyExpenses[calmest - 1]),
                         currency: review.currency
                     )
@@ -454,7 +454,7 @@ struct YearReviewView: View {
                 )
                 Text(YearReviewText.subscriptions(review.subscriptionsCount))
                     .font(AppTypography.body)
-                    .foregroundStyle(AppColors.textSecondary)
+                    .foregroundStyle(AppColors.Text.secondary)
             }
             PackedCircleIcons(
                 items: review.subscriptions.map { subscription in
@@ -493,7 +493,7 @@ struct YearReviewView: View {
             CalendarHeatmap(
                 values: YearReviewText.heatmapValues(review.recordsByDay),
                 weeks: YearReviewText.heatmapWeeks(review.year),
-                color: AppColors.warning,
+                color: AppColors.Status.warning,
                 valueFormat: .compact,
                 today: YearReviewText.heatmapEnd(review.year),
                 calendar: AppCalendar.current
@@ -503,7 +503,7 @@ struct YearReviewView: View {
             .accessibilityHidden(true)
             Text(String(localized: "yearReview.habit.text"))
                 .font(AppTypography.body)
-                .foregroundStyle(AppColors.textSecondary)
+                .foregroundStyle(AppColors.Text.secondary)
         }
     }
 
@@ -519,7 +519,7 @@ struct YearReviewView: View {
                     iconTint: .monochrome(style.color),
                     primaryAmount: biggest.amount,
                     primaryCurrency: review.currency,
-                    primaryAmountColor: AppColors.textPrimary,
+                    primaryAmountColor: AppColors.Text.primary,
                     subtitle: FastDateParser.date(from: biggest.date).map { DateFormatters.day($0, includeYear: false) }
                 )
             }
@@ -537,7 +537,7 @@ struct YearReviewView: View {
                 title(String(format: String(localized: "yearReview.finale.title"), String(review.year + 1)), centered: true)
                 Text(String(localized: "yearReview.finale.text"))
                     .font(AppTypography.body)
-                    .foregroundStyle(AppColors.textSecondary)
+                    .foregroundStyle(AppColors.Text.secondary)
                     .multilineTextAlignment(.center)
             }
             FormSection(footer: String(localized: "yearReview.share.amountsFooter")) {
@@ -642,8 +642,8 @@ private struct YearReviewPageDots: UIViewRepresentable {
     func updateUIView(_ control: UIPageControl, context: Context) {
         control.numberOfPages = count
         control.currentPage = current
-        control.currentPageIndicatorTintColor = UIColor(AppColors.textPrimary)
-        control.pageIndicatorTintColor = UIColor(AppColors.textTertiary)
+        control.currentPageIndicatorTintColor = UIColor(AppColors.Text.primary)
+        control.pageIndicatorTintColor = UIColor(AppColors.Text.tertiary)
     }
 }
 

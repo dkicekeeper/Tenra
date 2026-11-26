@@ -94,19 +94,19 @@ enum PeriodChartSeries {
         case .spending:
             id = "spending"
             name = String(localized: "insights.expenses")
-            coloring = .solid(AppColors.destructive)
+            coloring = .solid(AppColors.Status.negative)
         case .income:
             id = "income"
             name = String(localized: "insights.income")
-            coloring = .solid(AppColors.success)
+            coloring = .solid(AppColors.Status.positive)
         case .avgDailyExpenses:
             id = "avgDaily"
             name = String(localized: "insights.avgDailySpending")
-            coloring = .solid(AppColors.destructive)
+            coloring = .solid(AppColors.Status.negative)
         case .cashFlow:
             id = "cashFlow"
             name = String(localized: "insights.cashFlow")
-            coloring = .signed(positive: AppColors.success, negative: AppColors.destructive)
+            coloring = .signed(positive: AppColors.Status.positive, negative: AppColors.Status.negative)
             baseline = .signed
         case .wealth:
             id = "wealth"

@@ -108,7 +108,7 @@ struct SubcategoryReorderView: View {
                 }
             }
             .font(AppTypography.caption)
-            .foregroundStyle(AppColors.textSecondary)
+            .foregroundStyle(AppColors.Text.secondary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.vertical, AppSpacing.md)

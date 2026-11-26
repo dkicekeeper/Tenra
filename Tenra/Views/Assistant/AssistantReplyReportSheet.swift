@@ -83,7 +83,7 @@ struct AssistantReplyReportSheet: View {
         VStack(alignment: .leading, spacing: AppSpacing.xs) {
             Text(title)
                 .font(AppTypography.caption)
-                .foregroundStyle(AppColors.textSecondary)
+                .foregroundStyle(AppColors.Text.secondary)
             // Ten's words as the chat shows them (bold and lists), the asterisks sent as they are.
             Text(Self.rendered(text))
                 .font(AppTypography.bodySmall)

@@ -141,10 +141,10 @@ extension InsightsService {
 
         let (grade, gradeColor): (String, Color)
         switch score {
-        case 80...100: (grade, gradeColor) = (String(localized: "insights.healthGrade.excellent"),      AppColors.success)
+        case 80...100: (grade, gradeColor) = (String(localized: "insights.healthGrade.excellent"),      AppColors.Status.positive)
         case 60..<80:  (grade, gradeColor) = (String(localized: "insights.healthGrade.good"),           AppColors.accent)
-        case 40..<60:  (grade, gradeColor) = (String(localized: "insights.healthGrade.fair"),           AppColors.warning)
-        default:       (grade, gradeColor) = (String(localized: "insights.healthGrade.needsAttention"), AppColors.destructive)
+        case 40..<60:  (grade, gradeColor) = (String(localized: "insights.healthGrade.fair"),           AppColors.Status.warning)
+        default:       (grade, gradeColor) = (String(localized: "insights.healthGrade.needsAttention"), AppColors.Status.negative)
         }
 
         let netFlowPercent = avgMonthlyIncome > 0 ? (latestNetFlow / avgMonthlyIncome) * 100 : 0

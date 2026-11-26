@@ -87,7 +87,7 @@ struct AssetEstimateSheet: View {
         }
         Text(String(localized: "asset.estimate.intro"))
             .font(AppTypography.caption)
-            .foregroundStyle(AppColors.textSecondary)
+            .foregroundStyle(AppColors.Text.secondary)
             .multilineTextAlignment(.center)
         AssetAttributesSection(kind: asset.kind, draft: $model.draft)
         let missing = model.missing
@@ -129,7 +129,7 @@ struct AssetEstimateSheet: View {
             .controlSize(.large)
         Text(String(localized: "asset.estimate.searchingHint"))
             .font(AppTypography.caption)
-            .foregroundStyle(AppColors.textSecondary)
+            .foregroundStyle(AppColors.Text.secondary)
             .multilineTextAlignment(.center)
     }
 
@@ -165,7 +165,7 @@ struct AssetEstimateSheet: View {
             if let left = estimate.estimatesLeft {
                 Text(String(format: String(localized: "asset.estimate.left"), left))
                     .font(AppTypography.caption)
-                    .foregroundStyle(AppColors.textSecondary)
+                    .foregroundStyle(AppColors.Text.secondary)
             }
             DSButton(
                 String(localized: "asset.estimate.save"),

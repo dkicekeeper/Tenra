@@ -30,7 +30,7 @@ struct SubscriptionCalendarView: View {
                     amount: NSDecimalNumber(decimal: total).doubleValue,
                     currency: baseCurrency,
                     fontSize: AppTypography.h4,
-                    color: AppColors.textPrimary
+                    color: AppColors.Text.primary
                 )
             }
         }

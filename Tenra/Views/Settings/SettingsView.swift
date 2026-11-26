@@ -288,10 +288,10 @@ struct SettingsView: View {
                     ) {
                         Text(String(localized: "settings.privacyPolicy"))
                             .font(AppTypography.body)
-                            .foregroundStyle(AppColors.textPrimary)
+                            .foregroundStyle(AppColors.Text.primary)
                     } trailing: {
                         Icon("arrow.up.right", size: AppIconSize.sm)
-                            .foregroundStyle(AppColors.textSecondary)
+                            .foregroundStyle(AppColors.Text.secondary)
                     }
                 }
                 // A link's label keeps the row's divider inset to itself: its icon and space.
@@ -304,10 +304,10 @@ struct SettingsView: View {
                     ) {
                         Text(String(localized: "settings.termsOfUse"))
                             .font(AppTypography.body)
-                            .foregroundStyle(AppColors.textPrimary)
+                            .foregroundStyle(AppColors.Text.primary)
                     } trailing: {
                         Icon("arrow.up.right", size: AppIconSize.sm)
-                            .foregroundStyle(AppColors.textSecondary)
+                            .foregroundStyle(AppColors.Text.secondary)
                     }
                 }
                 // A link's label keeps the row's divider inset to itself: its icon and space.
@@ -318,11 +318,11 @@ struct SettingsView: View {
             ) {
                 Text(String(localized: "settings.version"))
                     .font(AppTypography.body)
-                    .foregroundStyle(AppColors.textPrimary)
+                    .foregroundStyle(AppColors.Text.primary)
             } trailing: {
                 Text("\(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0") (\(Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "1"))")
                     .font(AppTypography.bodySmall)
-                    .foregroundStyle(AppColors.textSecondary)
+                    .foregroundStyle(AppColors.Text.secondary)
             }
             // Support ID = RevenueCat app user ID. Tap to copy — users share it for
             // purchase-issue support; also lets us grant promotional entitlements
@@ -342,16 +342,16 @@ struct SettingsView: View {
                     ) {
                         Text(String(localized: "settings.supportID"))
                             .font(AppTypography.body)
-                            .foregroundStyle(AppColors.textPrimary)
+                            .foregroundStyle(AppColors.Text.primary)
                     } trailing: {
                         HStack(spacing: AppSpacing.xs) {
                             Text(didCopySupportID
                                  ? String(localized: "settings.supportID.copied")
                                  : String(supportID.suffix(8)))
                                 .font(AppTypography.bodySmall)
-                                .foregroundStyle(AppColors.textSecondary)
+                                .foregroundStyle(AppColors.Text.secondary)
                             Icon(didCopySupportID ? "checkmark" : "doc.on.doc", size: AppIconSize.sm)
-                                .foregroundStyle(AppColors.textSecondary)
+                                .foregroundStyle(AppColors.Text.secondary)
                         }
                     }
                     // The whole row copies, not only its text.

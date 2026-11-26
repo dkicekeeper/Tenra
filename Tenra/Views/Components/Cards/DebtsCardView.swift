@@ -39,7 +39,7 @@ struct DebtsCardView: View {
                         id: debt.id,
                         iconSource: debt.iconSource,
                         amount: CurrencyConverter.convertSync(amount: debt.remaining, from: debt.currency, to: baseCurrency) ?? debt.remaining,
-                        tint: debt.direction == .owedToMe ? Color.income : AppColors.destructive
+                        tint: debt.direction == .owedToMe ? Color.income : AppColors.Status.negative
                     )
                 },
                 style: .shelf
@@ -51,7 +51,7 @@ struct DebtsCardView: View {
         HStack(alignment: .firstTextBaseline, spacing: AppSpacing.sm) {
             Text(title)
                 .font(AppTypography.bodySmall)
-                .foregroundStyle(AppColors.textSecondary)
+                .foregroundStyle(AppColors.Text.secondary)
             RedactableAmount(amount: amount, currency: baseCurrency, isLoading: !debtStore.isLoaded, fontSize: AppTypography.h4)
         }
     }

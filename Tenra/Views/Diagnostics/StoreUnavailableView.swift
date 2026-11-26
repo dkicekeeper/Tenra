@@ -30,14 +30,14 @@ struct StoreUnavailableView: View {
                 VStack(spacing: AppSpacing.sm) {
                     Text(String(localized: "storeUnavailable.title"))
                         .font(AppTypography.h3)
-                        .foregroundStyle(AppColors.textPrimary)
+                        .foregroundStyle(AppColors.Text.primary)
                         .accessibilityAddTraits(.isHeader)
                     Text(message)
                         .font(AppTypography.body)
-                        .foregroundStyle(AppColors.textSecondary)
+                        .foregroundStyle(AppColors.Text.secondary)
                     Text(String(localized: "storeUnavailable.dataSafe"))
                         .font(AppTypography.bodyEmphasis)
-                        .foregroundStyle(AppColors.textPrimary)
+                        .foregroundStyle(AppColors.Text.primary)
                 }
                 .multilineTextAlignment(.center)
 
@@ -65,7 +65,7 @@ struct StoreUnavailableView: View {
 
                 Text(String(format: String(localized: "storeUnavailable.errorCode"), failure.reference))
                     .font(AppTypography.caption)
-                    .foregroundStyle(AppColors.textTertiary)
+                    .foregroundStyle(AppColors.Text.tertiary)
                     .multilineTextAlignment(.center)
                     .textSelection(.enabled)
             }
@@ -74,7 +74,7 @@ struct StoreUnavailableView: View {
             .frame(maxWidth: .infinity)
         }
         .scrollBounceBehavior(.basedOnSize)
-        .background(AppColors.bgBase.ignoresSafeArea())
+        .background(AppColors.Background.page.ignoresSafeArea())
     }
 
     private var message: String {

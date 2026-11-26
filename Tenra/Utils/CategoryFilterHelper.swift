@@ -39,7 +39,7 @@ struct CategoryFilterHelper {
             }()
             let categoryType: TransactionType = isIncome ? .income : .expense
             let iconName = CategoryIcon.iconName(for: category, type: categoryType, customCategories: customCategories)
-            let iconColor = CategoryColors.color(for: category, opacity: 1.0, customCategories: customCategories)
+            let iconColor = AppColors.Data.color(for: category, opacity: 1.0, customCategories: customCategories)
             Icon(iconName, size: AppIconSize.xs)
                 .foregroundStyle(isIncome ? Color.income : iconColor)
         }

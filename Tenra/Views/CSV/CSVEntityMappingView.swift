@@ -163,12 +163,12 @@ struct CSVEntityMappingView: View {
             UniversalRow {
                 Text(title)
                     .font(AppTypography.body)
-                    .foregroundStyle(AppColors.textPrimary)
+                    .foregroundStyle(AppColors.Text.primary)
             } trailing: {
                 HStack(spacing: AppSpacing.sm) {
                     Text(mapped ?? String(localized: "csvMapping.notSelected", defaultValue: "Not Selected"))
                         .font(AppTypography.body)
-                        .foregroundStyle(mapped == nil ? AppColors.warning : AppColors.textSecondary)
+                        .foregroundStyle(mapped == nil ? AppColors.Status.warning : AppColors.Text.secondary)
                     DisclosureChevron()
                 }
             }
@@ -234,7 +234,7 @@ struct CSVEntityMappingView: View {
     
     private func createCategory(name: String, type: TransactionType = .expense) {
         let iconName = CategoryIcon.iconName(for: name, type: type, customCategories: categoriesViewModel.customCategories)
-        let colorHex = CategoryColors.color(for: name, customCategories: categoriesViewModel.customCategories)
+        let colorHex = AppColors.Data.color(for: name, customCategories: categoriesViewModel.customCategories)
         let hexString = colorToHex(colorHex)
 
         let newCategory = CustomCategory(
@@ -283,7 +283,7 @@ struct AccountMappingDetailView: View {
                                 Icon(source: account.iconSource, size: AppIconSize.lg)
                                 Text(account.name)
                                     .font(AppTypography.body)
-                                    .foregroundStyle(AppColors.textPrimary)
+                                    .foregroundStyle(AppColors.Text.primary)
                             }
                         } trailing: {
                             if isSelected {
@@ -342,7 +342,7 @@ struct CategoryMappingDetailView: View {
                                 }
                                 Text(category.name)
                                     .font(AppTypography.body)
-                                    .foregroundStyle(AppColors.textPrimary)
+                                    .foregroundStyle(AppColors.Text.primary)
                             }
                         } trailing: {
                             if isSelected {

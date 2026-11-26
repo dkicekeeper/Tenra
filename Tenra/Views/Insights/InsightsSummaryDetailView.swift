@@ -60,10 +60,10 @@ enum SummaryDetailFocus {
 
     var accentColor: Color {
         switch self {
-        case .overview: return AppColors.textPrimary
-        case .expenses: return AppColors.destructive
-        case .income:   return AppColors.success
-        case .netFlow:  return AppColors.textPrimary
+        case .overview: return AppColors.Text.primary
+        case .expenses: return AppColors.Status.negative
+        case .income:   return AppColors.Status.positive
+        case .netFlow:  return AppColors.Text.primary
         }
     }
 
@@ -206,7 +206,7 @@ struct InsightsSummaryDetailView: View {
                 primaryAmount: focusedAmount,
                 primaryCurrency: currency,
                 primaryAmountColor: focus == .netFlow && focusedAmount < 0
-                    ? AppColors.destructive
+                    ? AppColors.Status.negative
                     : focus.accentColor,
                 subtitle: bucketLabel.isEmpty ? granularity.displayName : bucketLabel
             )

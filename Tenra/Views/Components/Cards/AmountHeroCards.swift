@@ -86,14 +86,14 @@ struct BudgetHeadroomHeroCard: View {
 
 #Preview("Large transaction") {
     ScrollView {
-        LargeTransactionHeroCard(amount: 84_900, usual: 6_100, currency: "KZT", color: AppColors.warning,
+        LargeTransactionHeroCard(amount: 84_900, usual: 6_100, currency: "KZT", color: AppColors.Status.warning,
                                  subtitle: "Furniture, 3 Oct")
     }
 }
 
 #Preview("Budget headroom") {
     ScrollView {
-        BudgetHeadroomHeroCard(headroom: 145_000, budget: 380_000, currency: "KZT", color: AppColors.success,
+        BudgetHeadroomHeroCard(headroom: 145_000, budget: 380_000, currency: "KZT", color: AppColors.Status.positive,
                                categoriesText: "3 categories on track")
     }
 }

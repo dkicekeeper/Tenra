@@ -24,7 +24,7 @@ struct CategoriesCardView: View {
             Text("\(categories.count)")
                 .font(AppTypography.h2)
                 .fontWeight(.bold)
-                .foregroundStyle(AppColors.textPrimary)
+                .foregroundStyle(AppColors.Text.primary)
                 .contentTransition(.numericText())
         } trailing: {
             categoryIcons

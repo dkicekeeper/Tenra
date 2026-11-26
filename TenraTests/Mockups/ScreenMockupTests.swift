@@ -128,7 +128,7 @@ struct ScreenMockupTests {
             AssetsCardView(assetStore: store, baseCurrency: "KZT", ratesVersion: 0)
                 .screenPadding()
                 .frame(maxHeight: .infinity)
-                .background(AppColors.Background.base)
+                .background(AppColors.Background.page)
         }
     }
 
@@ -243,7 +243,7 @@ struct ScreenMockupTests {
             AssistantNoticeCard(notice: notice, onAsk: {}, onHide: {})
                 .screenPadding()
                 .frame(maxHeight: .infinity)
-                .background(AppColors.Background.base)
+                .background(AppColors.Background.page)
         }
     }
 
@@ -289,7 +289,7 @@ struct ScreenMockupTests {
                     .screenPadding()
                     .padding(.vertical, AppSpacing.lg)
                 }
-                .background(AppColors.Background.base)
+                .background(AppColors.Background.page)
                 MomentOverlay(
                     title: moment.title,
                     message: moment.message,
@@ -451,7 +451,7 @@ struct ScreenMockupTests {
             AssistantNoticeCard(notice: notice, onAsk: {}, onHide: {})
                 .screenPadding()
                 .frame(maxHeight: .infinity)
-                .background(AppColors.Background.base)
+                .background(AppColors.Background.page)
         }
     }
 
@@ -462,7 +462,7 @@ struct ScreenMockupTests {
             AssistantNoticeCard(notice: notice, onAsk: {}, onHide: {})
                 .screenPadding()
                 .frame(maxHeight: .infinity)
-                .background(AppColors.Background.base)
+                .background(AppColors.Background.page)
         }
     }
 
@@ -473,7 +473,7 @@ struct ScreenMockupTests {
                 YearReviewShareCard(review: Self.demoReview, showsAmounts: showsAmounts, categories: Self.demoCategories)
                     .environment(\.colorScheme, .dark)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(AppColors.Background.base)
+                    .background(AppColors.Background.page)
             }
         }
     }

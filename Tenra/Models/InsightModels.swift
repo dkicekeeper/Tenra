@@ -169,8 +169,8 @@ struct InsightTrend: Hashable {
     var trendColor: Color {
         switch direction {
         case .up: return Color.income
-        case .down: return AppColors.destructive
-        case .flat: return AppColors.textSecondary
+        case .down: return AppColors.Status.negative
+        case .flat: return AppColors.Text.secondary
         }
     }
 
@@ -218,9 +218,9 @@ extension Insight {
     var trendBadgeColorOverride: Color? {
         guard let trend, type.upIsBadForUser else { return nil }
         switch trend.direction {
-        case .up:   return AppColors.destructive
-        case .down: return AppColors.success
-        case .flat: return AppColors.textSecondary
+        case .up:   return AppColors.Status.negative
+        case .down: return AppColors.Status.positive
+        case .flat: return AppColors.Text.secondary
         }
     }
 }
@@ -235,10 +235,10 @@ nonisolated enum InsightSeverity: String, Hashable {
 
     var color: Color {
         switch self {
-        case .positive: return AppColors.success
+        case .positive: return AppColors.Status.positive
         case .neutral: return AppColors.accent
-        case .warning: return AppColors.warning
-        case .critical: return AppColors.destructive
+        case .warning: return AppColors.Status.warning
+        case .critical: return AppColors.Status.negative
         }
     }
 
@@ -604,7 +604,7 @@ extension FinancialHealthScore {
         FinancialHealthScore(
             score: 0,
             grade: String(localized: "insights.healthGrade.needsAttention"),
-            gradeColor: AppColors.destructive,
+            gradeColor: AppColors.Status.negative,
             savingsRateScore: 0,
             budgetAdherenceScore: 0,
             recurringRatioScore: 0,

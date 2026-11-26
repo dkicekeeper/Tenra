@@ -113,11 +113,11 @@ struct OnboardingWelcomeStep: View {
                 VStack(spacing: AppSpacing.sm) {
                     Text(phase.title)
                         .font(AppTypography.h3)
-                        .foregroundStyle(AppColors.textPrimary)
+                        .foregroundStyle(AppColors.Text.primary)
                         .multilineTextAlignment(.center)
                     Text(phase.subtitle)
                         .font(AppTypography.body)
-                        .foregroundStyle(AppColors.textSecondary)
+                        .foregroundStyle(AppColors.Text.secondary)
                         .multilineTextAlignment(.center)
                 }
                 .screenPadding()

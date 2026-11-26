@@ -18,27 +18,27 @@ struct CategoryStyleHelper {
 
     /// Цвет фона "монеты" категории (30% opacity)
     var coinColor: Color {
-        CategoryColors.color(for: category, opacity: 0.3, customCategories: customCategories)
+        AppColors.Data.color(for: category, opacity: 0.3, customCategories: customCategories)
     }
 
     /// Цвет границы "монеты" категории (60% opacity)
     var coinBorderColor: Color {
-        CategoryColors.color(for: category, opacity: 0.6, customCategories: customCategories)
+        AppColors.Data.color(for: category, opacity: 0.6, customCategories: customCategories)
     }
 
     /// Цвет иконки категории (100% opacity)
     var iconColor: Color {
-        CategoryColors.color(for: category, opacity: 1.0, customCategories: customCategories)
+        AppColors.Data.color(for: category, opacity: 1.0, customCategories: customCategories)
     }
 
     /// Основной цвет категории (100% opacity) - для текста и акцентов
     var primaryColor: Color {
-        CategoryColors.color(for: category, opacity: 1.0, customCategories: customCategories)
+        AppColors.Data.color(for: category, opacity: 1.0, customCategories: customCategories)
     }
 
     /// Светлый фоновый цвет (15% opacity) - для card backgrounds
     var lightBackgroundColor: Color {
-        CategoryColors.color(for: category, opacity: 0.15, customCategories: customCategories)
+        AppColors.Data.color(for: category, opacity: 0.15, customCategories: customCategories)
     }
 
     // MARK: - Icon Name
@@ -63,7 +63,7 @@ struct CategoryStyleHelper {
 
     /// Быстрый доступ к цвету категории без создания helper
     static func color(for category: String, type: TransactionType, opacity: Double = 1.0, customCategories: [CustomCategory]) -> Color {
-        CategoryColors.color(for: category, opacity: opacity, customCategories: customCategories)
+        AppColors.Data.color(for: category, opacity: opacity, customCategories: customCategories)
     }
 
     /// Быстрый доступ к иконке категории без создания helper

@@ -26,14 +26,14 @@ enum TransactionDisplayHelper {
     /// and their slice and icon in the Insights spending breakdown
     /// (`InsightsService.syntheticCategoryStyle`). Both read it, so they cannot drift apart.
     ///
-    /// `AppColors.warning`: a debt payment is an obligation, not an error (`destructive`
+    /// `AppColors.Status.warning`: a debt payment is an obligation, not an error (`destructive`
     /// stays for deletes and overspending), and orange is a colour no other transaction type
     /// uses (expense primary, income green, transfer cyan, planned blue, accent indigo). It
     /// is the system orange, adapted to light and dark, and the plate is `AppColors.pale` of it.
     /// The amount stays `.primary` like every outflow's (`amountColor(for:)`).
     ///
     /// `nonisolated`: the nonisolated `InsightsService` reads it.
-    nonisolated static let loanPaymentColor: Color = AppColors.warning
+    nonisolated static let loanPaymentColor: Color = AppColors.Status.warning
 
     // MARK: - Amount Color
 

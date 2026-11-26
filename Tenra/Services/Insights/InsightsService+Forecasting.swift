@@ -165,7 +165,7 @@ extension InsightsService {
             cardVisual: .barPair(
                 previous: spentSoFar,
                 current: forecast,
-                color: severity == .warning ? AppColors.destructive : AppColors.accent,
+                color: severity == .warning ? AppColors.Status.negative : AppColors.accent,
                 isProjection: true
             )
         )
@@ -270,7 +270,7 @@ extension InsightsService {
             cardVisual: .barPair(
                 previous: lastYearExpenses,
                 current: thisExpenses,
-                color: direction == .up ? AppColors.destructive : AppColors.success,
+                color: direction == .up ? AppColors.Status.negative : AppColors.Status.positive,
                 isProjection: false
             )
         )

@@ -110,7 +110,7 @@ struct BudgetSettingsSection: View {
                     style: .circle(
                         size: AppIconSize.Tile.xxxl,
                         tint: .monochrome(.pink),
-                        backgroundColor: AppColors.bgCard
+                        backgroundColor: AppColors.Background.card
                     )
                 )
 

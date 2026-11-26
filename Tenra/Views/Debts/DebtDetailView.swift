@@ -209,7 +209,7 @@ struct DebtDetailView: View {
                 value: isOverdue
                     ? String(format: String(localized: "debt.overdueSince"), DateFormatters.displayDateOmittingCurrentYear(dueDate))
                     : DateFormatters.displayDateOmittingCurrentYear(dueDate),
-                iconColor: isOverdue ? AppColors.destructive : AppColors.accent
+                iconColor: isOverdue ? AppColors.Status.negative : AppColors.accent
             ))
         }
         if let note = debt.note {

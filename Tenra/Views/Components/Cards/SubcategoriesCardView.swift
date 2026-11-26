@@ -42,7 +42,7 @@ struct SubcategoriesCardView: View {
             Text("\(subcategories.count)")
                 .font(AppTypography.h2)
                 .fontWeight(.bold)
-                .foregroundStyle(AppColors.textPrimary)
+                .foregroundStyle(AppColors.Text.primary)
                 .contentTransition(.numericText())
         } trailing: {
             // Facepile shows linked parent categories; hidden when none are linked yet.

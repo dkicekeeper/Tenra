@@ -294,7 +294,7 @@ struct VoiceInputView: View {
                 VStack(alignment: .leading, spacing: AppSpacing.xs) {
                     Text(category)
                         .font(AppTypography.h4)
-                        .foregroundStyle(AppColors.textPrimary)
+                        .foregroundStyle(AppColors.Text.primary)
 
                     if !parsed.subcategoryNames.isEmpty {
                         Text(parsed.subcategoryNames.joined(separator: ", "))
@@ -306,7 +306,7 @@ struct VoiceInputView: View {
                     if let accountName = sourceAccount?.name {
                         Text(accountName)
                             .font(AppTypography.bodySmall)
-                            .foregroundStyle(AppColors.textSecondary)
+                            .foregroundStyle(AppColors.Text.secondary)
                     }
                 }
 

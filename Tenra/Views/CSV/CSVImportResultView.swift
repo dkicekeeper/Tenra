@@ -83,7 +83,7 @@ struct CSVImportResultView: View {
         return HeroSymbol(
             systemImage: succeeded ? "checkmark" : "exclamationmark.triangle",
             size: AppIconSize.Tile.xl * 2,
-            tint: succeeded ? AppColors.success : AppColors.warning
+            tint: succeeded ? AppColors.Status.positive : AppColors.Status.warning
         )
     }
 
@@ -95,7 +95,7 @@ struct CSVImportResultView: View {
                 StatRow(
                     label: String(format: String(localized: "csvImport.result.imported"), statistics.importedCount),
                     value: "",
-                    color: AppColors.success,
+                    color: AppColors.Status.positive,
                     icon: "checkmark.circle"
                 )
 
@@ -112,7 +112,7 @@ struct CSVImportResultView: View {
                     StatRow(
                         label: String(format: String(localized: "csvImport.result.skipped"), statistics.skippedCount - statistics.duplicatesSkipped),
                         value: "",
-                        color: AppColors.warning,
+                        color: AppColors.Status.warning,
                         icon: "exclamationmark.circle"
                     )
                 }
@@ -168,7 +168,7 @@ struct CSVImportResultView: View {
                 InfoRowLayout(label: String(localized: "csvImport.result.successRate")) {
                     Text("\(statistics.successPercentage)%")
                         .font(AppTypography.bodyEmphasis)
-                        .foregroundStyle(statistics.successRate > 0.8 ? AppColors.success : AppColors.warning)
+                        .foregroundStyle(statistics.successRate > 0.8 ? AppColors.Status.positive : AppColors.Status.warning)
                 }
             }
         }
@@ -196,7 +196,7 @@ struct CSVImportResultView: View {
                     ForEach(Array(statistics.errors.prefix(10).enumerated()), id: \.offset) { _, error in
                         Text("• \(error.localizedDescription)")
                             .font(AppTypography.caption)
-                            .foregroundStyle(AppColors.destructive)
+                            .foregroundStyle(AppColors.Status.negative)
                     }
 
                     if statistics.validationErrorCount > 10 {
@@ -205,14 +205,14 @@ struct CSVImportResultView: View {
                             statistics.validationErrorCount - 10
                         ))
                         .font(AppTypography.caption)
-                        .foregroundStyle(AppColors.textSecondary)
+                        .foregroundStyle(AppColors.Text.secondary)
                     }
                 }
             }
             .frame(maxHeight: 150)
         }
         .cardContentPadding()
-        .background(AppColors.bgCard)
+        .background(AppColors.Background.card)
         .clipShape(.rect(cornerRadius: AppRadius.card))
     }
 

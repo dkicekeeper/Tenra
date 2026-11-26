@@ -62,7 +62,7 @@ struct WalletSetupIllustration: View {
         .background(AppColors.Background.baseAlt, in: .rect(cornerRadius: AppRadius.xl))
         .overlay {
             RoundedRectangle(cornerRadius: AppRadius.xl)
-                .strokeBorder(AppColors.Background.neutral2, lineWidth: Metrics.border)
+                .strokeBorder(AppColors.Background.containerStrong, lineWidth: Metrics.border)
         }
         // A picture: its words stay at the size they are drawn for.
         .dynamicTypeSize(...DynamicTypeSize.large)
@@ -214,7 +214,7 @@ struct WalletSetupIllustration: View {
         HStack(spacing: AppSpacing.sm) {
             Text(name)
                 .font(AppTypography.caption)
-                .foregroundStyle(AppColors.textSecondary)
+                .foregroundStyle(AppColors.Text.secondary)
                 .lineLimit(1)
             Spacer(minLength: AppSpacing.sm)
             value()
@@ -258,7 +258,7 @@ struct WalletSetupIllustration: View {
     /// A field left empty.
     private var emptyField: some View {
         Capsule()
-            .strokeBorder(AppColors.Background.neutral2, style: StrokeStyle(lineWidth: Metrics.border, dash: Metrics.dash))
+            .strokeBorder(AppColors.Background.containerStrong, style: StrokeStyle(lineWidth: Metrics.border, dash: Metrics.dash))
             .frame(width: Metrics.shortBar, height: Metrics.fieldHeight)
     }
 
@@ -269,13 +269,13 @@ struct WalletSetupIllustration: View {
 
     private func radio(isOn: Bool) -> some View {
         Icon(isOn ? "checkmark.circle.fill" : "circle", size: AppIconSize.md)
-            .foregroundStyle(isOn ? AppColors.accent : AppColors.textTertiary)
+            .foregroundStyle(isOn ? AppColors.accent : AppColors.Text.tertiary)
     }
 
     private func searchField(text: String?) -> some View {
         HStack(spacing: AppSpacing.sm) {
             Icon("magnifyingglass", size: AppIconSize.sm)
-                .foregroundStyle(AppColors.textSecondary)
+                .foregroundStyle(AppColors.Text.secondary)
             if let text {
                 Text(verbatim: text)
                     .font(AppTypography.bodySmall)
@@ -284,7 +284,7 @@ struct WalletSetupIllustration: View {
         }
         .padding(.horizontal, AppSpacing.md)
         .padding(.vertical, AppSpacing.sm)
-        .background(AppColors.Background.neutral2, in: Capsule())
+        .background(AppColors.Background.containerStrong, in: Capsule())
     }
 
     /// A list row with nothing on its trailing edge.
@@ -318,7 +318,7 @@ struct WalletSetupIllustration: View {
                     .frame(width: AppIconSize.lg)
             } else if dot {
                 Circle()
-                    .fill(AppColors.Background.neutral2)
+                    .fill(AppColors.Background.containerStrong)
                     .frame(width: AppIconSize.md, height: AppIconSize.md)
                     .frame(width: AppIconSize.lg)
             }
@@ -354,7 +354,7 @@ private struct MockBar: View {
 
     var body: some View {
         Capsule()
-            .fill(AppColors.Background.neutral2)
+            .fill(AppColors.Background.containerStrong)
             .frame(width: width, height: height)
     }
 }

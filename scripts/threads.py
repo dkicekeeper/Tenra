@@ -151,6 +151,18 @@ def media_url(post: dict) -> tuple[str | None, str | None]:
     return None, None
 
 
+def posted_today(posts: list[dict], posted: dict, today: str) -> bool:
+    """A post (not a reply) already went out on `today` (Almaty): one post a day, so the backup
+    schedule (GitHub sometimes skips or delays a scheduled run) never adds a second one."""
+    post_ids = {p["id"] for p in posts}
+    for pid, entry in posted.items():
+        stamp = entry.get("at", "")
+        if pid in post_ids and stamp:
+            if datetime.fromisoformat(stamp).astimezone(ALMATY).date().isoformat() == today:
+                return True
+    return False
+
+
 def next_post(posts: list[dict], posted: dict, today: str) -> dict | None:
     """The first approved post, in the file's order, not published yet and due by `today`."""
     for post in posts:
@@ -225,6 +237,9 @@ def post_next(dry_run: bool) -> None:
         sys.exit("social/threads.json:\n  " + "\n  ".join(found))
     posted = load_posted()
     today = datetime.now(ALMATY).date().isoformat()
+    if posted_today(posts, posted, today):
+        print("A post already went out today: the next one waits for tomorrow.")
+        return
     post = next_post(posts, posted, today)
     if not post:
         print("Nothing to post: no approved post is waiting.")

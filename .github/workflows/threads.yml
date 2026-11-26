@@ -15,6 +15,7 @@ on:
     paths: [social/threads.json]
   schedule:
     - cron: "17 13 * * *"   # every day, 18:17 Almaty, then up to 50 minutes later
+    - cron: "47 14 * * *"   # the backup: GitHub sometimes skips a scheduled run; one post a day
     - cron: "41 3 * * 1"    # Mondays: refresh the token
   workflow_dispatch:
     inputs:

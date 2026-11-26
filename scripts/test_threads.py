@@ -91,6 +91,19 @@ class MediaTests(unittest.TestCase):
         self.assertEqual(threads.media_url(post("t")), (None, None))
 
 
+class OneADayTests(unittest.TestCase):
+    def test_a_post_today_stops_the_next(self):
+        posts = [post("a"), post("b")]
+        # 2026-12-01 19:30 UTC is 02.12 00:30 in Almaty: counts for the 2nd, not the 1st.
+        posted = {"a": {"at": "2026-12-01T19:30:00+00:00"}}
+        self.assertTrue(threads.posted_today(posts, posted, "2026-12-02"))
+        self.assertFalse(threads.posted_today(posts, posted, "2026-12-01"))
+
+    def test_a_reply_today_does_not_count(self):
+        posted = {"r-1": {"at": "2026-12-01T10:00:00+00:00"}}
+        self.assertFalse(threads.posted_today([post("a")], posted, "2026-12-01"))
+
+
 class ProblemTests(unittest.TestCase):
     def test_clean_post(self):
         self.assertEqual(threads.problems([post("a")]), [])

@@ -136,7 +136,7 @@ struct FinancialHealthDetailView: View {
             titleKey: "insights.health.component.emergencyFund.title",
             explainerKey: "insights.health.component.emergencyFund.explainer",
             icon: "shield.lefthalf.filled",
-            color: AppColors.income,
+            color: Color.income,
             weight: 15,
             componentScore: score.emergencyFundScore,
             currentValueText: valueText,

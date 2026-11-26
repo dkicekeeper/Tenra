@@ -20,6 +20,25 @@
 @_exported import DesignComponents
 import SwiftUI
 
+// MARK: - Tenra's colours of money
+
+/// Tenra's colours of money. DesignKit 8.21.0 deprecated `AppColors.income`, `incomeText`,
+/// `expense` and `transfer` (they were Tenra's): the app keeps them here, with the same values,
+/// and passes them to the components that take a colour of money in (`PayoffProgressCard
+/// (progressColor:)`, `ScheduleRow(doneColor:)`, a rise in `TrendBadge(color:)`). Without it
+/// those draw `Status.positive`; the cards that build them inside (`CashFlowCard`,
+/// `ComparisonCard`, `HoldingCard`, `MetricCard`) take no colour and stay the system green, the
+/// owner's choice. Money out is `AppColors.Text.primary`, deliberately not red. `nonisolated`:
+/// services and insights read them off the main actor, as they read DesignKit's tokens.
+extension Color {
+    /// Money in: Tenra's own green, RGB(0.13, 0.70, 0.37).
+    nonisolated static let income = Color(red: 0.13, green: 0.70, blue: 0.37) // design-lint:ignore Tenra's own colour token, defined once here
+    /// Money in as text: the green made readable (4.5:1 on the page).
+    nonisolated static let incomeText = AppColors.readable(.income)
+    /// An internal transfer: cyan-teal.
+    nonisolated static let transfer = Color(red: 0.0, green: 0.75, blue: 0.85) // design-lint:ignore Tenra's own colour token, defined once here
+}
+
 enum DesignKitBridge {
     /// Carries the resolved formats into DesignKit's amount configuration. Called at launch
     /// and again whenever the person changes a format.

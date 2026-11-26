@@ -36,7 +36,7 @@ struct HealthScoreWeightingCard: View {
                 Component(id: "savingsRate",      titleKey: "insights.health.component.savingsRate.short",      icon: "banknote.fill",                       color: AppColors.success,     weight: 30),
                 Component(id: "budgetAdherence",  titleKey: "insights.health.component.budgetAdherence.short",  icon: "gauge.with.dots.needle.33percent",    color: AppColors.warning,     weight: 25),
                 Component(id: "recurringRatio",   titleKey: "insights.health.component.recurringRatio.short",   icon: "repeat.circle",                       color: AppColors.accent,      weight: 20),
-                Component(id: "emergencyFund",    titleKey: "insights.health.component.emergencyFund.short",    icon: "shield.lefthalf.filled",              color: AppColors.income,      weight: 15),
+                Component(id: "emergencyFund",    titleKey: "insights.health.component.emergencyFund.short",    icon: "shield.lefthalf.filled",              color: Color.income,      weight: 15),
                 Component(id: "cashFlow",         titleKey: "insights.health.component.cashFlow.short",         icon: "chart.line.uptrend.xyaxis",           color: AppColors.destructive, weight: 10),
             ]
         } else {
@@ -44,7 +44,7 @@ struct HealthScoreWeightingCard: View {
             return [
                 Component(id: "savingsRate",      titleKey: "insights.health.component.savingsRate.short",      icon: "banknote.fill",                       color: AppColors.success,     weight: 40),
                 Component(id: "recurringRatio",   titleKey: "insights.health.component.recurringRatio.short",   icon: "repeat.circle",                       color: AppColors.accent,      weight: 26.7),
-                Component(id: "emergencyFund",    titleKey: "insights.health.component.emergencyFund.short",    icon: "shield.lefthalf.filled",              color: AppColors.income,      weight: 20),
+                Component(id: "emergencyFund",    titleKey: "insights.health.component.emergencyFund.short",    icon: "shield.lefthalf.filled",              color: Color.income,      weight: 20),
                 Component(id: "cashFlow",         titleKey: "insights.health.component.cashFlow.short",         icon: "chart.line.uptrend.xyaxis",           color: AppColors.destructive, weight: 13.3),
             ]
         }

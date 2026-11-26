@@ -1249,7 +1249,7 @@ nonisolated final class InsightsService {
         case TransactionType.loanPaymentCategoryName:
             return (.sfSymbol("creditcard.fill"), TransactionDisplayHelper.loanPaymentColor)
         case TransactionType.depositInterestCategoryName:
-            return (.sfSymbol("percent"), AppColors.income)
+            return (.sfSymbol("percent"), Color.income)
         default:
             return nil
         }

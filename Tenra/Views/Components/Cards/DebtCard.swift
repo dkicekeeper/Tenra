@@ -31,7 +31,8 @@ struct DebtCard: View {
                 : .inProgress(
                     nextDate: debt.dueDate.map { DateFormatters.displayDateOmittingCurrentYear($0) },
                     remainingCaption: nil
-                )
+                ),
+            progressColor: .income
         ) {
             if debt.isOverdue(today: today) {
                 Badge(String(localized: "debt.overdue"), color: AppColors.destructive)

@@ -81,6 +81,15 @@ exception carries `// section-rows-lint:ignore <reason>`.
 
   `DesignKitTheme.accent` keeps DesignKit's default, system indigo (= Tenra's `AccentColor`):
   Tenra's look is DesignKit's reference.
+- **Tenra's colours of money**, `Color.income`, `.incomeText` and `.transfer` (DesignKit 8.21.0
+  deprecated `AppColors.income`, `incomeText`, `expense` and `transfer`, which were Tenra's; the
+  values are the same). Money out is `AppColors.Text.primary`, not red. DesignKit's components
+  draw money in and a rise in `Status.positive` unless Tenra passes its green:
+  `PayoffProgressCard(progressColor: .income)` (debts, goals, loans), `ScheduleRow(doneColor:
+  .income)` (the amortization schedule), `TrendBadge(color:)` for an asset's rise, and the
+  insights' own `InsightTrend.trendColor`. The cards that build them inside (`CashFlowCard`,
+  `ComparisonCard`, `HoldingCard`, `MetricCard`) take no colour: their rises and income are the
+  system green, the owner's choice of 2026-11-25.
 - **Adapters over Tenra models**, as extensions: `CategoryColors.color(for:opacity:customCategories:)`
   and `(store:)` (custom category colours), the `IconSource` brand registry,
   `DonutSlice.from([CategoryBreakdownItem])` and `.from([SubcategoryBreakdownItem], baseColor:)`,
@@ -692,7 +701,7 @@ Where each DesignKit effect is used in Tenra, so a new screen reuses the pattern
 | Entity detail | `.scrollHero()` on the hero (from `EntityDetailScaffold`), `.heroAccentGlow` on the screen | every detail screen; the glow's colour comes from the hero icon |
 | Voice screen | `EdgeGlow`, `VoiceWave(style: .orb)` stop button, `.thinkingShimmer`, `StreamingText`, `.cascadeIn`, `.borderBeam` on the live card, a one-time `.spotlight` | [domains/voice.md](domains/voice.md) |
 | Loan detail | `.celebration` on the false → true edge of `isPaidOffLoan`, with the banner and the haptic | the moment only, never the state |
-| Assets | the list's hero on `.heroBackground(AppColors.income)` while the assets gained (the accent otherwise) with `HeroSparkline` of their worth over time; `HoldingCard(isLive: true)` rolling the values up and `.scrollReveal()` on each card; on an asset's screen `HeroSparkline` of its valuations under the hero, `.sparkleBurst` for a valuation above the value, `.celebration(playsHaptic: false)` for a sale above the purchase price | a still background under the glass, as Home's; the charts wait for the push (`entranceDelay` 0.3 s) |
+| Assets | the list's hero on `.heroBackground(Color.income)` while the assets gained (the accent otherwise) with `HeroSparkline` of their worth over time; `HoldingCard(isLive: true)` rolling the values up and `.scrollReveal()` on each card; on an asset's screen `HeroSparkline` of its valuations under the hero, `.sparkleBurst` for a valuation above the value, `.celebration(playsHaptic: false)` for a sale above the purchase price | a still background under the glass, as Home's; the charts wait for the push (`entranceDelay` 0.3 s) |
 | Goal reached, debt settled | `.celebration(trigger:, playsHaptic: false)` when a contribution, an edit or the account's balance reaches the target, or a repayment covers the rest | the money sheet has already played the success haptic |
 | Detail histories (`GroupedTransactionList`, a goal's contributions, a debt's repayments), voice cards | `.dissolve` removal, opacity insertion | for deleting something the person owned, not every disappearance |
 | One-time hints | `.spotlight` + `FeatureTourState` | points at content the person can see, not at system chrome (tab bar, toolbar) |

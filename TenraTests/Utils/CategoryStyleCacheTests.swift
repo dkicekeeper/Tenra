@@ -104,7 +104,7 @@ struct CategoryStyleCacheTests {
             #expect(style.iconName == "creditcard.fill")
             #expect(style.iconColor == TransactionDisplayHelper.loanPaymentColor)
             #expect(style.primaryColor == TransactionDisplayHelper.loanPaymentColor)
-            #expect(style.primaryColor != AppColors.expense)
+            #expect(style.primaryColor != AppColors.Text.primary)
         }
     }
 

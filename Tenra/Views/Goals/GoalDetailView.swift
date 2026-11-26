@@ -86,12 +86,12 @@ struct GoalDetailView: View {
                         current: status.saved,
                         total: goal.targetAmount,
                         label: String(localized: "goal.savedShare"),
-                        color: AppColors.income
+                        color: Color.income
                     )
                 )
                 // Money put towards the goal: a small burst of sparkles over it (DesignKit);
                 // reaching the goal celebrates instead.
-                .sparkleBurst(trigger: contributionSparkles, tint: AppColors.income)
+                .sparkleBurst(trigger: contributionSparkles, tint: Color.income)
             },
             customSections: {
                 if !follows, !goal.contributions.isEmpty {
@@ -193,7 +193,7 @@ struct GoalDetailView: View {
                 icon: "checkmark.seal",
                 label: String(localized: "goal.reached"),
                 value: DateFormatters.displayDateOmittingCurrentYear(reachedAt),
-                iconColor: AppColors.income
+                iconColor: Color.income
             ))
         }
         return rows

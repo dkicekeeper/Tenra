@@ -39,7 +39,7 @@ struct DebtsCardView: View {
                         id: debt.id,
                         iconSource: debt.iconSource,
                         amount: CurrencyConverter.convertSync(amount: debt.remaining, from: debt.currency, to: baseCurrency) ?? debt.remaining,
-                        tint: debt.direction == .owedToMe ? AppColors.income : AppColors.destructive
+                        tint: debt.direction == .owedToMe ? Color.income : AppColors.destructive
                     )
                 },
                 style: .shelf

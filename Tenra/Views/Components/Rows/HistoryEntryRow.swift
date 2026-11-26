@@ -26,7 +26,7 @@ struct HistoryEntryRow: View {
             note ?? day,
             subtitle: note == nil ? nil : day,
             subtitleLineLimit: 1,
-            leading: .tinted(.sfSymbol(symbol), AppColors.income),
+            leading: .tinted(.sfSymbol(symbol), Color.income),
             value: .amount(amount),
             currency: currency
         )

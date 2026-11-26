@@ -536,7 +536,7 @@ struct LoanDetailView: View {
             current: max(paid, 0),
             total: total,
             label: String(localized: "loan.paidOff", defaultValue: "Paid off"),
-            color: AppColors.income
+            color: Color.income
         )
     }
 
@@ -667,7 +667,7 @@ struct LoanDetailView: View {
                             amount: NSDecimalNumber(decimal: breakdown.principal).doubleValue,
                             currency: account.currency,
                             fontSize: AppTypography.body,
-                            color: AppColors.income
+                            color: Color.income
                         )
                     }
 
@@ -679,7 +679,7 @@ struct LoanDetailView: View {
                             amount: NSDecimalNumber(decimal: breakdown.interest).doubleValue,
                             currency: account.currency,
                             fontSize: AppTypography.body,
-                            color: AppColors.expense
+                            color: AppColors.Text.primary
                         )
                     }
 
@@ -692,8 +692,8 @@ struct LoanDetailView: View {
                     let principalRatio = NSDecimalNumber(decimal: breakdown.principal / total).doubleValue
                     ProportionBar(
                         ratio: principalRatio,
-                        leftColor: AppColors.income,
-                        rightColor: AppColors.expense
+                        leftColor: Color.income,
+                        rightColor: AppColors.Text.primary
                     )
                 }
             } else {

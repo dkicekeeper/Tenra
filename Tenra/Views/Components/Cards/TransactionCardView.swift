@@ -75,9 +75,9 @@ struct TransactionCardView: View {
             icon: subscriptionIconSource ?? .sfSymbol(styleData.iconName),
             iconTint: subscriptionIconSource != nil
                 ? .original
-                : .monochrome(isTransfer ? AppColors.transfer : styleData.primaryColor),
+                : .monochrome(isTransfer ? Color.transfer : styleData.primaryColor),
             iconBackground: subscriptionIconSource == nil && isTransfer
-                ? AppColors.pale(AppColors.transfer)
+                ? AppColors.pale(Color.transfer)
                 : styleData.lightBackgroundColor,
             badgeSystemImage: showRecurringBadge ? "arrow.clockwise" : nil,
             amounts: amounts,
@@ -148,7 +148,7 @@ struct TransactionCardView: View {
             transaction.targetAmount ?? transaction.convertedAmount ?? transaction.amount,
             currency: transaction.targetCurrency ?? target.currency,
             prefix: "+",
-            color: AppColors.income
+            color: Color.income
         )
         return [outgoing, incoming]
     }

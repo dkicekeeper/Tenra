@@ -272,7 +272,7 @@ The allowed lists (one source for the app's enums in Task 3):
   server counts" gains the app's milestones and counters, their fields, 90 days, the switch;
   "no identifier of you or your device" stays true), `docs/release-notes.md` (1.10 item and phone
   checks), `docs/plan-sales.md` (§4 ticked, the status line), `docs/promotion-plan.md` §7
-  (Saturday step 1 reads `app-stats`), `docs/backlog.md` (the "No behavioural analytics SDK"
+  (Saturday step 1 reads `app-stats`), `docs/decisions/` (the "No behavioural analytics SDK"
   decision mentions the app's own counting), `CLAUDE.md` (a row in "When to Read Which Doc",
   a line under Monetization or Testing for the silence rule), `docs/README.md`
 - Create: `docs/domains/analytics.md` (what is counted, the lists, the switch, the report, how to

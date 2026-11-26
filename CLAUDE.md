@@ -218,7 +218,7 @@ New file needed?
 | Performance hot-paths, SwiftUI Layout gotchas, `#Preview` crashes, common cross-domain pitfalls, ignorable Simulator console warnings | [docs/gotchas.md](docs/gotchas.md) |
 | `Tenra/Intents/**`, `Services/Intents/**`, Siri, App Shortcuts, the Wallet automation | [docs/domains/intents.md](docs/domains/intents.md) |
 | Adding a CoreData entity/attribute, bumping `Tenra.xcdatamodeld` | `/coredata-schema-bump` skill |
-| Open items, ideas, decisions that stand | [docs/backlog.md](docs/backlog.md) — delete a line when it lands, edit it when a decision changes |
+| Open items and ideas; decisions that stand | `docs/backlog/` (a file per task), `docs/decisions/` (a file per decision); formats in the standard block below. The project's passport: [docs/project.md](docs/project.md) |
 | The AI assistant (Ten): `Services/Agent/**`, `Views/Assistant/**`, `server/assistant/**` (Cloudflare Worker, prompt, tools, eval), the app ↔ server protocol, the mascot, reply blocks | [docs/domains/assistant.md](docs/domains/assistant.md) (§8 protocol, §12 setup); Apple models and Siri on iOS 27: [docs/plan-assistant-ios27.md](docs/plan-assistant-ios27.md); Ten as an agent for the app: [docs/plan-ten-agent.md](docs/plan-ten-agent.md); Ten's looks, wardrobe, quests and moments: [docs/plan-ten-gamification.md](docs/plan-ten-gamification.md) |
 
 **Rule**: before editing files in a domain, Read the matching doc.
@@ -384,7 +384,7 @@ When working with this project:
 - To check a layout you changed, render it with `ImageRenderer` in a throwaway test that writes a PNG to a host path (e.g. your scratchpad), run it with `-parallel-testing-enabled NO` (parallel clones discard their tmp), look at it, delete the test. To show the owner a layout before it ships (no Mac needed), add it to `TenraTests/Mockups/ScreenMockupTests.swift` and push: the **Mockups** workflow renders it in a real window (glass and navigation included), per language, light and dark ([docs/asc.md](docs/asc.md) «Макеты экранов»).
 - **Don't change the layout of shipped UI components as a side effect of an audit or plan** (category grid: 3 per row, one-line titles). Report and ask first. User rule.
 - ⚠️ Bank statements the user shares contain name/IIN/IBAN/balances/counterparties: never commit the files or any value from them (tests, comments, docs, commit messages). Invent fixtures; grep the diff for real values before committing.
-- ⚠️ **The repository is public, its whole history and its Actions logs too** (owner's decision, [backlog.md](docs/backlog.md) §Decisions): a key that lands in a commit stays readable after it is deleted, so it must be revoked, not just removed. Secrets live only in GitHub repository secrets (and the cloud environment's network secrets); the code carries only keys made to ship inside the app (RevenueCat `appl_…`, Logo.dev `pk_…`). Scan a change before pushing: `gitleaks git . --log-opts="origin/main..HEAD" --redact` (`brew install gitleaks`; in a cloud session `go install github.com/zricethezav/gitleaks/v8@v8.28.0`). Evidence: the 2026-11-10 audit of every public repository, archived at [docs/archive/security-audit-2026-11-10.md](docs/archive/security-audit-2026-11-10.md).
+- ⚠️ **The repository is public, its whole history and its Actions logs too** (owner's decision, [docs/decisions/2026-11-10-repositories-public.md](docs/decisions/2026-11-10-repositories-public.md)): a key that lands in a commit stays readable after it is deleted, so it must be revoked, not just removed. Secrets live only in GitHub repository secrets (and the cloud environment's network secrets); the code carries only keys made to ship inside the app (RevenueCat `appl_…`, Logo.dev `pk_…`). Scan a change before pushing: `gitleaks git . --log-opts="origin/main..HEAD" --redact` (`brew install gitleaks`; in a cloud session `go install github.com/zricethezav/gitleaks/v8@v8.28.0`). Evidence: the 2026-11-10 audit of every public repository, archived at [docs/archive/security-audit-2026-11-10.md](docs/archive/security-audit-2026-11-10.md).
 
 ## Questions?
 
@@ -402,12 +402,12 @@ When unsure about architecture decisions:
 - **Every change updates the docs it makes stale, in the same commit.** Before committing, check what the change touches and bring each of these up to date:
   - the domain doc of the area (the "When to Read Which Doc" table: `docs/domains/*.md`, `design-system.md`, `architecture.md`, `asc.md`, …) and this file when a rule, a command or a workflow changes;
   - the plan in flight (`docs/plan-*.md`): tick the item, rewrite its status line, and move the plan to `docs/archive/plans/` once it has fully landed;
-  - `docs/backlog.md`: delete the line that landed, edit a decision that changed;
+  - `docs/backlog/`: the task that landed moves to `docs/archive/backlog/` with `status: done`; a decision that changed is rewritten in `docs/decisions/` (the replaced one moves to `docs/archive/decisions/`);
   - a change the user sees: `docs/release-notes.md` (What's New in all 14 storefronts, the submission checklist);
   - a TestFlight build, a release, App Store Connect or metrics work: `docs/promotion-plan.md` (§1, §6, §7).
 - **Re-check the plans against the code regularly, not only the lines a change touched**: when a session picks up planned work, before release prep, and in the Saturday session ([promotion-plan.md](docs/promotion-plan.md) §7). For each open item verify in the code and `git log` whether it landed; fix the marks and every stale statement (a "blocked until" that no longer holds, a merged PR still listed as open, a renamed screen, a build number). A stale plan is a bug: the next session acts on it.
 - **All current documentation lives in `docs/`; anything no longer current moves to `docs/archive/`** in the same commit that makes it stale (a plan that landed → `docs/archive/plans/`, release notes once the version ships, a finished audit → `docs/archive/`, a superseded spec → `docs/archive/specs/` after its lasting rules go into the domain doc). Current = describes the app as it is now, or work in flight. No docs elsewhere, apart from the tool-mandated `CLAUDE.md`, `AGENTS.md` and `.claude/skills/*/SKILL.md`.
-- **Flat:** only `docs/domains/` (one file per domain) and `docs/public/` (the Pages site) are folders. Work in flight is a file in `docs/`: a plan `plan-<topic>.md`, the What's New of the version being prepared `release-notes.md`; open items, ideas and decisions go in `docs/backlog.md`. Skills that default to other folders (superpowers → `docs/superpowers/`, GSD → `.planning/`) write there instead.
+- **Flat, with the standard's folders:** `docs/domains/` (one file per domain), `docs/public/` (the Pages site), `docs/backlog/`, `docs/plans/`, `docs/decisions/` and `docs/archive/` (the standard block below). A new design or plan is a file in `docs/plans/` (`<date>-<topic>.md` with its header); the plans already in flight keep their names, `docs/plan-<topic>.md`, until they land. The What's New of the version being prepared is `docs/release-notes.md`; open items and ideas are tasks in `docs/backlog/`, decisions are files in `docs/decisions/`. Skills that default to other folders (superpowers → `docs/superpowers/`, GSD → `.planning/`) write to `docs/plans/` instead.
 - **No history in current docs:** "before X it did Y", bug stories and finished checklists go in the commit message or the archive.
 - **Names: lowercase, words joined by hyphens** (`promotion-plan.md`, `performance-audit-2026-07.md`), ISO dates, for folders and for `docs/archive/` too. Exceptions: `README.md` and locale codes (`pt-BR.md`).
 - **Index and layout: [docs/README.md](docs/README.md).** A new doc gets a row there; a new domain also gets a row in the "When to Read Which Doc" table above.
@@ -417,18 +417,6 @@ When unsure about architecture decisions:
 **Last Updated**: 2026-11-14
 **iOS Target**: 26.0+ (built with Xcode 27 / SDK 27 — iOS 27 APIs need `if #available(iOS 27, *)` **inside `#if compiler(>=6.4)`**, with the iOS 26 path in `#else`, so the project still builds with Xcode 26. Every GitHub workflow (CI, TestFlight, DesignKit update, Screenshots) builds with Xcode 27.0 on the `xcode-27` runner since 2026-10-21, so the iOS 27 paths are compiled, tested and shipped from the cloud; the Xcode pin is raised in all four at once, see [docs/asc.md](docs/asc.md))
 **Swift Version**: 5.0 project setting; Swift 6 patterns; `SWIFT_STRICT_CONCURRENCY = minimal`; `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor`
-
-## Строка состояния для Warehouse
-
-Каждое сообщение, после которого ты останавливаешься, заканчивай отдельной последней строкой:
-
-`Статус: <состояние> — <одна строка>`
-
-- `ждёт владельца` — без владельца дальше нельзя: что именно от него нужно (решение, мерж, проверка на устройстве, секрет).
-- `работаю` — ты остановился, но вернёшься сам: чего ждёшь (CI, событие PR, таймер). Если следишь за PR и чинишь его — `работаю — слежу за PR #N`.
-- `готово` — работа закончена и от владельца ничего не нужно: что сделано.
-
-Строку читает сервис Warehouse и показывает владельцу; без неё сессия попадает в список «без статуса».
 
 <!-- designkit:agents:start -->
 <!-- From DesignKit 8.22.0, docs/agents.md. Do not edit here: the DesignKit update workflow rewrites it. -->
@@ -523,3 +511,137 @@ or divider inset. A major DesignKit version: `scripts/migrate.py --from <old> --
 rewrites what it can and leaves `TODO(DesignKit X.0)` where `docs/migration-X.0.md` needs a person.
 
 <!-- designkit:agents:end -->
+
+<!-- warehouse:standard:start -->
+<!-- Стандарт Warehouse, версия 1. Не править здесь: блок переписывает workflow standard.yml из standard/agents.md репозитория Warehouse. -->
+
+## Стандарт ведения проекта
+
+Один порядок во всех проектах владельца. Источник: `standard/` в репозитории
+[Warehouse](https://github.com/dkicekeeper/Warehouse). Соблюдение проверяет CI (workflow
+`standard.yml`); локально: `python3 -I <Warehouse>/standard/lint.py --root .`
+
+### Где что лежит
+
+```
+docs/
+├── README.md      оглавление: строка на каждый документ docs/ и docs/domains/
+├── project.md     паспорт проекта
+├── backlog/       открытые задачи, файл на задачу
+├── plans/         дизайн-документы и планы в работе (и навыков superpowers тоже)
+├── decisions/     действующие решения владельца, файл на решение
+├── domains/       по файлу на предметную область
+├── public/        сайт GitHub Pages
+├── archive/       всё неактуальное: backlog/, plans/, decisions/ и остальная история
+└── <имя>.md       остальные актуальные документы, плоско
+```
+
+- В `docs/` только актуальное: проект как он есть и работа в ходу. Неактуальное уезжает в
+  `docs/archive/` тем же коммитом, который сделал его неактуальным.
+- Новых папок в `docs/` не заводят. Путь, который читает инструмент, вносится в
+  `docs/.standard.json` (`{"ignore": [{"path": "…", "reason": "…"}]}`).
+- Имена: строчные латинские буквы и цифры, слова через дефис, даты ISO. Исключения:
+  `README.md`, коды локалей.
+- В актуальных документах нет истории («раньше было так»): она в сообщении коммита и в архиве.
+- Новый документ получает строку в `docs/README.md`. Ссылки внутри `docs/` и из `CLAUDE.md`
+  должны вести на существующие файлы.
+- Бессрочные документы (стратегия, продвижение) лежат плоско; в `docs/plans/` только работа
+  с концом.
+
+### Форматы
+
+Шапка: YAML между строками `---` в начале файла. Только эти ключи и значения.
+
+**Задача** `docs/backlog/<ГГГГ-ММ-ДД>-<слово>.md` (имя файла и есть её id; счётчика нет):
+
+```
+---
+status: ready        # idea | ready | in-progress | blocked | done | dropped
+type: feature        # feature | bug | chore | research | content | growth
+priority: 2          # 1 срочно, 2 обычно, 3 когда-нибудь
+size: m              # s до часа, m одна сессия, l нужен план
+created: 2026-11-26
+updated: 2026-11-26
+---
+# Название задачи
+
+Зачем: какую боль это снимает.
+
+Готово, когда:
+- проверяемое условие.
+
+Заметки: что известно, ссылки.
+```
+
+Ещё четыре ключа, когда они нужны: `needs-owner: "что нужно от владельца"` (такая задача
+`blocked`, не `ready`), `plan: plans/<файл>.md` (путь от `docs/`), `branch: claude/…` (ставит
+сессия, которая взяла задачу), `pr: 142` (когда PR открыт). Списки пишутся в одну строку в
+скобках. В репозиториях с английскими документами разделы называются `Why`, `Done when`,
+`Notes`. У `idea` достаточно заголовка и абзаца; `priority` и `size` обязательны с `ready`.
+
+**План** `docs/plans/<ГГГГ-ММ-ДД>-<тема>.md`: `status` (draft | approved | in-progress | done |
+dropped), `kind` (design | plan), `created`, `updated`, `approved` (дата одобрения владельцем,
+обязательна с `approved`), `tasks: [id, id]`.
+
+**Решение** `docs/decisions/<ГГГГ-ММ-ДД>-<тема>.md`: `status` (active | superseded), `decided`,
+`by` (owner | claude), `supersedes: <id>`; в тексте строки «Решение: …» и «Почему: …».
+
+**Паспорт** `docs/project.md`: `name`, `stage` (idea | development | beta | live | maintenance),
+`kind` (ios-app | web | library | service), `platforms: [ios]`, `standard: 1`, `links:` с
+вложенными `store`, `site`, `testflight`; ниже — что это, для кого и чем проект занят сейчас.
+
+Закрытое живёт только в архиве: задача `done` или `dropped` — в `docs/archive/backlog/`, план
+`done` или `dropped` — в `docs/archive/plans/`, решение `superseded` — в
+`docs/archive/decisions/`. Переносит файл (`git mv`) тот же PR, который его закрыл.
+
+### Готово к работе (DoR)
+
+Задача `ready`, когда:
+
+1. Есть «Зачем» и «Готово, когда» с проверяемыми условиями.
+2. Нет открытого вопроса к владельцу (иначе она `blocked` с `needs-owner`).
+3. Стоят `type`, `priority`, `size`.
+4. У задачи размера `l` есть одобренный план (`plan`, статус плана `approved` или дальше).
+
+Задачу, которая не `ready`, в работу не берут: сначала доведи её до `ready` или спроси владельца.
+
+### Сделано (DoD)
+
+Задача `done`, когда:
+
+1. Все условия «Готово, когда» выполнены и проверены, а не предположены.
+2. CI репозитория зелёный на ветке.
+3. Документы, которые изменение сделало устаревшими, обновлены тем же PR.
+4. Изменение, которое видит пользователь, записано в заметки к выпуску проекта, если они есть.
+5. Файл задачи перенесён в `docs/archive/backlog/` со статусом `done` и номером PR; план, у
+   которого закрыты все задачи, — в `docs/archive/plans/`.
+6. Новое, что всплыло по ходу и не сделано, записано задачами в `docs/backlog/`.
+
+### Чеклисты
+
+**Начало работы.** Прочитай `docs/project.md`. Найди задачу в `docs/backlog/` или создай её.
+Проверь DoR. В своей рабочей ветке поставь `status: in-progress`, `branch` и обнови `updated`.
+
+**Завершение.** Пройди DoD по пунктам. Закончи сообщение строкой состояния (ниже).
+
+**Выпуск** (приложения). Версия поднята. Заметки к выпуску на всех языках проекта. Сборка в
+TestFlight из зелёного `main`. Шаги владельца перечислены в строке состояния. Подробности
+проекта — в его `docs/release.md`.
+
+**Новый проект.** Скопируй `standard/template/` из Warehouse. Заполни `docs/project.md`. Запиши
+первую задачу. Добавь `.github/workflows/standard.yml` (копия `standard/workflow.yml`) и хук
+отчёта сессии (`hooks/` в Warehouse).
+
+### Строка состояния для Warehouse
+
+Каждое сообщение, после которого ты останавливаешься, заканчивай отдельной последней строкой:
+
+`Статус: <состояние> — <одна строка>`
+
+- `ждёт владельца` — без владельца дальше нельзя: что именно от него нужно (решение, мерж, проверка на устройстве, секрет).
+- `работаю` — ты остановился, но вернёшься сам: чего ждёшь (CI, событие PR, таймер). Если следишь за PR и чинишь его — `работаю — слежу за PR #N`.
+- `готово` — работа закончена и от владельца ничего не нужно: что сделано.
+
+Строку читает сервис Warehouse и показывает владельцу; без неё сессия попадает в список «без статуса».
+
+<!-- warehouse:standard:end -->

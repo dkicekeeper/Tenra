@@ -9,11 +9,13 @@ this file is the full index.
 1. **Current docs only, in `docs/`.** A document is current when it describes the app as it is
    now or work still in flight. Nothing documentation-like lives elsewhere in the repo, apart from
    the files tools require at fixed paths: `CLAUDE.md`, `AGENTS.md`, `.claude/skills/*/SKILL.md`.
-2. **Flat, with two folders:** `domains/` (one file per domain) and `public/` (the GitHub Pages
-   site). Everything else sits in `docs/` itself; no folder for a single kind of file.
-3. **Work in flight** is a file in `docs/` while it runs: a plan (`plan-<topic>.md`), the What's
-   New of the version being prepared (`release-notes.md`). Open items, ideas and decisions go in
-   [backlog.md](backlog.md).
+2. **Flat, with the standard's folders:** `domains/` (one file per domain), `public/` (the GitHub
+   Pages site), `backlog/`, `plans/`, `decisions/` and `archive/` (the project standard, its block
+   in [CLAUDE.md](../CLAUDE.md)). Everything else sits in `docs/` itself.
+3. **Work in flight:** a new design or plan is a file in `plans/` (`<date>-<topic>.md` with its
+   header); the plans already in flight keep their names (`plan-<topic>.md`) until they land. The
+   What's New of the version being prepared is `release-notes.md`. Open items and ideas are tasks in
+   [backlog/](backlog/), a file each; decisions are files in [decisions/](decisions/).
 4. **Stale goes to `docs/archive/`, in the same commit that makes it stale.** A plan that landed,
    was reverted or rejected → `archive/plans/`; release notes once the version ships →
    `archive/release-notes-<version>.md`; a finished audit or report → `archive/`; a spec the code
@@ -25,7 +27,7 @@ this file is the full index.
 6. **No history in current docs.** "Before X it did Y", bug stories, dated audit notes and
    finished checklists belong in the commit message or the archive; a doc states what is true now.
 7. **Skills that write documents elsewhere by default** (superpowers → `docs/superpowers/`,
-   GSD → `.planning/`) write their plan to `docs/plan-<topic>.md` and fold lasting rules into the
+   GSD → `.planning/`) write their design and plan to `docs/plans/` and fold lasting rules into the
    domain doc.
 8. **A new document gets a row in this index**; a new domain also gets a row in the
    [CLAUDE.md](../CLAUDE.md) "When to Read Which Doc" table.
@@ -71,7 +73,10 @@ this file is the full index.
 | [release-notes.md](release-notes.md) | The next version in preparation: its What's New, what `main` already carries for it, the phone checks carried over from 1.8.3, the submission checklist |
 | [asc.md](asc.md) | App Store Connect, TestFlight and Apple Ads from a cloud session (`appstore/asc.py`, `appstore/ads.py`, workflows) |
 | [threads.md](threads.md) | The Tenra account on Threads: replies to people asking for an expense tracker and a few posts, from `social/threads.json`, published by Actions after the founder's yes (`scripts/threads.py`, `threads.yml`), Tenra's voice, where to reply and where not, the one-time setup, the token, how to measure |
-| [backlog.md](backlog.md) | Open items, ideas not planned yet, decisions that stand |
+| [project.md](project.md) | The project's passport: what Tenra is, its stage, its links |
+| [backlog/](backlog/) | Open items and ideas not planned yet, a file per task |
+| [decisions/](decisions/) | Decisions that stand, a file per decision |
+| [plans/](plans/) | New designs and plans in flight |
 | [plan-assistant-ios27.md](plan-assistant-ios27.md) | Plan, not started: Ten on Apple's models (Private Cloud Compute, on device) behind a router, and Siri on iOS 27 |
 | [plan-ten-agent.md](plan-ten-agent.md) | Plan in flight (decisions A1-A7 taken 2026-11-12): Ten as an agent for the whole app. In the store with 1.8.3: knowing the app, buttons and prefilled forms, the app's state, help with a complaint, editing what is saved, one-tap actions on Ten's messages, order in the data; in `main` for the next version: direct requests (feedback, reminders, account changes); stage 3 and the rest of stage 4 ahead |
 | [plan-ten-gamification.md](plan-ten-gamification.md) | Plan, owner's decisions R1-R7 taken 2026-11-17, stage 0 done: Ten's emotions in the app's big moments (an overlay with dimming and blur over any screen), quests for good habits (a streak of records) and new wardrobe items in head, face and body slots, holidays by region without religious ones, and Ten's other looks (other characters, each in its own art style, particles stay Ten's alone): one in Tenra Pro, the rest as one-time purchases; concepts of three looks done 2026-11-17 (only cute looks, the warrior dropped: R7), a 3D prototype of the cash-register robot done the same day in the owner's local Blender session (§14.1: the outlined cartoon style holds in RealityKit, the tab needs a still of the head; §14.2: body motions from open libraries, Quaternius CC0 and Mixamo, retarget onto it by script; §14.3: a shared skeleton tried on a second look, the owl, with shared clips and one hat, crown and glasses fitting both through sockets; §14.4: on the phone a 3D look holds 60 fps but costs about 30% of a core against 6% for the particles; §14.5: the robot rebuilt from the owner's model sheet, its silhouette matching the sheet by 84-88%; §14.6: the coin built from its own sheet in a clay style, soft light and a knitted scarf that comes off baked into the texture, its silhouette matching by 92-96%); decisions O1-O4 taken 2026-11-20 (3D looks, the robot in Pro, the owl first paid); stage 0 done the same day (Ten's logic in `Services/Agent`, `TenWardrobeStore`, a streak of days with a record instead of app opens, Ten's wardrobe in backups) |
@@ -80,6 +85,7 @@ this file is the full index.
 | [plan-assets-roadmap.md](plan-assets-roadmap.md) | Plan, proposed 2026-11-02, owner's decisions D1-D3, D7 and D12 taken the same day: what comes after assets phases 1-4, from the audit ([archive/assets-audit-2026-11-02.md](archive/assets-audit-2026-11-02.md)): selling them in 1.8 (What's New and the fixes in the store since 2026-11-04, the paywall list published 2026-11-10), automatic valuation in any country from listings found by web search on Ten's server (owner's decision 2026-11-02; the server, its eval, Ten's tool, the characteristics, schema v19 and the button on the asset screen in 1.8, on for Tenra Pro, 10 a month; price tracking next; precious metals moved to the investments plan), net worth stays in Analytics (D1), the core's gaps (editing a valuation, upkeep from several categories, the sale into money, charts by time), money around an asset (purchase and improvements), net worth with investments |
 | [plan-release-1.9.md](plan-release-1.9.md) | Plan in flight, composition accepted 2026-11-24: the December 1.9 under the featuring nomination (window 29.12-19.01), the year in review (pages, shared without amounts by default), a January plan with Ten, Ten's moments; dates up to a manual release on 26.12 |
 | [plan-threads-videos.md](plan-threads-videos.md) | Plan, decided 2026-11-26, publishing ready, filming not started: short videos for Threads about what Qalta and Traty lack (Ten, deposits, loans, assets), filmed on the demo data in the Simulator in the founder's local session, edited to 9:16, posted from `docs/public/media/threads/` |
+| [plan-usage-events.md](plan-usage-events.md) | Implementation plan of the app's usage counts ([domains/analytics.md](domains/analytics.md)) |
 | [plan-growth.md](plan-growth.md) | Plan in flight, accepted 2026-11-10: the order of work towards revenue (retention, conversion, the EU, organic traffic, scale), why ads in Kazakhstan do not pay back alone, and the site's calculators (how they are built and checked) |
 | [plan-sales.md](plan-sales.md) | Plan in flight, proposed 2026-11-25: sales and retention. The app's own anonymous usage counting on Tenra's server (events, reports, the metrics page), the retention and trial mechanisms in order of effect, a targeted redesign of the first run |
 | [public/](public/) | The site (GitHub Pages): the landing pages and the deposit and loan calculators in ru, kk and en (built by `scripts/build_site.py`, [plan-growth.md](plan-growth.md) §4), privacy policy, terms of use, support |

@@ -39,6 +39,11 @@ REFRESH = "https://graph.threads.net/refresh_access_token"
 REPO = "dkicekeeper/Tenra"
 SECRET = "THREADS_ACCESS_TOKEN"
 TEXT_MAX = 500
+# A post's video lives in the public site (GitHub Pages serves it as video/mp4; raw.githubusercontent
+# does not): docs/public/media/threads/<id>.mp4 at SITE/media/threads/<id>.mp4, deployed on push.
+SITE = "https://dkicekeeper.github.io/Tenra"
+VIDEO_DIR = "docs/public/media/threads/"
+VIDEO_MAX_BYTES = 20 * 1024 * 1024
 REPLIES_PER_RUN = 3     # Meta treats a burst of replies with links as spam
 ALMATY = timezone(timedelta(hours=5))
 EMOJI = range(0x1F300, 0x1FAFF + 1)
@@ -112,7 +117,37 @@ def problems(posts: list[dict], replies: list[dict] | None = None) -> list[str]:
                 datetime.fromisoformat(post["notBefore"])
             except ValueError:
                 found.append(f"{pid}: notBefore is not a date (YYYY-MM-DD)")
+        found += media_problems(post)
     return found
+
+
+def media_problems(post: dict, root: Path = ROOT) -> list[str]:
+    """An image or a video must be a file of this repository; a video an .mp4 in VIDEO_DIR (the
+    site serves it to Meta), at most VIDEO_MAX_BYTES; never both on one post."""
+    pid, found = post.get("id", "?"), []
+    if post.get("image") and post.get("video"):
+        found.append(f"{pid}: an image and a video, Threads takes one")
+    for key in ("image", "video"):
+        path = post.get(key)
+        if path and not (root / path).is_file():
+            found.append(f"{pid}: {key} {path} is not in the repository")
+    video = post.get("video")
+    if video:
+        if not video.startswith(VIDEO_DIR) or not video.endswith(".mp4"):
+            found.append(f"{pid}: a video is an .mp4 in {VIDEO_DIR}")
+        elif (root / video).is_file() and (root / video).stat().st_size > VIDEO_MAX_BYTES:
+            found.append(f"{pid}: the video is over {VIDEO_MAX_BYTES // (1024 * 1024)} MB")
+    return found
+
+
+def media_url(post: dict) -> tuple[str | None, str | None]:
+    """(kind, public URL) of a post's image or video, or (None, None)."""
+    if post.get("video"):
+        return "VIDEO", f"{SITE}/{post['video'][len('docs/public/'):]}"
+    if post.get("image"):
+        # A public file of this public repository: Threads downloads the image from the URL.
+        return "IMAGE", f"https://raw.githubusercontent.com/{REPO}/main/{post['image']}"
+    return None, None
 
 
 def next_post(posts: list[dict], posted: dict, today: str) -> dict | None:
@@ -142,16 +177,33 @@ def me() -> None:
     print(f"Threads account: @{profile.get('username')} ({profile.get('name')}), id {profile.get('id')}")
 
 
-def publish(text: str, image_url: str | None, reply_to: str | None = None) -> str:
-    params = {"media_type": "IMAGE" if image_url else "TEXT", "text": text, "access_token": token()}
-    if image_url:
-        params["image_url"] = image_url
+def publish(text: str, media: tuple[str | None, str | None] = (None, None), reply_to: str | None = None) -> str:
+    kind, url = media
+    params = {"media_type": kind or "TEXT", "text": text, "access_token": token()}
+    if kind == "IMAGE":
+        params["image_url"] = url
+    elif kind == "VIDEO":
+        params["video_url"] = url
     if reply_to:
         params["reply_to_id"] = reply_to
     container = call("POST", f"{API}/me/threads", params)["id"]
-    # Meta asks to give the container time to process before publishing (an image takes longer).
-    time.sleep(30 if image_url else 5)
+    wait_until_ready(container, video=kind == "VIDEO")
     return call("POST", f"{API}/me/threads_publish", {"creation_id": container, "access_token": token()})["id"]
+
+
+def wait_until_ready(container: str, video: bool) -> None:
+    """Meta processes a container before it can be published: a few seconds for text, up to a few
+    minutes for a video. Polls its status (10 s apart, about 6 minutes at most for a video)."""
+    time.sleep(5)
+    for _ in range(36 if video else 6):
+        status = call("GET", f"{API}/{container}", {"fields": "status,error_message", "access_token": token()})
+        state = status.get("status")
+        if state in (None, "FINISHED", "PUBLISHED"):
+            return
+        if state in ("ERROR", "EXPIRED"):
+            raise ThreadsError(f"the container is {state}: {status.get('error_message', '')}")
+        time.sleep(10)
+    raise ThreadsError("the container was not ready in time; the post waits for the next run")
 
 
 def record(posted: dict, item_id: str, media_id: str) -> None:
@@ -170,15 +222,12 @@ def post_next(dry_run: bool) -> None:
     if not post:
         print("Nothing to post: no approved post is waiting.")
         return
-    image_url = None
-    if post.get("image"):
-        # A public file of this public repository: Threads downloads the image from the URL.
-        image_url = f"https://raw.githubusercontent.com/{REPO}/main/{post['image']}"
+    media = media_url(post)
     if dry_run:
         print(f"Dry run: would post {post['id']} ({len(post['text'])} characters"
-              + (f", image {post['image']}" if image_url else "") + ").")
+              + (f", {media[0].lower()} {media[1]}" if media[0] else "") + ").")
         return
-    media_id = publish(post["text"], image_url)
+    media_id = publish(post["text"], media)
     record(posted, post["id"], media_id)
     print(f"Posted {post['id']} (media {media_id}).")
 
@@ -203,7 +252,7 @@ def publish_replies(dry_run: bool) -> None:
             print(f"Dry run: would reply {reply['id']} to {reply.get('replyTo') or reply['replyToId']} "
                   f"({len(reply['text'])} characters).")
             continue
-        media_id = publish(reply["text"], None, reply_to=str(reply["replyToId"]))
+        media_id = publish(reply["text"], reply_to=str(reply["replyToId"]))
         record(posted, reply["id"], media_id)
         print(f"Replied {reply['id']} (media {media_id}).")
 

@@ -59,6 +59,38 @@ class ReplyTests(unittest.TestCase):
         self.assertTrue(threads.problems([], [reply("a", text="Tenra — это")]))
 
 
+class MediaTests(unittest.TestCase):
+    def setUp(self):
+        import tempfile
+        self.tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self.tmp.name)
+        (self.root / "docs/public/media/threads").mkdir(parents=True)
+        (self.root / "docs/public/media/threads/deposit.mp4").write_bytes(b"0" * 1024)
+        (self.root / "social").mkdir()
+        (self.root / "social/card.png").write_bytes(b"png")
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def test_video_in_the_site(self):
+        p = dict(post("v"), video="docs/public/media/threads/deposit.mp4")
+        self.assertEqual(threads.media_problems(p, self.root), [])
+        self.assertEqual(threads.media_url(p),
+                         ("VIDEO", "https://dkicekeeper.github.io/Tenra/media/threads/deposit.mp4"))
+
+    def test_video_outside_the_site_or_missing(self):
+        self.assertTrue(threads.media_problems(dict(post("v"), video="social/card.png"), self.root))
+        self.assertTrue(threads.media_problems(dict(post("v"), video="docs/public/media/threads/none.mp4"), self.root))
+
+    def test_one_medium(self):
+        p = dict(post("v"), video="docs/public/media/threads/deposit.mp4", image="social/card.png")
+        self.assertTrue(threads.media_problems(p, self.root))
+
+    def test_image_and_text(self):
+        self.assertEqual(threads.media_url(dict(post("i"), image="social/card.png"))[0], "IMAGE")
+        self.assertEqual(threads.media_url(post("t")), (None, None))
+
+
 class ProblemTests(unittest.TestCase):
     def test_clean_post(self):
         self.assertEqual(threads.problems([post("a")]), [])

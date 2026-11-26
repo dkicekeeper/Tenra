@@ -28,7 +28,8 @@ struct GoalCard: View {
             total: goal.targetAmount,
             currency: goal.currency,
             progress: status.fraction,
-            phase: phase
+            phase: phase,
+            progressColor: .income
         ) {
             overdueBadge
         }

@@ -287,8 +287,8 @@ extension InsightsService {
             return DonutSlice(
                 id: line.kind.rawValue,
                 amount: line.amount,
-                color: line.kind == .assets ? AppColors.income
-                    : line.kind == .owedToMe ? AppColors.transfer
+                color: line.kind == .assets ? Color.income
+                    : line.kind == .owedToMe ? Color.transfer
                     : AppColors.accent,
                 label: String(localized: String.LocalizationValue(labelKey)),
                 percentage: ownedTotal > 0 ? line.amount / ownedTotal * 100 : 0

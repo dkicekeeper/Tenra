@@ -43,7 +43,8 @@ struct LoanCard: View {
                             format: String(localized: "loan.remainingShort", defaultValue: "%d left"),
                             remaining
                         )
-                    )
+                    ),
+                progressColor: .income
             ) {
                 VStack(alignment: .trailing, spacing: AppSpacing.xs) {
                     LoanTypeBadge(loanType: loanInfo.loanType, isPaidOff: isPaidOff)

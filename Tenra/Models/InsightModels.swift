@@ -168,7 +168,7 @@ struct InsightTrend: Hashable {
 
     var trendColor: Color {
         switch direction {
-        case .up: return AppColors.income
+        case .up: return Color.income
         case .down: return AppColors.destructive
         case .flat: return AppColors.textSecondary
         }

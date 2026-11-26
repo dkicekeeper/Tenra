@@ -152,11 +152,11 @@ final class CategoryStyleCache {
         case .loanPayment, .loanEarlyRepayment:
             return systemStyle(tint: TransactionDisplayHelper.loanPaymentColor, iconName: "creditcard.fill")
         case .depositTopUp:
-            return systemStyle(tint: AppColors.income, iconName: "banknote.fill")
+            return systemStyle(tint: Color.income, iconName: "banknote.fill")
         case .depositWithdrawal:
-            return systemStyle(tint: AppColors.expense, iconName: "banknote.fill")
+            return systemStyle(tint: AppColors.Text.primary, iconName: "banknote.fill")
         case .depositInterestAccrual:
-            return systemStyle(tint: AppColors.income, iconName: "percent")
+            return systemStyle(tint: Color.income, iconName: "percent")
         case .internalTransfer:
             return systemStyle(tint: .gray, iconName: "arrow.left.arrow.right")
         default:

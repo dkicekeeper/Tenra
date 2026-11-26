@@ -93,7 +93,7 @@ struct LoanPayAllView: View {
                                 amount: NSDecimalNumber(decimal: totalPayment).doubleValue,
                                 currency: currency,
                                 fontSize: AppTypography.bodySmall,
-                                color: AppColors.expense
+                                color: AppColors.Text.primary
                             )
                         }
                     }

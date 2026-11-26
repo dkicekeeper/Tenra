@@ -85,7 +85,7 @@ struct DebtDetailView: View {
                         current: debt.isSettled ? debt.amount : debt.repaid,
                         total: debt.amount,
                         label: String(localized: "debt.returned"),
-                        color: AppColors.income
+                        color: Color.income
                     )
                 )
             },
@@ -198,7 +198,7 @@ struct DebtDetailView: View {
     private func infoRows(for debt: PersonalDebt, today: Date) -> [InfoRowConfig] {
         var rows = [
             InfoRowConfig(icon: "banknote", label: String(localized: "debt.amount"), amount: debt.amount, currency: debt.currency),
-            InfoRowConfig(icon: "arrow.uturn.down", label: String(localized: "debt.returned"), amount: debt.repaid, currency: debt.currency, iconColor: AppColors.income),
+            InfoRowConfig(icon: "arrow.uturn.down", label: String(localized: "debt.returned"), amount: debt.repaid, currency: debt.currency, iconColor: Color.income),
             InfoRowConfig(icon: "calendar", label: String(localized: "debt.date"), value: DateFormatters.displayDateOmittingCurrentYear(debt.date)),
         ]
         if let dueDate = debt.dueDate {

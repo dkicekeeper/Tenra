@@ -560,11 +560,16 @@ struct AssetDetailView: View {
                 baseCurrency: appSettings.baseCurrency
             ) {
                 if let gain = summary.gain, let percent = summary.gainPercent {
-                    TrendBadge(direction: AssetCard.direction(of: gain), changePercent: percent, style: .pill)
+                    TrendBadge(
+                        direction: AssetCard.direction(of: gain),
+                        changePercent: percent,
+                        style: .pill,
+                        color: AssetCard.direction(of: gain) == .up ? Color.income : nil
+                    )
                 }
             }
             // A valuation above the value: a burst of sparkles over it (DesignKit).
-            .sparkleBurst(trigger: valuationSparkles, tint: AppColors.income)
+            .sparkleBurst(trigger: valuationSparkles, tint: Color.income)
 
             // Evenly in time (D3): a month apart from the first point to today or the sale.
             let points = AssetValuationMath.chartHistory(of: asset, today: today)
@@ -621,7 +626,7 @@ struct AssetDetailView: View {
                 amount: abs(gain),
                 currency: asset.currency,
                 prefix: direction == .up ? "+" : direction == .down ? "\u{2212}" : "",
-                iconColor: direction == .down ? AppColors.destructive : AppColors.income
+                iconColor: direction == .down ? AppColors.destructive : Color.income
             ))
         }
         if let growth = summary.annualGrowthPercent {
@@ -629,7 +634,7 @@ struct AssetDetailView: View {
                 icon: "chart.line.uptrend.xyaxis",
                 label: String(localized: "asset.annualGrowth"),
                 value: TrendBadge.format(growth),
-                iconColor: growth < 0 ? AppColors.destructive : AppColors.income
+                iconColor: growth < 0 ? AppColors.destructive : Color.income
             ))
         }
         if let rate = AssetValuationMath.depreciationRate(of: asset), !asset.isSold {
@@ -665,7 +670,7 @@ struct AssetDetailView: View {
             }
         }
         if let rent = income.rentYear {
-            rows.append(InfoRowConfig(icon: "arrow.down.circle", label: String(localized: "asset.rentYear"), amount: rent, currency: asset.currency, iconColor: AppColors.income))
+            rows.append(InfoRowConfig(icon: "arrow.down.circle", label: String(localized: "asset.rentYear"), amount: rent, currency: asset.currency, iconColor: Color.income))
         }
         if let upkeep = income.upkeepYear {
             rows.append(InfoRowConfig(icon: "wrench.and.screwdriver", label: String(localized: "asset.upkeepYear"), amount: upkeep, currency: asset.currency))
@@ -675,7 +680,7 @@ struct AssetDetailView: View {
                 icon: "percent",
                 label: String(localized: "asset.yield"),
                 value: Self.percentText(yield / 100, fractionDigits: 1),
-                iconColor: yield < 0 ? AppColors.destructive : AppColors.income
+                iconColor: yield < 0 ? AppColors.destructive : Color.income
             ))
         }
         if let result = income.fullResult {
@@ -686,7 +691,7 @@ struct AssetDetailView: View {
                 amount: abs(result),
                 currency: asset.currency,
                 prefix: direction == .up ? "+" : direction == .down ? "\u{2212}" : "",
-                iconColor: direction == .down ? AppColors.destructive : AppColors.income
+                iconColor: direction == .down ? AppColors.destructive : Color.income
             ))
         }
         if let soldAt = asset.soldAt {
@@ -694,7 +699,7 @@ struct AssetDetailView: View {
                 icon: "checkmark.seal",
                 label: String(localized: "asset.soldDate"),
                 value: DateFormatters.displayDateOmittingCurrentYear(soldAt),
-                iconColor: AppColors.income
+                iconColor: Color.income
             ))
         }
         if !asset.includeInNetWorth, !asset.isSold {

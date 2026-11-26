@@ -172,7 +172,12 @@ struct AssetsListView: View {
                 }
             ) {
                 if let gain = totals.gain, let percent = totals.gainPercent {
-                    TrendBadge(direction: AssetCard.direction(of: gain), changePercent: percent, style: .pill)
+                    TrendBadge(
+                        direction: AssetCard.direction(of: gain),
+                        changePercent: percent,
+                        style: .pill,
+                        color: AssetCard.direction(of: gain) == .up ? Color.income : nil
+                    )
                 }
             }
             .frame(maxWidth: .infinity)
@@ -181,7 +186,7 @@ struct AssetsListView: View {
             if history.count >= 2 {
                 HeroSparkline(
                     dataPoints: AssetChartPoints.points(history, estimateLast: endsOnEstimate(history)),
-                    series: AssetChartPoints.series(color: AppColors.income),
+                    series: AssetChartPoints.series(color: Color.income),
                     valueFormat: .currency(baseCurrency),
                     entranceDelay: AssetChartPoints.entranceDelay
                 )
@@ -199,7 +204,7 @@ struct AssetsListView: View {
 
     /// Green while the assets gained, the accent otherwise.
     private func heroColor(gain: Double?) -> Color {
-        (gain ?? 0) > 0.5 ? AppColors.income : AppColors.accent
+        (gain ?? 0) > 0.5 ? Color.income : AppColors.accent
     }
 
     private func title(of group: AssetKind.Group) -> String {

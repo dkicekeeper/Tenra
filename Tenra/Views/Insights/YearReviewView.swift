@@ -323,7 +323,7 @@ struct YearReviewView: View {
                 FormSection {
                     AmountRow(
                         String(localized: "yearReview.money.income"),
-                        leading: .tinted(.sfSymbol("arrow.down.circle.fill"), AppColors.income),
+                        leading: .tinted(.sfSymbol("arrow.down.circle.fill"), Color.income),
                         value: .amount(review.income),
                         currency: review.currency
                     )

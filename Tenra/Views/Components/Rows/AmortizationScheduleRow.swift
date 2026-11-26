@@ -21,6 +21,7 @@ struct AmortizationScheduleRow: View {
             amount: NSDecimalNumber(decimal: entry.payment).doubleValue,
             currency: currency,
             detail: interestText,
+            doneColor: .income,
             isDone: entry.isPaid
         )
     }

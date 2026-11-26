@@ -411,7 +411,7 @@ struct LoansListView: View {
                         amount: totals.monthly,
                         currency: summaryCurrency,
                         fontSize: AppTypography.h3,
-                        color: AppColors.expense
+                        color: AppColors.Text.primary
                     )
                 }
             }
@@ -426,7 +426,7 @@ struct LoansListView: View {
                         amount: unpaidThisMonth,
                         currency: baseCurrency,
                         fontSize: AppTypography.bodyEmphasis,
-                        color: unpaidThisMonth > 0 ? AppColors.warning : AppColors.income
+                        color: unpaidThisMonth > 0 ? AppColors.warning : Color.income
                     )
                 }
             }

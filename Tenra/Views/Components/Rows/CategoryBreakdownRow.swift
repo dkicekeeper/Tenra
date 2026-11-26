@@ -63,7 +63,7 @@ struct CategoryBreakdownRow: View {
     ScrollView {
         VStack(spacing: 0) {
             CategoryBreakdownRow(
-                item: .preview(name: "Shopping", color: AppColors.income, icon: "bag.fill", amount: 56_000, pct: 28),
+                item: .preview(name: "Shopping", color: Color.income, icon: "bag.fill", amount: 56_000, pct: 28),
                 currency: "KZT"
             )
         }

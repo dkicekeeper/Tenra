@@ -1,17 +1,60 @@
 name: CI
 
+# The account runs a few macOS jobs at a time, and Tenra, Dalada, Platina and DesignKit share
+# them (docs/asc.md, "Каждая сборка"). So this runs only for what the app's build and lint read,
+# a newer push to the same branch cancels the older run, and a commit pushed to both a branch and
+# main builds once.
 on:
   push:
     # Working branches too, so a change is compiled before it reaches main.
     branches: [main, "claude/**"]
-    paths-ignore:
-      - 'docs/**'
-      - '**.md'
-      - 'server/**' # the assistant Worker has its own workflow (assistant.yml)
-      - 'social/**' # Ten's Threads posts (threads.yml), nothing the app builds
+    # The project's four synchronized folders and the project itself, the lint and this file:
+    # appstore/, scripts/, server/, social/ and docs change nothing the app builds.
+    paths:
+      - "Tenra/**"
+      - "TenraTests/**"
+      - "TenraUITests/**"
+      - "TenraWidgets/**"
+      - "Tenra.xcodeproj/**"
+      - "scripts/designkit_lint.sh"
+      - "scripts/design-lint-baseline.json"
+      - ".github/workflows/ci.yml"
   workflow_dispatch:
 
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
+  # A commit pushed to a branch and then to main starts this workflow twice. The earliest run of a
+  # commit that is not cancelled builds it; a later one skips the build and names that run in its
+  # summary. A manual run always builds. If the API cannot answer, the run builds.
+  once:
+    name: First run of this commit
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      actions: read
+    outputs:
+      build: ${{ steps.check.outputs.build }}
+    steps:
+      - name: Look for an earlier run of this commit
+        id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          EARLIER=""
+          if [ "$GITHUB_EVENT_NAME" != "workflow_dispatch" ]; then
+            EARLIER=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/ci.yml/runs?head_sha=$GITHUB_SHA&per_page=100" \
+              --jq "[.workflow_runs[] | select(.id < $GITHUB_RUN_ID and .conclusion != \"cancelled\")] | min_by(.id) | .html_url // empty") || EARLIER=""
+          fi
+          if [ -n "$EARLIER" ]; then
+            echo "build=false" >> "$GITHUB_OUTPUT"
+            echo "**Build skipped:** $EARLIER builds this commit." | tee -a "$GITHUB_STEP_SUMMARY"
+          else
+            echo "build=true" >> "$GITHUB_OUTPUT"
+          fi
+
   # DesignKit's design checks at the version Tenra builds with (scripts/designkit_lint.sh runs its
   # scripts/designkit_lint.py): no literal colours, fonts, spacing, radii or animations beyond
   # scripts/design-lint-baseline.json, no swipe actions, no system Form; every row of a glass
@@ -26,6 +69,8 @@ jobs:
         run: bash scripts/designkit_lint.sh
 
   build-and-test:
+    needs: once
+    if: needs.once.outputs.build == 'true'
     # GitHub's Xcode 27 image (public preview since 2026-10, macOS 27): the iOS 27 SDK, so the
     # code behind `#if compiler(>=6.4)` is compiled and tested too. Xcode pinned to the image's
     # release, not `latest-stable`, which could pick its release candidate; raise it with the

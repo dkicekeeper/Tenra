@@ -7,6 +7,7 @@
     python3 scripts/threads.py replies [--dry-run]   # every approved reply not yet published
     python3 scripts/threads.py refresh               # a new 60-day token; stored as the secret
     python3 scripts/threads.py stats [--days 30]     # views, likes, replies and the account's clicks
+    python3 scripts/threads.py comments [--days 3]   # other people's comments under Tenra's posts
 
 Everything is written in Tenra's voice (docs/threads.md) and published only once the founder
 approved it (`"approved": true`). `post-next` publishes the first approved post that is not in
@@ -297,6 +298,30 @@ def refresh() -> None:
                  f"stored: the old token runs out on its own date. Add GH_SECRETS_TOKEN (docs/threads.md).")
 
 
+def comments(days: int) -> None:
+    """Replies other people left under Tenra's posts of the last `days` days (public on Threads):
+    the daily session drafts answers to the ones that ask something, with `replyToId` = the
+    comment's id, and the founder approves them as any reply."""
+    since = datetime.now(timezone.utc) - timedelta(days=days)
+    me_id = call("GET", f"{API}/me", {"fields": "id,username", "access_token": token()})
+    media = call("GET", f"{API}/me/threads", {"fields": "id,text,timestamp,permalink", "limit": 50,
+                                              "since": int(since.timestamp()), "access_token": token()})
+    print(f"### Comments under @{me_id.get('username')}'s posts, last {days} days\n")
+    print("| Post | Comment id | From | When | Text |\n|---|---|---|---|---|")
+    count = 0
+    for item in media.get("data", []):
+        replies = call("GET", f"{API}/{item['id']}/replies",
+                       {"fields": "id,text,username,timestamp", "access_token": token()})
+        for reply in replies.get("data", []):
+            if reply.get("username") == me_id.get("username"):
+                continue
+            count += 1
+            text = (reply.get("text") or "").replace("\n", " ").replace("|", "/")[:200]
+            print(f"| {item.get('permalink', item['id'])} | {reply['id']} | @{reply.get('username')} | "
+                  f"{(reply.get('timestamp') or '')[:16]} | {text} |")
+    print(f"\n{count} comment(s).")
+
+
 def stats(days: int) -> None:
     until = datetime.now(timezone.utc)
     since = until - timedelta(days=days)
@@ -347,6 +372,8 @@ def main(argv: list[str]) -> None:
             publish_replies("--dry-run" in args)
         elif command == "refresh":
             refresh()
+        elif command == "comments":
+            comments(int(args[args.index("--days") + 1]) if "--days" in args else 3)
         elif command == "stats":
             stats(int(args[args.index("--days") + 1]) if "--days" in args else 30)
         else:

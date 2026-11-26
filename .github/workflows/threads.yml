@@ -6,7 +6,7 @@ name: Threads
 # still waiting; it commits social/threads-posted.json. Once a week it refreshes the 60-day token
 # and writes it back to the THREADS_ACCESS_TOKEN secret (GH_SECRETS_TOKEN, a fine-grained token
 # with this repository's Secrets: read and write). Run by hand: check, me, post-next, replies
-# (args: --dry-run), refresh, stats (args: --days 30). Until THREADS_ACCESS_TOKEN is set the
+# (args: --dry-run), comments (args: --days 3), refresh, stats (args: --days 30). Until THREADS_ACCESS_TOKEN is set the
 # scheduled and push runs skip.
 
 on:
@@ -21,7 +21,7 @@ on:
       command:
         description: "What to do"
         type: choice
-        options: [check, me, post-next, replies, refresh, stats]
+        options: [check, me, post-next, replies, comments, refresh, stats]
         default: check
       args:
         description: "Extra arguments, e.g. --dry-run (post-next, replies) or --days 14 (stats)"

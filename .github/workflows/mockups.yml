@@ -18,6 +18,11 @@ on:
         default: "ru en"
         required: false
 
+# A newer push of the mockups to the same branch replaces a render that has not finished.
+concurrency:
+  group: mockups-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   render:
     runs-on: xcode-27

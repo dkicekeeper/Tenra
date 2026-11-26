@@ -3,8 +3,8 @@
 1.9 is in the store since 2026-11-25 (build 93; its notes:
 [archive/release-notes-1.9.md](archive/release-notes-1.9.md)). **The next version is 1.10**, out
 early in December with the app's own usage counting (the founder's decision of 2026-11-25,
-[plan-sales.md](plan-sales.md) §7): build in TestFlight around 02.12, sent around 05.12, released
-on approval. The update the featuring nomination promises for the last week of December is
+[plan-sales.md](plan-sales.md) §7): **build 94 in TestFlight since 2026-11-26** (main b766387d; Ten's
+server with `/v1/events` deployed the same day), sent around 05.12, released on approval. The update the featuring nomination promises for the last week of December is
 **1.11** (build 15.12, sent by 19.12, manual release on 26.12). What's New is written once the version is
 assembled; no em dashes (user rule).
 
@@ -81,10 +81,10 @@ assembled; no em dashes (user rule).
 
 ## Submission checklist
 
-1. **CI green**, then a TestFlight build of 1.10.
+1. ~~**CI green**, then a TestFlight build of 1.10.~~ Done 26.11: build 94.
 2. **The phone checks above.**
 3. **What's New** in 14 storefronts here, then `prepare-version --version 1.10 --build <N>`.
 4. **App Review notes** (`review-notes --version 1.10 --apply`), then `prepare-review`; sending
-   on the founder's word, with a manual release for 26.12.
+   on the founder's word, released on approval (the 26.12 update is 1.11).
 5. **Ten's guide** (`server/assistant/src/prompt.ts`) once 1.10 is in the store: the plan button
    in the year review, the message of 1-5 January, "Не то".

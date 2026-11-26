@@ -1,5 +1,5 @@
 {
-  "comment": "The Tenra account on Threads (scripts/threads.py, .github/workflows/threads.yml, docs/threads.md). posts: published in order, the next approved one once a day. replies: answers to other people's questions asking for an expense tracker, published as soon as they are approved; replyToId is the Threads id of the post answered, replyTo its URL. approved: true only after the founder said so. notBefore: YYYY-MM-DD (Almaty), optional. image: a path in this public repository, optional. Voice: Tenra's team, Russian, вы, plain and adult, says who it is, claims true (what is in Tenra Pro said so), no emoji, no em dashes, 500 characters at most.",
+  "comment": "The Tenra account on Threads (scripts/threads.py, .github/workflows/threads.yml, docs/threads.md). posts: published in order, the next approved one once a day. replies: answers to other people's questions asking for an expense tracker, published as soon as they are approved; replyToId is the Threads id of the post answered, replyTo its URL. approved: true only after the founder said so. notBefore: YYYY-MM-DD (Almaty), optional. image: a path in this public repository, optional. Voice: Tenra's team, «депозит» not «вклад» (Kazakhstan), Russian, вы, plain and adult, says who it is, claims true (what is in Tenra Pro said so), no emoji, no em dashes, 500 characters at most.",
   "profile": {
     "name": "Tenra",
     "bio": "Учёт расходов и доходов без входа в банк. Автозапись Apple Pay и уведомлений от банков, цели, депозиты и кредиты с графиком.",
@@ -9,12 +9,12 @@
     {
       "id": "base-01-intro",
       "approved": false,
-      "text": "Мы делаем Tenra, приложение для учёта денег на iPhone без входа в банк.\n\nКроме трат и доходов в нём есть то, чего обычно нет в трекерах: вклады с капитализацией, кредиты с графиком платежей и досрочным погашением, личные долги, квартира и машина с оценкой по объявлениям. Разные валюты на одном экране, итог в вашей.\n\nЗдесь рассказываем, как это устроено, и отвечаем на вопросы про учёт."
+      "text": "Мы делаем Tenra, приложение для учёта денег на iPhone без входа в банк.\n\nКроме трат и доходов в нём есть то, чего обычно нет в трекерах: депозиты с капитализацией, кредиты с графиком платежей и досрочным погашением, личные долги, квартира и машина с оценкой по объявлениям. Разные валюты на одном экране, итог в вашей.\n\nЗдесь рассказываем, как это устроено, и отвечаем на вопросы про учёт."
     },
     {
       "id": "base-02-deposits",
       "approved": false,
-      "text": "Вклад в Tenra считается так же, как в банке: проценты начисляются каждый день, а с капитализацией прибавляются к сумме и дальше работают вместе с ней.\n\nВидно, сколько вклад уже принёс. Пополнение начинает приносить проценты со следующего дня, как в договоре. Чтобы понять, сколько у вас на самом деле, не нужно открывать приложение банка."
+      "text": "Депозит в Tenra считается так же, как в банке: проценты начисляются каждый день, а с капитализацией прибавляются к сумме и дальше работают вместе с ней.\n\nВидно, сколько депозит уже принёс. Пополнение начинает приносить проценты со следующего дня, как в договоре. Чтобы понять, сколько у вас на самом деле, не нужно открывать приложение банка."
     },
     {
       "id": "base-03-loans",
@@ -24,7 +24,7 @@
     {
       "id": "base-04-assets",
       "approved": false,
-      "text": "Квартира и машина тоже часть ваших денег. В Tenra их можно добавить как имущество: стоимость оценивается по объявлениям на сайтах вроде krisha.kz, видно, насколько она выросла, сколько приносит аренда и сколько уходит на содержание.\n\nА в Аналитике появляется капитал: деньги на счетах, вклады и имущество за вычетом кредитов и долгов."
+      "text": "Квартира и машина тоже часть ваших денег. В Tenra их можно добавить как имущество: стоимость оценивается по объявлениям на сайтах вроде krisha.kz, видно, насколько она выросла, сколько приносит аренда и сколько уходит на содержание.\n\nА в Аналитике появляется капитал: деньги на счетах, депозиты и имущество за вычетом кредитов и долгов."
     },
     {
       "id": "base-05-debts",

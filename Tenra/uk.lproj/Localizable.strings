@@ -1752,7 +1752,7 @@
 
 /* Deposit interest day-count convention */
 "deposit.dayCount.title" = "Метод нарахування";
-"deposit.dayCount.hint" = "Дивіться в договорі вкладу. Більшість банків Казахстану рахують 30 днів у місяці та 360 у році.";
+"deposit.dayCount.hint" = "Дивіться в договорі депозиту. Більшість банків Казахстану рахують 30 днів у місяці та 360 у році.";
 "deposit.dayCount.thirty360" = "30/360 (місяць = 30 днів)";
 "deposit.dayCount.actual365" = "Фактичні дні / 365";
 "deposit.dayCount.actualActual" = "Фактичні дні / 365 або 366";
@@ -2100,7 +2100,7 @@
 "assistant.empty.goals" = "Накопичимо на щось?";
 "assistant.empty.debts" = "Хто кому винен? Запишемо";
 "assistant.empty.subscriptions" = "Додайте підписки, я нагадаю про платежі";
-"assistant.empty.deposits" = "Тут ростимуть ваші вклади";
+"assistant.empty.deposits" = "Тут ростимуть ваші депозити";
 "assistant.empty.loans" = "Кредити теж порахую";
 "assistant.empty.accounts" = "Почнемо з рахунку?";
 "assistant.empty.history" = "Поки порожньо. Додамо першу?";

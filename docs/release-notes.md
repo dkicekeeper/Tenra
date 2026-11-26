@@ -15,6 +15,10 @@ assembled; no em dashes (user rule).
   drafts January's budgets from what is really spent, a rainy-day goal for the year when there is
   none, and the evening reminder when it is off. The rule is on the server since 2026-11-25, so a
   question in words gets the plan in 1.9 too.
+- **"Депозит", not "вклад"** (the founder's decision of 2026-11-26, [localization.md](localization.md)
+  Terms): the deposit screen's day-count hint and the empty deposits state in ru and uk. The
+  retention message `trial-reminder` says "депозиты" in ru, en-GB and uk: its new version waits in
+  App Store Connect and goes to review with 1.10 (`prepare-review` adds it).
 - **Support e-mail is the app's own** (`SupportContact.email`, the founder's decision of
   2026-11-26): the rating survey's "not really" and the database error screen write to
   tenraapp@gmail.com, as the support, privacy and terms pages already do.

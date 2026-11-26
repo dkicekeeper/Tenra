@@ -84,7 +84,7 @@
    `+` и точкой в Gmail Meta считает тем же ящиком): имя
    «Tenra», аватар `social/tenra-avatar.png`, описание из `social/threads.json` → `profile.bio`,
    ссылка в профиле: ссылка кампании App Store (шаг 6). Профиль публичный.
-2. **Приложение Meta:** developers.facebook.com → Create App → сценарий «Access the Threads API».
+2. **Приложение Meta** (под личным Facebook основателя, не через work.meta.com): developers.facebook.com → Create App, название без слов Threads, Meta и Instagram (у нас «Tenra Posts»), сценарий «Access the Threads API», без бизнес-портфолио.
    Разрешения: `threads_basic`, `threads_content_publish`, `threads_manage_insights`,
    `threads_read_replies`, `threads_manage_replies`.
 3. **Тестер:** в приложении Meta → App roles → Roles → Add People → Threads Tester, аккаунт Tenra.
@@ -92,8 +92,8 @@
    Приглашения. Публиковать от своего аккаунта приложению хватает этой роли, проверка Meta (App
    Review) не нужна.
 4. **Токен:** в приложении Meta → Use cases → Threads API → Settings → User Token Generator →
-   Generate Access Token для аккаунта Tenra. Это короткий токен на час; обменять его на долгий
-   (60 дней) в Graph API Explorer или запросом `th_exchange_token` из документации Meta.
+   Generate Access Token напротив аккаунта Tenra (войти аккаунтом Tenra). Генератор сразу выдаёт
+   долгий токен на 60 дней; обменивать не нужно.
 5. **Секреты GitHub** (Settings → Secrets and variables → Actions):
    - `THREADS_ACCESS_TOKEN`: долгий токен из шага 4;
    - `GH_SECRETS_TOKEN`: fine-grained personal access token только на этот репозиторий, право

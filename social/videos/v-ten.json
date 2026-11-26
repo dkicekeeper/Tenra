@@ -1,0 +1,10 @@
+{
+ "comment": "Ten answers on cards: the early loan payment first (the result), then this month's spending with a donut, then the early payment asked. scripts/threads_video.py, docs/plan-threads-videos.md.",
+ "test": "testTen",
+ "segments": [
+  {"from": "q-loan@+2.58", "to": "q-loan@+4.78", "caption": "Тэн посчитает, сколько вы сэкономите"},
+  {"from": "q-month@-1.06", "to": "q-month@+6.45", "caption": "Спросите, куда ушли деньги"},
+  {"from": "q-loan@-1.02", "to": "q-loan@+5.38", "caption": "А если внести досрочно?"}
+ ],
+ "endcard": 2.5
+}

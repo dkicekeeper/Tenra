@@ -1,0 +1,11 @@
+{
+ "comment": "The deposit: its top first (balance, the accrual so far, rate, capitalization), then Finances, Deposits, the deposit, and its history with the monthly interest. scripts/threads_video.py, docs/plan-threads-videos.md.",
+ "test": "testDeposit",
+ "segments": [
+  {"from": "deposit@-2.15", "to": "deposit@-0.05", "caption": "Депозит растёт каждый день"},
+  {"from": "finances@-0.65", "to": "deposits@+2.19", "speed": 1.3, "caption": "Проценты по дням, как в банке"},
+  {"from": "deposit@-0.55", "to": "deposit@+4.65", "caption": "Капитализация считается сама"},
+  {"from": "interest@-0.23", "to": "interest@+4.98", "caption": "И видно, сколько он уже принёс"}
+ ],
+ "endcard": 2.5
+}

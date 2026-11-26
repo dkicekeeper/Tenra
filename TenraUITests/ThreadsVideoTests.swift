@@ -193,11 +193,71 @@ final class ThreadsVideoTests: XCTestCase {
         mark("end")
     }
 
+    // MARK: - v-assets
+
+    /// The apartment (ScreenshotDemoSeeder): its value from listings and the chart, the gain,
+    /// growth a year and the rent, the valuations; then net worth in Analytics, the apartment in it.
+    func testAssets() throws {
+        sleep(1)
+        tabBarButton(at: 2).tap()
+        let accountsCard = app.descendants(matching: .any)["finances.accountsCard"].firstMatch
+        XCTAssertTrue(accountsCard.waitForExistence(timeout: 30), "Finances did not load")
+        sleep(1)
+        let assetsCard = app.descendants(matching: .any)["finances.assetsCard"].firstMatch
+        for _ in 0..<4 where !(assetsCard.exists && assetsCard.isHittable) {
+            slowScroll(0.25)
+            sleep(1)
+        }
+        sleep(1)
+        mark("finances")
+        assetsCard.tap()
+        let apartment = app.descendants(matching: .any)["assets.card"].firstMatch
+        XCTAssertTrue(apartment.waitForExistence(timeout: 10), "Apartment not found")
+        sleep(3)   // the hero's total, the card's value rolling up
+        mark("assets")
+
+        apartment.tap()
+        sleep(4)   // the hero and its chart drawing in
+        mark("asset")
+
+        scrollUp(until: label("Рост в год"), nearTop: 0.4, tries: 5)
+        sleep(4)
+        mark("figures")
+
+        scrollUp(until: label("История оценок"), nearTop: 0.3, tries: 3)
+        sleep(4)
+        mark("valuations")
+
+        goBack()
+        goBack()
+        tabBarButton(at: 1).tap()
+        // The insights come after their skeletons; the net worth card sits low in a lazy list, so
+        // it exists only once scrolled to.
+        let firstCard = app.descendants(matching: .any)
+            .matching(NSPredicate(format: "identifier BEGINSWITH %@", "insights.card.")).firstMatch
+        XCTAssertTrue(firstCard.waitForExistence(timeout: 120), "Analytics did not load")
+        sleep(2)
+        let netWorth = app.descendants(matching: .any)["insights.card.net_worth"].firstMatch
+        for _ in 0..<14 where !(netWorth.exists && netWorth.isHittable && netWorth.frame.maxY < app.frame.height * 0.8) {
+            slowScroll(0.35)
+            sleep(1)
+        }
+        XCTAssertTrue(netWorth.exists, "Net worth not found")
+        sleep(2)
+        mark("analytics")
+        netWorth.tap()
+        sleep(5)   // the chart and its parts
+        mark("net-worth")
+        slowScroll(0.3)
+        sleep(4)
+        mark("end")
+    }
+
     // MARK: - Helpers
 
     /// Slow drags up until `element` shows in the top `nearTop` of the screen.
-    private func scrollUp(until element: XCUIElement, nearTop: CGFloat) {
-        for _ in 0..<8 {
+    private func scrollUp(until element: XCUIElement, nearTop: CGFloat, tries: Int = 8) {
+        for _ in 0..<tries {
             if element.exists && element.isHittable && element.frame.minY < app.frame.height * nearTop { return }
             slowScroll(0.3)
             sleep(1)
@@ -262,6 +322,13 @@ final class ThreadsVideoTests: XCTestCase {
     private func tabBarButton(at index: Int) -> XCUIElement {
         let tabBar = app.tabBars.firstMatch
         XCTAssertTrue(tabBar.waitForExistence(timeout: 20), "Tab bar not found")
+        // A scrolled screen collapses the bar to the current tab and the action tab
+        // (`tabBarMinimizeBehavior(.onScrollDown)`): scroll back up until all four are there
+        // (collapsed, the second button is Ten's).
+        for _ in 0..<4 where tabBar.buttons.count < 4 {
+            app.swipeDown()
+            sleep(1)
+        }
         return tabBar.buttons.element(boundBy: index)
     }
 

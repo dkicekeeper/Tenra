@@ -45,6 +45,24 @@ struct ScreenshotDemoDatasetTests {
         #expect(info.totalInterestPaid > 0)
         #expect(info.totalInterestPaid == expected)
     }
+
+    @Test("The demo apartment gained, is valued from listings this month and rented out for a year")
+    func apartment() throws {
+        let dataset = ScreenshotDemoDataset(currency: "KZT")
+        let apartment = try #require(dataset.assets.first { $0.kind == .apartment })
+        let value = try #require(AssetValuationMath.currentValue(of: apartment))
+        let price = try #require(apartment.purchasePrice)
+        #expect(value > price)
+        #expect(apartment.valuations.last?.listings?.count == 14)
+        #expect(!AssetValuationMath.isStale(apartment))
+
+        let category = try #require(dataset.categories.first { $0.id == apartment.incomeLink?.categoryId })
+        #expect(category.type == .income)
+        let today = FastDateParser.string(from: Date())
+        let rents = dataset.transactions.filter { $0.type == .income && $0.category == category.name }
+        #expect(rents.count == 12)
+        #expect(rents.allSatisfy { $0.date <= today })
+    }
 }
 
 #endif

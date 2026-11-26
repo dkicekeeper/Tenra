@@ -73,6 +73,9 @@ enum ScreenshotDemoSeeder {
         for goal in dataset.goals { await goals.save(goal) }
         let debts = DebtRepository()
         for debt in dataset.debts { await debts.save(debt) }
+        // The apartment (CoreData v17), its rent among the transactions above.
+        let assets = AssetRepository()
+        for asset in dataset.assets { await assets.save(asset) }
         AssistantInbox.shared.clear()
 
         // The Apple Pay payments, as the Wallet automation leaves them (frames 20-21). With them
@@ -118,6 +121,8 @@ struct ScreenshotDemoDataset {
     let occurrences: [RecurringOccurrence]
     let goals: [SavingsGoal]
     let debts: [PersonalDebt]
+    /// An apartment rented out: valued by hand and from listings, its rent an income category.
+    let assets: [Asset]
     /// Apple Pay payments among `transactions`, as the Wallet automation journaled them.
     let captures: [ScreenshotDemoCapture]
     /// What the person confirmed before: a merchant's category, a card's account.
@@ -136,6 +141,7 @@ struct ScreenshotDemoDataset {
         self.occurrences = builder.occurrences
         self.goals = builder.goals
         self.debts = builder.debts
+        self.assets = builder.assets
         self.captures = builder.captures
         self.rememberedMerchants = builder.rememberedMerchants
         self.rememberedCards = builder.rememberedCards
@@ -158,6 +164,7 @@ struct ScreenshotDemoDataset {
         var occurrences: [RecurringOccurrence] = []
         var goals: [SavingsGoal] = []
         var debts: [PersonalDebt] = []
+        var assets: [Asset] = []
         var captures: [ScreenshotDemoCapture] = []
         var rememberedMerchants: [(merchant: String, categoryId: String)] = []
         var rememberedCards: [(card: String, accountId: String)] = []
@@ -169,6 +176,8 @@ struct ScreenshotDemoDataset {
         let savingsId = "demo-account-savings"
         let depositId = "demo-account-deposit"
         let loanId = "demo-account-loan"
+        let apartmentId = "demo-asset-apartment"
+        let rentIncomeCategoryId = "demo-category-rent-income"
 
         /// Wallet's "Card or Pass" texts: the card the automation knows (its account confirmed
         /// once), and one it has not seen, whose payment gets a guessed account.
@@ -229,7 +238,67 @@ struct ScreenshotDemoDataset {
             buildSubscriptions()
             buildApplePay()
             buildPlans()
+            buildApartment()
             buildSavingsTransfer()
+        }
+
+        /// An apartment bought about five years ago and rented out (the Threads video v-assets,
+        /// Finances' assets card, net worth in Analytics): valued by hand two years ago and from
+        /// listings this month, with the characteristics an estimate asks for; its rent an income
+        /// category of its own, paid on the 1st for the last year (the tenant's year, longer than
+        /// the history above, so the yield over 12 months is a whole year's).
+        mutating func buildApartment() {
+            let lines = ScreenshotDemoAssetLines.current()
+            func rounded(_ eurBase: Double) -> Double {
+                ScreenshotDemoCurrency.niceRound(local(eurBase), decimals: 0)
+            }
+            categories.append(CustomCategory(
+                id: rentIncomeCategoryId,
+                name: lines.rentIncome,
+                iconSource: .sfSymbol("house.fill"),
+                colorHex: "#0ea5e9",
+                type: .income,
+                order: 1
+            ))
+            let today = calendar.startOfDay(for: Date())
+            let thisMonth = calendar.dateInterval(of: .month, for: today)?.start ?? today
+            for back in 0..<12 {
+                guard let day = calendar.date(byAdding: .month, value: -back, to: thisMonth),
+                      let daysAgo = calendar.dateComponents([.day], from: day, to: today).day else { continue }
+                addIncome(daysAgo: daysAgo, eurBase: 500, description: lines.apartment, category: lines.rentIncome)
+            }
+
+            // About 71 million tenge, 1.1 million a square metre: a two-room flat in Almaty.
+            let value = rounded(120_000)
+            let estimateNote = String(
+                format: String(localized: "asset.estimate.note"),
+                14,
+                lines.listingSites.joined(separator: ", ")
+            )
+            assets = [Asset(
+                id: apartmentId,
+                name: lines.apartment,
+                kind: .apartment,
+                currency: currency,
+                purchaseDate: calendar.startOfDay(for: date(daysAgo: 1_900)),
+                purchasePrice: rounded(82_000),
+                valuations: [
+                    AssetValuation(id: "\(apartmentId)-1", date: calendar.startOfDay(for: date(daysAgo: 760)),
+                                   value: rounded(101_000), source: .manual),
+                    AssetValuation(id: "\(apartmentId)-2", date: calendar.startOfDay(for: date(daysAgo: 12)),
+                                   value: value, source: .assistant, note: estimateNote,
+                                   listings: AssetValuation.Listings(low: rounded(112_000), high: rounded(128_000),
+                                                                     count: 14, sites: lines.listingSites)),
+                ],
+                incomeLink: AssetCategoryLink(categoryId: rentIncomeCategoryId),
+                order: 0,
+                createdAt: date(daysAgo: 400),
+                attributes: AssetAttributes([
+                    AssetAttributes.Field.areaM2.rawValue: .number(64),
+                    AssetAttributes.Field.rooms.rawValue: .number(2),
+                    AssetAttributes.Field.yearBuilt.rawValue: .number(2016),
+                ])
+            )]
         }
 
         /// "For today" in the locale's money (Analytics frame): what a day comes to.
@@ -938,6 +1007,36 @@ struct ScreenshotDemoLexicon {
                          tenReply: "Here is where your money went this month, by category.",
                          goalTrip: "Vacation", goalPhone: "New phone", goalBike: "Bike",
                          debtFriend: "Alex", debtFamily: "Mom")
+        }
+    }
+}
+
+/// The apartment's words per UI language (user data, like the lexicon): its name, the income
+/// category its rent goes to, and the listings site of the market the estimate searched.
+struct ScreenshotDemoAssetLines {
+    let apartment: String
+    let rentIncome: String
+    let listingSites: [String]
+
+    static func current() -> ScreenshotDemoAssetLines {
+        let preferred = (Locale.preferredLanguages.first ?? "en").lowercased()
+        switch String(preferred.prefix(2)) {
+        case "de": return .init(apartment: "Wohnung", rentIncome: "Mieteinnahmen", listingSites: ["immobilienscout24.de"])
+        case "es" where preferred.hasPrefix("es-mx"):
+            return .init(apartment: "Departamento", rentIncome: "Renta cobrada", listingSites: ["inmuebles24.com"])
+        case "es": return .init(apartment: "Piso", rentIncome: "Alquiler cobrado", listingSites: ["idealista.com"])
+        case "fr" where preferred.hasPrefix("fr-ca"):
+            return .init(apartment: "Condo", rentIncome: "Loyers perçus", listingSites: ["centris.ca"])
+        case "fr": return .init(apartment: "Appartement", rentIncome: "Loyers perçus", listingSites: ["seloger.com"])
+        case "tr": return .init(apartment: "Daire", rentIncome: "Kira geliri", listingSites: ["sahibinden.com"])
+        case "pt": return .init(apartment: "Apartamento", rentIncome: "Aluguel recebido", listingSites: ["zapimoveis.com.br"])
+        case "it": return .init(apartment: "Appartamento", rentIncome: "Affitti incassati", listingSites: ["immobiliare.it"])
+        case "uk": return .init(apartment: "Квартира", rentIncome: "Здача квартири", listingSites: ["dom.ria.com"])
+        case "ja": return .init(apartment: "マンション", rentIncome: "家賃収入", listingSites: ["suumo.jp"])
+        case "ko": return .init(apartment: "아파트", rentIncome: "임대 수입", listingSites: ["zigbang.com"])
+        case "ru": return .init(apartment: "Квартира", rentIncome: "Сдача квартиры", listingSites: ["krisha.kz"])
+        case "kk": return .init(apartment: "Пәтер", rentIncome: "Пәтерді жалға беру", listingSites: ["krisha.kz"])
+        default: return .init(apartment: "Apartment", rentIncome: "Rental income", listingSites: ["zillow.com"])
         }
     }
 }

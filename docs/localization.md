@@ -107,5 +107,5 @@ name Ten (voice input and talking to Ten), in each locale's form of the name.
 4. CSV: type values in `CSVColumnMapping` (`расход/доход/перевод` → expense/income/transfer).
 5. App Store: metadata in App Store Connect, screenshots with `scripts/capture_screenshots.sh`
    (demo data, `-ScreenshotDemo`, never on the personal device; the demo's words per language in
-   `ScreenshotDemoLexicon` and `ScreenshotDemoTenLines`) and the captions in
+   `ScreenshotDemoLexicon`, `ScreenshotDemoTenLines` and `ScreenshotDemoAssetLines`) and the captions in
    `scripts/screenshot_captions.json`, prices per storefront, the RevenueCat paywall texts.

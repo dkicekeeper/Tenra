@@ -1,0 +1,13 @@
+{
+ "comment": "The apartment: its value first (the result), then Finances and the assets list, the gain, growth a year, rent and yield, the valuation from listings, and net worth in Analytics with the apartment in it. Cuts picked from the frames (a still screen records shorter than it lasts). scripts/threads_video.py, docs/plan-threads-videos.md.",
+ "test": "testAssets",
+ "segments": [
+  {"from": "asset@-2.36", "to": "asset@-0.36", "caption": "Сколько стоит квартира сегодня"},
+  {"from": "finances@-0.54", "to": "assets@+0.25", "speed": 1.4, "caption": "Рост цены и доход от аренды"},
+  {"from": "figures@-5.84", "to": "figures@-1.34", "caption": null},
+  {"from": "valuations@-4.87", "to": "valuations@-1.37", "caption": "Оценка по объявлениям с krisha.kz"},
+  {"from": "analytics@-2.03", "to": "analytics@+0.27", "caption": "И всё это в вашем капитале"},
+  {"from": "analytics@+0.27", "to": "net-worth@-1.19", "caption": null}
+ ],
+ "endcard": 2.5
+}

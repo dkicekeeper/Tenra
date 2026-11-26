@@ -7,7 +7,7 @@ Domain reference for Ten, Tenra's AI finance assistant: the app side (`Tenra/Ser
 [plan-assistant-ios27.md](../plan-assistant-ios27.md), and Ten as an agent for the whole app is
 [plan-ten-agent.md](../plan-ten-agent.md), and Ten's looks, wardrobe, quests and moments are
 [plan-ten-gamification.md](../plan-ten-gamification.md); smaller open items are in
-[backlog.md](../backlog.md). The original design with its reasoning is archived in
+[backlog/](../backlog/). The original design with its reasoning is archived in
 [archive/plans/plan-ai-assistant.md](../archive/plans/plan-ai-assistant.md).
 
 ---

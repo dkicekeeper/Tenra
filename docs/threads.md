@@ -1,6 +1,6 @@
 # Tenra в Threads
 
-Аккаунт приложения Tenra в Threads (решение основателя 25.11.2026; не от лица Тэна и не от
+Аккаунт приложения Tenra в Threads, [@tenra.app](https://www.threads.com/@tenra.app) (решение основателя 25.11.2026; не от лица Тэна и не от
 основателя). Главное в нём **ответы людям, которые сами просят посоветовать приложение для учёта
 расходов**: такие вопросы появляются несколько раз в неделю, под каждым 3-6 разработчиков со
 ссылками (Qalta, Summa, Topf, «Трата», Obolos, cabe), и читает их ровно тот, кто сейчас выбирает
@@ -87,7 +87,7 @@
 2. **Приложение Meta** (под личным Facebook основателя, не через work.meta.com): developers.facebook.com → Create App, название без слов Threads, Meta и Instagram (у нас «Tenra Posts»), сценарий «Access the Threads API», без бизнес-портфолио.
    Разрешения: `threads_basic`, `threads_content_publish`, `threads_manage_insights`,
    `threads_read_replies`, `threads_manage_replies`.
-3. **Тестер:** в приложении Meta → App roles → Roles → Add People → Threads Tester, аккаунт Tenra.
+3. **Тестер** (если генератор токена отвечает «The user has not accepted the invite», приглашение не принято): в приложении Meta → App roles → Roles → Add People → Threads Tester, аккаунт Tenra.
    Принять приглашение в Threads: Настройки → Учётная запись → Разрешения для сайтов →
    Приглашения. Публиковать от своего аккаунта приложению хватает этой роли, проверка Meta (App
    Review) не нужна.
